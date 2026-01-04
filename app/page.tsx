@@ -1,67 +1,57 @@
 'use client'
 
-import { createClient } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
-
 export default function Home() {
-  const [dbStatus, setDbStatus] = useState('⏳ DB 연결 확인 중...')
-  const [envCheck, setEnvCheck] = useState('확인 중...')
-
-  useEffect(() => {
-    // 1. 환경변수 확인
-    const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
-    const hasKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    setEnvCheck(hasUrl && hasKey ? '✅ 환경변수 있음' : '❌ 환경변수 없음 (Vercel 설정 확인 필요)')
-
-    // 2. 실제 DB 통신 시도
-    const checkDB = async () => {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      const supabase = createClient(supabaseUrl, supabaseKey)
-      // records 테이블에서 아무거나 조회 시도
-      const { data, error } = await supabase.from('records').select('*').limit(1)
-      
-      if (error) {
-        console.error(error)
-        setDbStatus(`❌ 연결 실패: ${error.message}`)
-      } else {
-        setDbStatus('✅ Supabase DB 연결 성공! (데이터 조회 가능)')
-      }
-    }
-
-    checkDB()
-  }, [])
+  const mockItems = [
+    { id: 1, title: 'S&P500', amount: '10만', period: '3년', expected: '5천' },
+    { id: 2, title: '테슬라', amount: '20만', period: '5년', expected: '1.5억' },
+    { id: 3, title: '비트코인', amount: '15만', period: '2년', expected: '8천' },
+  ]
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 gap-4 bg-slate-50">
-      <h1 className="text-3xl font-bold text-slate-900">티클모아태산 서버 점검</h1>
-      
-      <div className="p-6 bg-white rounded-xl shadow-lg border border-slate-200 w-full max-w-md space-y-4">
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-slate-600">Vercel 배포 상태</span>
-          <span className="text-green-600 font-bold">🟢 정상</span>
-        </div>
-        
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-slate-600">환경변수(Key)</span>
-          <span className={envCheck.includes('✅') ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-            {envCheck}
-          </span>
+    <main className="min-h-screen bg-coolgray-25">
+      <div className="max-w-md mx-auto px-4 py-8 space-y-8">
+        {/* 상단 요약 카드 */}
+        <div className="bg-white rounded-3xl shadow-lg p-8">
+          <div className="space-y-4">
+            <p className="text-coolgray-900 text-lg leading-relaxed">
+              사장님, 모든 계획이 성공하면 5년 뒤{' '}
+              <span className="text-brand-600 text-4xl font-bold">3.2억</span>이 생겨요!
+            </p>
+            <p className="text-coolgray-500 text-sm">
+              현재 월 투자금 합계: 45만 원
+            </p>
+          </div>
         </div>
 
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-slate-600">DB 연결</span>
-          <span className={dbStatus.includes('✅') ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-            {dbStatus.includes('✅') ? '✅ 연결됨' : '❌ 실패'}
-          </span>
-        </div>
-        
-        {/* 실패 시 에러 메시지 크게 보여주기 */}
-        {!dbStatus.includes('✅') && !dbStatus.includes('⏳') && (
-          <div className="p-3 bg-red-50 text-red-600 text-sm rounded-md mt-4">
-            {dbStatus}
+        {/* 하단 리스트 */}
+        <div className="space-y-4">
+          <h2 className="text-sm font-bold text-coolgray-900 px-2">
+            투자할 목록 추가하기
+          </h2>
+          
+          <div className="space-y-1">
+            {mockItems.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between py-4 px-2 border-b border-coolgray-100 last:border-b-0"
+              >
+                <div className="flex-1">
+                  <div className="font-semibold text-coolgray-900 mb-1">
+                    {item.title}
+                  </div>
+                  <div className="text-xs text-coolgray-400">
+                    월 {item.amount} / {item.period}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold text-coolgray-900">
+                    총 {item.expected}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </main>
   )
