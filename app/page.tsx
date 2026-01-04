@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/utils/supabase/client'
 import { Plus, LogOut, User, Loader2 } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
@@ -22,9 +22,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  const supabase = createClient(supabaseUrl, supabaseKey)
+  const supabase = createClient()
 
   useEffect(() => {
     // 인증 상태 확인 및 데이터 로드
@@ -83,13 +81,19 @@ export default function Home() {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true)
-      await supabase.auth.signOut()
+      
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) throw error
+
       setUser(null)
       setRecords([])
       router.refresh()
+      
+      // 확실한 이동을 위해 window.location 사용
+      window.location.href = '/login'
     } catch (error) {
       console.error('로그아웃 오류:', error)
-    } finally {
       setIsLoggingOut(false)
     }
   }
