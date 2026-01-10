@@ -299,6 +299,29 @@ export default function AddInvestmentPage() {
     setMonthlyAmount(formatted)
   }
 
+  // 월 투자금액 조절 함수 (만원 단위)
+  const adjustAmount = (delta: number) => {
+    // 현재 값을 숫자로 변환 (콤마 제거 후 만원 단위로 해석)
+    const currentValue = monthlyAmount ? parseInt(monthlyAmount.replace(/,/g, '')) : 0
+    const newValue = Math.max(0, currentValue + delta) // 최소 0
+    
+    if (newValue === 0) {
+      setMonthlyAmount('')
+    } else {
+      // 천 단위 콤마 추가
+      setMonthlyAmount(newValue.toLocaleString('ko-KR'))
+    }
+  }
+
+  // 투자 기간 조절 함수 (년 단위)
+  const adjustPeriod = (delta: number) => {
+    // 현재 값을 숫자로 변환
+    const currentValue = period ? parseInt(period) : 0
+    const newValue = Math.max(1, currentValue + delta) // 최소 1년
+    
+    setPeriod(newValue.toString())
+  }
+
   return (
     <main className="min-h-screen bg-coolgray-25">
       {/* 뒤로가기 버튼 */}
@@ -324,7 +347,7 @@ export default function AddInvestmentPage() {
         </div>
 
         {/* 마켓 선택 탭 */}
-        <Tabs value={market} onValueChange={(value) => setMarket(value as 'KR' | 'US')} className="mb-6">
+        <Tabs value={market} onValueChange={(value: string) => setMarket(value as 'KR' | 'US')} className="mb-6">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="KR">🇰🇷 국내 주식</TabsTrigger>
             <TabsTrigger value="US">🇺🇸 미국 주식</TabsTrigger>
@@ -421,27 +444,93 @@ export default function AddInvestmentPage() {
           )}
 
           {/* 월 투자액 입력 (만원 단위) */}
-          <div className="relative">
-            <input
-              type="text"
-              value={monthlyAmount}
-              onChange={handleAmountChange}
-              placeholder="월 100 (만원 단위)"
-              className="w-full bg-white rounded-2xl p-5 pr-16 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
-            />
-            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-coolgray-500 font-medium">
-              만원
-            </span>
+          <div>
+            <div className="relative">
+              <input
+                type="text"
+                value={monthlyAmount}
+                onChange={handleAmountChange}
+                placeholder="월 100 (만원 단위)"
+                className="w-full bg-white rounded-2xl p-5 pr-16 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+              <span className="absolute right-5 top-1/2 -translate-y-1/2 text-coolgray-500 font-medium">
+                만원
+              </span>
+            </div>
+            {/* 빠른 조절 버튼 */}
+            <div className="flex flex-wrap gap-2 justify-start mt-2">
+              <button
+                type="button"
+                onClick={() => adjustAmount(10)}
+                className="rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-sm px-4 py-2 transition-colors"
+              >
+                +10
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(-10)}
+                className="rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-sm px-4 py-2 transition-colors"
+              >
+                -10
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(1)}
+                className="rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-sm px-4 py-2 transition-colors"
+              >
+                +1
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustAmount(-1)}
+                className="rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-sm px-4 py-2 transition-colors"
+              >
+                -1
+              </button>
+            </div>
           </div>
 
           {/* 투자 기간 입력 */}
-          <input
-            type="text"
-            value={period}
-            onChange={(e) => handleNumericInput(e, setPeriod)}
-            placeholder="3년간"
-            className="w-full bg-white rounded-2xl p-5 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
+          <div>
+            <input
+              type="text"
+              value={period}
+              onChange={(e) => handleNumericInput(e, setPeriod)}
+              placeholder="3년간"
+              className="w-full bg-white rounded-2xl p-5 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+            {/* 빠른 조절 버튼 */}
+            <div className="flex flex-wrap gap-2 justify-start mt-2">
+              <button
+                type="button"
+                onClick={() => adjustPeriod(5)}
+                className="rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-sm px-4 py-2 transition-colors"
+              >
+                +5
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustPeriod(-5)}
+                className="rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-sm px-4 py-2 transition-colors"
+              >
+                -5
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustPeriod(1)}
+                className="rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-sm px-4 py-2 transition-colors"
+              >
+                +1
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustPeriod(-1)}
+                className="rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-sm px-4 py-2 transition-colors"
+              >
+                -1
+              </button>
+            </div>
+          </div>
         </form>
 
         {/* 저장하기 버튼 */}
