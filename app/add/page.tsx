@@ -5,12 +5,9 @@ import { useRouter } from 'next/navigation'
 import { IconArrowLeft, IconLoader2 } from '@tabler/icons-react'
 import { createClient } from '@/utils/supabase/client'
 import { sendGAEvent } from '@next/third-parties/google'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 // 검색 결과 (간단한 정보만)
-<<<<<<< HEAD
-=======
-// 커밋테스트
->>>>>>> 75bcbaf36337398e1853e39b9a3cf20bdf2d7af0
 interface SearchResult {
   symbol: string
   name: string
@@ -39,6 +36,7 @@ export default function AddInvestmentPage() {
   const [showDropdown, setShowDropdown] = useState(false)
   const [selectedStock, setSelectedStock] = useState<StockDetail | null>(null)
   const [annualRate, setAnnualRate] = useState(10) // 기본 10%
+  const [market, setMarket] = useState<'KR' | 'US'>('KR') // 기본값: 국내 주식
 
   // 체류 시간 추적
   useEffect(() => {
@@ -68,11 +66,7 @@ export default function AddInvestmentPage() {
 
   // 주식 검색 (Debounce 적용)
   useEffect(() => {
-<<<<<<< HEAD
     // 선택된 종목이 있으면 검색하지 않음 (드롭다운 재오픈 방지)
-=======
-    // 선택된 종목이 있으면 검색하지 않음
->>>>>>> 75bcbaf36337398e1853e39b9a3cf20bdf2d7af0
     if (selectedStock) {
       return
     }
@@ -84,19 +78,14 @@ export default function AddInvestmentPage() {
       return
     }
 
-    // 이미 종목이 선택된 상태면 검색하지 않음 (드롭다운 재오픈 방지)
-    if (selectedStock && stockName === selectedStock.name) {
-      return
-    }
-
     // Debounce: 0.5초 후 검색 실행
     const timer = setTimeout(async () => {
       try {
         setIsSearching(true)
         setShowDropdown(false)
         
-        // 새로운 Search API 호출 (빠른 DB 조회만)
-        const response = await fetch(`/api/search?query=${encodeURIComponent(stockName.trim())}`)
+        // Search API 호출 (market 파라미터 포함)
+        const response = await fetch(`/api/search?query=${encodeURIComponent(stockName.trim())}&market=${market}`)
         const data = await response.json()
         
         if (response.ok && data.stocks && data.stocks.length > 0) {
@@ -115,9 +104,9 @@ export default function AddInvestmentPage() {
       }
     }, 500)
 
-    // Cleanup: 컴포넌트 unmount 또는 stockName 변경 시 타이머 제거
+    // Cleanup: 컴포넌트 unmount 또는 stockName/market 변경 시 타이머 제거
     return () => clearTimeout(timer)
-  }, [stockName, selectedStock])
+  }, [stockName, selectedStock, market])
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -283,6 +272,14 @@ export default function AddInvestmentPage() {
           </p>
         </div>
 
+        {/* 마켓 선택 탭 */}
+        <Tabs value={market} onValueChange={(value) => setMarket(value as 'KR' | 'US')} className="mb-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="KR">🇰🇷 국내 주식</TabsTrigger>
+            <TabsTrigger value="US">🇺🇸 미국 주식</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         {/* 입력 폼 */}
         <form onSubmit={handleSubmit} className="space-y-4 mb-8">
           {/* 종목명 입력 (검색 기능 포함) */}
@@ -295,7 +292,7 @@ export default function AddInvestmentPage() {
                 setSelectedStock(null) // 입력 변경 시 선택 초기화
                 setAnnualRate(10) // 기본값으로 리셋
               }}
-              placeholder="S&P 500"
+              placeholder={market === 'KR' ? '삼성전자, TIGER...' : 'S&P 500, AAPL...'}
               className="w-full bg-white rounded-2xl p-5 pr-12 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
               autoComplete="off"
             />

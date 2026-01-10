@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const query = searchParams.get('query')
+  const market = searchParams.get('market') // KR 또는 US
 
   if (!query) {
     return NextResponse.json({ error: '검색어를 입력해주세요' }, { status: 400 })
@@ -15,12 +16,19 @@ export async function GET(request: Request) {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Supabase에서 종목 검색 (name 또는 symbol 컬럼에서 ilike 패턴 매칭)
-    const { data: stocks, error: dbError } = await supabase
+    // 쿼리 빌더 패턴으로 조건부 필터링
+    let queryBuilder = supabase
       .from('stocks')
       .select('symbol, name, group')
       .or(`name.ilike.%${query}%,symbol.ilike.%${query}%`)
-      .limit(20)
+
+    // market 파라미터가 있으면 필터링 추가
+    if (market) {
+      queryBuilder = queryBuilder.eq('market', market)
+    }
+
+    // limit 적용 및 실행
+    const { data: stocks, error: dbError } = await queryBuilder.limit(20)
 
     if (dbError) {
       console.error('Supabase 조회 오류:', dbError)
