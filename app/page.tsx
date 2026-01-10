@@ -7,7 +7,6 @@ import { IconPlus, IconLogout, IconUser, IconLoader2 } from '@tabler/icons-react
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { formatCurrency } from '@/lib/utils'
 import { sendGAEvent } from '@next/third-parties/google'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface Record {
   id: string
@@ -260,21 +259,17 @@ export default function Home() {
           <div className="space-y-6">
             {/* Header with Year Selector */}
             <div className="flex items-center gap-2 text-coolgray-700 text-lg font-medium">
-              <Select
+              <select
                 value={selectedYear.toString()}
-                onValueChange={(value) => setSelectedYear(parseInt(value))}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                className="w-[120px] h-10 border-2 border-brand-200 bg-white hover:border-brand-400 transition-colors rounded-md px-3 text-coolgray-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
-                <SelectTrigger className="w-[120px] h-10 border-2 border-brand-200 bg-white hover:border-brand-400 transition-colors">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1년 뒤</SelectItem>
-                  <SelectItem value="3">3년 뒤</SelectItem>
-                  <SelectItem value="5">5년 뒤</SelectItem>
-                  <SelectItem value="10">10년 뒤</SelectItem>
-                  <SelectItem value="30">30년 뒤</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="1">1년 뒤</option>
+                <option value="3">3년 뒤</option>
+                <option value="5">5년 뒤</option>
+                <option value="10">10년 뒤</option>
+                <option value="30">30년 뒤</option>
+              </select>
               <span>예상 자산</span>
             </div>
             

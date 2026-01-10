@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { IconArrowLeft, IconLoader2 } from '@tabler/icons-react'
+import { IconArrowLeft, IconLoader2, IconInfoCircle, IconX } from '@tabler/icons-react'
 import { createClient } from '@/utils/supabase/client'
 import { sendGAEvent } from '@next/third-parties/google'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 // 검색 결과 (간단한 정보만)
 interface SearchResult {
@@ -44,6 +43,9 @@ export default function AddInvestmentPage() {
   const [manualStockName, setManualStockName] = useState('')
   const [manualRate, setManualRate] = useState('')
   const [isManualInput, setIsManualInput] = useState(false) // 직접 입력 모드 플래그
+  
+  // 수익률 안내 모달 상태
+  const [isRateHelpModalOpen, setIsRateHelpModalOpen] = useState(false)
 
   // 체류 시간 추적
   useEffect(() => {
@@ -357,7 +359,8 @@ export default function AddInvestmentPage() {
         {/* 입력 폼 */}
         <form onSubmit={handleSubmit} className="space-y-4 mb-8">
           {/* 종목명 입력 (검색 기능 포함) */}
-          <div className="relative stock-search-container">
+          <div>
+            <div className="relative stock-search-container">
             <input
               type="text"
               value={stockName}
@@ -425,23 +428,32 @@ export default function AddInvestmentPage() {
                 </div>
               </div>
             )}
+            </div>
+            
+            {/* 선택된 종목 안내 문구 - 종목 선택 필드 바로 아래 */}
+            {selectedStock && (
+              <div className="text-sm text-brand-600 font-medium flex items-center gap-1 mt-1">
+                <span>📊</span>
+                <span>지난 10년 평균 수익률 {selectedStock.averageRate}%가 적용되었어요!</span>
+                <button
+                  type="button"
+                  onClick={() => setIsRateHelpModalOpen(true)}
+                  className="p-1.5 flex items-center justify-center bg-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 ml-1"
+                  aria-label="수익률 계산 방식 안내"
+                >
+                  <IconInfoCircle className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            
+            {/* 직접 입력한 종목 안내 문구 - 종목 선택 필드 바로 아래 */}
+            {isManualInput && stockName && (
+              <div className="text-sm text-purple-600 font-medium flex items-center gap-1 mt-1">
+                <span>✏️</span>
+                <span>직접 입력한 수익률 {annualRate}%가 적용됩니다</span>
+              </div>
+            )}
           </div>
-
-          {/* 선택된 종목 안내 문구 */}
-          {selectedStock && (
-            <div className="text-sm text-brand-600 font-medium flex items-center gap-1">
-              <span>📊</span>
-              <span>지난 10년 평균 수익률 {selectedStock.averageRate}%가 적용되었어요!</span>
-            </div>
-          )}
-          
-          {/* 직접 입력한 종목 안내 문구 */}
-          {isManualInput && stockName && (
-            <div className="text-sm text-purple-600 font-medium flex items-center gap-1">
-              <span>✏️</span>
-              <span>직접 입력한 수익률 {annualRate}%가 적용됩니다</span>
-            </div>
-          )}
 
           {/* 월 투자액 입력 (만원 단위) */}
           <div>
@@ -551,70 +563,175 @@ export default function AddInvestmentPage() {
       </div>
 
       {/* 직접 입력 모달 */}
-      <Dialog open={isManualModalOpen} onOpenChange={setIsManualModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>투자할 종목 직접 입력</DialogTitle>
-          </DialogHeader>
+      {isManualModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* 오버레이 */}
+          <div 
+            className="fixed inset-0 bg-black/50 animate-in fade-in-0"
+            onClick={() => {
+              setIsManualModalOpen(false)
+              setManualStockName('')
+              setManualRate('')
+            }}
+          />
           
-          <div className="space-y-4 py-4">
-            {/* 종목명 입력 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-coolgray-900">
-                종목 이름
-              </label>
-              <input
-                type="text"
-                value={manualStockName}
-                onChange={(e) => setManualStockName(e.target.value)}
-                placeholder="예: 나만의 포트폴리오"
-                className="w-full bg-white border border-coolgray-200 rounded-xl p-3 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              />
-            </div>
-
-            {/* 예상 수익률 입력 */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-coolgray-900">
-                예상 연평균 수익률 (%)
-              </label>
-              <input
-                type="number"
-                value={manualRate}
-                onChange={(e) => setManualRate(e.target.value)}
-                placeholder="10"
-                step="0.1"
-                min="0"
-                max="100"
-                className="w-full bg-white border border-coolgray-200 rounded-xl p-3 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              />
-              <p className="text-xs text-coolgray-500 leading-relaxed">
-                💡 잘 모르겠다면 S&P500 평균인 <strong>10%</strong>를 입력해보세요. 
-                보수적으로 잡고 싶다면 예금 금리 <strong>3%</strong>를 추천해요.
-              </p>
-            </div>
-          </div>
-
-          {/* 버튼 영역 */}
-          <div className="flex gap-3">
+          {/* 모달 컨텐츠 */}
+          <div className="relative z-50 w-full max-w-md mx-4 bg-white rounded-lg shadow-lg border p-6 animate-in fade-in-0 zoom-in-95">
+            {/* 닫기 버튼 */}
             <button
               onClick={() => {
                 setIsManualModalOpen(false)
                 setManualStockName('')
                 setManualRate('')
               }}
-              className="flex-1 bg-coolgray-100 text-coolgray-700 font-medium py-3 rounded-xl hover:bg-coolgray-200 transition-colors"
+              className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center bg-transparent hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+              aria-label="닫기"
             >
-              취소
+              <IconX className="w-5 h-5 text-gray-600" />
             </button>
-            <button
-              onClick={handleManualConfirm}
-              className="flex-1 bg-brand-600 text-white font-medium py-3 rounded-xl hover:bg-brand-700 transition-colors"
-            >
-              확인
-            </button>
+
+            {/* 헤더 */}
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-coolgray-900">
+                투자할 종목 직접 입력
+              </h2>
+            </div>
+            
+            <div className="space-y-4 py-4">
+              {/* 종목명 입력 */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-coolgray-900">
+                  종목 이름
+                </label>
+                <input
+                  type="text"
+                  value={manualStockName}
+                  onChange={(e) => setManualStockName(e.target.value)}
+                  placeholder="예: 나만의 포트폴리오"
+                  className="w-full bg-white border border-coolgray-200 rounded-xl p-3 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+              </div>
+
+              {/* 예상 수익률 입력 */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-coolgray-900">
+                    예상 연평균 수익률 (%)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsRateHelpModalOpen(true)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 rounded"
+                    aria-label="수익률 계산 방식 안내"
+                  >
+                    <IconInfoCircle className="w-4 h-4" />
+                  </button>
+                </div>
+                <input
+                  type="number"
+                  value={manualRate}
+                  onChange={(e) => setManualRate(e.target.value)}
+                  placeholder="10"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  className="w-full bg-white border border-coolgray-200 rounded-xl p-3 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+                <p className="text-xs text-coolgray-500 leading-relaxed">
+                  💡 잘 모르겠다면 S&P500 평균인 <strong>10%</strong>를 입력해보세요. 
+                  보수적으로 잡고 싶다면 예금 금리 <strong>3%</strong>를 추천해요.
+                </p>
+              </div>
+            </div>
+
+            {/* 버튼 영역 */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setIsManualModalOpen(false)
+                  setManualStockName('')
+                  setManualRate('')
+                }}
+                className="flex-1 bg-coolgray-100 text-coolgray-700 font-medium py-3 rounded-xl hover:bg-coolgray-200 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleManualConfirm}
+                className="flex-1 bg-brand-600 text-white font-medium py-3 rounded-xl hover:bg-brand-700 transition-colors"
+              >
+                확인
+              </button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
+
+      {/* 수익률 계산 방식 안내 모달 */}
+      {isRateHelpModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* 오버레이 */}
+          <div 
+            className="fixed inset-0 bg-black/50 animate-in fade-in-0"
+            onClick={() => setIsRateHelpModalOpen(false)}
+          />
+          
+          {/* 모달 컨텐츠 */}
+          <div className="relative z-50 w-full max-w-md mx-4 bg-white rounded-lg shadow-lg border p-6 animate-in fade-in-0 zoom-in-95 max-h-[90vh] overflow-y-auto">
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setIsRateHelpModalOpen(false)}
+              className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center bg-transparent hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
+              aria-label="닫기"
+            >
+              <IconX className="w-5 h-5 text-gray-600" />
+            </button>
+
+            {/* 헤더 */}
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-coolgray-900">
+                수익률은 어떻게 계산되나요?
+              </h2>
+            </div>
+            
+            {/* 본문 내용 */}
+            <div className="space-y-4 text-gray-700">
+              {/* 1. 데이터 출처 */}
+              <div>
+                <h3 className="font-semibold text-coolgray-900 mb-2">
+                  1. 데이터 출처
+                </h3>
+                <p>
+                  세계적인 금융 데이터 플랫폼 <strong>Yahoo Finance</strong>의 <strong>과거 10년치 월봉 데이터</strong>를 기반으로 분석합니다.
+                </p>
+              </div>
+
+              {/* 2. 계산 방식 */}
+              <div>
+                <h3 className="font-semibold text-coolgray-900 mb-2">
+                  2. 계산 방식
+                </h3>
+                <p>
+                  들쑥날쑥한 주가 변동을 매끄럽게 다듬은 <strong>연평균 성장률(CAGR)</strong>을 사용해요.
+                </p>
+              </div>
+
+              {/* 3. 현실적인 안전장치 */}
+              <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                <h3 className="font-semibold text-coolgray-900 mb-2 flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span>현실적인 안전장치 (중요!)</span>
+                </h3>
+                <p className="leading-relaxed">
+                  과거에 50%, 100%씩 올랐던 종목이라도, 미래까지 그 속도로 오르는 것은 비현실적이에요.
+                  <br /><br />
+                  <strong>토리치는 '희망 고문' 대신 '현실적인 자산 목표'를 보여드리기 위해, 워렌 버핏의 장기 수익률 수준인 [연 최대 20%]까지만 예측에 반영합니다.</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }
