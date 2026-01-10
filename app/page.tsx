@@ -297,30 +297,30 @@ export default function Home() {
                   return (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between py-4 px-2 border-b border-coolgray-100 last:border-b-0"
+                      className="flex items-start gap-2 py-4 px-2 border-b border-coolgray-100 last:border-b-0 w-full"
                     >
-                      {/* 좌측 영역 */}
-                      <div className="flex flex-col">
-                        {/* 종목명 */}
-                        <div className="text-lg font-bold text-coolgray-900 mb-1">
+                      {/* 좌측: 종목명 (줄어듦) */}
+                      <div className="flex-1 min-w-0 flex flex-col">
+                        {/* 종목명 - 1줄만, truncate */}
+                        <h3 className="text-lg font-bold text-coolgray-900 mb-1 truncate">
                           {item.title}
-                        </div>
+                        </h3>
                         {/* 상세 정보 */}
-                        <div className="text-sm text-coolgray-500">
+                        <p className="text-sm text-coolgray-500">
                           월 {formatCurrency(item.monthly_amount)} · {item.period_years}년
-                        </div>
+                        </p>
                       </div>
                       
-                      {/* 우측 영역 */}
-                      <div className="flex flex-col items-end">
-                        {/* 최종 예상 금액 */}
-                        <div className="text-xl font-bold text-coolgray-900 mb-1">
+                      {/* 우측: 금액 (버팀) */}
+                      <div className="flex-shrink-0 flex flex-col items-end">
+                        {/* 최종 예상 금액 - 절대 줄바꿈 없음 */}
+                        <span className="text-xl font-bold text-coolgray-900 mb-1 whitespace-nowrap">
                           {formatCurrency(calculatedFutureValue)}
-                        </div>
-                        {/* 수익금 배지 */}
-                        <div className="bg-[#E0F8E8] text-green-600 rounded-full px-3 py-0.5 text-sm font-medium">
+                        </span>
+                        {/* 수익금 배지 - 절대 줄바꿈 없음 */}
+                        <span className="bg-[#E0F8E8] text-green-600 rounded-full px-3 py-0.5 text-sm font-medium whitespace-nowrap">
                           + {formatCurrency(calculatedProfit)}
-                        </div>
+                        </span>
                       </div>
                     </div>
                   )
