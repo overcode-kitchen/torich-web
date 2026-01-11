@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { IconPlus, IconLogout, IconUser, IconLoader2, IconTrash } from '@tabler/icons-react'
+import { IconPlus, IconLogout, IconUser, IconLoader2, IconTrash, IconPencil } from '@tabler/icons-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { formatCurrency } from '@/lib/utils'
 import { sendGAEvent } from '@next/third-parties/google'
@@ -378,7 +378,7 @@ export default function Home() {
                           }
                         }}
                         className={`flex items-start gap-2 py-4 px-2 w-full cursor-pointer transition-all duration-300 ease-in-out bg-white hover:bg-gray-50 active:bg-gray-100 relative z-10 ${
-                          activeItemId === item.id ? '-translate-x-[60px]' : 'translate-x-0'
+                          activeItemId === item.id ? '-translate-x-[120px]' : 'translate-x-0'
                         }`}
                       >
                         {/* 좌측: 종목명 (줄어듦) */}
@@ -405,6 +405,18 @@ export default function Home() {
                           </span>
                         </div>
                       </div>
+
+                      {/* 수정 버튼 (absolute로 우측에 배치) */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation() // 아이템 클릭 이벤트 차단
+                          console.log('TODO: 수정 기능 구현')
+                        }}
+                        className="absolute right-[60px] top-0 h-full w-[60px] bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-blue-500 transition-all z-0"
+                        aria-label="수정"
+                      >
+                        <IconPencil className="w-5 h-5" />
+                      </button>
 
                       {/* 삭제 버튼 (absolute로 우측 끝에 고정) */}
                       <button
