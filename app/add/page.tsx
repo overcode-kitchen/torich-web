@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { IconArrowLeft, IconLoader2, IconInfoCircle, IconX } from '@tabler/icons-react'
 import { createClient } from '@/utils/supabase/client'
-import { sendGAEvent } from '@next/third-parties/google'
+// import { sendGAEvent } from '@next/third-parties/google'
 
 // 검색 결과 (간단한 정보만)
 interface SearchResult {
@@ -53,7 +53,7 @@ export default function AddInvestmentPage() {
     return () => {
       const endTime = Date.now()
       const timeSpent = Math.round((endTime - startTime) / 1000) // 초 단위로 변환
-      sendGAEvent('event', 'time_spent_add_page', { value: timeSpent })
+      // sendGAEvent('event', 'time_spent_add_page', { value: timeSpent })
     }
   }, [])
 
@@ -263,7 +263,7 @@ export default function AddInvestmentPage() {
       }
 
       // 저장 완료 이벤트 전송
-      sendGAEvent('event', 'click_add_investment_complete')
+      // sendGAEvent('event', 'click_add_investment_complete')
 
       // 성공 시 메인으로 이동
       router.refresh()

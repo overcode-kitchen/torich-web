@@ -3,31 +3,25 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { IconPlus, IconLogout, IconUser, IconLoader2, IconTrash, IconPencil } from '@tabler/icons-react'
+import { IconPlus, IconLogout, IconUser, IconLoader2 } from '@tabler/icons-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { formatCurrency } from '@/lib/utils'
-import { sendGAEvent } from '@next/third-parties/google'
-
-interface Record {
-  id: string
-  title: string
-  monthly_amount: number
-  period_years: number
-  annual_rate: number
-  expected_amount: string
-  created_at: string
-}
+// import { sendGAEvent } from '@next/third-parties/google'
+import { Investment } from '@/app/types/investment'
+import InvestmentItem from '@/app/components/InvestmentItem'
+import InvestmentDetailSheet from '@/app/components/InvestmentDetailSheet'
 
 export default function Home() {
   const router = useRouter()
   const [user, setUser] = useState<SupabaseUser | null>(null)
-  const [records, setRecords] = useState<Record[]>([])
+  const [records, setRecords] = useState<Investment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [selectedYear, setSelectedYear] = useState<number>(1) // 기본값: 1년
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null) // 삭제 대상 ID
   const [isDeleting, setIsDeleting] = useState(false) // 삭제 중 상태
   const [activeItemId, setActiveItemId] = useState<string | null>(null) // 슬라이딩 활성화된 아이템 ID
+  const [detailItem, setDetailItem] = useState<Investment | null>(null) // 상세 보기 아이템
 
   const supabase = createClient()
 
@@ -179,7 +173,7 @@ export default function Home() {
       setRecords(prevRecords => prevRecords.filter(record => record.id !== deleteTargetId))
 
       // Google Analytics 이벤트 전송 (선택사항)
-      sendGAEvent({ event: 'delete_investment', value: deleteTargetId })
+      // sendGAEvent({ event: 'delete_investment', value: deleteTargetId })
 
     } catch (error) {
       console.error('삭제 오류:', error)
@@ -330,7 +324,7 @@ export default function Home() {
 
         <button 
           onClick={() => {
-            sendGAEvent('event', 'click_add_investment_start')
+            // sendGAEvent('event', 'click_add_investment_start')
             router.push('/add')
           }}
           className="w-full bg-brand-600 text-white font-bold rounded-2xl py-4 shadow-lg flex items-center justify-center gap-2 hover:bg-brand-700 transition-colors"
@@ -346,93 +340,31 @@ export default function Home() {
                 내 투자 목록
               </h2>
               <div>
-                {records.map((item) => {
-                  // 각 투자의 만기 시점 미래 가치 계산 (T = P, 즉 만기 기준)
-                  const R = item.annual_rate ? item.annual_rate / 100 : 0.10
-                  const calculatedFutureValue = calculateSimulatedValue(
-                    item.monthly_amount, 
-                    item.period_years, // T = P (만기 시점)
-                    item.period_years, // P (만기)
-                    R
-                  )
-                  
-                  // 총 원금 계산
-                  const totalPrincipal = item.monthly_amount * 12 * item.period_years
-                  
-                  // 수익금 계산 (미래 가치 - 원금)
-                  const calculatedProfit = calculatedFutureValue - totalPrincipal
-                  
-                  return (
-                    <div
-                      key={item.id}
-                      className="relative overflow-hidden border-b border-coolgray-100 last:border-b-0"
-                    >
-                      {/* 메인 컨텐츠 (슬라이딩되는 부분) */}
-                      <div
-                        onClick={() => {
-                          // 클릭 시 슬라이드 토글
-                          if (activeItemId === item.id) {
-                            setActiveItemId(null) // 이미 활성화된 아이템이면 닫기
-                          } else {
-                            setActiveItemId(item.id) // 다른 아이템이면 열기
-                          }
-                        }}
-                        className={`flex items-start gap-2 py-4 px-2 w-full cursor-pointer transition-all duration-300 ease-in-out bg-white hover:bg-gray-50 active:bg-gray-100 relative z-10 ${
-                          activeItemId === item.id ? '-translate-x-[120px]' : 'translate-x-0'
-                        }`}
-                      >
-                        {/* 좌측: 종목명 (줄어듦) */}
-                        <div className="flex-1 min-w-0 flex flex-col">
-                          {/* 종목명 - 1줄만, truncate */}
-                          <h3 className="text-lg font-bold text-coolgray-900 mb-1 truncate">
-                            {item.title}
-                          </h3>
-                          {/* 상세 정보 */}
-                          <p className="text-sm text-coolgray-500">
-                            월 {formatCurrency(item.monthly_amount)} · {item.period_years}년
-                          </p>
-                        </div>
-                        
-                        {/* 우측: 금액 (버팀) */}
-                        <div className="flex-shrink-0 flex flex-col items-end">
-                          {/* 최종 예상 금액 - 절대 줄바꿈 없음 */}
-                          <span className="text-xl font-bold text-coolgray-900 mb-1 whitespace-nowrap">
-                            {formatCurrency(calculatedFutureValue)}
-                          </span>
-                          {/* 수익금 배지 - 절대 줄바꿈 없음 */}
-                          <span className="bg-[#E0F8E8] text-green-600 rounded-full px-3 py-0.5 text-sm font-medium whitespace-nowrap">
-                            + {formatCurrency(calculatedProfit)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* 수정 버튼 (absolute로 우측에 배치) */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation() // 아이템 클릭 이벤트 차단
-                          console.log('TODO: 수정 기능 구현')
-                        }}
-                        className="absolute right-[60px] top-0 h-full w-[60px] bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-blue-500 transition-all z-0"
-                        aria-label="수정"
-                      >
-                        <IconPencil className="w-5 h-5" />
-                      </button>
-
-                      {/* 삭제 버튼 (absolute로 우측 끝에 고정) */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation() // 아이템 클릭 이벤트 차단
-                          setDeleteTargetId(item.id)
-                          setActiveItemId(null) // 삭제 모달 열릴 때 슬라이드 닫기
-                        }}
-                        className="absolute right-0 top-0 h-full w-[60px] bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 transition-all z-0"
-                        aria-label="삭제"
-                      >
-                        <IconTrash className="w-5 h-5" />
-                      </button>
-                    </div>
-                  )
-                })}
+                {records.map((item) => (
+                  <InvestmentItem
+                    key={item.id}
+                    item={item}
+                    isActive={activeItemId === item.id}
+                    onToggle={() => {
+                      if (activeItemId === item.id) {
+                        // 이미 활성화된 아이템을 다시 클릭하면 상세 보기
+                        setDetailItem(item)
+                        setActiveItemId(null)
+                      } else {
+                        setActiveItemId(item.id)
+                      }
+                    }}
+                    onEdit={() => {
+                      console.log('TODO: 수정 기능 구현')
+                      setActiveItemId(null)
+                    }}
+                    onDelete={() => {
+                      setDeleteTargetId(item.id)
+                      setActiveItemId(null)
+                    }}
+                    calculateFutureValue={calculateSimulatedValue}
+                  />
+                ))}
               </div>
             </div>
           ) : (
@@ -443,7 +375,7 @@ export default function Home() {
               </p>
               <button 
                 onClick={() => {
-                  sendGAEvent('event', 'click_add_investment_start')
+                  // sendGAEvent('event', 'click_add_investment_start')
                   router.push('/add')
                 }}
                 className="bg-brand-600 text-white font-bold rounded-2xl py-4 px-8 shadow-lg flex items-center justify-center gap-2 hover:bg-brand-700 transition-colors"
@@ -454,6 +386,16 @@ export default function Home() {
             </div>
           )}
       </div>
+
+      {/* 투자 상세 바텀시트 */}
+      {detailItem && (
+        <InvestmentDetailSheet
+          item={detailItem}
+          isOpen={!!detailItem}
+          onClose={() => setDetailItem(null)}
+          calculateFutureValue={calculateSimulatedValue}
+        />
+      )}
 
       {/* 삭제 확인 모달 */}
       {deleteTargetId && (
