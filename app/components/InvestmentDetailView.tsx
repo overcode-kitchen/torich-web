@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
 import { IconArrowLeft, IconPencil, IconTrash } from '@tabler/icons-react'
 import { Investment, getStartDate } from '@/app/types/investment'
@@ -15,7 +16,8 @@ interface InvestmentDetailViewProps {
   item: Investment
   onBack: () => void
   onEdit: () => void
-  onDelete: () => void
+  onDelete: () => Promise<void>
+  isDeleting?: boolean
   calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
@@ -24,8 +26,10 @@ export default function InvestmentDetailView({
   onBack,
   onEdit,
   onDelete,
+  isDeleting = false,
   calculateFutureValue,
 }: InvestmentDetailViewProps) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   // 시작일 추출
   const startDate = getStartDate(item)
   const endDate = calculateEndDate(startDate, item.period_years)
@@ -160,7 +164,7 @@ export default function InvestmentDetailView({
             수정
           </button>
           <button
-            onClick={onDelete}
+            onClick={() => setShowDeleteModal(true)}
             className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-xl transition-colors"
           >
             <IconTrash className="w-5 h-5" />
@@ -168,6 +172,52 @@ export default function InvestmentDetailView({
           </button>
         </div>
       </div>
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          {/* 오버레이 */}
+          <div 
+            className="fixed inset-0 bg-black/50"
+            onClick={() => {
+              if (!isDeleting) {
+                setShowDeleteModal(false)
+              }
+            }}
+          />
+          
+          {/* 모달 컨텐츠 */}
+          <div className="relative z-[60] w-full max-w-md mx-4 bg-white rounded-2xl shadow-lg p-6">
+            {/* 헤더 */}
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-coolgray-900 mb-2">
+                정말 삭제하시겠습니까?
+              </h2>
+              <p className="text-sm text-gray-500">
+                삭제된 투자 기록은 복구할 수 없습니다.
+              </p>
+            </div>
+
+            {/* 버튼 영역 */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="flex-1 py-3 text-sm font-medium text-coolgray-700 bg-coolgray-100 rounded-xl hover:bg-coolgray-200 transition-colors disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={onDelete}
+                disabled={isDeleting}
+                className="flex-1 py-3 text-sm font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? '삭제 중...' : '삭제'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

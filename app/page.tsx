@@ -18,7 +18,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [selectedYear, setSelectedYear] = useState<number>(1) // 기본값: 1년
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null) // 삭제 대상 ID
   const [isDeleting, setIsDeleting] = useState(false) // 삭제 중 상태
   const [detailItem, setDetailItem] = useState<Investment | null>(null) // 상세 보기 아이템
 
@@ -154,34 +153,6 @@ export default function Home() {
     }
   }
 
-  const handleDelete = async () => {
-    if (!deleteTargetId) return
-
-    try {
-      setIsDeleting(true)
-
-      // Supabase에서 삭제
-      const { error } = await supabase
-        .from('records')
-        .delete()
-        .eq('id', deleteTargetId)
-
-      if (error) throw error
-
-      // Optimistic UI 업데이트: 삭제된 항목을 로컬 state에서 제거
-      setRecords(prevRecords => prevRecords.filter(record => record.id !== deleteTargetId))
-
-      // Google Analytics 이벤트 전송 (선택사항)
-      // sendGAEvent({ event: 'delete_investment', value: deleteTargetId })
-
-    } catch (error) {
-      console.error('삭제 오류:', error)
-      alert('삭제 중 오류가 발생했습니다.')
-    } finally {
-      setIsDeleting(false)
-      setDeleteTargetId(null) // 모달 닫기
-    }
-  }
 
 
   if (isLoading) {
@@ -377,59 +348,32 @@ export default function Home() {
             console.log('TODO: 수정 기능 구현')
             setDetailItem(null)
           }}
-          onDelete={() => {
-            setDeleteTargetId(detailItem.id)
-            setDetailItem(null)
+          onDelete={async () => {
+            try {
+              setIsDeleting(true)
+              
+              const { error } = await supabase
+                .from('records')
+                .delete()
+                .eq('id', detailItem.id)
+
+              if (error) throw error
+
+              // 삭제 성공 시 로컬 state 업데이트 후 메인 페이지로 이동
+              setRecords(prevRecords => prevRecords.filter(record => record.id !== detailItem.id))
+              setDetailItem(null)
+            } catch (error) {
+              console.error('삭제 오류:', error)
+              alert('삭제 중 오류가 발생했습니다.')
+            } finally {
+              setIsDeleting(false)
+            }
           }}
+          isDeleting={isDeleting}
           calculateFutureValue={calculateSimulatedValue}
         />
       )}
 
-      {/* 삭제 확인 모달 */}
-      {deleteTargetId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* 오버레이 */}
-          <div 
-            className="fixed inset-0 bg-black/50 animate-in fade-in-0"
-            onClick={() => {
-              if (!isDeleting) {
-                setDeleteTargetId(null)
-              }
-            }}
-          />
-          
-          {/* 모달 컨텐츠 */}
-          <div className="relative z-50 w-full max-w-md mx-4 bg-white rounded-lg shadow-lg border p-6 animate-in fade-in-0 zoom-in-95">
-            {/* 헤더 */}
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-coolgray-900 mb-2">
-                정말 삭제하시겠습니까?
-              </h2>
-              <p className="text-sm text-gray-500">
-                삭제된 투자 기록은 복구할 수 없습니다.
-              </p>
-            </div>
-
-            {/* 버튼 영역 */}
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setDeleteTargetId(null)}
-                disabled={isDeleting}
-                className="px-4 py-2 text-sm font-medium text-coolgray-700 bg-coolgray-100 rounded-md hover:bg-coolgray-200 transition-colors disabled:opacity-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors disabled:opacity-50"
-              >
-                {isDeleting ? '삭제 중...' : '삭제'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   )
 }
