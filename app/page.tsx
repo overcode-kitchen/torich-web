@@ -19,6 +19,7 @@ export default function Home() {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [selectedYear, setSelectedYear] = useState<number>(1) // 기본값: 1년
   const [isDeleting, setIsDeleting] = useState(false) // 삭제 중 상태
+  const [isUpdating, setIsUpdating] = useState(false) // 수정 중 상태
   const [detailItem, setDetailItem] = useState<Investment | null>(null) // 상세 보기 아이템
 
   const supabase = createClient()
@@ -344,9 +345,54 @@ export default function Home() {
         <InvestmentDetailView
           item={detailItem}
           onBack={() => setDetailItem(null)}
-          onEdit={() => {
-            console.log('TODO: 수정 기능 구현')
-            setDetailItem(null)
+          onUpdate={async (data) => {
+            try {
+              setIsUpdating(true)
+              
+              // 예상 금액 재계산
+              const R = data.annual_rate / 100
+              const monthlyRate = R / 12
+              const totalMonths = data.period_years * 12
+              const finalAmount = data.monthly_amount * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate)
+
+              const { error } = await supabase
+                .from('records')
+                .update({
+                  monthly_amount: data.monthly_amount,
+                  period_years: data.period_years,
+                  annual_rate: data.annual_rate,
+                  final_amount: finalAmount,
+                })
+                .eq('id', detailItem.id)
+
+              if (error) throw error
+
+              // 수정 성공 시 로컬 state 업데이트
+              setRecords(prevRecords => 
+                prevRecords.map(record => 
+                  record.id === detailItem.id 
+                    ? { 
+                        ...record, 
+                        monthly_amount: data.monthly_amount,
+                        period_years: data.period_years,
+                        annual_rate: data.annual_rate,
+                      }
+                    : record
+                )
+              )
+              // detailItem도 업데이트
+              setDetailItem(prev => prev ? {
+                ...prev,
+                monthly_amount: data.monthly_amount,
+                period_years: data.period_years,
+                annual_rate: data.annual_rate,
+              } : null)
+            } catch (error) {
+              console.error('수정 오류:', error)
+              alert('수정 중 오류가 발생했습니다.')
+            } finally {
+              setIsUpdating(false)
+            }
           }}
           onDelete={async () => {
             try {
@@ -370,6 +416,7 @@ export default function Home() {
             }
           }}
           isDeleting={isDeleting}
+          isUpdating={isUpdating}
           calculateFutureValue={calculateSimulatedValue}
         />
       )}
