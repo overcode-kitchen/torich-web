@@ -103,6 +103,13 @@ export function formatYearMonth(date: Date): string {
 }
 
 /**
+ * 날짜를 YYYY.MM.DD 형식으로 포맷
+ */
+export function formatFullDate(date: Date): string {
+  return format(date, 'yyyy.MM.dd')
+}
+
+/**
  * 목표 기간이 완료되었는지 확인
  */
 export function isCompleted(startDate: Date, periodYears: number): boolean {
