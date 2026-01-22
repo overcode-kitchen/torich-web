@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { formatCurrency } from '@/lib/utils'
 import { IconArrowLeft, IconPencil, IconTrash, IconCheck, IconX, IconInfoCircle } from '@tabler/icons-react'
-import { Investment, getStartDate } from '@/app/types/investment'
+import { Investment, getStartDate, formatInvestmentDays } from '@/app/types/investment'
 import { 
   calculateEndDate, 
   getElapsedText, 
@@ -16,6 +16,7 @@ interface UpdateData {
   monthly_amount: number
   period_years: number
   annual_rate: number
+  investment_days?: number[]
 }
 
 interface InvestmentDetailViewProps {
@@ -44,6 +45,7 @@ export default function InvestmentDetailView({
   const [editMonthlyAmount, setEditMonthlyAmount] = useState('')
   const [editPeriodYears, setEditPeriodYears] = useState('')
   const [editAnnualRate, setEditAnnualRate] = useState('')
+  const [editInvestmentDays, setEditInvestmentDays] = useState<number[]>([])
   const [isRateManuallyEdited, setIsRateManuallyEdited] = useState(false)
   
   // 원본 수익률 저장 (비교용)
@@ -55,6 +57,7 @@ export default function InvestmentDetailView({
       setEditMonthlyAmount((item.monthly_amount / 10000).toString())
       setEditPeriodYears(item.period_years.toString())
       setEditAnnualRate((item.annual_rate || 10).toString())
+      setEditInvestmentDays(item.investment_days || [])
       setIsRateManuallyEdited(false)
     }
   }, [isEditMode, item])
@@ -132,6 +135,7 @@ export default function InvestmentDetailView({
       monthly_amount: monthlyAmountInWon,
       period_years: periodYears,
       annual_rate: annualRate,
+      investment_days: editInvestmentDays.length > 0 ? editInvestmentDays : undefined,
     })
     setIsEditMode(false)
   }
@@ -281,6 +285,62 @@ export default function InvestmentDetailView({
               ) : (
                 <span className="font-semibold text-coolgray-900">
                   {displayAnnualRate.toFixed(0)}%
+                </span>
+              )}
+            </div>
+
+            {/* 매월 투자일 */}
+            <div className="flex justify-between items-start">
+              <span className="text-coolgray-500">매월 투자일</span>
+              {isEditMode ? (
+                <div className="flex-1 ml-4">
+                  {/* 선택된 날짜 표시 */}
+                  {editInvestmentDays.length > 0 && (
+                    <div className="mb-2 flex flex-wrap gap-1 justify-end">
+                      {[...editInvestmentDays].sort((a, b) => a - b).map((day) => (
+                        <span
+                          key={day}
+                          className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full text-xs font-medium"
+                        >
+                          {day}일
+                          <button
+                            type="button"
+                            onClick={() => setEditInvestmentDays(prev => prev.filter(d => d !== day))}
+                            className="hover:text-brand-900"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {/* 날짜 선택 그리드 */}
+                  <div className="grid grid-cols-7 gap-0.5">
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => {
+                          if (editInvestmentDays.includes(day)) {
+                            setEditInvestmentDays(prev => prev.filter(d => d !== day))
+                          } else {
+                            setEditInvestmentDays(prev => [...prev, day])
+                          }
+                        }}
+                        className={`w-7 h-7 rounded-full text-xs font-medium transition-colors ${
+                          editInvestmentDays.includes(day)
+                            ? 'bg-brand-600 text-white'
+                            : 'bg-coolgray-50 text-coolgray-700 hover:bg-coolgray-100'
+                        }`}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <span className="font-semibold text-coolgray-900">
+                  {formatInvestmentDays(item.investment_days)}
                 </span>
               )}
             </div>

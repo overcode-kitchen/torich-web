@@ -10,6 +10,22 @@ export interface Investment {
   expected_amount: string
   created_at: string
   start_date?: string // 투자 시작일 (없으면 created_at 사용)
+  investment_days?: number[] // 매월 투자하는 날짜들 (예: [5, 25] = 매월 5일, 25일)
+}
+
+/**
+ * 투자 날짜를 포맷팅하는 헬퍼 함수
+ * 예: [5, 25] -> "매월 5일, 25일"
+ */
+export function formatInvestmentDays(days?: number[]): string {
+  if (!days || days.length === 0) {
+    return '미설정'
+  }
+  const sortedDays = [...days].sort((a, b) => a - b)
+  if (sortedDays.length === 1) {
+    return `매월 ${sortedDays[0]}일`
+  }
+  return `매월 ${sortedDays.join('일, ')}일`
 }
 
 /**

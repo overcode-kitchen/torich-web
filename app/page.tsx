@@ -362,6 +362,7 @@ export default function Home() {
                   period_years: data.period_years,
                   annual_rate: data.annual_rate,
                   final_amount: finalAmount,
+                  investment_days: data.investment_days || null,
                 })
                 .eq('id', detailItem.id)
 
@@ -376,6 +377,7 @@ export default function Home() {
                         monthly_amount: data.monthly_amount,
                         period_years: data.period_years,
                         annual_rate: data.annual_rate,
+                        investment_days: data.investment_days,
                       }
                     : record
                 )
@@ -386,6 +388,7 @@ export default function Home() {
                 monthly_amount: data.monthly_amount,
                 period_years: data.period_years,
                 annual_rate: data.annual_rate,
+                investment_days: data.investment_days,
               } : null)
             } catch (error) {
               console.error('수정 오류:', error)

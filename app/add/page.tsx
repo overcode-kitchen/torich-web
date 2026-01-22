@@ -31,6 +31,7 @@ export default function AddInvestmentPage() {
     const today = new Date()
     return today.toISOString().split('T')[0]
   })
+  const [investmentDays, setInvestmentDays] = useState<number[]>([]) // 매월 투자하는 날짜들
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   
@@ -268,6 +269,7 @@ export default function AddInvestmentPage() {
           annual_rate: annualRate, // 실제 조회된 수익률 저장
           final_amount: finalAmount,
           start_date: startDate, // 투자 시작일
+          investment_days: investmentDays.length > 0 ? investmentDays : null, // 매월 투자일
         })
 
       if (error) {
@@ -746,6 +748,61 @@ export default function AddInvestmentPage() {
             />
             <p className="text-xs text-coolgray-400 mt-1">
               투자를 시작한 날짜를 선택하세요. 기본값은 오늘입니다.
+            </p>
+          </div>
+
+          {/* 매월 투자일 선택 */}
+          <div>
+            <label className="block text-sm font-medium text-coolgray-700 mb-2">
+              매월 투자일 (선택)
+            </label>
+            <div className="bg-white rounded-2xl p-4">
+              {/* 선택된 날짜 표시 */}
+              {investmentDays.length > 0 && (
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {[...investmentDays].sort((a, b) => a - b).map((day) => (
+                    <span
+                      key={day}
+                      className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 px-3 py-1 rounded-full text-sm font-medium"
+                    >
+                      {day}일
+                      <button
+                        type="button"
+                        onClick={() => setInvestmentDays(prev => prev.filter(d => d !== day))}
+                        className="hover:text-brand-900"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* 날짜 선택 그리드 */}
+              <div className="grid grid-cols-7 gap-1">
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => {
+                      if (investmentDays.includes(day)) {
+                        setInvestmentDays(prev => prev.filter(d => d !== day))
+                      } else {
+                        setInvestmentDays(prev => [...prev, day])
+                      }
+                    }}
+                    className={`w-9 h-9 rounded-full text-sm font-medium transition-colors ${
+                      investmentDays.includes(day)
+                        ? 'bg-brand-600 text-white'
+                        : 'bg-coolgray-50 text-coolgray-700 hover:bg-coolgray-100'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="text-xs text-coolgray-400 mt-1">
+              매월 투자하는 날짜를 선택하세요. 여러 날 선택 가능합니다.
             </p>
           </div>
         </form>
