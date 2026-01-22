@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { IconArrowLeft, IconLoader2, IconInfoCircle, IconX } from '@tabler/icons-react'
 import { createClient } from '@/utils/supabase/client'
+import { formatCurrency } from '@/lib/utils'
 // import { sendGAEvent } from '@next/third-parties/google'
 
 // 검색 결과 (간단한 정보만)
@@ -806,6 +807,50 @@ export default function AddInvestmentPage() {
             </p>
           </div>
         </form>
+
+        {/* 미리보기 카드 */}
+        {stockName.trim() && monthlyAmount && period && (
+          <div className="mb-4 bg-brand-50 border-2 border-dashed border-brand-200 rounded-2xl p-5 animate-in fade-in-0 slide-in-from-bottom-2">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-lg">🔍</span>
+              <h3 className="text-sm font-bold text-coolgray-900">예상 결과</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-coolgray-600">만기 금액</span>
+                <span className="text-lg font-bold text-coolgray-900">
+                  {formatCurrency(
+                    calculateFinalAmount(
+                      parseInt(monthlyAmount.replace(/,/g, '')) * 10000,
+                      parseInt(period),
+                      annualRate
+                    )
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-coolgray-600">예상 수익</span>
+                <span className="text-lg font-bold text-green-600">
+                  + {formatCurrency(
+                    calculateFinalAmount(
+                      parseInt(monthlyAmount.replace(/,/g, '')) * 10000,
+                      parseInt(period),
+                      annualRate
+                    ) - (parseInt(monthlyAmount.replace(/,/g, '')) * 10000 * parseInt(period) * 12)
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-coolgray-600">
+                  총 투자금 ({parseInt(monthlyAmount.replace(/,/g, ''))}만원 × {parseInt(period) * 12}개월)
+                </span>
+                <span className="text-base font-semibold text-coolgray-700">
+                  {formatCurrency(parseInt(monthlyAmount.replace(/,/g, '')) * 10000 * parseInt(period) * 12)}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 저장하기 버튼 */}
         <button

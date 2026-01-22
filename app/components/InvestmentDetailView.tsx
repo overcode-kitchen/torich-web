@@ -8,7 +8,7 @@ import {
   calculateEndDate, 
   getElapsedText, 
   calculateProgress,
-  formatYearMonth,
+  formatFullDate,
   isCompleted
 } from '@/app/utils/date'
 
@@ -190,8 +190,8 @@ export default function InvestmentDetailView({
               />
             </div>
             <div className="flex justify-between text-sm text-coolgray-400 mt-3">
-              <span>시작: {formatYearMonth(startDate)}</span>
-              <span>종료: {formatYearMonth(endDate)}</span>
+              <span>시작: {formatFullDate(startDate)}</span>
+              <span>종료: {formatFullDate(endDate)}</span>
             </div>
           </div>
         )}

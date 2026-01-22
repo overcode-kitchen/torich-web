@@ -4,6 +4,13 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { IconPlus, IconLogout, IconUser, IconLoader2 } from '@tabler/icons-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { formatCurrency } from '@/lib/utils'
 // import { sendGAEvent } from '@next/third-parties/google'
@@ -251,22 +258,28 @@ export default function Home() {
         {/* 상단 요약 카드 */}
         <div className="bg-white rounded-3xl shadow-md p-8">
           <h2 className="text-lg font-bold text-coolgray-900 mb-6">
-            나의 자산 예측
+            나의 적립식 투자
           </h2>
           <div className="space-y-6">
             {/* Header with Year Selector */}
             <div className="flex items-center gap-2 text-coolgray-700 text-lg font-medium">
-              <select
-                value={selectedYear.toString()}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="w-[120px] h-10 border-2 border-brand-200 bg-white hover:border-brand-400 transition-colors rounded-md px-3 text-coolgray-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              >
-                <option value="1">1년 뒤</option>
-                <option value="3">3년 뒤</option>
-                <option value="5">5년 뒤</option>
-                <option value="10">10년 뒤</option>
-                <option value="30">30년 뒤</option>
-              </select>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-coolgray-200 border-coolgray-200 hover:border-coolgray-300"
+                  >
+                    {selectedYear}년 뒤
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[120px]">
+                  <DropdownMenuItem onClick={() => setSelectedYear(1)}>1년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(3)}>3년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(5)}>5년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(10)}>10년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(30)}>30년 뒤</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <span>예상 자산</span>
             </div>
             
@@ -285,7 +298,7 @@ export default function Home() {
                   ? formatCurrency(totalMonthlyPayment)
                   : '0만원'}
               </span>
-              씩 모으고 있어요
+              씩 심고 있어요
             </div>
           </div>
         </div>
