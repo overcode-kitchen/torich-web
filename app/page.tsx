@@ -257,7 +257,7 @@ export default function Home() {
         {/* 상단 요약 카드 */}
         <div className="bg-white rounded-3xl shadow-md p-8">
           <h2 className="text-lg font-bold text-coolgray-900 mb-6">
-            나의 자산 예측
+            나의 적립식 투자
           </h2>
           <div className="space-y-6">
             {/* Header with Year Selector */}
@@ -297,7 +297,7 @@ export default function Home() {
                   ? formatCurrency(totalMonthlyPayment)
                   : '0만원'}
               </span>
-              씩 모으고 있어요
+              씩 심고 있어요
             </div>
           </div>
         </div>
