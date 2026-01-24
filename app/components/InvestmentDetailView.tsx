@@ -5,6 +5,7 @@ import { formatCurrency } from '@/lib/utils'
 import { IconArrowLeft, IconPencil, IconTrash, IconCheck, IconX, IconInfoCircle, IconDotsVertical } from '@tabler/icons-react'
 import { Investment, getStartDate, formatInvestmentDays } from '@/app/types/investment'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
+import InvestmentEditSheet, { type RateSuggestion } from '@/app/components/InvestmentEditSheet'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -58,6 +59,11 @@ export default function InvestmentDetailView({
   
   // 원본 수익률 저장 (비교용)
   const originalRate = item.annual_rate || 10
+  const formatRate = (rate: number) => rate.toFixed(2).replace(/\.?0+$/, '')
+  const rateSuggestions: RateSuggestion[] = [
+    { label: '⚡️ 10년 평균 {rate}', rate: originalRate },
+  ]
+  const isCustomRate = !!item.is_custom_rate
 
   // 수정 모드 진입 시 현재 값으로 초기화
   useEffect(() => {
@@ -257,7 +263,7 @@ export default function InvestmentDetailView({
                     type="text"
                     value={editMonthlyAmount}
                     onChange={(e) => handleNumericInput(e.target.value, setEditMonthlyAmount)}
-                    className="w-24 text-right bg-coolgray-50 border border-coolgray-200 rounded-lg px-3 py-2 text-coolgray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-24 text-right bg-coolgray-25 border border-coolgray-200 rounded-lg px-3 py-2 text-coolgray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
                     placeholder="100"
                   />
                   <span className="text-coolgray-500 text-sm">만원</span>
@@ -278,7 +284,7 @@ export default function InvestmentDetailView({
                     type="text"
                     value={editPeriodYears}
                     onChange={(e) => handleNumericInput(e.target.value, setEditPeriodYears)}
-                    className="w-16 text-right bg-coolgray-50 border border-coolgray-200 rounded-lg px-3 py-2 text-coolgray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-16 text-right bg-coolgray-25 border border-coolgray-200 rounded-lg px-3 py-2 text-coolgray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
                     placeholder="10"
                   />
                   <span className="text-coolgray-500 text-sm">년</span>
@@ -291,7 +297,7 @@ export default function InvestmentDetailView({
             </div>
 
             {/* 연 수익률 */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-start">
               <div className="flex items-center gap-1">
                 <span className="text-coolgray-500">연 수익률</span>
                 {isEditMode && (
@@ -304,23 +310,38 @@ export default function InvestmentDetailView({
                 )}
               </div>
               {isEditMode ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={editAnnualRate}
-                    onChange={(e) => handleRateInput(e.target.value)}
-                    className="w-16 text-right bg-coolgray-50 border border-coolgray-200 rounded-lg px-3 py-2 text-coolgray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    placeholder="10"
+                <div className="flex flex-col items-end gap-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={editAnnualRate}
+                      onChange={(e) => handleRateInput(e.target.value)}
+                      className="w-16 text-right bg-coolgray-25 border border-coolgray-200 rounded-lg px-3 py-2 text-coolgray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      placeholder="10"
+                    />
+                    <span className="text-coolgray-500 text-sm">%</span>
+                    {isRateManuallyEdited && parseFloat(editAnnualRate) !== originalRate && (
+                      <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">직접 수정</span>
+                    )}
+                  </div>
+                  <InvestmentEditSheet
+                    suggestions={rateSuggestions}
+                    onSelect={(rate) => {
+                      setEditAnnualRate(formatRate(rate))
+                      setIsRateManuallyEdited(rate !== originalRate)
+                    }}
+                    className="max-w-[260px] justify-end"
                   />
-                  <span className="text-coolgray-500 text-sm">%</span>
-                  {isRateManuallyEdited && parseFloat(editAnnualRate) !== originalRate && (
-                    <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">직접 수정</span>
-                  )}
                 </div>
               ) : (
-                <span className="font-semibold text-coolgray-900">
-                  {displayAnnualRate.toFixed(0)}%
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center rounded-full bg-coolgray-25 text-coolgray-600 text-xs font-medium px-2.5 py-1">
+                    {isCustomRate ? '직접 입력' : '10년 평균'}
+                  </span>
+                  <span className="font-semibold text-coolgray-900">
+                    {displayAnnualRate.toFixed(0)}%
+                  </span>
+                </div>
               )}
             </div>
 

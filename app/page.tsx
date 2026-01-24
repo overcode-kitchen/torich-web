@@ -571,6 +571,10 @@ export default function Home() {
                   monthly_amount: data.monthly_amount,
                   period_years: data.period_years,
                   annual_rate: data.annual_rate,
+                  // 수익률을 수정 화면에서 저장한 경우: 직접 입력/수정으로 간주
+                  is_custom_rate:
+                    (detailItem.is_custom_rate ?? false) ||
+                    data.annual_rate !== detailItem.annual_rate,
                   final_amount: finalAmount,
                   investment_days: data.investment_days || null,
                 })
@@ -588,6 +592,9 @@ export default function Home() {
                         period_years: data.period_years,
                         annual_rate: data.annual_rate,
                         investment_days: data.investment_days,
+                        is_custom_rate:
+                          (record.is_custom_rate ?? false) ||
+                          data.annual_rate !== detailItem.annual_rate,
                       }
                     : record
                 )
@@ -599,6 +606,9 @@ export default function Home() {
                 period_years: data.period_years,
                 annual_rate: data.annual_rate,
                 investment_days: data.investment_days,
+                is_custom_rate:
+                  (prev.is_custom_rate ?? false) ||
+                  data.annual_rate !== detailItem.annual_rate,
               } : null)
             } catch (error) {
               console.error('수정 오류:', error)
