@@ -8,14 +8,12 @@ interface MonthlyContributionSheetProps {
   items: Investment[]
   totalAmount: number
   onClose: () => void
-  onEdit: () => void
 }
 
 export default function MonthlyContributionSheet({
   items,
   totalAmount,
   onClose,
-  onEdit,
 }: MonthlyContributionSheetProps) {
   // 종목명에서 이니셜 추출
   const getInitial = (title: string) => {
@@ -65,7 +63,7 @@ export default function MonthlyContributionSheet({
         </div>
 
         {/* 콘텐츠 - 스크롤 가능 */}
-        <div className="flex-1 overflow-y-auto px-6">
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
           {items.length > 0 ? (
             <div className="divide-y divide-coolgray-100">
               {items.map((item) => {
@@ -110,19 +108,6 @@ export default function MonthlyContributionSheet({
               </p>
             </div>
           )}
-        </div>
-
-        {/* 푸터 - 수정 유도 */}
-        <div className="px-6 py-4 border-t border-coolgray-100 mt-auto">
-          <p className="text-sm text-coolgray-500 text-center mb-3">
-            금액이나 종목을 바꾸고 싶나요?
-          </p>
-          <button
-            onClick={onEdit}
-            className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl transition-colors"
-          >
-            구성 수정하기
-          </button>
         </div>
       </div>
     </div>

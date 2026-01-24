@@ -395,10 +395,6 @@ export default function Home() {
           items={records}
           totalAmount={totalMonthlyPayment}
           onClose={() => setShowContributionSheet(false)}
-          onEdit={() => {
-            setShowContributionSheet(false)
-            router.push('/add')
-          }}
         />
       )}
 
