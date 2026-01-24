@@ -74,15 +74,30 @@ export async function GET(request: Request) {
       )
     }
 
-    // 3. 안전장치: 이번 달(현재 월) 이상의 데이터 제거
-    // 현재 월의 연월값 계산 (예: 2026년 1월 = 2026*12 + 0 = 24312)
+    // 3. 안전장치: 범위를 벗어난 데이터 제거
     const currentYearMonth = today.getFullYear() * 12 + today.getMonth()
+    // 목표 시작월: 10년 전 다음 달 (예: 2025년 12월 기준 → 2016년 1월)
+    const targetStartYearMonth = (endYear - 10) * 12 + (endMonth + 1)
     
+    // 3-1. 시작 데이터가 목표 시작월보다 이전이면 제거 (앞에서부터)
+    while (historicalData.length > 0) {
+      const firstData = historicalData[0]
+      const firstDate = new Date(firstData.date)
+      const firstYearMonth = firstDate.getFullYear() * 12 + firstDate.getMonth()
+      
+      if (firstYearMonth < targetStartYearMonth) {
+        console.log(`[Stock API] ${symbol} | [Safety] 목표 시작월 이전 데이터 제거: ${firstDate.getFullYear()}/${firstDate.getMonth() + 1}`)
+        historicalData.shift()
+      } else {
+        break
+      }
+    }
+    
+    // 3-2. 마지막 데이터가 현재 월 이상이면 제거 (뒤에서부터)
     let lastData = historicalData[historicalData.length - 1]
     let lastDataDate = new Date(lastData.date)
     let lastDataYearMonth = lastDataDate.getFullYear() * 12 + lastDataDate.getMonth()
     
-    // 마지막 데이터의 연월이 현재 월 이상이면 제거 (예: 26년 1월, 2월 등)
     if (lastDataYearMonth >= currentYearMonth) {
       console.log(`[Stock API] ${symbol} | [Safety] 이번 달 이상의 데이터 제거: ${lastDataDate.getFullYear()}/${lastDataDate.getMonth() + 1}`)
       historicalData.pop()

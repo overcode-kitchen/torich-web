@@ -35,16 +35,29 @@ async function calculateCAGR(symbol: string): Promise<number | null> {
       return null
     }
 
-    // 안전장치: 이번 달(현재 월) 이상의 데이터 제거
+    // 안전장치: 범위를 벗어난 데이터 제거
     const currentYearMonth = today.getFullYear() * 12 + today.getMonth()
+    const targetStartYearMonth = (endYear - 10) * 12 + (endMonth + 1)
     
+    // 시작 데이터가 목표 시작월보다 이전이면 제거
+    while (historicalData.length > 0) {
+      const firstData = historicalData[0]
+      const firstDate = new Date(firstData.date)
+      const firstYearMonth = firstDate.getFullYear() * 12 + firstDate.getMonth()
+      
+      if (firstYearMonth < targetStartYearMonth) {
+        historicalData.shift()
+      } else {
+        break
+      }
+    }
+    
+    // 마지막 데이터가 현재 월 이상이면 제거
     let lastData = historicalData[historicalData.length - 1]
     let lastDataDate = new Date(lastData.date)
     let lastDataYearMonth = lastDataDate.getFullYear() * 12 + lastDataDate.getMonth()
     
-    // 마지막 데이터의 연월이 현재 월 이상이면 제거
     if (lastDataYearMonth >= currentYearMonth) {
-      console.log(`[CRON] [Safety] 이번 달 이상의 데이터 제거: ${lastDataDate.getFullYear()}/${lastDataDate.getMonth() + 1}`)
       historicalData.pop()
       lastData = historicalData[historicalData.length - 1]
       lastDataDate = new Date(lastData.date)
