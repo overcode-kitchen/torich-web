@@ -269,6 +269,9 @@ export default function AddInvestmentPage() {
       // 검색으로 선택한 수익률 또는 기본값(10%) 사용
       const finalAmount = calculateFinalAmount(monthlyAmountInWon, periodYearsNum, annualRate)
 
+      // is_custom_rate 판별: 직접 입력했거나, 시스템 값을 수정한 경우 true
+      const isCustomRate = isManualInput || (originalSystemRate !== null && annualRate !== originalSystemRate)
+
       // Supabase에 데이터 저장 (만원 단위를 원 단위로 변환하여 저장)
       const { error } = await supabase
         .from('records')
@@ -281,6 +284,7 @@ export default function AddInvestmentPage() {
           final_amount: finalAmount,
           start_date: startDate, // 투자 시작일
           investment_days: investmentDays.length > 0 ? investmentDays : null, // 매월 투자일
+          is_custom_rate: isCustomRate, // 직접 입력 여부
         })
 
       if (error) {
