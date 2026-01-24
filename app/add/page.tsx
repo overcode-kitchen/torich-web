@@ -272,12 +272,16 @@ export default function AddInvestmentPage() {
       // is_custom_rate 판별: 직접 입력했거나, 시스템 값을 수정한 경우 true
       const isCustomRate = isManualInput || (originalSystemRate !== null && annualRate !== originalSystemRate)
 
+      // symbol 결정: 검색을 통해 선택한 경우 selectedStock.symbol, 직접 입력은 null
+      const stockSymbol = !isManualInput && selectedStock?.symbol ? selectedStock.symbol : null
+
       // Supabase에 데이터 저장 (만원 단위를 원 단위로 변환하여 저장)
       const { error } = await supabase
         .from('records')
         .insert({
           user_id: userId,
           title: stockName.trim(),
+          symbol: stockSymbol, // 주식 심볼 (검색 선택 시만 저장)
           monthly_amount: monthlyAmountInWon,
           period_years: periodYearsNum,
           annual_rate: annualRate, // 실제 조회된 수익률 저장
