@@ -45,33 +45,36 @@ export default function InvestmentItem({
   const completed = isCompleted(startDate, item.period_years)
 
   return (
-    <div 
-      onClick={onClick}
-      className="flex items-start gap-2 py-4 px-2 border-b border-coolgray-100 last:border-b-0 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors"
-    >
-      {/* 좌측: 종목명 및 상세 정보 */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        {/* 종목명 */}
-        <h3 className="text-lg font-bold text-coolgray-900 mb-1 truncate">
-          {item.title}
-        </h3>
-        {/* 한 줄로 합친 정보: 월 투자금 · 남은 기간 */}
-        <p className={`text-sm ${completed ? 'text-green-600 font-semibold' : 'text-coolgray-500'}`}>
-          월 {formatCurrency(item.monthly_amount)} · {remainingText}
-        </p>
-      </div>
-      
-      {/* 우측: 금액 정보 */}
-      <div className="flex-shrink-0 flex flex-col items-end">
-        {/* 최종 예상 금액 */}
-        <span className="text-xl font-bold text-coolgray-900 mb-1 whitespace-nowrap">
-          {formatCurrency(calculatedFutureValue)}
-        </span>
-        {/* 수익금 배지 */}
-        <span className="bg-[#E0F8E8] text-green-600 rounded-full px-3 py-0.5 text-sm font-medium whitespace-nowrap">
-          + {formatCurrency(calculatedProfit)}
-        </span>
-      </div>
+    <div className="border-b border-coolgray-100 last:border-b-0 py-2">
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full text-left flex items-start gap-2 px-4 py-4 rounded-2xl transition-colors transition-transform duration-150 ease-out hover:bg-coolgray-25 active:bg-coolgray-50 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white will-change-transform"
+      >
+        {/* 좌측: 종목명 및 상세 정보 */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          {/* 종목명 */}
+          <h3 className="text-lg font-bold text-coolgray-900 mb-1 truncate">
+            {item.title}
+          </h3>
+          {/* 한 줄로 합친 정보: 월 투자금 · 남은 기간 */}
+          <p className={`text-sm ${completed ? 'text-green-600 font-semibold' : 'text-coolgray-500'}`}>
+            월 {formatCurrency(item.monthly_amount)} · {remainingText}
+          </p>
+        </div>
+        
+        {/* 우측: 금액 정보 */}
+        <div className="flex-shrink-0 flex flex-col items-end">
+          {/* 최종 예상 금액 */}
+          <span className="text-xl font-bold text-coolgray-900 mb-1 whitespace-nowrap">
+            {formatCurrency(calculatedFutureValue)}
+          </span>
+          {/* 수익금 배지 */}
+          <span className="bg-[#E0F8E8] text-green-600 rounded-full px-3 py-0.5 text-sm font-medium whitespace-nowrap">
+            + {formatCurrency(calculatedProfit)}
+          </span>
+        </div>
+      </button>
     </div>
   )
 }
