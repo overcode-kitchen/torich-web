@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { IconPlus, IconLogout, IconUser, IconLoader2, IconInfoCircle, IconChevronDown } from '@tabler/icons-react'
@@ -35,6 +35,8 @@ export default function Home() {
   const [showContributionSheet, setShowContributionSheet] = useState(false) // 월 납입 내역 시트
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'ENDED'>('ACTIVE') // 필터 상태
   const [sortBy, setSortBy] = useState<'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME'>('TOTAL_VALUE') // 정렬 기준
+  const bannerRef = useRef<HTMLDivElement | null>(null)
+  const [bannerIndex, setBannerIndex] = useState<0 | 1>(0)
 
   const supabase = createClient()
 
@@ -134,6 +136,21 @@ export default function Home() {
 
     return sorted
   }, [records, filterStatus, sortBy, calculateSimulatedValue])
+
+  useEffect(() => {
+    const el = bannerRef.current
+    if (!el) return
+
+    const handleScroll = () => {
+      const width = el.clientWidth || 1
+      const next = Math.max(0, Math.min(1, Math.round(el.scrollLeft / width))) as 0 | 1
+      setBannerIndex(next)
+    }
+
+    handleScroll()
+    el.addEventListener('scroll', handleScroll, { passive: true })
+    return () => el.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     // 인증 상태 확인 및 데이터 로드
@@ -302,69 +319,92 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="max-w-md mx-auto px-4 py-4 space-y-6">
-        {/* 상단 요약 카드 */}
-        <div className="bg-white rounded-3xl shadow-md p-8">
-          <h2 className="text-lg font-bold text-coolgray-900 mb-6">
-            나의 적립식 투자
-          </h2>
-          <div className="space-y-6">
-            {/* Header with Year Selector */}
-            <div className="flex items-center gap-2 text-coolgray-700 text-lg font-medium">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-coolgray-200 border-coolgray-200 hover:border-coolgray-300"
+      <div className="max-w-md mx-auto px-4 py-4 space-y-3">
+        {/* 상단 배너 (2장 가로 스크롤) */}
+        <div className="relative overflow-hidden rounded-3xl">
+          {/* 페이지네이션 점 (우측 상단) */}
+          <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="배너 1"
+              onClick={() => bannerRef.current?.scrollTo({ left: 0, behavior: 'smooth' })}
+              className={`h-2 w-2 rounded-full transition-colors ${bannerIndex === 0 ? 'bg-brand-600' : 'bg-coolgray-200'}`}
+            />
+            <button
+              type="button"
+              aria-label="배너 2"
+              onClick={() => {
+                const el = bannerRef.current
+                if (!el) return
+                el.scrollTo({ left: el.clientWidth, behavior: 'smooth' })
+              }}
+              className={`h-2 w-2 rounded-full transition-colors ${bannerIndex === 1 ? 'bg-brand-600' : 'bg-coolgray-200'}`}
+            />
+          </div>
+
+          <div
+            ref={bannerRef}
+            className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {/* 배너 1: 예상 자산 */}
+            <div className="min-w-full snap-start bg-white p-6 relative">
+              <div className="space-y-3 pb-12">
+                <div className="flex items-center gap-3 text-coolgray-700 text-lg font-medium">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-coolgray-200 border-coolgray-200 hover:border-coolgray-300"
+                      >
+                        {selectedYear}년 뒤
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-[120px]">
+                      <DropdownMenuItem onClick={() => setSelectedYear(1)}>1년 뒤</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSelectedYear(3)}>3년 뒤</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSelectedYear(5)}>5년 뒤</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSelectedYear(10)}>10년 뒤</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSelectedYear(30)}>30년 뒤</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <span className="text-coolgray-700 font-semibold">예상 자산</span>
+                </div>
+
+                <div className="text-coolgray-900 text-2xl font-extrabold tracking-tight leading-tight">
+                  {user && records.length > 0
+                    ? formatCurrency(totalExpectedAsset)
+                    : '0만원'}
+                </div>
+
+                {/* 만기 안내 문구 - 클릭하면 상세 시트 오픈 */}
+                {hasMaturedInvestments && records.length > 0 && (
+                  <button
+                    onClick={() => setShowCashHoldSheet(true)}
+                    className="flex items-center gap-1.5 w-full text-left group"
                   >
-                    {selectedYear}년 뒤
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[120px]">
-                  <DropdownMenuItem onClick={() => setSelectedYear(1)}>1년 뒤</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedYear(3)}>3년 뒤</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedYear(5)}>5년 뒤</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedYear(10)}>10년 뒤</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedYear(30)}>30년 뒤</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <span>예상 자산</span>
-            </div>
-            
-            {/* Main */}
-            <div className="text-coolgray-900 text-3xl font-bold leading-tight">
-              {user && records.length > 0
-                ? formatCurrency(totalExpectedAsset)
-                : '0만원'}
-            </div>
-            
-            {/* Footer */}
-            <div className="text-coolgray-700 text-lg font-medium flex items-center flex-wrap gap-1">
-              <span>매월</span>
-              <button
-                onClick={() => records.length > 0 && setShowContributionSheet(true)}
-                disabled={records.length === 0}
-                className="inline-flex items-center bg-brand-50 border border-brand-200 text-brand-600 font-bold px-3 py-0.5 rounded-full hover:bg-brand-100 hover:border-brand-300 transition-colors disabled:cursor-default disabled:bg-coolgray-50 disabled:border-coolgray-200 disabled:text-coolgray-400"
-              >
-                {user && records.length > 0
-                  ? formatCurrency(totalMonthlyPayment)
-                  : '0만원'}
-              </button>
-              <span>씩 심고 있어요</span>
+                    <IconInfoCircle className="w-4 h-4 text-coolgray-400 flex-shrink-0 group-hover:text-coolgray-500 transition-colors" />
+                    <p className="text-xs text-coolgray-400 leading-relaxed group-hover:text-coolgray-500 transition-colors">
+                      만기가 지난 상품은 현금으로 보관한다고 가정했어요.
+                    </p>
+                  </button>
+                )}
+              </div>
+
+              {/* 월 납입 요약 pill (우측 하단) */}
+              {records.length > 0 && (
+                <button
+                  onClick={() => setShowContributionSheet(true)}
+                  className="absolute right-6 bottom-6 inline-flex items-center rounded-full border border-brand-600 bg-brand-50 text-brand-700 font-semibold text-sm px-3 py-1.5 hover:bg-brand-100 transition-colors"
+                >
+                  월 {formatCurrency(totalMonthlyPayment)}씩 심는 중
+                </button>
+              )}
             </div>
 
-            {/* 만기 안내 문구 - 클릭하면 상세 시트 오픈 */}
-            {hasMaturedInvestments && records.length > 0 && (
-              <button
-                onClick={() => setShowCashHoldSheet(true)}
-                className="flex items-center gap-1.5 pt-2 border-t border-coolgray-100 w-full text-left group"
-              >
-                <IconInfoCircle className="w-4 h-4 text-coolgray-400 flex-shrink-0 group-hover:text-coolgray-500 transition-colors" />
-                <p className="text-xs text-coolgray-400 leading-relaxed group-hover:text-coolgray-500 transition-colors">
-                  만기가 지난 상품은 현금으로 보관한다고 가정했어요.
-                </p>
-              </button>
-            )}
+            {/* 배너 2: 임시 텍스트 */}
+            <div className="min-w-full snap-start bg-white p-6 flex items-center justify-center">
+              <p className="text-coolgray-700 font-semibold">2번째 배너입니다.</p>
+            </div>
           </div>
         </div>
 
@@ -375,7 +415,7 @@ export default function Home() {
             // sendGAEvent('event', 'click_add_investment_start')
             router.push('/add')
           }}
-          className="w-full bg-brand-600 text-white font-bold rounded-2xl py-4 shadow-lg flex items-center justify-center gap-2 hover:bg-brand-700 transition-colors"
+          className="w-full bg-brand-600 text-white font-bold rounded-2xl py-4 flex items-center justify-center gap-2 hover:bg-brand-700 transition-colors"
         >
           <IconPlus className="w-5 h-5" />
           투자 목록 추가하기
@@ -383,7 +423,7 @@ export default function Home() {
 
         {/* 하단 리스트 카드 */}
         {records.length > 0 ? (
-            <div className="bg-white rounded-3xl p-6 shadow-sm">
+            <div className="bg-white rounded-3xl p-6">
               <h2 className="text-lg font-bold text-coolgray-900 mb-4">
                 내 투자 목록
               </h2>
@@ -394,7 +434,7 @@ export default function Home() {
                 <div className="flex items-center gap-1.5 flex-1 overflow-x-auto">
                   <button
                     onClick={() => setFilterStatus('ALL')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+                    className={`px-3 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
                       filterStatus === 'ALL'
                         ? 'bg-coolgray-900 text-white'
                         : 'bg-coolgray-25 text-coolgray-600 hover:bg-coolgray-50'
@@ -404,7 +444,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => setFilterStatus('ACTIVE')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+                    className={`px-3 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
                       filterStatus === 'ACTIVE'
                         ? 'bg-coolgray-900 text-white'
                         : 'bg-coolgray-25 text-coolgray-600 hover:bg-coolgray-50'
@@ -414,7 +454,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={() => setFilterStatus('ENDED')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+                    className={`px-3 py-1 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
                       filterStatus === 'ENDED'
                         ? 'bg-coolgray-900 text-white'
                         : 'bg-coolgray-25 text-coolgray-600 hover:bg-coolgray-50'
@@ -471,7 +511,7 @@ export default function Home() {
             </div>
           ) : (
             /* Empty State */
-            <div className="bg-white rounded-3xl p-12 shadow-sm flex flex-col items-center justify-center text-center space-y-6">
+            <div className="bg-white rounded-3xl p-12 flex flex-col items-center justify-center text-center space-y-6">
               <p className="text-coolgray-500 text-lg">
                 아직 등록된 투자가 없어요
               </p>
