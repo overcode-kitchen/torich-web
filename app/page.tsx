@@ -18,6 +18,7 @@ import { Investment } from '@/app/types/investment'
 import InvestmentItem from '@/app/components/InvestmentItem'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
 import CashHoldItemsSheet from '@/app/components/CashHoldItemsSheet'
+import MonthlyContributionSheet from '@/app/components/MonthlyContributionSheet'
 
 export default function Home() {
   const router = useRouter()
@@ -30,6 +31,7 @@ export default function Home() {
   const [isUpdating, setIsUpdating] = useState(false) // 수정 중 상태
   const [detailItem, setDetailItem] = useState<Investment | null>(null) // 상세 보기 아이템
   const [showCashHoldSheet, setShowCashHoldSheet] = useState(false) // 현금 보관 항목 시트
+  const [showContributionSheet, setShowContributionSheet] = useState(false) // 월 납입 내역 시트
 
   const supabase = createClient()
 
@@ -298,14 +300,18 @@ export default function Home() {
             </div>
             
             {/* Footer */}
-            <div className="text-coolgray-700 text-lg font-medium">
-              매월{' '}
-              <span className="text-brand-600 font-semibold">
+            <div className="text-coolgray-700 text-lg font-medium flex items-center flex-wrap gap-1">
+              <span>매월</span>
+              <button
+                onClick={() => records.length > 0 && setShowContributionSheet(true)}
+                disabled={records.length === 0}
+                className="inline-flex items-center bg-brand-50 border border-brand-200 text-brand-600 font-bold px-3 py-0.5 rounded-full hover:bg-brand-100 hover:border-brand-300 transition-colors disabled:cursor-default disabled:bg-coolgray-50 disabled:border-coolgray-200 disabled:text-coolgray-400"
+              >
                 {user && records.length > 0
                   ? formatCurrency(totalMonthlyPayment)
                   : '0만원'}
-              </span>
-              씩 심고 있어요
+              </button>
+              <span>씩 심고 있어요</span>
             </div>
 
             {/* 만기 안내 문구 - 클릭하면 상세 시트 오픈 */}
@@ -380,6 +386,19 @@ export default function Home() {
           selectedYear={selectedYear}
           onClose={() => setShowCashHoldSheet(false)}
           calculateFutureValue={calculateSimulatedValue}
+        />
+      )}
+
+      {/* 월 납입 내역 시트 */}
+      {showContributionSheet && (
+        <MonthlyContributionSheet
+          items={records}
+          totalAmount={totalMonthlyPayment}
+          onClose={() => setShowContributionSheet(false)}
+          onEdit={() => {
+            setShowContributionSheet(false)
+            router.push('/add')
+          }}
         />
       )}
 
