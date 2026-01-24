@@ -35,10 +35,25 @@ export async function GET(request: Request) {
       suppressNotices: ['ripHistorical', 'yahooSurvey'] // 경고 메시지 숨기기
     })
 
-    // 10년치 월봉 데이터 조회 (chart API 사용)
-    const endDate = new Date()
-    const startDate = new Date()
-    startDate.setFullYear(endDate.getFullYear() - 10)
+    // ========================================
+    // [데이터 갱신 정책] 지난달 말일 기준 CAGR 계산
+    // ========================================
+    
+    // 1. 기준일 설정: 지난달 마지막 날 (lastMonthEnd)
+    // new Date(year, month, 0)은 해당 월의 0일 = 전월 말일
+    const today = new Date()
+    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0)
+    // 시간을 23:59:59로 설정하여 해당 날짜의 마감 시점으로 설정
+    lastMonthEnd.setHours(23, 59, 59, 999)
+    
+    // 2. 조회 기간 설정: lastMonthEnd 기준 10년 전 ~ lastMonthEnd
+    const endDate = lastMonthEnd
+    const startDate = new Date(lastMonthEnd)
+    startDate.setFullYear(startDate.getFullYear() - 10)
+    startDate.setHours(0, 0, 0, 0)
+
+    // 디버그: 조회 기간 로그
+    console.log(`[Stock API] ${symbol} | 조회 기간: ${startDate.toISOString().split('T')[0]} ~ ${endDate.toISOString().split('T')[0]} (지난달 말일 기준)`)
 
     // chart() API를 사용 (historical()은 deprecated)
     const chartResult = await yahooFinance.chart(symbol, {
@@ -47,7 +62,7 @@ export async function GET(request: Request) {
       interval: '1mo' // 월봉
     }) as any
 
-    const historicalData = chartResult.quotes
+    let historicalData = chartResult.quotes
 
     if (!historicalData || historicalData.length < 2) {
       return NextResponse.json(
@@ -56,7 +71,27 @@ export async function GET(request: Request) {
       )
     }
 
-    // CAGR 계산 (연평균 수익률)
+    // 3. 데이터 필터링 (Pop Logic): 지난달 말일 이후 데이터 제거
+    // 마지막 데이터가 lastMonthEnd보다 이후(이번 달 진행 중 데이터)라면 제거
+    const lastDataDate = new Date(historicalData[historicalData.length - 1].date)
+    
+    // 월 단위 비교: lastDataDate의 연월이 lastMonthEnd 연월보다 이후인지 확인
+    const lastDataYearMonth = lastDataDate.getFullYear() * 12 + lastDataDate.getMonth()
+    const lastMonthEndYearMonth = lastMonthEnd.getFullYear() * 12 + lastMonthEnd.getMonth()
+    
+    if (lastDataYearMonth > lastMonthEndYearMonth) {
+      console.log(`[Stock API] ${symbol} | 이번 달 데이터 제거: ${lastDataDate.toISOString().split('T')[0]}`)
+      historicalData = historicalData.slice(0, -1) // 마지막 요소 제거
+    }
+
+    if (historicalData.length < 2) {
+      return NextResponse.json(
+        { error: '충분한 히스토리 데이터가 없습니다.' },
+        { status: 404 }
+      )
+    }
+
+    // 4. CAGR 계산 (연평균 수익률)
     const initialPrice = historicalData[0].close
     const finalPrice = historicalData[historicalData.length - 1].close
 
@@ -64,7 +99,7 @@ export async function GET(request: Request) {
       throw new Error('가격 데이터가 유효하지 않습니다.')
     }
 
-    // 실제 기간 (년 단위)
+    // 실제 기간 (년 단위) - 필터링된 데이터 기준으로 정밀 계산
     const initialDate = new Date(historicalData[0].date)
     const finalDate = new Date(historicalData[historicalData.length - 1].date)
     const yearsElapsed = (finalDate.getTime() - initialDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
@@ -84,7 +119,8 @@ export async function GET(request: Request) {
     const currentPrice = quote.regularMarketPrice || finalPrice
 
     // 디버그 로그: CAGR 계산 핵심 정보
-    console.log(`[Stock API] ${symbol} | 기간: ${yearsElapsed.toFixed(1)}년 | 가격: ${initialPrice.toFixed(2)} → ${finalPrice.toFixed(2)} | CAGR: ${averageRate}%`)
+    console.log(`[Stock API] ${symbol} | 실제 데이터 기간: ${initialDate.toISOString().split('T')[0]} ~ ${finalDate.toISOString().split('T')[0]} (${yearsElapsed.toFixed(1)}년)`)
+    console.log(`[Stock API] ${symbol} | 가격: ${initialPrice.toFixed(2)} → ${finalPrice.toFixed(2)} | CAGR: ${averageRate}%`)
 
     // 응답 포맷 (Supabase에서 조회한 name 사용)
     return NextResponse.json({
