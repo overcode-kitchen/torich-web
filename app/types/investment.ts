@@ -4,6 +4,7 @@
 export interface Investment {
   id: string
   title: string
+  symbol?: string | null
   monthly_amount: number
   period_years: number
   annual_rate: number
@@ -11,6 +12,7 @@ export interface Investment {
   created_at: string
   start_date?: string // 투자 시작일 (없으면 created_at 사용)
   investment_days?: number[] // 매월 투자하는 날짜들 (예: [5, 25] = 매월 5일, 25일)
+  is_custom_rate?: boolean | null // 수익률 직접 입력/수정 여부
 }
 
 /**
