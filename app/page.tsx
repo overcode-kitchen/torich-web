@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { IconPlus, IconLogout, IconUser, IconLoader2 } from '@tabler/icons-react'
+import { IconPlus, IconLogout, IconUser, IconLoader2, IconInfoCircle } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import { formatCurrency } from '@/lib/utils'
 import { Investment } from '@/app/types/investment'
 import InvestmentItem from '@/app/components/InvestmentItem'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
+import CashHoldItemsSheet from '@/app/components/CashHoldItemsSheet'
 
 export default function Home() {
   const router = useRouter()
@@ -28,6 +29,7 @@ export default function Home() {
   const [isDeleting, setIsDeleting] = useState(false) // 삭제 중 상태
   const [isUpdating, setIsUpdating] = useState(false) // 수정 중 상태
   const [detailItem, setDetailItem] = useState<Investment | null>(null) // 상세 보기 아이템
+  const [showCashHoldSheet, setShowCashHoldSheet] = useState(false) // 현금 보관 항목 시트
 
   const supabase = createClient()
 
@@ -59,11 +61,12 @@ export default function Home() {
   }
 
   // 선택된 연도 기준 자산 계산
-  const { totalExpectedAsset, totalMonthlyPayment } = useMemo(() => {
+  const { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments } = useMemo(() => {
     if (records.length === 0) {
       return {
         totalExpectedAsset: 0,
-        totalMonthlyPayment: 0
+        totalMonthlyPayment: 0,
+        hasMaturedInvestments: false
       }
     }
 
@@ -81,9 +84,13 @@ export default function Home() {
       return sum + record.monthly_amount
     }, 0)
 
+    // 선택한 기간보다 만기가 짧은 투자가 있는지 확인
+    const hasMaturedInvestments = records.some(record => record.period_years < selectedYear)
+
     return {
       totalExpectedAsset,
-      totalMonthlyPayment
+      totalMonthlyPayment,
+      hasMaturedInvestments
     }
   }, [records, selectedYear])
 
@@ -300,6 +307,19 @@ export default function Home() {
               </span>
               씩 심고 있어요
             </div>
+
+            {/* 만기 안내 문구 - 클릭하면 상세 시트 오픈 */}
+            {hasMaturedInvestments && records.length > 0 && (
+              <button
+                onClick={() => setShowCashHoldSheet(true)}
+                className="flex items-center gap-1.5 pt-2 border-t border-coolgray-100 w-full text-left group"
+              >
+                <IconInfoCircle className="w-4 h-4 text-coolgray-400 flex-shrink-0 group-hover:text-coolgray-500 transition-colors" />
+                <p className="text-xs text-coolgray-400 leading-relaxed group-hover:text-coolgray-500 transition-colors">
+                  만기가 지난 상품은 현금으로 보관한다고 가정했어요.
+                </p>
+              </button>
+            )}
           </div>
         </div>
 
@@ -352,6 +372,16 @@ export default function Home() {
             </div>
           )}
       </div>
+
+      {/* 현금 보관 항목 시트 */}
+      {showCashHoldSheet && (
+        <CashHoldItemsSheet
+          items={records}
+          selectedYear={selectedYear}
+          onClose={() => setShowCashHoldSheet(false)}
+          calculateFutureValue={calculateSimulatedValue}
+        />
+      )}
 
       {/* 투자 상세 페이지 */}
       {detailItem && (
