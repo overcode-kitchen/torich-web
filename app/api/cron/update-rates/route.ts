@@ -1,6 +1,22 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// [Helper] 날짜를 한국 시간(KST) 기준의 연월 값(year*12+month)으로 변환
+// 어떤 타임존의 서버에서 실행되든, 강제로 KST 기준으로 판단
+function getKSTYearMonth(dateStr: string | Date): number {
+  const date = new Date(dateStr)
+  // UTC 시간에 9시간(KST)을 더해서 한국 시간으로 변환
+  const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000)
+  return kstDate.getUTCFullYear() * 12 + kstDate.getUTCMonth()
+}
+
+// [Helper] 날짜를 KST 기준 년/월 문자열로 변환 (로그용)
+function getKSTDateString(dateStr: string | Date): string {
+  const date = new Date(dateStr)
+  const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000)
+  return `${kstDate.getUTCFullYear()}년 ${kstDate.getUTCMonth() + 1}월`
+}
+
 // CAGR 계산 함수 (지난달 말일 기준, 정확히 10년)
 // The 15th Strategy: 월 중간(15일)으로 설정해 타임존 이슈 방지
 async function calculateCAGR(symbol: string): Promise<number | null> {
@@ -46,45 +62,47 @@ async function calculateCAGR(symbol: string): Promise<number | null> {
       return null
     }
 
-    // 3. 안전장치: 범위를 벗어난 데이터 제거
-    const currentYearMonth = today.getFullYear() * 12 + today.getMonth()
+    // 3. 안전장치: 범위를 벗어난 데이터 제거 (KST 기준으로 통일)
+    // 기준일(today)도 KST 기준으로 계산
+    const todayKST = new Date(today.getTime() + 9 * 60 * 60 * 1000)
+    const currentYearMonth = todayKST.getUTCFullYear() * 12 + todayKST.getUTCMonth()
     const targetStartYearMonth = (endYear - 10) * 12 + (endMonth + 1)
     
-    // 시작 데이터가 목표 시작월보다 이전이면 제거
+    // 시작 데이터가 목표 시작월보다 이전이면 제거 (KST 기준)
     while (historicalData.length > 0) {
       const firstData = historicalData[0]
-      const firstDate = new Date(firstData.date)
-      const firstYearMonth = firstDate.getFullYear() * 12 + firstDate.getMonth()
+      const firstYearMonth = getKSTYearMonth(firstData.date)
       
       if (firstYearMonth < targetStartYearMonth) {
+        console.log(`[CRON CAGR] ${symbol} | [Safety] 목표 시작월 이전 데이터 제거: ${getKSTDateString(firstData.date)}`)
         historicalData.shift()
       } else {
         break
       }
     }
     
-    // 마지막 데이터가 현재 월 이상이면 제거
+    // 마지막 데이터가 현재 월 이상이면 제거 (KST 기준)
     let lastData = historicalData[historicalData.length - 1]
-    let lastDataDate = new Date(lastData.date)
-    let lastDataYearMonth = lastDataDate.getFullYear() * 12 + lastDataDate.getMonth()
+    let lastDataYearMonth = getKSTYearMonth(lastData.date)
     
     if (lastDataYearMonth >= currentYearMonth) {
+      console.log(`[CRON CAGR] ${symbol} | [Safety] 이번 달 이상의 데이터 제거: ${getKSTDateString(lastData.date)}`)
       historicalData.pop()
       lastData = historicalData[historicalData.length - 1]
-      lastDataDate = new Date(lastData.date)
-      lastDataYearMonth = lastDataDate.getFullYear() * 12 + lastDataDate.getMonth()
+      lastDataYearMonth = getKSTYearMonth(lastData.date)
     }
 
     if (historicalData.length < 2) {
       return null
     }
 
-    // ========== 정제된 데이터 로그 (Safety Logic 이후) ==========
+    // ========== 정제된 데이터 로그 (Safety Logic 이후, KST 기준) ==========
     const firstData = historicalData[0]
     const firstDate = new Date(firstData.date)
+    const lastDataDate = new Date(lastData.date)
     console.log(`[CRON CAGR] ${symbol} | RESPONSE(정제후): ${historicalData.length}개월 데이터`)
-    console.log(`[CRON CAGR] ${symbol} | 첫번째(시작): ${firstDate.getFullYear()}년 ${firstDate.getMonth() + 1}월, close=${firstData.close?.toFixed(0) || 'N/A'}`)
-    console.log(`[CRON CAGR] ${symbol} | 마지막(끝): ${lastDataDate.getFullYear()}년 ${lastDataDate.getMonth() + 1}월, close=${lastData.close?.toFixed(0) || 'N/A'}`)
+    console.log(`[CRON CAGR] ${symbol} | 첫번째(시작): ${getKSTDateString(firstData.date)}, close=${firstData.close?.toFixed(0) || 'N/A'}`)
+    console.log(`[CRON CAGR] ${symbol} | 마지막(끝): ${getKSTDateString(lastData.date)}, close=${lastData.close?.toFixed(0) || 'N/A'}`)
 
     // CAGR 계산 - 단순 종가(close) 사용
     const initialPrice = firstData.close
