@@ -291,14 +291,17 @@ export async function GET(request: Request) {
     const lastMonthEndISO = getLastMonthEndISO()
 
     // 갱신이 필요한 레코드가 있는지 확인
-    const { count, error } = await supabase
+    const { data: needsUpdateRecords, count, error } = await supabase
       .from('records')
-      .select('id', { count: 'exact', head: true })
+      .select('id, title, is_custom_rate, rate_updated_at', { count: 'exact' })
       .eq('user_id', userId)
       .eq('is_custom_rate', false)
       .or(`rate_updated_at.is.null,rate_updated_at.lt.${lastMonthEndISO}`)
 
+    console.log(`[Update Rates Check] 갱신 필요 레코드:`, needsUpdateRecords)
+
     if (error) {
+      console.error(`[Update Rates Check] 쿼리 오류:`, error)
       throw error
     }
 
