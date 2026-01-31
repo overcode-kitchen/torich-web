@@ -127,3 +127,19 @@ export function generatePortfolioGrowthData(
 
   return data
 }
+
+/** 마일스톤 연도 목록 (1년, 3년, 5년, 10년, 최종) */
+export function getMilestoneYears(selectedYear: number): number[] {
+  const candidates = [1, 3, 5, 10, selectedYear]
+  return [...new Set(candidates)].filter((y) => y <= selectedYear).sort((a, b) => a - b)
+}
+
+/** 전체 데이터에서 마일스톤 시점만 추출 */
+export function getMilestoneChartData(
+  fullData: ChartDataPoint[],
+  selectedYear: number
+): ChartDataPoint[] {
+  const years = getMilestoneYears(selectedYear)
+  const targetMonths = new Set(years.map((y) => y * 12))
+  return fullData.filter((d) => targetMonths.has(d.month))
+}
