@@ -19,6 +19,7 @@ import InvestmentItem from '@/app/components/InvestmentItem'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
 import CashHoldItemsSheet from '@/app/components/CashHoldItemsSheet'
 import MonthlyContributionSheet from '@/app/components/MonthlyContributionSheet'
+import CompoundChart from '@/app/components/CompoundChart'
 import { isCompleted } from '@/app/utils/date'
 
 export default function Home() {
@@ -422,6 +423,40 @@ export default function Home() {
           <IconPlus className="w-5 h-5" />
           투자 목록 추가하기
         </button>
+
+        {/* 예상 수익 차트 카드 */}
+        {records.length > 0 && (
+          <div className="bg-white rounded-3xl p-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-coolgray-700 text-lg font-medium">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-coolgray-200 border-coolgray-200 hover:border-coolgray-300"
+                    >
+                      {selectedYear}년 뒤
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[120px]">
+                    <DropdownMenuItem onClick={() => setSelectedYear(1)}>1년 뒤</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSelectedYear(3)}>3년 뒤</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSelectedYear(5)}>5년 뒤</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSelectedYear(10)}>10년 뒤</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSelectedYear(30)}>30년 뒤</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <span className="text-coolgray-700 font-semibold">예상 수익 차트</span>
+              </div>
+
+              <CompoundChart
+                investments={records}
+                selectedYear={selectedYear}
+                totalMonthlyPayment={totalMonthlyPayment}
+              />
+            </div>
+          </div>
+        )}
 
         {/* 하단 리스트 카드 */}
         {records.length > 0 ? (
