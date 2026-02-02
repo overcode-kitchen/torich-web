@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { formatCurrency } from '@/lib/utils'
 import { IconArrowLeft, IconPencil, IconTrash, IconCheck, IconX, IconInfoCircle, IconDotsVertical, IconBell, IconBellOff } from '@tabler/icons-react'
 import { Investment, getStartDate, formatInvestmentDays } from '@/app/types/investment'
@@ -22,7 +22,7 @@ import {
   getNextPaymentDate,
   isCompleted
 } from '@/app/utils/date'
-import { getPaymentHistory } from '@/app/utils/payment-history'
+import { getPaymentHistoryFromStart } from '@/app/utils/payment-history'
 import {
   Table,
   TableBody,
@@ -71,6 +71,9 @@ export default function InvestmentDetailView({
   const [editInvestmentDays, setEditInvestmentDays] = useState<number[]>([])
   const [isDaysPickerOpen, setIsDaysPickerOpen] = useState(false)
   const [isRateManuallyEdited, setIsRateManuallyEdited] = useState(false)
+  const [visiblePaymentMonths, setVisiblePaymentMonths] = useState(6)
+  const [showStickyTitle, setShowStickyTitle] = useState(false)
+  const titleRef = useRef<HTMLDivElement>(null)
   
   // 원본 수익률 저장 (비교용)
   const originalRate = item.annual_rate || 10
@@ -107,6 +110,32 @@ export default function InvestmentDetailView({
       setIsRateManuallyEdited(false)
     }
   }, [isEditMode, item])
+
+  // 종목 변경 시 월별 납입 페이징 초기화
+  useEffect(() => {
+    setVisiblePaymentMonths(6)
+  }, [item.id])
+
+  // 스크롤 시 종목명 고정 감지
+  useEffect(() => {
+    if (!titleRef.current) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyTitle(!entry.isIntersecting)
+      },
+      {
+        threshold: 0,
+        rootMargin: '-52px 0px 0px 0px', // 헤더 높이만큼 여유
+      }
+    )
+
+    observer.observe(titleRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   // 시작일 추출
   const startDate = getStartDate(item)
@@ -155,8 +184,15 @@ export default function InvestmentDetailView({
     isEditMode ? editInvestmentDays : item.investment_days
   )
   
-  // 투자 히스토리 (최근 6개월)
-  const paymentHistory = getPaymentHistory(item.id, 6)
+  // 투자 히스토리 (시작일부터) - 해당 월의 모든 납입일이 완료된 경우에만 완료로 표시
+  const fullPaymentHistory = getPaymentHistoryFromStart(
+    item.id,
+    item.investment_days ?? undefined,
+    item.start_date ?? item.created_at ?? undefined,
+    item.period_years
+  )
+  const paymentHistory = fullPaymentHistory.slice(0, visiblePaymentMonths)
+  const hasMorePaymentHistory = visiblePaymentMonths < fullPaymentHistory.length
 
   // 숫자만 입력 허용
   const handleNumericInput = (value: string, setter: (v: string) => void) => {
@@ -201,17 +237,23 @@ export default function InvestmentDetailView({
 
   return (
     <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
-      {/* 헤더 */}
-      <header className="h-[52px] flex items-center justify-between px-4 bg-white sticky top-0 z-10">
+      {/* 헤더 - 스크롤 시에도 종목명 고정 */}
+      <header className="h-[52px] flex items-center justify-between px-4 bg-white sticky top-0 z-10 border-b border-coolgray-100">
         <button
           onClick={onBack}
-          className="p-2 text-coolgray-800 hover:text-coolgray-900 transition-colors"
+          className="p-2 text-coolgray-800 hover:text-coolgray-900 transition-colors -ml-1"
           aria-label="뒤로가기"
         >
           <IconArrowLeft className="w-6 h-6" stroke={1.5} />
         </button>
+        {showStickyTitle && (
+          <h1 className="flex-1 text-center text-base font-semibold tracking-tight text-coolgray-900 truncate mx-2">
+            {item.title}
+          </h1>
+        )}
+        {!showStickyTitle && <div className="flex-1" />}
 
-        {!isEditMode && (
+        {!isEditMode ? (
           <div className="flex items-center -mr-1">
             <button
               type="button"
@@ -248,18 +290,20 @@ export default function InvestmentDetailView({
             </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        ) : (
+          <div className="w-10" />
         )}
       </header>
 
       {/* 콘텐츠 */}
-      <div className="max-w-md mx-auto px-4 pb-10">
+      <div className="max-w-md mx-auto px-4 pb-12">
         {/* 메인 카드(p-6)와 동일한 내부 여백(24px) */}
         <div className="px-6">
           <div className="divide-y divide-coolgray-100">
             {/* 종목명 & 상태 + 다음 투자일 */}
-            <section className="py-5 space-y-4">
-              <div>
-                <h2 className="text-2xl font-bold text-coolgray-900 mb-2">
+            <section className="py-6 space-y-4">
+              <div ref={titleRef}>
+                <h2 className="text-3xl font-semibold tracking-tight text-coolgray-900 mb-3">
                   {item.title}
                 </h2>
                 {isEditMode ? (
@@ -271,65 +315,21 @@ export default function InvestmentDetailView({
                 )}
               </div>
               {!isEditMode && nextPaymentDate && (
-                <div className="py-4 bg-brand-50 rounded-xl px-4 -mx-1">
-                  <p className="text-sm text-coolgray-600 mb-0.5">다음 투자일</p>
-                  <p className="text-xl font-bold text-brand-600">
+                <div className="py-5 px-5 bg-brand-50 rounded-xl -mx-1">
+                  <p className="text-sm text-coolgray-600 mb-1">다음 투자일</p>
+                  <p className="text-2xl font-bold tracking-tight text-brand-600">
                     📅 {formatNextPaymentDate(nextPaymentDate)}
                   </p>
                 </div>
               )}
             </section>
 
-            {/* 투자 히스토리 (최근 6개월) - 테이블 형식 */}
-            {!isEditMode && paymentHistory.length > 0 && (
-              <section className="py-5">
-                <h3 className="text-sm font-bold text-coolgray-900 mb-3">월별 납입 기록</h3>
-                <div className="overflow-x-auto rounded-lg">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-coolgray-200 hover:bg-transparent">
-                        <TableHead className="text-coolgray-600 font-semibold">월</TableHead>
-                        <TableHead className="text-coolgray-600 font-semibold">투자일</TableHead>
-                        <TableHead className="text-coolgray-600 font-semibold">납입 금액</TableHead>
-                        <TableHead className="text-coolgray-600 font-semibold">상태</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paymentHistory.map(({ monthLabel, yearMonth, completed: monthCompleted }) => (
-                        <TableRow key={yearMonth} className="border-coolgray-100">
-                          <TableCell className="font-medium text-coolgray-900">{monthLabel}</TableCell>
-                          <TableCell className="text-coolgray-600 text-xs">
-                            {item.investment_days && item.investment_days.length > 0
-                              ? [...item.investment_days].sort((a, b) => a - b).map((d) => {
-                                  const [y, m] = yearMonth.split('-')
-                                  return `${y}.${m}.${String(d).padStart(2, '0')}`
-                                }).join(', ')
-                              : '-'}
-                          </TableCell>
-                          <TableCell className="text-coolgray-600">
-                            {formatCurrency(item.monthly_amount)}
-                          </TableCell>
-                          <TableCell>
-                            {monthCompleted ? (
-                              <span className="text-green-600 font-medium">✓ 완료</span>
-                            ) : (
-                              <span className="text-red-500 font-medium">✗ 미완료</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </section>
-            )}
-
             {/* 진행률 - 수정 모드에서는 숨김 */}
             {!isEditMode && (
-              <section className="py-5">
-                <div className="flex justify-between text-sm text-coolgray-500 mb-3">
+              <section className="py-6">
+                <div className="flex justify-between text-base text-coolgray-500 mb-3">
                   <span className="font-medium">진행률</span>
-                  <span className="font-bold text-coolgray-900 text-lg">{progress}%</span>
+                  <span className="font-bold text-coolgray-900">{progress}%</span>
                 </div>
                 <div className="w-full h-4 bg-coolgray-100 rounded-full overflow-hidden">
                   <div 
@@ -346,27 +346,16 @@ export default function InvestmentDetailView({
               </section>
             )}
 
-            {/* 만기 시 예상 금액 */}
-            <section className="py-5">
-              <h3 className="text-sm font-medium text-coolgray-500 mb-2">만기 시 예상 금액</h3>
-              <div className="text-3xl font-bold text-coolgray-900 mb-3">
-                {formatCurrency(calculatedFutureValue)}
-              </div>
-              <div className="inline-block bg-[#E0F8E8] text-green-600 rounded-full px-4 py-1.5 text-sm font-semibold">
-                + {formatCurrency(calculatedProfit)} 수익
-              </div>
-            </section>
-
             {/* 투자 정보 / 수정 폼 */}
-            <section className="py-5">
-              <h3 className="text-base font-bold text-coolgray-900 mb-4">
+            <section className="py-6">
+              <h3 className="text-lg font-semibold tracking-tight text-coolgray-900 mb-4">
                 {isEditMode ? '투자 정보 수정' : '투자 정보'}
               </h3>
               <div className="space-y-6">
               {/* 월 투자금 */}
               {isEditMode ? (
                 <div className="space-y-1.5">
-                  <label className="block text-coolgray-900 font-bold text-sm">월 투자금</label>
+                  <label className="block text-coolgray-900 font-bold text-base">월 투자금</label>
                   <InputWithUnit
                     value={editMonthlyAmount}
                     onChange={(e) => handleNumericInput(e.target.value, setEditMonthlyAmount)}
@@ -375,7 +364,7 @@ export default function InvestmentDetailView({
                   />
                 </div>
               ) : (
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center text-base">
                   <span className="text-coolgray-500">월 투자금</span>
                   <span className="font-semibold text-coolgray-900">
                     {formatCurrency(item.monthly_amount)}
@@ -386,7 +375,7 @@ export default function InvestmentDetailView({
             {/* 목표 기간 */}
             {isEditMode ? (
               <div className="space-y-1.5">
-                <label className="block text-coolgray-900 font-bold text-sm">목표 기간</label>
+                <label className="block text-coolgray-900 font-bold text-base">목표 기간</label>
                 <InputWithUnit
                   value={editPeriodYears}
                   onChange={(e) => handleNumericInput(e.target.value, setEditPeriodYears)}
@@ -395,7 +384,7 @@ export default function InvestmentDetailView({
                 />
               </div>
             ) : (
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center text-base">
                 <span className="text-coolgray-500">목표 기간</span>
                 <span className="font-semibold text-coolgray-900">
                   {item.period_years}년
@@ -407,7 +396,7 @@ export default function InvestmentDetailView({
             {isEditMode ? (
               <div className="space-y-1.5">
                 <div className="flex items-center gap-1.5">
-                  <label className="block text-coolgray-900 font-bold text-sm">연 수익률</label>
+                  <label className="block text-coolgray-900 font-bold text-base">연 수익률</label>
                   <div className="group relative">
                     <IconInfoCircle className="w-4 h-4 text-coolgray-400" aria-hidden />
                     <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block w-48 p-2 bg-coolgray-800 text-white text-xs rounded-lg z-10">
@@ -439,7 +428,7 @@ export default function InvestmentDetailView({
                 </div>
               </div>
             ) : (
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center text-base">
                 <div className="flex items-center gap-1.5">
                   <span className="text-coolgray-500">연 수익률</span>
                 </div>
@@ -457,7 +446,7 @@ export default function InvestmentDetailView({
             {/* 매월 투자일 */}
             {isEditMode ? (
               <div className="space-y-1.5">
-                <label className="block text-coolgray-900 font-bold text-sm">
+                <label className="block text-coolgray-900 font-bold text-base">
                   매월 투자일
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -486,7 +475,7 @@ export default function InvestmentDetailView({
                 </div>
               </div>
             ) : (
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center text-base">
                 <span className="text-coolgray-500">매월 투자일</span>
                 <span className="font-semibold text-coolgray-900">
                   {formatInvestmentDays(item.investment_days)}
@@ -497,7 +486,7 @@ export default function InvestmentDetailView({
             <div className="border-t border-coolgray-100 my-2" />
             
             {/* 총 원금 */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center text-base">
               <span className="text-coolgray-500">총 원금</span>
               <span className="font-semibold text-coolgray-900">
                 {formatCurrency(totalPrincipal)}
@@ -505,14 +494,77 @@ export default function InvestmentDetailView({
             </div>
             
             {/* 예상 수익 */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center text-base">
               <span className="text-coolgray-500">예상 수익</span>
               <span className="font-semibold text-green-600">
                 + {formatCurrency(calculatedProfit)}
               </span>
             </div>
+
+            {/* 만기 시 예상 금액 */}
+            <div className="flex justify-between items-center text-base">
+              <span className="text-coolgray-500">만기 시 예상 금액</span>
+              <span className="font-semibold text-coolgray-900">
+                {formatCurrency(calculatedFutureValue)}
+              </span>
+            </div>
               </div>
             </section>
+
+            {/* 월별 납입 기록 - 하단 배치, 시작일부터, 페이징 */}
+            {!isEditMode && fullPaymentHistory.length > 0 && (
+              <section className="py-6">
+                <h3 className="text-lg font-semibold tracking-tight text-coolgray-900 mb-3">월별 납입 기록</h3>
+                <div className="overflow-x-auto rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-coolgray-200 hover:bg-transparent">
+                        <TableHead className="text-coolgray-600 font-semibold text-sm">월</TableHead>
+                        <TableHead className="text-coolgray-600 font-semibold text-sm">투자일</TableHead>
+                        <TableHead className="text-coolgray-600 font-semibold text-sm">납입 금액</TableHead>
+                        <TableHead className="text-coolgray-600 font-semibold text-sm">상태</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paymentHistory.map(({ monthLabel, yearMonth, completed: monthCompleted }) => (
+                        <TableRow key={yearMonth} className="border-coolgray-100">
+                          <TableCell className="font-medium text-coolgray-900 text-sm">
+                            {yearMonth.replace('-', '.')}
+                          </TableCell>
+                          <TableCell className="text-coolgray-600 text-sm">
+                            {item.investment_days && item.investment_days.length > 0
+                              ? [...item.investment_days].sort((a, b) => a - b).map((d) => {
+                                  const [y, m] = yearMonth.split('-')
+                                  return `${y}.${m}.${String(d).padStart(2, '0')}`
+                                }).join(', ')
+                              : '-'}
+                          </TableCell>
+                          <TableCell className="text-coolgray-600 text-sm">
+                            {formatCurrency(item.monthly_amount)}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {monthCompleted ? (
+                              <span className="text-green-600 font-medium" title="해당 월 납입 완료됨">✓ 완료됨</span>
+                            ) : (
+                              <span className="text-red-500 font-medium" title="해당 월 납입 미완료">✗ 미완료</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {hasMorePaymentHistory && (
+                  <button
+                    type="button"
+                    onClick={() => setVisiblePaymentMonths((prev) => prev + 10)}
+                    className="mt-3 w-full py-2.5 text-sm font-medium text-coolgray-600 bg-coolgray-50 hover:bg-coolgray-100 rounded-lg transition-colors"
+                  >
+                    이어서 보기
+                  </button>
+                )}
+              </section>
+            )}
           </div>
         </div>
 
@@ -558,7 +610,7 @@ export default function InvestmentDetailView({
           <div className="relative z-[60] w-full max-w-md mx-4 bg-white rounded-2xl shadow-lg p-6">
             {/* 헤더 */}
             <div className="mb-4">
-              <h2 className="text-lg font-bold text-coolgray-900 mb-2">
+              <h2 className="text-xl font-semibold tracking-tight text-coolgray-900 mb-3">
                 정말 삭제하시겠습니까?
               </h2>
               <p className="text-sm text-gray-500">
@@ -571,14 +623,14 @@ export default function InvestmentDetailView({
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={isDeleting}
-                className="flex-1 py-3 text-sm font-medium text-coolgray-700 bg-coolgray-100 rounded-xl hover:bg-coolgray-200 transition-colors disabled:opacity-50"
+                className="flex-1 py-3 text-base font-medium text-coolgray-700 bg-coolgray-100 rounded-xl hover:bg-coolgray-200 transition-colors disabled:opacity-50"
               >
                 취소
               </button>
               <button
                 onClick={onDelete}
                 disabled={isDeleting}
-                className="flex-1 py-3 text-sm font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+                className="flex-1 py-3 text-base font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
               >
                 {isDeleting ? '삭제 중...' : '삭제'}
               </button>
