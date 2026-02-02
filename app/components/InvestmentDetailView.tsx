@@ -238,7 +238,7 @@ export default function InvestmentDetailView({
   return (
     <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
       {/* 헤더 - 스크롤 시에도 종목명 고정 */}
-      <header className="h-[52px] flex items-center justify-between px-4 bg-white sticky top-0 z-10 border-b border-coolgray-100">
+      <header className="h-[52px] flex items-center justify-between px-6 bg-white sticky top-0 z-10 border-b border-coolgray-100">
         <button
           onClick={onBack}
           className="p-2 text-coolgray-800 hover:text-coolgray-900 transition-colors -ml-1"
@@ -295,11 +295,9 @@ export default function InvestmentDetailView({
         )}
       </header>
 
-      {/* 콘텐츠 */}
-      <div className="max-w-md mx-auto px-4 pb-12">
-        {/* 메인 카드(p-6)와 동일한 내부 여백(24px) */}
-        <div className="px-6">
-          <div className="divide-y divide-coolgray-100">
+      {/* 콘텐츠 - 좌우 24px 단일 여백 */}
+      <div className="max-w-md mx-auto px-6 pb-12">
+        <div className="divide-y divide-coolgray-100">
             {/* 종목명 & 상태 + 다음 투자일 */}
             <section className="py-6 space-y-4">
               <div ref={titleRef}>
@@ -315,7 +313,7 @@ export default function InvestmentDetailView({
                 )}
               </div>
               {!isEditMode && nextPaymentDate && (
-                <div className="py-5 px-5 bg-brand-50 rounded-xl -mx-1">
+                <div className="py-5 px-5 bg-brand-50 rounded-xl">
                   <p className="text-sm text-coolgray-600 mb-1">다음 투자일</p>
                   <p className="text-2xl font-bold tracking-tight text-brand-600">
                     📅 {formatNextPaymentDate(nextPaymentDate)}
@@ -566,7 +564,6 @@ export default function InvestmentDetailView({
               </section>
             )}
           </div>
-        </div>
 
         {/* 하단 버튼 - 편집 모드에서만 */}
         {isEditMode && (
