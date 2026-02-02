@@ -165,8 +165,9 @@ export default function AssetGrowthChart({
             barCategoryGap="20%"
             barGap={4}
             onClick={(state) => {
-              if (state?.activePayload?.[0]?.payload) {
-                setSelectedBar(state.activePayload[0].payload as BarDataPoint)
+              const idx = state?.activeTooltipIndex ?? state?.activeIndex
+              if (typeof idx === 'number' && barData[idx]) {
+                setSelectedBar(barData[idx])
               }
             }}
           >
