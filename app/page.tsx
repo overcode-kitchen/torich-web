@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { IconPlus, IconLogout, IconUser, IconLoader2, IconInfoCircle, IconChevronDown } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,8 @@ import CashHoldItemsSheet from '@/app/components/CashHoldItemsSheet'
 import MonthlyContributionSheet from '@/app/components/MonthlyContributionSheet'
 import AssetGrowthChart from '@/app/components/AssetGrowthChart'
 import UpcomingInvestments from '@/app/components/UpcomingInvestments'
-import { isCompleted, getUpcomingPayments, getDaysUntilNextPayment } from '@/app/utils/date'
+import { isCompleted, getDaysUntilNextPayment } from '@/app/utils/date'
+import { getThisMonthStats } from '@/app/utils/stats'
 
 export default function Home() {
   const router = useRouter()
@@ -107,18 +109,15 @@ export default function Home() {
     }
   }, [records, selectedYear])
 
-  // 다가오는 투자 (7일 이내, 진행 중인 투자만)
-  const upcomingItems = useMemo(() => {
-    const activeRecords = records.filter((item) => {
-      const startDate = getStartDate(item)
-      return !isCompleted(startDate, item.period_years)
-    })
-    const payments = getUpcomingPayments(activeRecords, 7)
-    return payments.map((p) => {
-      const inv = records.find((r) => r.id === p.id)!
-      return { investment: inv, paymentDate: p.paymentDate, dayOfMonth: p.dayOfMonth }
+  // 이번 달 납입 현황 (진행 중인 투자만)
+  const activeRecords = useMemo(() => {
+    return records.filter((r) => {
+      const start = getStartDate(r)
+      return !isCompleted(start, r.period_years)
     })
   }, [records])
+  const thisMonthStats = useMemo(() => getThisMonthStats(activeRecords), [activeRecords])
+
 
   // 필터링 및 정렬된 투자 목록
   const filteredAndSortedRecords = useMemo(() => {
@@ -510,8 +509,8 @@ export default function Home() {
         </div>
 
         {/* 다가오는 투자 섹션 */}
-        {upcomingItems.length > 0 && (
-          <UpcomingInvestments items={upcomingItems} />
+        {activeRecords.length > 0 && (
+          <UpcomingInvestments records={activeRecords} />
         )}
 
         {/* 투자 목록 추가하기 버튼 */}
@@ -526,6 +525,20 @@ export default function Home() {
           <IconPlus className="w-5 h-5" />
           투자 목록 추가하기
         </button>
+
+        {/* 이번 달 현황 카드 (간략) - 탭 시 /stats 이동 */}
+        {records.length > 0 && thisMonthStats.total > 0 && (
+          <Link
+            href="/stats"
+            className="block bg-white rounded-2xl p-4 border border-coolgray-100 hover:border-coolgray-200 transition-colors"
+          >
+            <p className="text-sm font-semibold text-coolgray-700 mb-1">이번 달 납입</p>
+            <p className="text-lg font-bold text-coolgray-900">
+              {thisMonthStats.total}건 중 {thisMonthStats.completed}건 완료
+            </p>
+            <p className="text-xs text-coolgray-500 mt-1">자세히 보기 →</p>
+          </Link>
+        )}
 
         {/* 내 투자 목록 카드 */}
         {records.length > 0 ? (
