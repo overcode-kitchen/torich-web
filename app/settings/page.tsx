@@ -171,7 +171,7 @@ export default function SettingsPage() {
                 <h2 className="text-lg font-semibold text-coolgray-900 mb-3">
                   토리치(Torich)는 &quot;(도)토리 + 리치&quot;의 합성어예요.
                 </h2>
-                <div className="space-y-3 text-base leading-relaxed text-coolgray-700">
+                <div className="space-y-3 text-sm leading-relaxed text-coolgray-700">
                   <p>
                     도토리를 조금씩 모으듯, 작은 투자와 저축이 쌓여 언젠가 &quot;리치&quot;한 삶으로 이어진다는 믿음에서
                     시작된 이름이에요. 한 번에 큰 결심을 요구하기보다는, 오늘 할 수 있는 가장 작고 부드러운 한 걸음을
