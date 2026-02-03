@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { formatCurrency } from '@/lib/utils'
 import { IconArrowLeft, IconPencil, IconTrash, IconCheck, IconX, IconInfoCircle, IconDotsVertical, IconBell, IconBellOff } from '@tabler/icons-react'
+import { CalendarDays } from 'lucide-react'
 import { Investment, getStartDate, formatInvestmentDays } from '@/app/types/investment'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import InvestmentEditSheet, { type RateSuggestion } from '@/app/components/InvestmentEditSheet'
@@ -15,13 +16,13 @@ import {
 import { InputWithUnit } from '@/components/ui/input-with-unit'
 import { 
   calculateEndDate, 
-  getElapsedText, 
   calculateProgress,
   formatFullDate,
   formatNextPaymentDate,
   getNextPaymentDate,
   isCompleted
 } from '@/app/utils/date'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { getPaymentHistoryFromStart } from '@/app/utils/payment-history'
 import {
   Table,
@@ -60,9 +61,15 @@ export default function InvestmentDetailView({
 }: InvestmentDetailViewProps) {
   const STORAGE_KEY_PREFIX = 'torich_notification_'
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const overviewRef = useRef<HTMLElement | null>(null)
+  const infoRef = useRef<HTMLElement | null>(null)
+  const historyRef = useRef<HTMLElement | null>(null)
+
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [notificationOn, setNotificationOn] = useState(true)
+  const [activeTab, setActiveTab] = useState<'overview' | 'info' | 'history'>('overview')
   
   // 수정 가능한 필드들
   const [editMonthlyAmount, setEditMonthlyAmount] = useState('')
@@ -170,9 +177,6 @@ export default function InvestmentDetailView({
   // 수익금 계산
   const calculatedProfit = calculatedFutureValue - totalPrincipal
   
-  // 진행 기간 텍스트
-  const elapsedText = getElapsedText(startDate)
-  
   // 진행률 계산
   const progress = calculateProgress(startDate, displayPeriodYears || 1)
   
@@ -235,10 +239,33 @@ export default function InvestmentDetailView({
     setIsEditMode(false)
   }
 
+  const handleTabClick = (tab: 'overview' | 'info' | 'history') => {
+    setActiveTab(tab)
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    const target =
+      tab === 'overview'
+        ? overviewRef.current
+        : tab === 'info'
+          ? infoRef.current
+          : historyRef.current
+
+    if (!target) return
+
+    const headerAndTabsHeight = 52 + 40 // header(52) + tabs 영역 약간의 높이
+    const containerRect = container.getBoundingClientRect()
+    const targetRect = target.getBoundingClientRect()
+    const currentScrollTop = container.scrollTop
+    const offset = targetRect.top - containerRect.top + currentScrollTop - headerAndTabsHeight
+
+    container.scrollTo({ top: offset, behavior: 'smooth' })
+  }
+
   return (
-    <div className="fixed inset-0 z-50 bg-white overflow-y-auto">
+    <div ref={scrollContainerRef} className="fixed inset-0 z-50 bg-white overflow-y-auto">
       {/* 헤더 - 스크롤 시에도 종목명 고정 */}
-      <header className="h-[52px] flex items-center justify-between px-6 bg-white sticky top-0 z-10 border-b border-coolgray-100">
+      <header className="h-[52px] flex items-center justify-between px-6 bg-white sticky top-0 z-10 border-b border-coolgray-50">
         <button
           onClick={onBack}
           className="p-2 text-coolgray-800 hover:text-coolgray-900 transition-colors -ml-1"
@@ -297,28 +324,75 @@ export default function InvestmentDetailView({
 
       {/* 콘텐츠 - 좌우 24px 단일 여백 */}
       <div className="max-w-md mx-auto px-6 pb-12">
-        <div className="divide-y divide-coolgray-100">
+        <div className="divide-y divide-coolgray-50">
             {/* 종목명 & 상태 + 다음 투자일 */}
-            <section className="py-6 space-y-4">
+            <section ref={overviewRef} className="py-6 space-y-4">
               <div ref={titleRef}>
-                <h2 className="text-3xl font-semibold tracking-tight text-coolgray-900 mb-3">
+                <h2 className="text-2xl font-semibold tracking-tight text-coolgray-900 mb-2">
                   {item.title}
                 </h2>
                 {isEditMode ? (
                   <p className="text-sm text-coolgray-400">종목명은 수정할 수 없습니다</p>
                 ) : (
-                  <p className={`text-lg ${completed ? 'text-green-600' : 'text-brand-600'} font-semibold`}>
-                    {completed ? '목표 달성! 🎉' : elapsedText}
-                  </p>
+                  completed && (
+                    <p className="text-sm font-medium text-green-600">
+                      목표 달성! 🎉
+                    </p>
+                  )
                 )}
               </div>
-              {!isEditMode && nextPaymentDate && (
-                <div className="py-5 px-5 bg-brand-50 rounded-xl">
-                  <p className="text-sm text-coolgray-600 mb-1">다음 투자일</p>
-                  <p className="text-2xl font-bold tracking-tight text-brand-600">
-                    📅 {formatNextPaymentDate(nextPaymentDate)}
-                  </p>
+              {/* 섹션 내비게이션 탭 - 제목 바로 아래에 위치, 스크롤 시 헤더 아래에 고정 */}
+              <div className="sticky top-[52px] z-10 -mx-6 px-6 bg-white border-b border-coolgray-50">
+                <div className="flex gap-6">
+                  <button
+                    type="button"
+                    onClick={() => handleTabClick('overview')}
+                    className={`py-3 text-sm font-medium transition-colors border-b-2 ${
+                      activeTab === 'overview'
+                        ? 'border-coolgray-900 text-coolgray-900'
+                        : 'border-transparent text-coolgray-400 hover:text-coolgray-700'
+                    }`}
+                  >
+                    개요
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTabClick('info')}
+                    className={`py-3 text-sm font-medium transition-colors border-b-2 ${
+                      activeTab === 'info'
+                        ? 'border-coolgray-900 text-coolgray-900'
+                        : 'border-transparent text-coolgray-400 hover:text-coolgray-700'
+                    }`}
+                  >
+                    투자 정보
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTabClick('history')}
+                    className={`py-3 text-sm font-medium transition-colors border-b-2 ${
+                      activeTab === 'history'
+                        ? 'border-coolgray-900 text-coolgray-900'
+                        : 'border-transparent text-coolgray-400 hover:text-coolgray-700'
+                    }`}
+                  >
+                    납입 기록
+                  </button>
                 </div>
+              </div>
+              {!isEditMode && nextPaymentDate && (
+                <Alert className="mt-1 border-none bg-primary/10 text-coolgray-800 px-4 py-3 rounded-2xl">
+                  <CalendarDays className="w-5 h-5 text-primary" />
+                  <div className="flex items-baseline justify-between gap-4 col-start-2 w-full">
+                    <div>
+                      <AlertTitle className="text-sm font-medium text-coolgray-700">
+                        다음 투자일
+                      </AlertTitle>
+                      <AlertDescription className="mt-0.5 text-base font-semibold text-primary">
+                        {formatNextPaymentDate(nextPaymentDate)}
+                      </AlertDescription>
+                    </div>
+                  </div>
+                </Alert>
               )}
             </section>
 
@@ -329,7 +403,7 @@ export default function InvestmentDetailView({
                   <span className="font-medium">진행률</span>
                   <span className="font-bold text-coolgray-900">{progress}%</span>
                 </div>
-                <div className="w-full h-4 bg-coolgray-100 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-coolgray-50 rounded-full overflow-hidden">
                   <div 
                     className={`h-full rounded-full transition-all duration-500 ${
                       completed ? 'bg-green-500' : 'bg-brand-500'
@@ -345,7 +419,7 @@ export default function InvestmentDetailView({
             )}
 
             {/* 투자 정보 / 수정 폼 */}
-            <section className="py-6">
+            <section ref={infoRef} className="py-6">
               <h3 className="text-lg font-semibold tracking-tight text-coolgray-900 mb-4">
                 {isEditMode ? '투자 정보 수정' : '투자 정보'}
               </h3>
@@ -362,9 +436,9 @@ export default function InvestmentDetailView({
                   />
                 </div>
               ) : (
-                <div className="flex justify-between items-center text-base">
-                  <span className="text-coolgray-500">월 투자금</span>
-                  <span className="font-semibold text-coolgray-900">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-coolgray-500">월 투자금</span>
+                  <span className="text-base font-semibold text-coolgray-900">
                     {formatCurrency(item.monthly_amount)}
                   </span>
                 </div>
@@ -382,9 +456,9 @@ export default function InvestmentDetailView({
                 />
               </div>
             ) : (
-              <div className="flex justify-between items-center text-base">
-                <span className="text-coolgray-500">목표 기간</span>
-                <span className="font-semibold text-coolgray-900">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-coolgray-500">목표 기간</span>
+                <span className="text-base font-semibold text-coolgray-900">
                   {item.period_years}년
                 </span>
               </div>
@@ -426,15 +500,15 @@ export default function InvestmentDetailView({
                 </div>
               </div>
             ) : (
-              <div className="flex justify-between items-center text-base">
+              <div className="flex justify-between items-center">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-coolgray-500">연 수익률</span>
+                  <span className="text-sm text-coolgray-500">연 수익률</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center rounded-full bg-coolgray-25 text-coolgray-600 text-xs font-medium px-2.5 py-1">
                     {isCustomRate ? '직접 입력' : '10년 평균'}
                   </span>
-                  <span className="font-semibold text-coolgray-900">
+                  <span className="text-base font-semibold text-coolgray-900">
                     {displayAnnualRate.toFixed(0)}%
                   </span>
                 </div>
@@ -473,36 +547,36 @@ export default function InvestmentDetailView({
                 </div>
               </div>
             ) : (
-              <div className="flex justify-between items-center text-base">
-                <span className="text-coolgray-500">매월 투자일</span>
-                <span className="font-semibold text-coolgray-900">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-coolgray-500">매월 투자일</span>
+                <span className="text-base font-semibold text-coolgray-900">
                   {formatInvestmentDays(item.investment_days)}
                 </span>
               </div>
             )}
 
-            <div className="border-t border-coolgray-100 my-2" />
+            <div className="border-t border-coolgray-50 my-2" />
             
             {/* 총 원금 */}
-            <div className="flex justify-between items-center text-base">
-              <span className="text-coolgray-500">총 원금</span>
-              <span className="font-semibold text-coolgray-900">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-coolgray-500">총 원금</span>
+              <span className="text-base font-semibold text-coolgray-900">
                 {formatCurrency(totalPrincipal)}
               </span>
             </div>
             
             {/* 예상 수익 */}
-            <div className="flex justify-between items-center text-base">
-              <span className="text-coolgray-500">예상 수익</span>
-              <span className="font-semibold text-green-600">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-coolgray-500">예상 수익</span>
+              <span className="text-base font-semibold text-coolgray-900">
                 + {formatCurrency(calculatedProfit)}
               </span>
             </div>
 
             {/* 만기 시 예상 금액 */}
-            <div className="flex justify-between items-center text-base">
-              <span className="text-coolgray-500">만기 시 예상 금액</span>
-              <span className="font-semibold text-coolgray-900">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-coolgray-500">만기 시 예상 금액</span>
+              <span className="text-base font-semibold text-coolgray-900">
                 {formatCurrency(calculatedFutureValue)}
               </span>
             </div>
@@ -511,7 +585,7 @@ export default function InvestmentDetailView({
 
             {/* 월별 납입 기록 - 하단 배치, 시작일부터, 페이징 */}
             {!isEditMode && fullPaymentHistory.length > 0 && (
-              <section className="py-6">
+              <section ref={historyRef} className="py-6">
                 <h3 className="text-lg font-semibold tracking-tight text-coolgray-900 mb-3">월별 납입 기록</h3>
                 <div className="overflow-x-auto rounded-lg">
                   <Table>
