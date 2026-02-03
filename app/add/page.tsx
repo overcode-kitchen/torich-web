@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { IconArrowLeft, IconLoader2, IconInfoCircle, IconX } from '@tabler/icons-react'
-import { ChevronDownIcon } from 'lucide-react'
+import { CalendarDays, ChevronDownIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { createClient } from '@/utils/supabase/client'
 import { formatCurrency } from '@/lib/utils'
+import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 // import { sendGAEvent } from '@next/third-parties/google'
 
 // 검색 결과 (간단한 정보만)
@@ -34,6 +35,7 @@ export default function AddInvestmentPage() {
   const [startDate, setStartDate] = useState<Date>(() => new Date())
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
   const [investmentDays, setInvestmentDays] = useState<number[]>([]) // 매월 투자하는 날짜들
+  const [isDaysPickerOpen, setIsDaysPickerOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   
@@ -484,7 +486,7 @@ export default function AddInvestmentPage() {
                 setIsRateEditing(false) // 수정 모드 종료
               }}
               placeholder={market === 'KR' ? '삼성전자, TIGER...' : 'S&P 500, AAPL...'}
-              className="w-full bg-white rounded-2xl p-5 pr-12 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full bg-white rounded-2xl py-3.5 pl-4 pr-12 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
               autoComplete="off"
             />
             
@@ -731,7 +733,7 @@ export default function AddInvestmentPage() {
                 value={monthlyAmount}
                 onChange={handleAmountChange}
                 placeholder="월 100 (만원 단위)"
-                className="w-full bg-white rounded-2xl p-5 pr-16 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full bg-white rounded-2xl py-3.5 pl-4 pr-16 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
               <span className="absolute right-5 top-1/2 -translate-y-1/2 text-coolgray-500 font-medium">
                 만원
@@ -777,7 +779,7 @@ export default function AddInvestmentPage() {
               value={period}
               onChange={(e) => handleNumericInput(e, setPeriod)}
               placeholder="3년간"
-              className="w-full bg-white rounded-2xl p-5 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full bg-white rounded-2xl py-3.5 px-4 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             {/* 빠른 조절 버튼 */}
             <div className="flex flex-wrap gap-2 justify-start mt-2">
@@ -821,16 +823,20 @@ export default function AddInvestmentPage() {
               <PopoverTrigger asChild>
                 <Button 
                   variant="outline" 
-                  className="w-full justify-between font-normal bg-white rounded-2xl h-14 px-5 text-coolgray-900 border-coolgray-100 hover:bg-coolgray-25"
+                className="w-full justify-between font-normal bg-white rounded-2xl h-12 px-4 text-coolgray-900 border-coolgray-100 hover:bg-coolgray-25"
                 >
                   {startDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                   <ChevronDownIcon className="w-5 h-5 text-coolgray-400" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+              <PopoverContent
+                className="w-[var(--radix-popover-trigger-width)] overflow-hidden p-0"
+                align="center"
+              >
                 <Calendar
                   mode="single"
                   selected={startDate}
+                  className="mx-auto"
                   onSelect={(date) => {
                     if (date) {
                       setStartDate(date)
@@ -845,68 +851,45 @@ export default function AddInvestmentPage() {
             </p>
           </div>
 
-          {/* 매월 투자일 선택 - 강조 */}
-          <div className={`rounded-2xl p-4 border-2 transition-colors ${
-            investmentDays.length === 0 
-              ? 'bg-brand-50 border-brand-200' 
-              : 'bg-white border-coolgray-100'
-          }`}>
-            <p className="text-sm font-semibold text-coolgray-900 mb-1">
-              📅 매월 투자일
-            </p>
-            <p className="text-xs text-coolgray-500 mb-3">
-              알림을 받을 날짜를 선택하세요. 투자 일정 관리에 필수입니다.
-            </p>
-            <div className="bg-white rounded-xl p-4 border border-coolgray-100">
-              {/* 선택된 날짜 표시 */}
-              {investmentDays.length > 0 && (
-                <div className="mb-3 flex flex-wrap gap-2">
-                  {[...investmentDays].sort((a, b) => a - b).map((day) => (
-                    <span
-                      key={day}
-                      className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 px-3 py-1 rounded-full text-sm font-medium"
-                    >
-                      {day}일
-                      <button
-                        type="button"
-                        onClick={() => setInvestmentDays(prev => prev.filter(d => d !== day))}
-                        className="hover:text-brand-900"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              {/* 날짜 선택 그리드 */}
-              <div className="grid grid-cols-7 gap-1">
-                {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => {
-                      if (investmentDays.includes(day)) {
-                        setInvestmentDays(prev => prev.filter(d => d !== day))
-                      } else {
-                        setInvestmentDays(prev => [...prev, day])
-                      }
-                    }}
-                    className={`w-9 h-9 rounded-full text-sm font-medium transition-colors ${
-                      investmentDays.includes(day)
-                        ? 'bg-brand-600 text-white'
-                        : 'bg-coolgray-50 text-coolgray-700 hover:bg-coolgray-100'
-                    }`}
-                  >
-                    {day}
-                  </button>
-                ))}
+          {/* 매월 투자일 선택 - 요약 + 바텀 시트 */}
+          <div className="rounded-2xl p-4 border border-coolgray-50 bg-white space-y-2.5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-coolgray-900">
+                  매월 투자일
+                </p>
+                <p className="text-xs text-coolgray-500 mt-1">
+                  선택하면 다가오는 투자·캘린더에 일정이 표시돼요.
+                </p>
               </div>
             </div>
-            {investmentDays.length === 0 && (
-              <p className="text-xs text-amber-600 font-medium mt-2">
-                ⚠️ 매월 투자일을 선택하면 예정된 납입일을 한눈에 확인할 수 있어요.
-              </p>
-            )}
+
+            {investmentDays.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {[...investmentDays].sort((a, b) => a - b).map((day) => (
+                  <span
+                    key={day}
+                    className="inline-flex items-center bg-brand-50 text-brand-700 px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  >
+                    {day}일
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDaysPickerOpen(true)}
+              className="w-full justify-between bg-white rounded-xl h-11 px-4 text-sm text-coolgray-800 border-coolgray-100 hover:bg-coolgray-25"
+            >
+              <span>
+                {investmentDays.length > 0
+                  ? `${[...investmentDays].sort((a, b) => a - b).join(', ')}일 선택됨`
+                  : '날짜 선택하기'}
+              </span>
+              <CalendarDays className="w-4 h-4 text-coolgray-400" />
+            </Button>
           </div>
         </form>
 
@@ -984,6 +967,18 @@ export default function AddInvestmentPage() {
           )}
         </button>
       </div>
+
+      {/* 매월 투자일 선택 바텀 시트 */}
+      {isDaysPickerOpen && (
+        <InvestmentDaysPickerSheet
+          days={investmentDays}
+          onClose={() => setIsDaysPickerOpen(false)}
+          onApply={(days) => {
+            setInvestmentDays(days)
+            setIsDaysPickerOpen(false)
+          }}
+        />
+      )}
 
       {/* 직접 입력 모달 */}
       {isManualModalOpen && (
