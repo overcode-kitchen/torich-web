@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { IconLoader2 } from '@tabler/icons-react'
+import { IconLoader2, IconInfoCircle } from '@tabler/icons-react'
 import { formatCurrency } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -16,21 +16,40 @@ import { Investment, getStartDate } from '@/app/types/investment'
 import { isCompleted } from '@/app/utils/date'
 import {
   getThisMonthStats,
-  getPeriodTotalPaid,
   getMonthlyCompletionRates,
   getMonthlyCompletionRatesForRange,
-  getPeriodTotalPaidForRange,
 } from '@/app/utils/stats'
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
 import type { DateRange } from 'react-day-picker'
-import { subMonths, subDays } from 'date-fns'
+import { subDays } from 'date-fns'
+import CashHoldItemsSheet from '@/app/components/CashHoldItemsSheet'
+import MonthlyContributionSheet from '@/app/components/MonthlyContributionSheet'
+import AssetGrowthChart from '@/app/components/AssetGrowthChart'
+
+const calculateSimulatedValue = (
+  monthlyAmount: number,
+  T: number,
+  P: number,
+  R: number = 0.10
+): number => {
+  const monthlyRate = R / 12
+  if (T <= P) {
+    const totalMonths = T * 12
+    return monthlyAmount * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate)
+  }
+  const maturityMonths = P * 12
+  return monthlyAmount * ((Math.pow(1 + monthlyRate, maturityMonths) - 1) / monthlyRate) * (1 + monthlyRate)
+}
 
 export default function StatsPage() {
   const router = useRouter()
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [records, setRecords] = useState<Investment[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedYear, setSelectedYear] = useState<number>(5)
+  const [showCashHoldSheet, setShowCashHoldSheet] = useState(false)
+  const [showContributionSheet, setShowContributionSheet] = useState(false)
 
   const supabase = createClient()
 
@@ -80,14 +99,21 @@ export default function StatsPage() {
     })
   }, [records])
 
-  const thisMonth = useMemo(() => getThisMonthStats(activeRecords), [activeRecords])
-
-  const periodTotal = useMemo(() => {
-    if (isCustomRange) {
-      return getPeriodTotalPaidForRange(activeRecords, customDateRange!.from!, customDateRange!.to!)
+  const { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments } = useMemo(() => {
+    if (records.length === 0) {
+      return { totalExpectedAsset: 0, totalMonthlyPayment: 0, hasMaturedInvestments: false }
     }
-    return getPeriodTotalPaid(activeRecords, effectiveMonths)
-  }, [activeRecords, effectiveMonths, isCustomRange, customDateRange])
+    const totalExpectedAsset = records.reduce((sum, record) => {
+      const P = record.period_years
+      const R = record.annual_rate ? record.annual_rate / 100 : 0.10
+      return sum + calculateSimulatedValue(record.monthly_amount, selectedYear, P, R)
+    }, 0)
+    const totalMonthlyPayment = records.reduce((sum, record) => sum + record.monthly_amount, 0)
+    const hasMaturedInvestments = records.some((r) => r.period_years < selectedYear)
+    return { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments }
+  }, [records, selectedYear])
+
+  const thisMonth = useMemo(() => getThisMonthStats(activeRecords), [activeRecords])
 
   const monthlyRates = useMemo(() => {
     if (isCustomRange) {
@@ -103,11 +129,6 @@ export default function StatsPage() {
     const totalCompleted = rates.reduce((s, r) => s + r.completed, 0)
     return totalEvents > 0 ? Math.round((totalCompleted / totalEvents) * 100) : 0
   }, [monthlyRates])
-
-  const rangeMonthCount = monthlyRates.length
-  const monthlyAvg = activeRecords.length > 0 && rangeMonthCount > 0
-    ? Math.round(periodTotal / rangeMonthCount)
-    : 0
 
   const chartData = useMemo(() => {
     return [...monthlyRates].reverse().map((r) => ({
@@ -142,6 +163,81 @@ export default function StatsPage() {
     <main className="min-h-screen bg-coolgray-25">
       <div className="max-w-md mx-auto px-4 py-6 pb-24">
         <h1 className="text-xl font-bold text-coolgray-900 mb-6">통계</h1>
+
+        {/* 예상 자산 */}
+        {records.length > 0 && (
+          <section className="bg-white rounded-2xl p-5 mb-4 relative">
+            <div className="flex items-center gap-3 mb-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-coolgray-200 border-coolgray-200 hover:border-coolgray-300"
+                  >
+                    {selectedYear}년 뒤
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[120px]">
+                  <DropdownMenuItem onClick={() => setSelectedYear(1)}>1년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(3)}>3년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(5)}>5년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(10)}>10년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(30)}>30년 뒤</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <h2 className="text-sm font-semibold text-coolgray-600">예상 자산</h2>
+            </div>
+            <p className="text-2xl font-extrabold tracking-tight text-coolgray-900 mb-3">
+              {formatCurrency(totalExpectedAsset)}
+            </p>
+            {hasMaturedInvestments && (
+              <button
+                onClick={() => setShowCashHoldSheet(true)}
+                className="flex items-center gap-1.5 w-full text-left group mb-3"
+              >
+                <IconInfoCircle className="w-4 h-4 text-coolgray-400 flex-shrink-0 group-hover:text-coolgray-500 transition-colors" />
+                <span className="text-xs text-coolgray-400 leading-relaxed group-hover:text-coolgray-500 transition-colors">
+                  만기가 지난 상품은 현금으로 보관한다고 가정했어요.
+                </span>
+              </button>
+            )}
+            <button
+              onClick={() => setShowContributionSheet(true)}
+              className="inline-flex items-center rounded-full border border-brand-600 bg-brand-50 text-brand-700 font-semibold text-sm px-3 py-1.5 hover:bg-brand-100 transition-colors"
+            >
+              월 {formatCurrency(totalMonthlyPayment)}씩 투자 중
+            </button>
+          </section>
+        )}
+
+        {/* 예상 수익 차트 */}
+        {records.length > 0 && (
+          <section className="bg-white rounded-2xl p-5 mb-4">
+            <div className="flex items-center gap-3 mb-3">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-coolgray-200 border-coolgray-200 hover:border-coolgray-300"
+                  >
+                    {selectedYear}년 뒤
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[120px]">
+                  <DropdownMenuItem onClick={() => setSelectedYear(3)}>3년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(5)}>5년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(10)}>10년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(15)}>15년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(20)}>20년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(25)}>25년 뒤</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedYear(30)}>30년 뒤</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <h2 className="text-sm font-semibold text-coolgray-600">예상 수익 차트</h2>
+            </div>
+            <AssetGrowthChart investments={records} selectedYear={selectedYear} />
+          </section>
+        )}
 
         {/* 이번 달 현황 */}
         <section className="bg-white rounded-2xl p-5 mb-4">
@@ -214,16 +310,24 @@ export default function StatsPage() {
           <p className="text-xs text-coolgray-500 mt-1">{periodLabel} 월별 완료율</p>
         </section>
 
-        {/* 총 납입 금액 */}
-        <section className="bg-white rounded-2xl p-5">
-          <h2 className="text-sm font-semibold text-coolgray-600 mb-2">총 납입 금액</h2>
-          <p className="text-2xl font-bold text-coolgray-900">{formatCurrency(periodTotal)}</p>
-          <p className="text-sm text-coolgray-500 mt-1">{periodLabel} 총 납입</p>
-          {monthlyAvg > 0 && (
-            <p className="text-sm text-coolgray-500">월평균 약 {formatCurrency(monthlyAvg)}</p>
-          )}
-        </section>
       </div>
+
+      {showCashHoldSheet && (
+        <CashHoldItemsSheet
+          items={records}
+          selectedYear={selectedYear}
+          onClose={() => setShowCashHoldSheet(false)}
+          calculateFutureValue={calculateSimulatedValue}
+        />
+      )}
+
+      {showContributionSheet && (
+        <MonthlyContributionSheet
+          items={records}
+          totalAmount={totalMonthlyPayment}
+          onClose={() => setShowContributionSheet(false)}
+        />
+      )}
     </main>
   )
 }
