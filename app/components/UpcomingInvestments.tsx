@@ -224,7 +224,7 @@ export default function UpcomingInvestments({ records }: UpcomingInvestmentsProp
               <button
                 type="button"
                 onClick={() => toggleComplete(item.investment.id, item.paymentDate, item.dayOfMonth)}
-                className="px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-medium hover:bg-brand-700 transition-colors"
+                className="px-3 py-1.5 rounded-lg border border-coolgray-200 text-coolgray-600 text-xs font-medium hover:bg-coolgray-50 hover:border-coolgray-300 transition-colors"
                 aria-label="납입 완료 체크"
               >
                 완료하기
