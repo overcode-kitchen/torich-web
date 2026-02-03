@@ -851,6 +851,7 @@ export default function AddInvestmentPage() {
             </p>
           </div>
 
+
           {/* 매월 투자일 선택 - 요약 + 바텀 시트 */}
           <div className="rounded-2xl p-4 border border-coolgray-50 bg-white space-y-2.5">
             <div className="flex items-start justify-between gap-3">

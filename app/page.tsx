@@ -622,6 +622,10 @@ export default function Home() {
           onBack={() => setDetailItem(null)}
           onUpdate={async (data) => {
             try {
+              if (!detailItem) {
+                throw new Error('투자 정보를 찾을 수 없습니다.')
+              }
+              
               setIsUpdating(true)
               
               // 예상 금액 재계산
@@ -641,11 +645,21 @@ export default function Home() {
                     (detailItem.is_custom_rate ?? false) ||
                     data.annual_rate !== detailItem.annual_rate,
                   final_amount: finalAmount,
-                  investment_days: data.investment_days || null,
+                  investment_days: data.investment_days !== undefined 
+                    ? (Array.isArray(data.investment_days) && data.investment_days.length > 0 ? data.investment_days : null)
+                    : null,
                 })
                 .eq('id', detailItem.id)
 
-              if (error) throw error
+              if (error) {
+                console.error('Supabase 업데이트 에러:', {
+                  message: error.message,
+                  details: error.details,
+                  hint: error.hint,
+                  code: error.code,
+                })
+                throw error
+              }
 
               // 수정 성공 시 로컬 state 업데이트
               setRecords(prevRecords => 
@@ -677,7 +691,24 @@ export default function Home() {
               } : null)
             } catch (error) {
               console.error('수정 오류:', error)
-              alert('수정 중 오류가 발생했습니다.')
+              console.error('에러 타입:', typeof error)
+              console.error('에러 객체:', JSON.stringify(error, null, 2))
+              
+              let errorMessage = '알 수 없는 오류가 발생했습니다.'
+              if (error instanceof Error) {
+                errorMessage = error.message
+              } else if (error && typeof error === 'object') {
+                // Supabase 에러 객체 처리
+                if ('message' in error) {
+                  errorMessage = String(error.message)
+                } else if ('details' in error) {
+                  errorMessage = String(error.details)
+                } else {
+                  errorMessage = JSON.stringify(error)
+                }
+              }
+              
+              alert(`수정 중 오류가 발생했습니다: ${errorMessage}`)
             } finally {
               setIsUpdating(false)
             }

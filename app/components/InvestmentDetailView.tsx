@@ -324,9 +324,8 @@ export default function InvestmentDetailView({
 
       {/* 콘텐츠 - 좌우 24px 단일 여백 */}
       <div className="max-w-md mx-auto px-6 pb-12">
-        <div className="divide-y divide-coolgray-50">
-            {/* 종목명 & 상태 + 다음 투자일 */}
-            <section ref={overviewRef} className="py-6 space-y-4">
+        {/* 종목명 & 상태 + 다음 투자일 */}
+        <section ref={overviewRef} className="py-6 space-y-4">
               <div ref={titleRef}>
                 <h2 className="text-2xl font-semibold tracking-tight text-coolgray-900 mb-2">
                   {item.title}
@@ -341,6 +340,7 @@ export default function InvestmentDetailView({
                   )
                 )}
               </div>
+              
               {/* 섹션 내비게이션 탭 - 제목 바로 아래에 위치, 스크롤 시 헤더 아래에 고정 */}
               <div className="sticky top-[52px] z-10 -mx-6 px-6 bg-white border-b border-coolgray-50">
                 <div className="flex gap-6">
@@ -394,32 +394,33 @@ export default function InvestmentDetailView({
                   </div>
                 </Alert>
               )}
-            </section>
+        </section>
 
-            {/* 진행률 - 수정 모드에서는 숨김 */}
-            {!isEditMode && (
-              <section className="py-6">
-                <div className="flex justify-between text-base text-coolgray-500 mb-3">
-                  <span className="font-medium">진행률</span>
-                  <span className="font-bold text-coolgray-900">{progress}%</span>
-                </div>
-                <div className="w-full h-2 bg-coolgray-50 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      completed ? 'bg-green-500' : 'bg-brand-500'
-                    }`}
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-sm text-coolgray-400 mt-3">
-                  <span>시작: {formatFullDate(startDate)}</span>
-                  <span>종료: {formatFullDate(endDate)}</span>
-                </div>
-              </section>
-            )}
+        {/* 진행률 - 수정 모드에서는 숨김 */}
+        {!isEditMode && (
+          <section className="py-6 border-b border-coolgray-50">
+            <div className="flex justify-between text-base text-coolgray-500 mb-3">
+              <span className="font-medium">진행률</span>
+              <span className="font-bold text-coolgray-900">{progress}%</span>
+            </div>
+            <div className="w-full h-2 bg-coolgray-50 rounded-full overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-500 ${
+                  completed ? 'bg-green-500' : 'bg-brand-500'
+                }`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-sm text-coolgray-400 mt-3">
+              <span>시작: {formatFullDate(startDate)}</span>
+              <span>종료: {formatFullDate(endDate)}</span>
+            </div>
+          </section>
+        )}
 
-            {/* 투자 정보 / 수정 폼 */}
-            <section ref={infoRef} className="py-6">
+        <div className="divide-y divide-coolgray-50">
+          {/* 투자 정보 / 수정 폼 */}
+          <section ref={infoRef} className="py-6">
               <h3 className="text-lg font-semibold tracking-tight text-coolgray-900 mb-4">
                 {isEditMode ? '투자 정보 수정' : '투자 정보'}
               </h3>
@@ -721,6 +722,7 @@ export default function InvestmentDetailView({
           }}
         />
       )}
+
     </div>
   )
 }
