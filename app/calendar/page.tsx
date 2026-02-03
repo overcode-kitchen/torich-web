@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { IconLoader2, IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
@@ -16,12 +16,20 @@ import { addMonths, subMonths, format, getDaysInMonth, startOfMonth, getDay } fr
 import { ko } from 'date-fns/locale'
 
 const STORAGE_PREFIX = 'torich_completed_'
+const TOAST_DURATION_MS = 5000
 
 function setPaymentCompleted(investmentId: string, year: number, month: number, day: number): void {
   if (typeof window === 'undefined') return
   const yearMonth = `${year}-${String(month).padStart(2, '0')}`
   const key = `${STORAGE_PREFIX}${investmentId}_${yearMonth}_${day}`
   localStorage.setItem(key, new Date().toISOString())
+}
+
+function clearPaymentCompleted(investmentId: string, year: number, month: number, day: number): void {
+  if (typeof window === 'undefined') return
+  const yearMonth = `${year}-${String(month).padStart(2, '0')}`
+  const key = `${STORAGE_PREFIX}${investmentId}_${yearMonth}_${day}`
+  localStorage.removeItem(key)
 }
 
 export default function CalendarPage() {
@@ -32,8 +40,18 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(() => new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [completedKeys, setCompletedKeys] = useState<Set<string>>(new Set())
+  const [pendingUndo, setPendingUndo] = useState<PaymentEvent | null>(null)
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingUndoRef = useRef<PaymentEvent | null>(null)
+  pendingUndoRef.current = pendingUndo
 
   const supabase = createClient()
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     const init = async () => {
@@ -100,9 +118,32 @@ export default function CalendarPage() {
     return eventsByDay.get(d) || []
   }, [selectedDate, eventsByDay, year, month])
 
+  const handleUndo = useCallback(() => {
+    const p = pendingUndoRef.current
+    if (!p) return
+    clearPaymentCompleted(p.investmentId, p.year, p.month, p.day)
+    const key = `${p.investmentId}_${p.year}_${p.month}_${p.day}`
+    setCompletedKeys((prev) => {
+      const next = new Set(prev)
+      next.delete(key)
+      return next
+    })
+    setPendingUndo(null)
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current)
+      toastTimeoutRef.current = null
+    }
+  }, [])
+
   const handleComplete = (e: PaymentEvent) => {
     setPaymentCompleted(e.investmentId, e.year, e.month, e.day)
     setCompletedKeys((prev) => new Set(prev).add(`${e.investmentId}_${e.year}_${e.month}_${e.day}`))
+    setPendingUndo(e)
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
+    toastTimeoutRef.current = setTimeout(() => {
+      setPendingUndo(null)
+      toastTimeoutRef.current = null
+    }, TOAST_DURATION_MS)
   }
 
   const isEventCompleted = (e: PaymentEvent) => {
@@ -136,7 +177,11 @@ export default function CalendarPage() {
   }
 
   return (
-    <main className="min-h-screen bg-coolgray-25">
+    <main
+      className="min-h-screen bg-coolgray-25"
+      onClick={() => setSelectedDate(null)}
+      role="presentation"
+    >
       <div className="max-w-md mx-auto px-4 py-6 pb-24">
         <h1 className="text-xl font-bold text-coolgray-900 mb-4">캘린더</h1>
 
@@ -168,7 +213,10 @@ export default function CalendarPage() {
         </div>
 
         {/* 캘린더 그리드 */}
-        <div className="bg-white rounded-2xl p-4 mb-4">
+        <div
+          className="bg-white rounded-2xl p-4 mb-4"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['일', '월', '화', '수', '목', '금', '토'].map((w) => (
               <div key={w} className="text-center text-xs font-medium text-coolgray-500 py-1">
@@ -179,7 +227,17 @@ export default function CalendarPage() {
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((day, i) => {
               if (day === null) {
-                return <div key={`empty-${i}`} className="aspect-square" />
+                return (
+                  <div
+                    key={`empty-${i}`}
+                    className="aspect-square cursor-pointer"
+                    onClick={() => setSelectedDate(null)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && setSelectedDate(null)}
+                    aria-label="선택 해제"
+                  />
+                )
               }
               const status = getDayStatus(day)
               const isSelected = selectedDate?.getDate() === day && selectedDate?.getMonth() === currentMonth.getMonth()
@@ -204,11 +262,29 @@ export default function CalendarPage() {
               )
             })}
           </div>
+          {/* 색상 범례 */}
+          <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-coolgray-100">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-green-500" />
+              <span className="text-xs text-coolgray-600">완료됨</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-red-500" />
+              <span className="text-xs text-coolgray-600">미완료</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-coolgray-300" />
+              <span className="text-xs text-coolgray-600">예정</span>
+            </div>
+          </div>
         </div>
 
         {/* 선택된 날짜의 투자 목록 */}
         {selectedDate && (
-          <div className="bg-white rounded-2xl p-4">
+          <div
+            className="bg-white rounded-2xl p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-sm font-semibold text-coolgray-700 mb-3">
               {format(selectedDate, 'M월 d일', { locale: ko })} 예정 투자
             </h3>
@@ -247,6 +323,23 @@ export default function CalendarPage() {
           </div>
         )}
       </div>
+
+      {/* 되돌리기 토스트 */}
+      {pendingUndo && (
+        <div
+          className="fixed bottom-24 left-4 right-4 z-50 flex items-center justify-between gap-3 rounded-xl bg-coolgray-900 text-white px-4 py-3 shadow-lg"
+          role="status"
+        >
+          <span className="text-sm font-medium">완료됨</span>
+          <button
+            type="button"
+            onClick={handleUndo}
+            className="text-sm font-semibold text-brand-300 hover:text-brand-200 transition-colors"
+          >
+            되돌리기
+          </button>
+        </div>
+      )}
     </main>
   )
 }
