@@ -2,10 +2,7 @@
 
 import { formatCurrency } from '@/lib/utils'
 import { Investment, getStartDate, formatInvestmentDays } from '@/app/types/investment'
-import { 
-  getRemainingText, 
-  isCompleted 
-} from '@/app/utils/date'
+import { isCompleted } from '@/app/utils/date'
 
 interface InvestmentItemProps {
   item: Investment
@@ -18,13 +15,7 @@ export default function InvestmentItem({
   onClick,
   calculateFutureValue,
 }: InvestmentItemProps) {
-  // 시작일 추출 (start_date가 없으면 created_at 사용)
   const startDate = getStartDate(item)
-  
-  // 남은 기간 텍스트
-  const remainingText = getRemainingText(startDate, item.period_years)
-  
-  // 완료 여부
   const completed = isCompleted(startDate, item.period_years)
 
   return (
@@ -40,16 +31,14 @@ export default function InvestmentItem({
           <h3 className="text-lg font-bold text-coolgray-900 mb-1 truncate">
             {item.title}
           </h3>
-          {/* 월 투자금 · 남은 기간 · 매월 투자일 */}
+          {/* 월 투자금 · 매월 투자일 (단순 텍스트) */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <p className={`text-sm ${completed ? 'text-green-600 font-semibold' : 'text-coolgray-500'}`}>
-              월 {formatCurrency(item.monthly_amount)} · {remainingText}
+              월 {formatCurrency(item.monthly_amount)}
+              {item.investment_days && item.investment_days.length > 0 && (
+                <> · {formatInvestmentDays(item.investment_days)}</>
+              )}
             </p>
-            {item.investment_days && item.investment_days.length > 0 && (
-              <span className="text-xs text-coolgray-400 bg-coolgray-100 px-2 py-0.5 rounded-full">
-                {formatInvestmentDays(item.investment_days)}
-              </span>
-            )}
           </div>
         </div>
       </button>
