@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { formatCurrency } from '@/lib/utils'
 import { addDays } from 'date-fns'
 import { formatPaymentDateShort, getUpcomingPayments, getUpcomingPaymentsInRange } from '@/app/utils/date'
@@ -150,8 +151,15 @@ export default function UpcomingInvestments({ records }: UpcomingInvestmentsProp
   return (
     <div className="bg-white rounded-3xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-coolgray-900">
-          📅 다가오는 투자
+        <h2 className="text-lg font-bold text-coolgray-900 flex items-center gap-1">
+          <Image
+            src="/icons/3d/bell-yellow.png"
+            alt="다가오는 투자 알림 아이콘"
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
+          <span>다가오는 투자</span>
         </h2>
         <div className="flex items-center gap-2">
           <DropdownMenu>

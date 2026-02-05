@@ -67,19 +67,22 @@ We follow the "Airy & Accessible" design philosophy.
 - **Cards:** Use `Card`, `CardHeader`, `CardContent`, `CardFooter` structure.
 - **Inputs:** Wrap inputs in `Form` (react-hook-form + zod) when building forms.
 
-# 3. Code Generation Style
+# 3. Images & Icons
+- **3D 아이콘 (`/icons/3d/*.png`):** `public/icons/3d/` 폴더의 3D PNG 아이콘을 사용할 때는 반드시 Next.js `<Image>` 컴포넌트(`next/image`)를 사용한다. AVIF/WebP 최적화가 적용되도록 `<img>` 태그 대신 `<Image>`를 쓴다.
+
+# 4. Code Generation Style
 - **Structure:** Use Functional Components with TypeScript interfaces.
 - **Styling:** Use the `cn()` utility for class merging.
 - **Simplicity:** Keep components small and modular.
 - **Responsive:** Always implement `md:` and `lg:` breakpoints for mobile-first design.
 
-# 4. "Vibe Coding" Workflow (Image to Code)
+# 5. "Vibe Coding" Workflow (Image to Code)
 When the user provides a screenshot/image:
 1.  **Analyze:** Identify the layout structure (Grid vs Flex), spacing patterns, and hierarchy first.
 2.  **Match:** Map visual elements to corresponding shadcn components (e.g., "This looks like a Card with a Badge").
 3.  **Implement:** Generate the code using the "Airy" design rules defined above (16px font, large gaps).
 4.  **Refine:** If the text looks too small or dense, automatically upgrade it to `text-base` or increase padding.
 
-# 5. Korean Language Support
+# 6. Korean Language Support
 - The user communicates in Korean.
 - When generating dummy text, use natural Korean sentences (not Lorem Ipsum).
