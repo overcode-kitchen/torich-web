@@ -7,8 +7,8 @@ import { useInvestments } from '@/app/hooks/useInvestments'
 import { useRateUpdate } from '@/app/hooks/useRateUpdate'
 import { useInvestmentFilter } from '@/app/hooks/useInvestmentFilter'
 import { useLocalStorage } from '@/app/hooks/useLocalStorage'
-import LandingPage from '@/app/components/LandingPage'
 import Dashboard from '@/app/components/Dashboard'
+import LandingPage from '@/app/components/LandingPage'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
 import type { Investment } from '@/app/types/investment'
 import { calculateSimulatedValue } from '@/app/utils/finance'
@@ -50,4 +50,5 @@ export default function Home() {
   if (!user) return <LandingPage />
 
   return (<><Dashboard records={records} filteredRecords={filteredRecords} activeRecords={activeRecords} totalMonthlyPayment={totalMonthlyPayment} filterStatus={filterStatus} onFilterChange={setFilterStatus} sortBy={sortBy} onSortChange={setSortBy} showMonthlyAmount={showMonthlyAmount} onToggleMonthlyAmount={() => setShowMonthlyAmount((prev: boolean) => !prev)} onItemClick={setDetailItem} showBrandStoryCard={showBrandStoryCard} onCloseBrandStoryCard={() => setShowBrandStoryCard(false)} isBrandStoryOpen={isBrandStoryOpen} onOpenBrandStory={() => setIsBrandStoryOpen(true)} onCloseBrandStory={() => setIsBrandStoryOpen(false)} showRateUpdateToast={showToast} calculateFutureValue={calculateSimulatedValue} />{detailItem && (<InvestmentDetailView item={detailItem} onBack={() => setDetailItem(null)} onUpdate={async (data) => { await updateInvestment(detailItem.id, data); setDetailItem((prev: Investment | null) => (prev ? { ...prev, ...data } : null)) }} onDelete={async () => { await deleteInvestment(detailItem.id); setDetailItem(null) }} isDeleting={isDeleting} isUpdating={isUpdating} calculateFutureValue={calculateSimulatedValue} />)}</>)
+
 }

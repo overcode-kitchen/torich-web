@@ -12,6 +12,10 @@ const config: Config = {
         sans: ['Pretendard', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
       },
       colors: {
+        torich: {
+          brown: '#5D4633',
+          'brown-light': '#E4D7C7',
+        },
         brand: {
           50: '#e6f9ef',
           100: '#b1edcf',

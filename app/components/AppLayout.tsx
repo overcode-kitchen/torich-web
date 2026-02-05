@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import BottomNavigation from './BottomNavigation'
 
-const HIDE_NAV_PATHS = ['/login', '/add', '/auth']
+const HIDE_NAV_PATHS = ['/login', '/add', '/auth', '/design-system']
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

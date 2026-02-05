@@ -39,6 +39,13 @@ export default function SettingsPage() {
     return () => subscription.unsubscribe()
   }, [supabase])
 
+  useEffect(() => {
+    // 렌더링 중이 아닌 시점에 리다이렉트 수행
+    if (!isLoading && !user) {
+      router.replace('/login')
+    }
+  }, [isLoading, user, router])
+
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true)
@@ -69,7 +76,6 @@ export default function SettingsPage() {
   }
 
   if (!user) {
-    router.replace('/login')
     return null
   }
 
@@ -159,7 +165,7 @@ export default function SettingsPage() {
                 <div className="mb-4">
                   <div className="relative w-full">
                     <Image
-                      src="/torich-squirrel.png"
+                      src="/images/torich-squirrel.png"
                       alt="도토리를 모으는 토리치 람쥐 일러스트"
                       width={368}
                       height={460}
