@@ -1,90 +1,70 @@
 'use client'
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
 import { CircleNotch, CaretLeft, CaretRight } from '@phosphor-icons/react'
 import { formatCurrency } from '@/lib/utils'
 import { Investment, getStartDate } from '@/app/types/investment'
 import { isCompleted } from '@/app/utils/date'
 import {
   getPaymentEventsForMonth,
-  isPaymentEventCompleted,
   type PaymentEvent,
 } from '@/app/utils/stats'
-import { addMonths, subMonths, format, getDaysInMonth, startOfMonth, getDay } from 'date-fns'
+import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
-const STORAGE_PREFIX = 'torich_completed_'
-const TOAST_DURATION_MS = 5000
+// 기존 훅 재사용
+import { useAuth } from '@/app/hooks/useAuth'
+import { useInvestments } from '@/app/hooks/useInvestments'
 
-function setPaymentCompleted(investmentId: string, year: number, month: number, day: number): void {
-  if (typeof window === 'undefined') return
-  const yearMonth = `${year}-${String(month).padStart(2, '0')}`
-  const key = `${STORAGE_PREFIX}${investmentId}_${yearMonth}_${day}`
-  localStorage.setItem(key, new Date().toISOString())
-}
-
-function clearPaymentCompleted(investmentId: string, year: number, month: number, day: number): void {
-  if (typeof window === 'undefined') return
-  const yearMonth = `${year}-${String(month).padStart(2, '0')}`
-  const key = `${STORAGE_PREFIX}${investmentId}_${yearMonth}_${day}`
-  localStorage.removeItem(key)
-}
+// 새로 만든 훅
+import { useCalendar } from '@/app/hooks/useCalendar'
+import { usePaymentCompletion } from '@/app/hooks/usePaymentCompletion'
 
 export default function CalendarPage() {
   const router = useRouter()
-  const [user, setUser] = useState<{ id: string } | null>(null)
-  const [records, setRecords] = useState<Investment[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [currentMonth, setCurrentMonth] = useState(() => new Date())
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [completedKeys, setCompletedKeys] = useState<Set<string>>(new Set())
-  const [pendingUndo, setPendingUndo] = useState<PaymentEvent | null>(null)
-  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const pendingUndoRef = useRef<PaymentEvent | null>(null)
-  pendingUndoRef.current = pendingUndo
+  
+  // 기존 훅 재사용
+  const { user, isLoading: authLoading } = useAuth()
+  const { records, isLoading: recordsLoading } = useInvestments(user?.id)
+  
+  // 캘린더 훅
+  const {
+    currentMonth,
+    year,
+    month,
+    selectedDate,
+    calendarDays,
+    goToPrevMonth,
+    goToNextMonth,
+    selectDate,
+    clearSelection,
+  } = useCalendar()
+  
+  // 납입 완료 훅
+  const {
+    isEventCompleted,
+    handleComplete,
+    handleUndo,
+    pendingUndo,
+  } = usePaymentCompletion()
 
-  const supabase = createClient()
+  const isLoading = authLoading || recordsLoading
 
-  useEffect(() => {
-    return () => {
-      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
-    }
-  }, [])
-
-  useEffect(() => {
-    const init = async () => {
-      const { data: { user: u } } = await supabase.auth.getUser()
-      setUser(u)
-      if (u) {
-        const { data } = await supabase.from('records').select('*').order('created_at', { ascending: false })
-        setRecords(data || [])
-      }
-      setIsLoading(false)
-    }
-    init()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        supabase.from('records').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-          setRecords(data || [])
-        })
-      } else setRecords([])
-    })
-    return () => subscription.unsubscribe()
-  }, [])
-
+  // 활성 투자 필터링 (정렬 포함)
   const activeRecords = useMemo(() => {
-    return records.filter((r) => {
-      const start = getStartDate(r)
-      return !isCompleted(start, r.period_years)
-    })
+    return records
+      .filter((r) => {
+        const start = getStartDate(r)
+        return !isCompleted(start, r.period_years)
+      })
+      .sort((a, b) => {
+        // created_at 내림차순 정렬
+        const dateA = new Date(a.created_at || 0).getTime()
+        const dateB = new Date(b.created_at || 0).getTime()
+        return dateB - dateA
+      })
   }, [records])
-
-  const year = currentMonth.getFullYear()
-  const month = currentMonth.getMonth() + 1
 
   const eventsForMonth = useMemo(
     () => getPaymentEventsForMonth(activeRecords, year, month),
@@ -101,15 +81,6 @@ export default function CalendarPage() {
     return map
   }, [eventsForMonth])
 
-  const calendarDays = useMemo(() => {
-    const daysInMonth = getDaysInMonth(currentMonth)
-    const first = startOfMonth(currentMonth)
-    const startPad = getDay(first)
-    const cells: (number | null)[] = []
-    for (let i = 0; i < startPad; i++) cells.push(null)
-    for (let d = 1; d <= daysInMonth; d++) cells.push(d)
-    return cells
-  }, [currentMonth])
 
   const selectedEvents = useMemo(() => {
     if (!selectedDate) return []
@@ -118,39 +89,6 @@ export default function CalendarPage() {
     return eventsByDay.get(d) || []
   }, [selectedDate, eventsByDay, year, month])
 
-  const handleUndo = useCallback(() => {
-    const p = pendingUndoRef.current
-    if (!p) return
-    clearPaymentCompleted(p.investmentId, p.year, p.month, p.day)
-    const key = `${p.investmentId}_${p.year}_${p.month}_${p.day}`
-    setCompletedKeys((prev) => {
-      const next = new Set(prev)
-      next.delete(key)
-      return next
-    })
-    setPendingUndo(null)
-    if (toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current)
-      toastTimeoutRef.current = null
-    }
-  }, [])
-
-  const handleComplete = (e: PaymentEvent) => {
-    setPaymentCompleted(e.investmentId, e.year, e.month, e.day)
-    setCompletedKeys((prev) => new Set(prev).add(`${e.investmentId}_${e.year}_${e.month}_${e.day}`))
-    setPendingUndo(e)
-    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
-    toastTimeoutRef.current = setTimeout(() => {
-      setPendingUndo(null)
-      toastTimeoutRef.current = null
-    }, TOAST_DURATION_MS)
-  }
-
-  const isEventCompleted = (e: PaymentEvent) => {
-    const key = `${e.investmentId}_${e.year}_${e.month}_${e.day}`
-    if (completedKeys.has(key)) return true
-    return isPaymentEventCompleted(e.investmentId, e.year, e.month, e.day)
-  }
 
   const getDayStatus = (day: number) => {
     const events = eventsByDay.get(day) || []
@@ -179,7 +117,7 @@ export default function CalendarPage() {
   return (
     <main
       className="min-h-screen bg-surface"
-      onClick={() => setSelectedDate(null)}
+      onClick={clearSelection}
       role="presentation"
     >
       <div className="max-w-md mx-auto px-4 py-6 pb-24">
@@ -189,10 +127,7 @@ export default function CalendarPage() {
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
-            onClick={() => {
-              setCurrentMonth((m) => subMonths(m, 1))
-              setSelectedDate(null)
-            }}
+            onClick={goToPrevMonth}
             className="p-2 text-foreground-muted hover:text-foreground"
           >
             <CaretLeft className="w-6 h-6" />
@@ -202,10 +137,7 @@ export default function CalendarPage() {
           </span>
           <button
             type="button"
-            onClick={() => {
-              setCurrentMonth((m) => addMonths(m, 1))
-              setSelectedDate(null)
-            }}
+            onClick={goToNextMonth}
             className="p-2 text-foreground-muted hover:text-foreground"
           >
             <CaretRight className="w-6 h-6" />
@@ -231,10 +163,10 @@ export default function CalendarPage() {
                   <div
                     key={`empty-${i}`}
                     className="aspect-square cursor-pointer"
-                    onClick={() => setSelectedDate(null)}
+                    onClick={clearSelection}
                     role="button"
                     tabIndex={0}
-                    onKeyDown={(e) => e.key === 'Enter' && setSelectedDate(null)}
+                    onKeyDown={(e) => e.key === 'Enter' && clearSelection()}
                     aria-label="선택 해제"
                   />
                 )
@@ -245,7 +177,7 @@ export default function CalendarPage() {
                 <button
                   key={day}
                   type="button"
-                  onClick={() => setSelectedDate(new Date(year, month - 1, day))}
+                  onClick={() => selectDate(day)}
                   className={`aspect-square rounded-lg flex flex-col items-center justify-center text-sm transition-colors ${
                     isSelected ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] ring-2 ring-brand-500' : 'hover:bg-surface-hover'
                   }`}
