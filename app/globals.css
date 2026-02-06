@@ -4,6 +4,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* =============================================================================
+   Layer 3: Tailwind Theme (globals.css @theme → Primitives 참조)
+   ============================================================================= */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -38,33 +41,54 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  
-  /* Brand Colors */
-  --color-brand-50: #e6f9ef;
-  --color-brand-100: #b1edcf;
-  --color-brand-200: #8be4b7;
-  --color-brand-300: #55d796;
-  --color-brand-400: #35d082;
-  --color-brand-500: #02c463;
-  --color-brand-600: #02b25a;
-  --color-brand-700: #018b46;
-  --color-brand-800: #016c36;
-  --color-brand-900: #01522a;
-  
-  /* Cool Gray Colors */
-  --color-coolgray-25: #EDEFF0;
-  --color-coolgray-50: #E6E7E8;
-  --color-coolgray-75: #D7D8D9;
-  --color-coolgray-100: #CECFD1;
-  --color-coolgray-200: #B7B9BD;
-  --color-coolgray-300: #9C9EA6;
-  --color-coolgray-400: #83868F;
-  --color-coolgray-500: #70737C;
-  --color-coolgray-600: #63666E;
-  --color-coolgray-700: #4D4E54;
-  --color-coolgray-800: #37383D;
-  --color-coolgray-900: #292A2E;
-  
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-strong: var(--surface-strong);
+  --color-surface-strong-hover: var(--surface-strong-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-subtle-lighter: var(--border-subtle-lighter);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-soft: var(--foreground-soft);
+  --color-foreground-subtle: var(--foreground-subtle);
+  --color-placeholder: var(--placeholder);
+  --color-surface-dark: var(--surface-dark);
+  --color-surface-dark-hover: var(--surface-dark-hover);
+  --color-card-border: var(--card-border);
+  --color-brand-accent-bg: var(--brand-accent-bg);
+  --color-brand-accent-text: var(--brand-accent-text);
+  --color-brand-accent-border: var(--brand-accent-border);
+  --color-chart-profit: var(--chart-profit);
+  --color-chart-principal: var(--chart-principal);
+
+  /* Layer 3: Primitives → Tailwind 유틸리티 클래스 (brand-500, coolgray-900 등) */
+  --color-brand-50: var(--palette-brand-50);
+  --color-brand-100: var(--palette-brand-100);
+  --color-brand-200: var(--palette-brand-200);
+  --color-brand-300: var(--palette-brand-300);
+  --color-brand-400: var(--palette-brand-400);
+  --color-brand-500: var(--palette-brand-500);
+  --color-brand-600: var(--palette-brand-600);
+  --color-brand-700: var(--palette-brand-700);
+  --color-brand-800: var(--palette-brand-800);
+  --color-brand-900: var(--palette-brand-900);
+  --color-coolgray-25: var(--palette-coolgray-25);
+  --color-coolgray-50: var(--palette-coolgray-50);
+  --color-coolgray-75: var(--palette-coolgray-75);
+  --color-coolgray-100: var(--palette-coolgray-100);
+  --color-coolgray-200: var(--palette-coolgray-200);
+  --color-coolgray-300: var(--palette-coolgray-300);
+  --color-coolgray-400: var(--palette-coolgray-400);
+  --color-coolgray-500: var(--palette-coolgray-500);
+  --color-coolgray-600: var(--palette-coolgray-600);
+  --color-coolgray-700: var(--palette-coolgray-700);
+  --color-coolgray-800: var(--palette-coolgray-800);
+  --color-coolgray-850: var(--palette-coolgray-850);
+  --color-coolgray-900: var(--palette-coolgray-900);
+  --color-coolgray-950: var(--palette-coolgray-950);
+  --color-coolgray-1000: var(--palette-coolgray-1000);
+  --color-torich-brown: var(--palette-torich-brown);
+  --color-torich-brown-light: var(--palette-torich-brown-light);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -75,72 +99,187 @@
 }
 
 :root {
+  /* ==========================================================================
+     Layer 1: Primitives (재료 정의) - Hex → HSL 변환
+     ========================================================================== */
+  /* Brand */
+  --palette-brand-50: hsl(140, 67%, 94%);
+  --palette-brand-100: hsl(140, 65%, 81%);
+  --palette-brand-200: hsl(140, 67%, 72%);
+  --palette-brand-300: hsl(140, 58%, 59%);
+  --palette-brand-400: hsl(140, 63%, 51%);
+  --palette-brand-500: hsl(140, 98%, 39%);
+  --palette-brand-600: hsl(140, 98%, 35%);
+  --palette-brand-700: hsl(140, 98%, 27%);
+  --palette-brand-800: hsl(140, 98%, 21%);
+  --palette-brand-900: hsl(140, 98%, 16%);
+
+  /* Cool Gray */
+  --palette-coolgray-25: hsl(210, 9%, 94%);
+  --palette-coolgray-50: hsl(210, 9%, 91%);
+  --palette-coolgray-75: hsl(210, 5%, 85%);
+  --palette-coolgray-100: hsl(220, 5%, 81%);
+  --palette-coolgray-200: hsl(220, 5%, 73%);
+  --palette-coolgray-300: hsl(228, 5%, 63%);
+  --palette-coolgray-400: hsl(228, 5%, 54%);
+  --palette-coolgray-500: hsl(228, 5%, 46%);
+  --palette-coolgray-600: hsl(228, 5%, 41%);
+  --palette-coolgray-700: hsl(240, 4%, 32%);
+  --palette-coolgray-800: hsl(240, 4%, 23%);
+  --palette-coolgray-850: hsl(240, 4%, 20%);
+  --palette-coolgray-900: hsl(240, 4%, 17%);
+  --palette-coolgray-950: hsl(240, 4%, 12%);
+  --palette-coolgray-1000: hsl(240, 4%, 8%);
+
+  /* Torich */
+  --palette-torich-brown: hsl(28, 29%, 28%);
+  --palette-torich-brown-light: hsl(30, 36%, 84%);
+
+  /* White (배경용) - Layer 2 매핑을 위해 추가 */
+  --palette-white: hsl(0, 0%, 100%);
+
+  /* Destructive (경고/삭제용 빨강) - 팔레트에 없어서 추가 */
+  --palette-destructive: hsl(0, 72%, 51%);
+
+  /* ==========================================================================
+     Layer 2: Semantics - Layer 1 Primitives 참조
+     ========================================================================== */
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.7 0.15 150);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.7 0.15 150);
+  --background: var(--palette-white);
+  --foreground: var(--palette-coolgray-900);
+  --card: var(--palette-white);
+  --card-foreground: var(--palette-coolgray-900);
+  --popover: var(--palette-white);
+  --popover-foreground: var(--palette-coolgray-900);
+  --primary: var(--palette-brand-600);
+  --primary-foreground: var(--palette-white);
+  --secondary: var(--palette-coolgray-100);
+  --secondary-foreground: var(--palette-coolgray-900);
+  --muted: var(--palette-coolgray-100);
+  --muted-foreground: var(--palette-coolgray-500);
+  --accent: var(--palette-coolgray-100);
+  --accent-foreground: var(--palette-coolgray-900);
+  --destructive: var(--palette-destructive);
+  --border: var(--palette-coolgray-200);
+  --input: var(--palette-coolgray-200);
+  --ring: var(--palette-brand-600);
+  /* chart: 데이터 시각화용 다채색 - 팔레트에 없어 oklch 유지 */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar: var(--palette-white);
+  --sidebar-foreground: var(--palette-coolgray-900);
+  --sidebar-primary: var(--palette-coolgray-800);
+  --sidebar-primary-foreground: var(--palette-white);
+  --sidebar-accent: var(--palette-coolgray-100);
+  --sidebar-accent-foreground: var(--palette-coolgray-900);
+  --sidebar-border: var(--palette-coolgray-200);
+  --sidebar-ring: var(--palette-coolgray-400);
+
+  /* 역할별 시맨틱 (Primitives 직접 사용 대체용) */
+  --surface: var(--palette-coolgray-25);
+  --surface-hover: var(--palette-coolgray-50);
+  --surface-strong: var(--palette-coolgray-200);
+  --surface-strong-hover: var(--palette-coolgray-300);
+  --border-subtle: var(--palette-coolgray-100);
+  --border-subtle-lighter: var(--palette-coolgray-50);
+  --foreground-muted: var(--palette-coolgray-600);
+  --foreground-soft: var(--palette-coolgray-700);
+  --foreground-subtle: var(--palette-coolgray-400);
+  --placeholder: var(--palette-coolgray-400);
+  --surface-dark: var(--palette-coolgray-800);
+  --surface-dark-hover: var(--palette-coolgray-900);
+  /* 카드 전용 보더: 라이트에서는 보더 있음, 다크에서는 없음 */
+  --card-border: var(--palette-coolgray-50);
+  /* Brand 강조 배지/태그용 */
+  --brand-accent-bg: var(--palette-brand-50);
+  --brand-accent-text: var(--palette-brand-700);
+  --brand-accent-border: var(--palette-brand-200);
+  /* 차트 색상 */
+  --chart-profit: var(--palette-brand-500);
+  --chart-principal: var(--palette-brand-100);
 }
 
+/* ==========================================================================
+   Light ↔ Dark 1:1 매핑 (a↔b, a1↔b1, ...)
+   Light(밝음)     →  Dark(어두움)
+   white           →  coolgray-900
+   coolgray-25     →  coolgray-800
+   coolgray-50     →  coolgray-700
+   coolgray-75     →  coolgray-700
+   coolgray-100    →  coolgray-600
+   coolgray-200    →  coolgray-500
+   coolgray-300    →  coolgray-400
+   coolgray-400    →  coolgray-400 (중간)
+   coolgray-500    →  coolgray-300
+   coolgray-600    →  coolgray-200
+   coolgray-700    →  coolgray-100
+   coolgray-800    →  coolgray-50
+   coolgray-850    →  (다크 전용)
+   coolgray-900    →  coolgray-25
+   coolgray-950    →  (다크 전용)
+   coolgray-1000   →  (다크 전용)
+   ========================================================================== */
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.7 0.15 150);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.7 0.15 150);
+  /* Layer 2: Semantics (다크모드) - 1:1 매핑 적용 */
+  /* surface(950) < card(900) - 토스 스타일 더 어두운 배경 */
+  --background: var(--palette-coolgray-1000);
+  --foreground: var(--palette-coolgray-25);
+  --card: var(--palette-coolgray-900);
+  --card-foreground: var(--palette-coolgray-25);
+  --popover: var(--palette-coolgray-900);
+  --popover-foreground: var(--palette-coolgray-25);
+  --primary: var(--palette-brand-600);
+  --primary-foreground: var(--palette-white);
+  --secondary: var(--palette-coolgray-600);
+  --secondary-foreground: var(--palette-coolgray-25);
+  --muted: var(--palette-coolgray-600);
+  --muted-foreground: var(--palette-coolgray-400);
+  --accent: var(--palette-coolgray-600);
+  --accent-foreground: var(--palette-coolgray-25);
+  --destructive: var(--palette-destructive);
+  --border: var(--palette-coolgray-500);
+  --input: var(--palette-coolgray-500);
+  --ring: var(--palette-brand-600);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --sidebar: var(--palette-coolgray-900);
+  --sidebar-foreground: var(--palette-coolgray-25);
+  --sidebar-primary: var(--palette-brand-500);
+  --sidebar-primary-foreground: var(--palette-white);
+  --sidebar-accent: var(--palette-coolgray-600);
+  --sidebar-accent-foreground: var(--palette-coolgray-25);
+  --sidebar-border: var(--palette-coolgray-500);
+  --sidebar-ring: var(--palette-coolgray-400);
+
+  /* 역할별 시맨틱 - surface(950) / card(900) */
+  --surface: var(--palette-coolgray-950);
+  --surface-hover: var(--palette-coolgray-900);
+  --surface-strong: var(--palette-coolgray-500);
+  --surface-strong-hover: var(--palette-coolgray-400);
+  --border-subtle: var(--palette-coolgray-600);
+  --border-subtle-lighter: var(--palette-coolgray-700);
+  --foreground-muted: var(--palette-coolgray-200);
+  --foreground-soft: var(--palette-coolgray-100);
+  --foreground-subtle: var(--palette-coolgray-400);
+  --placeholder: var(--palette-coolgray-400);
+  /* surface-dark: 라이트의 800→다크의 700 (어두운 CTA/플로팅바용) */
+  --surface-dark: var(--palette-coolgray-700);
+  --surface-dark-hover: var(--palette-coolgray-600);
+  /* 카드 전용 보더: 다크모드에서는 보더 없음 (색상 차이로 구분) */
+  --card-border: transparent;
+  /* Brand 강조 배지/태그용 - 다크모드에서도 밝은 색상 유지 (라이트의 50→다크의 200) */
+  --brand-accent-bg: var(--palette-brand-200);
+  --brand-accent-text: var(--palette-brand-600);
+  --brand-accent-border: var(--palette-brand-300);
+  /* 차트 색상 - 다크모드에서도 밝은 색상 유지 */
+  --chart-profit: var(--palette-brand-500);
+  --chart-principal: var(--palette-brand-200);
 }
 
 @layer base {
@@ -152,30 +291,30 @@
   }
 }
 
-/* Custom scrollbar styles */
+/* Custom scrollbar styles - Primitives 참조 */
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: rgb(206 207 209) transparent;
+    scrollbar-color: var(--palette-coolgray-100) transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: rgb(206 207 209);
+    background-color: var(--palette-coolgray-100);
     border-radius: 4px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(183 185 189);
+    background-color: var(--palette-coolgray-200);
     background-clip: content-box;
   }
 }

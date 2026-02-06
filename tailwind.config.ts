@@ -11,40 +11,40 @@ const config: Config = {
       fontFamily: {
         sans: ['Pretendard', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
       },
+      /* Layer 3: Tailwind Config - Primitives 변수 참조 (globals.css) */
       colors: {
         torich: {
-          brown: '#5D4633',
-          'brown-light': '#E4D7C7',
+          brown: 'var(--palette-torich-brown)',
+          'brown-light': 'var(--palette-torich-brown-light)',
         },
         brand: {
-          50: '#e6f9ef',
-          100: '#b1edcf',
-          200: '#8be4b7',
-          300: '#55d796',
-          400: '#35d082',
-          500: '#02c463', // Main Primary Color
-          600: '#02b25a',
-          700: '#018b46',
-          800: '#016c36',
-          900: '#01522a',
+          50: 'var(--palette-brand-50)',
+          100: 'var(--palette-brand-100)',
+          200: 'var(--palette-brand-200)',
+          300: 'var(--palette-brand-300)',
+          400: 'var(--palette-brand-400)',
+          500: 'var(--palette-brand-500)',
+          600: 'var(--palette-brand-600)',
+          700: 'var(--palette-brand-700)',
+          800: 'var(--palette-brand-800)',
+          900: 'var(--palette-brand-900)',
         },
         coolgray: {
-          25: '#EDEFF0', // 전체 배경용
-          50: '#E6E7E8',
-          75: '#D7D8D9',
-          100: '#CECFD1', // 연한 테두리
-          200: '#B7B9BD',
-          300: '#9C9EA6',
-          400: '#83868F', // 보조 텍스트
-          500: '#70737C', // 보조 텍스트 - 진함
-          600: '#63666E',
-          700: '#4D4E54',
-          800: '#37383D', // 본문 텍스트
-          900: '#292A2E', // 제목 텍스트
-        },
-        gray: {
-          25: '#F5F5F5', // 연한 회색 (White와 Gray-50 사이)
-          50: '#E6E7E8', // 표준 회색 배경 (coolgray-50과 동일)
+          25: 'var(--palette-coolgray-25)',
+          50: 'var(--palette-coolgray-50)',
+          75: 'var(--palette-coolgray-75)',
+          100: 'var(--palette-coolgray-100)',
+          200: 'var(--palette-coolgray-200)',
+          300: 'var(--palette-coolgray-300)',
+          400: 'var(--palette-coolgray-400)',
+          500: 'var(--palette-coolgray-500)',
+          600: 'var(--palette-coolgray-600)',
+          700: 'var(--palette-coolgray-700)',
+          800: 'var(--palette-coolgray-800)',
+          850: 'var(--palette-coolgray-850)',
+          900: 'var(--palette-coolgray-900)',
+          950: 'var(--palette-coolgray-950)',
+          1000: 'var(--palette-coolgray-1000)',
         },
       },
     },
