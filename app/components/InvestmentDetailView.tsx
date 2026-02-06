@@ -42,6 +42,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useNotificationToggle } from '@/app/hooks/useNotificationToggle'
+import { useInvestmentDetailEdit } from '@/app/hooks/useInvestmentDetailEdit'
+import DeleteConfirmModal from '@/app/components/DeleteConfirmModal'
 
 interface UpdateData {
   monthly_amount: number
@@ -69,28 +72,34 @@ export default function InvestmentDetailView({
   isUpdating = false,
   calculateFutureValue,
 }: InvestmentDetailViewProps) {
-  const STORAGE_KEY_PREFIX = 'torich_notification_'
-
+  // refs (기존 유지)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const overviewRef = useRef<HTMLElement | null>(null)
   const infoRef = useRef<HTMLElement | null>(null)
   const historyRef = useRef<HTMLElement | null>(null)
+  const titleRef = useRef<HTMLDivElement>(null)
 
+  // 알림 훅
+  const { notificationOn, toggleNotification } = useNotificationToggle(item.id)
+
+  // 수정 폼 훅
+  const {
+    editMonthlyAmount, setEditMonthlyAmount,
+    editPeriodYears, setEditPeriodYears,
+    editAnnualRate, setEditAnnualRate,
+    editInvestmentDays, setEditInvestmentDays,
+    isRateManuallyEdited, setIsRateManuallyEdited,
+    handleNumericInput, handleRateInput,
+    initializeFromItem,
+  } = useInvestmentDetailEdit()
+
+  // UI 상태 (컴포넌트에 유지)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const [notificationOn, setNotificationOn] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'info' | 'history'>('overview')
-  
-  // 수정 가능한 필드들
-  const [editMonthlyAmount, setEditMonthlyAmount] = useState('')
-  const [editPeriodYears, setEditPeriodYears] = useState('')
-  const [editAnnualRate, setEditAnnualRate] = useState('')
-  const [editInvestmentDays, setEditInvestmentDays] = useState<number[]>([])
   const [isDaysPickerOpen, setIsDaysPickerOpen] = useState(false)
-  const [isRateManuallyEdited, setIsRateManuallyEdited] = useState(false)
+  const [activeTab, setActiveTab] = useState<'overview' | 'info' | 'history'>('overview')
   const [visiblePaymentMonths, setVisiblePaymentMonths] = useState(6)
   const [showStickyTitle, setShowStickyTitle] = useState(false)
-  const titleRef = useRef<HTMLDivElement>(null)
   
   // 원본 수익률 저장 (비교용)
   const originalRate = item.annual_rate || 10
@@ -100,33 +109,13 @@ export default function InvestmentDetailView({
   ]
   const isCustomRate = !!item.is_custom_rate
 
-  // 알림 상태 로컬 스토리지에서 로드
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${item.id}`)
-      setNotificationOn(stored === null ? true : stored === '1')
-    }
-  }, [item.id])
-
-  const toggleNotification = () => {
-    const next = !notificationOn
-    setNotificationOn(next)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(`${STORAGE_KEY_PREFIX}${item.id}`, next ? '1' : '0')
-    }
-  }
-
-  // 수정 모드 진입 시 현재 값으로 초기화
+  // 수정 모드 진입 시 초기화 (기존 useEffect 대체)
   useEffect(() => {
     if (isEditMode) {
-      setEditMonthlyAmount((item.monthly_amount / 10000).toString())
-      setEditPeriodYears(item.period_years.toString())
-      setEditAnnualRate((item.annual_rate || 10).toString())
-      setEditInvestmentDays(item.investment_days || [])
+      initializeFromItem(item)
       setIsDaysPickerOpen(false)
-      setIsRateManuallyEdited(false)
     }
-  }, [isEditMode, item])
+  }, [isEditMode, item, initializeFromItem])
 
   // 종목 변경 시 월별 납입 페이징 초기화
   useEffect(() => {
@@ -208,21 +197,6 @@ export default function InvestmentDetailView({
   const paymentHistory = fullPaymentHistory.slice(0, visiblePaymentMonths)
   const hasMorePaymentHistory = visiblePaymentMonths < fullPaymentHistory.length
 
-  // 숫자만 입력 허용
-  const handleNumericInput = (value: string, setter: (v: string) => void) => {
-    const cleaned = value.replace(/[^0-9]/g, '')
-    setter(cleaned)
-  }
-
-  // 수익률 입력 (소수점 허용)
-  const handleRateInput = (value: string) => {
-    const cleaned = value.replace(/[^0-9.]/g, '')
-    // 소수점이 하나만 있도록
-    const parts = cleaned.split('.')
-    if (parts.length > 2) return
-    setEditAnnualRate(cleaned)
-    setIsRateManuallyEdited(true)
-  }
 
   // 저장
   const handleSave = async () => {
@@ -676,50 +650,12 @@ export default function InvestmentDetailView({
       </div>
 
       {/* 삭제 확인 모달 */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center">
-          {/* 오버레이 */}
-          <div 
-            className="fixed inset-0 bg-black/50"
-            onClick={() => {
-              if (!isDeleting) {
-                setShowDeleteModal(false)
-              }
-            }}
-          />
-          
-          {/* 모달 컨텐츠 */}
-          <div className="relative z-[60] w-full max-w-md mx-4 bg-card rounded-2xl shadow-lg p-6">
-            {/* 헤더 */}
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold tracking-tight text-foreground mb-3">
-                정말 삭제하시겠습니까?
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                삭제된 투자 기록은 복구할 수 없습니다.
-              </p>
-            </div>
-
-            {/* 버튼 영역 */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                disabled={isDeleting}
-                className="flex-1 py-3 text-base font-medium text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors disabled:opacity-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={onDelete}
-                disabled={isDeleting}
-                className="flex-1 py-3 text-base font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
-              >
-                {isDeleting ? '삭제 중...' : '삭제'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={onDelete}
+        isDeleting={isDeleting}
+      />
 
       {/* 투자일 선택 바텀 시트 */}
       {isEditMode && isDaysPickerOpen && (
