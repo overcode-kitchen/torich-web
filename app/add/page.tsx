@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { IconArrowLeft, IconLoader2, IconInfoCircle, IconX } from '@tabler/icons-react'
 import { CalendarDays, ChevronDownIcon } from 'lucide-react'
@@ -10,155 +10,70 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { createClient } from '@/utils/supabase/client'
 import { formatCurrency } from '@/lib/utils'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
+import { useStockSearch, type SearchResult } from '@/app/hooks/useStockSearch'
+import { useManualInput } from '@/app/hooks/useManualInput'
+import { useRateEditor } from '@/app/hooks/useRateEditor'
+import { useAddInvestmentForm } from '@/app/hooks/useAddInvestmentForm'
 // import { sendGAEvent } from '@next/third-parties/google'
-
-// 검색 결과 (간단한 정보만)
-interface SearchResult {
-  symbol: string
-  name: string
-  group?: string
-}
-
-// 선택된 종목의 상세 정보
-interface StockDetail {
-  symbol: string
-  name: string
-  averageRate: number
-  currentPrice: number
-}
 
 export default function AddInvestmentPage() {
   const router = useRouter()
-  const [stockName, setStockName] = useState('')
-  const [monthlyAmount, setMonthlyAmount] = useState('')
-  const [period, setPeriod] = useState('')
-  const [startDate, setStartDate] = useState<Date>(() => new Date())
-  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
-  const [investmentDays, setInvestmentDays] = useState<number[]>([]) // 매월 투자하는 날짜들
-  const [isDaysPickerOpen, setIsDaysPickerOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
-  
-  // 주식 검색 관련 상태
-  const [isSearching, setIsSearching] = useState(false)
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-  const [showDropdown, setShowDropdown] = useState(false)
-  const [selectedStock, setSelectedStock] = useState<StockDetail | null>(null)
-  const [annualRate, setAnnualRate] = useState(10) // 기본 10%
-  const [market, setMarket] = useState<'KR' | 'US'>('KR') // 기본값: 국내 주식
-  
-  // 직접 입력 모달 관련 상태
-  const [isManualModalOpen, setIsManualModalOpen] = useState(false)
-  const [manualStockName, setManualStockName] = useState('')
-  const [manualRate, setManualRate] = useState('')
-  const [isManualInput, setIsManualInput] = useState(false) // 직접 입력 모드 플래그
-  
-  // 수익률 안내 모달 상태
-  const [isRateHelpModalOpen, setIsRateHelpModalOpen] = useState(false)
-  
-  // 수익률 인라인 수정 상태
-  const [isRateEditing, setIsRateEditing] = useState(false)
-  const [editingRate, setEditingRate] = useState('')
-  const [originalSystemRate, setOriginalSystemRate] = useState<number | null>(null) // 시스템에서 가져온 원본 수익률
-  
-  // 수익률 로딩 상태
-  const [isRateLoading, setIsRateLoading] = useState(false)
-  const [rateFetchFailed, setRateFetchFailed] = useState(false)
+  const {
+    stockName,
+    setStockName,
+    monthlyAmount,
+    period,
+    startDate,
+    setStartDate,
+    investmentDays,
+    setInvestmentDays,
+    isSubmitting,
+    setIsSubmitting,
+    userId,
+    handleAmountChange,
+    adjustAmount,
+    handlePeriodChange,
+    adjustPeriod,
+  } = useAddInvestmentForm()
 
-  // 체류 시간 추적
-  useEffect(() => {
-    const startTime = Date.now()
+  const {
+    isManualModalOpen,
+    setIsManualModalOpen,
+    manualStockName,
+    setManualStockName,
+    manualRate,
+    setManualRate,
+    isManualInput,
+    setIsManualInput,
+    handleManualConfirm,
+    closeAndReset: closeManualModal,
+  } = useManualInput()
 
-    return () => {
-      const endTime = Date.now()
-      const timeSpent = Math.round((endTime - startTime) / 1000) // 초 단위로 변환
-      // sendGAEvent('event', 'time_spent_add_page', { value: timeSpent })
-    }
-  }, [])
+  const {
+    isSearching,
+    searchResults,
+    showDropdown,
+    setShowDropdown,
+    selectedStock,
+    setSelectedStock,
+    market,
+    setMarket,
+    annualRate,
+    setAnnualRate,
+    originalSystemRate,
+    setOriginalSystemRate,
+    isRateLoading,
+    rateFetchFailed,
+    setRateFetchFailed,
+    handleSelectStock,
+    resetSearch,
+  } = useStockSearch(stockName, isManualInput)
 
-  useEffect(() => {
-    // 로그인한 유저 정보 가져오기
-    const getUser = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUserId(user.id)
-      } else {
-        // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
-        router.push('/login')
-      }
-    }
-    getUser()
-  }, [router])
+  const { isRateEditing, editingRate, startEditing, confirmEdit, cancelEdit, handleRateChange } = useRateEditor()
 
-  // 주식 검색 (Debounce 적용)
-  useEffect(() => {
-    // Guard Clause: 직접 입력 모드일 때는 검색하지 않음
-    if (isManualInput) {
-      return
-    }
-
-    // 선택된 종목이 있으면 검색하지 않음 (드롭다운 재오픈 방지)
-    if (selectedStock) {
-      return
-    }
-
-    // 입력이 없거나 너무 짧으면 검색하지 않음
-    if (!stockName.trim() || stockName.trim().length < 2) {
-      setSearchResults([])
-      setShowDropdown(false)
-      return
-    }
-
-    // Debounce: 0.5초 후 검색 실행
-    const timer = setTimeout(async () => {
-      try {
-        setIsSearching(true)
-        setShowDropdown(false)
-        
-        // Search API 호출 (market 파라미터 포함)
-        const response = await fetch(`/api/search?query=${encodeURIComponent(stockName.trim())}&market=${market}`)
-        const data = await response.json()
-        
-        if (response.ok && data.stocks && data.stocks.length > 0) {
-          setSearchResults(data.stocks)
-          setShowDropdown(true)
-        } else {
-          setSearchResults([])
-          setShowDropdown(true) // 검색 결과 없을 때도 드롭다운 열어서 "직접 입력하기" 버튼 표시
-        }
-      } catch (error) {
-        console.error('주식 검색 오류:', error)
-        setSearchResults([])
-        setShowDropdown(false)
-      } finally {
-        setIsSearching(false)
-      }
-    }, 500)
-
-    // Cleanup: 컴포넌트 unmount 또는 stockName/market 변경 시 타이머 제거
-    return () => clearTimeout(timer)
-  }, [stockName, selectedStock, market, isManualInput])
-
-  // 외부 클릭 시 드롭다운 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      // 드롭다운 영역이나 입력 필드 내부 클릭은 무시
-      if (target.closest('.stock-search-container')) {
-        return
-      }
-      setShowDropdown(false)
-    }
-
-    if (showDropdown) {
-      document.addEventListener('click', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside)
-    }
-  }, [showDropdown])
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState<boolean>(false)
+  const [isDaysPickerOpen, setIsDaysPickerOpen] = useState<boolean>(false)
+  const [isRateHelpModalOpen, setIsRateHelpModalOpen] = useState<boolean>(false)
 
   // 복리 계산 함수 (동적 수익률 적용)
   const calculateFinalAmount = (monthlyAmount: number, periodYears: number, rate: number): number => {
@@ -181,75 +96,6 @@ export default function AddInvestmentPage() {
     console.log('====================')
     
     return Math.round(finalAmount)
-  }
-
-  // 종목 선택 핸들러 (상세 정보 조회)
-  const handleSelectStock = async (stock: SearchResult) => {
-    try {
-      // 드롭다운 닫고 임시 선택 상태 설정 (검색 재실행 방지)
-      setShowDropdown(false)
-      setSelectedStock({
-        symbol: stock.symbol,
-        name: stock.name,
-        averageRate: 0,
-        currentPrice: 0
-      })
-      setStockName(stock.name)
-      setIsSearching(true)
-      setIsRateLoading(true)
-      setRateFetchFailed(false)
-
-      // Stock API 호출하여 상세 정보 조회 (Yahoo Finance 데이터)
-      const response = await fetch(`/api/stock?symbol=${encodeURIComponent(stock.symbol)}`)
-      const data = await response.json()
-
-      if (response.ok && data.averageRate) {
-        // 실제 상세 정보로 업데이트
-        setSelectedStock(data)
-        setAnnualRate(data.averageRate)
-        setOriginalSystemRate(data.averageRate) // 원본 시스템 수익률 저장
-        setRateFetchFailed(false)
-      } else {
-        // 상세 정보 조회 실패 시 기본값 사용
-        console.warn('상세 정보 조회 실패, 기본값 사용')
-        setSelectedStock(null)
-        setAnnualRate(10)
-        setOriginalSystemRate(null)
-        setRateFetchFailed(true)
-      }
-    } catch (error) {
-      console.error('상세 정보 조회 오류:', error)
-      setSelectedStock(null)
-      setAnnualRate(10)
-      setOriginalSystemRate(null)
-      setRateFetchFailed(true)
-    } finally {
-      setIsSearching(false)
-      setIsRateLoading(false)
-    }
-  }
-
-  // 직접 입력 확인 핸들러
-  const handleManualConfirm = () => {
-    if (!manualStockName.trim()) {
-      alert('종목 이름을 입력해주세요.')
-      return
-    }
-    if (!manualRate || parseFloat(manualRate) <= 0) {
-      alert('예상 수익률을 입력해주세요.')
-      return
-    }
-
-    // 메인 폼에 적용 (순서 중요: isManualInput을 먼저 설정)
-    setIsManualInput(true) // 1. 직접 입력 모드 활성화 (검색 방지)
-    setStockName(manualStockName) // 2. 종목명 설정
-    setAnnualRate(parseFloat(manualRate)) // 3. 수익률 설정
-    setSelectedStock(null) // 4. 선택 상태 초기화
-    
-    // 모달 닫기 및 초기화
-    setIsManualModalOpen(false)
-    setManualStockName('')
-    setManualRate('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -346,51 +192,14 @@ export default function AddInvestmentPage() {
     }
   }
 
-  // 숫자만 입력받는 핸들러 (기간용)
-  const handleNumericInput = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setter: (value: string) => void
-  ) => {
-    const value = e.target.value.replace(/[^0-9]/g, '')
-    setter(value)
-  }
-
-  // 금액 입력 핸들러 (천 단위 콤마 포맷팅)
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 숫자만 추출
-    const value = e.target.value.replace(/[^0-9]/g, '')
-    
-    if (value === '') {
-      setMonthlyAmount('')
-      return
+  const handleMarketChange = (newMarket: 'KR' | 'US'): void => {
+    if (market !== newMarket) {
+      setMarket(newMarket)
+      setStockName('')
+      resetSearch()
+      setIsManualInput(false)
+      cancelEdit()
     }
-
-    // 천 단위 콤마 추가
-    const formatted = parseInt(value).toLocaleString('ko-KR')
-    setMonthlyAmount(formatted)
-  }
-
-  // 월 투자금액 조절 함수 (만원 단위)
-  const adjustAmount = (delta: number) => {
-    // 현재 값을 숫자로 변환 (콤마 제거 후 만원 단위로 해석)
-    const currentValue = monthlyAmount ? parseInt(monthlyAmount.replace(/,/g, '')) : 0
-    const newValue = Math.max(0, currentValue + delta) // 최소 0
-    
-    if (newValue === 0) {
-      setMonthlyAmount('')
-    } else {
-      // 천 단위 콤마 추가
-      setMonthlyAmount(newValue.toLocaleString('ko-KR'))
-    }
-  }
-
-  // 투자 기간 조절 함수 (년 단위)
-  const adjustPeriod = (delta: number) => {
-    // 현재 값을 숫자로 변환
-    const currentValue = period ? parseInt(period) : 0
-    const newValue = Math.max(1, currentValue + delta) // 최소 1년
-    
-    setPeriod(newValue.toString())
   }
 
   return (
@@ -421,20 +230,7 @@ export default function AddInvestmentPage() {
         <div className="grid grid-cols-2 gap-1 bg-gray-100 p-1 rounded-lg mb-6">
           <button
             type="button"
-            onClick={() => {
-              if (market !== 'KR') {
-                setMarket('KR')
-                // 종목명과 수익률 관련 데이터 초기화
-                setStockName('')
-                setSelectedStock(null)
-                setAnnualRate(10)
-                setOriginalSystemRate(null)
-                setIsRateEditing(false)
-                setIsManualInput(false)
-                setSearchResults([])
-                setShowDropdown(false)
-              }
-            }}
+            onClick={() => handleMarketChange('KR')}
             className={`py-2 px-4 text-sm font-medium rounded-md transition-colors ${
               market === 'KR'
                 ? 'bg-white text-coolgray-900 shadow-sm'
@@ -445,20 +241,7 @@ export default function AddInvestmentPage() {
           </button>
           <button
             type="button"
-            onClick={() => {
-              if (market !== 'US') {
-                setMarket('US')
-                // 종목명과 수익률 관련 데이터 초기화
-                setStockName('')
-                setSelectedStock(null)
-                setAnnualRate(10)
-                setOriginalSystemRate(null)
-                setIsRateEditing(false)
-                setIsManualInput(false)
-                setSearchResults([])
-                setShowDropdown(false)
-              }
-            }}
+            onClick={() => handleMarketChange('US')}
             className={`py-2 px-4 text-sm font-medium rounded-md transition-colors ${
               market === 'US'
                 ? 'bg-white text-coolgray-900 shadow-sm'
@@ -483,7 +266,7 @@ export default function AddInvestmentPage() {
                 setSelectedStock(null) // 입력 변경 시 선택 초기화
                 setAnnualRate(10) // 기본값으로 리셋
                 setOriginalSystemRate(null) // 원본 수익률 리셋
-                setIsRateEditing(false) // 수정 모드 종료
+                cancelEdit() // 수정 모드 종료
               }}
               placeholder={market === 'KR' ? '삼성전자, TIGER...' : 'S&P 500, AAPL...'}
               className="w-full bg-white rounded-2xl py-3.5 pl-4 pr-12 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -506,7 +289,8 @@ export default function AddInvestmentPage() {
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation()
-                      handleSelectStock(stock)
+                      setStockName(stock.name)
+                      void handleSelectStock(stock)
                     }}
                     className="w-full px-5 py-4 text-left hover:bg-coolgray-50 transition-colors border-b border-coolgray-100 last:border-b-0"
                   >
@@ -563,10 +347,7 @@ export default function AddInvestmentPage() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditingRate(annualRate.toString())
-                        setIsRateEditing(true)
-                      }}
+                      onClick={() => startEditing(annualRate)}
                       className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full hover:bg-amber-200 transition-colors ml-1"
                     >
                       수정
@@ -579,11 +360,7 @@ export default function AddInvestmentPage() {
                     <input
                       type="text"
                       value={editingRate}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9.]/g, '')
-                        const parts = value.split('.')
-                        if (parts.length <= 2) setEditingRate(value)
-                      }}
+                      onChange={(e) => handleRateChange(e.target.value)}
                       className="w-16 text-center bg-white border border-coolgray-200 rounded-lg px-2 py-1 text-coolgray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
                       placeholder="10"
                       autoFocus
@@ -591,24 +368,19 @@ export default function AddInvestmentPage() {
                     <span className="text-sm text-coolgray-600">%</span>
                     <button
                       type="button"
-                      onClick={() => {
-                        const newRate = parseFloat(editingRate)
-                        if (newRate > 0) {
+                      onClick={() =>
+                        confirmEdit((newRate: number) => {
                           setAnnualRate(newRate)
                           setRateFetchFailed(false)
-                        }
-                        setIsRateEditing(false)
-                      }}
+                        })
+                      }
                       className="px-3 py-1 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
                     >
                       확인
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsRateEditing(false)
-                        setEditingRate('')
-                      }}
+                      onClick={cancelEdit}
                       className="px-3 py-1 bg-coolgray-200 text-coolgray-700 text-sm font-medium rounded-lg hover:bg-coolgray-300 transition-colors"
                     >
                       취소
@@ -647,10 +419,7 @@ export default function AddInvestmentPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditingRate(annualRate.toString())
-                        setIsRateEditing(true)
-                      }}
+                      onClick={() => startEditing(annualRate)}
                       className="px-2 py-0.5 bg-coolgray-100 text-coolgray-600 text-xs font-medium rounded-full hover:bg-coolgray-200 transition-colors ml-1"
                     >
                       수정
@@ -670,11 +439,7 @@ export default function AddInvestmentPage() {
                     <input
                       type="text"
                       value={editingRate}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9.]/g, '')
-                        const parts = value.split('.')
-                        if (parts.length <= 2) setEditingRate(value)
-                      }}
+                      onChange={(e) => handleRateChange(e.target.value)}
                       className="w-16 text-center bg-white border border-coolgray-200 rounded-lg px-2 py-1 text-coolgray-900 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
                       placeholder="10"
                       autoFocus
@@ -682,23 +447,14 @@ export default function AddInvestmentPage() {
                     <span className="text-sm text-coolgray-600">%</span>
                     <button
                       type="button"
-                      onClick={() => {
-                        const newRate = parseFloat(editingRate)
-                        if (newRate > 0) {
-                          setAnnualRate(newRate)
-                        }
-                        setIsRateEditing(false)
-                      }}
+                      onClick={() => confirmEdit((newRate: number) => setAnnualRate(newRate))}
                       className="px-3 py-1 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors"
                     >
                       확인
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsRateEditing(false)
-                        setEditingRate('')
-                      }}
+                      onClick={cancelEdit}
                       className="px-3 py-1 bg-coolgray-200 text-coolgray-700 text-sm font-medium rounded-lg hover:bg-coolgray-300 transition-colors"
                     >
                       취소
@@ -711,10 +467,7 @@ export default function AddInvestmentPage() {
                     <span>직접 입력한 수익률 {annualRate}%가 적용됩니다</span>
                     <button
                       type="button"
-                      onClick={() => {
-                        setEditingRate(annualRate.toString())
-                        setIsRateEditing(true)
-                      }}
+                      onClick={() => startEditing(annualRate)}
                       className="px-2 py-0.5 bg-coolgray-100 text-coolgray-600 text-xs font-medium rounded-full hover:bg-coolgray-200 transition-colors ml-1"
                     >
                       수정
@@ -777,7 +530,7 @@ export default function AddInvestmentPage() {
             <input
               type="text"
               value={period}
-              onChange={(e) => handleNumericInput(e, setPeriod)}
+              onChange={handlePeriodChange}
               placeholder="3년간"
               className="w-full bg-white rounded-2xl py-3.5 px-4 text-coolgray-900 placeholder-coolgray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
@@ -1067,16 +820,26 @@ export default function AddInvestmentPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => {
-                  setIsManualModalOpen(false)
-                  setManualStockName('')
-                  setManualRate('')
+                  closeManualModal()
                 }}
                 className="flex-1 bg-coolgray-100 text-coolgray-700 font-medium py-3 rounded-xl hover:bg-coolgray-200 transition-colors"
               >
                 취소
               </button>
               <button
-                onClick={handleManualConfirm}
+                onClick={() => {
+                  handleManualConfirm({
+                    onConfirm: (name: string, rate: number) => {
+                      setIsManualInput(true)
+                      setStockName(name)
+                      setAnnualRate(rate)
+                      setSelectedStock(null)
+                      setOriginalSystemRate(null)
+                      setRateFetchFailed(false)
+                      cancelEdit()
+                    },
+                  })
+                }}
                 className="flex-1 bg-brand-600 text-white font-medium py-3 rounded-xl hover:bg-brand-700 transition-colors"
               >
                 확인
