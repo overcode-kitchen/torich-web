@@ -296,6 +296,7 @@ export default function DesignSystemPage() {
                       { name: "primary", token: "color-primary", bg: "bg-primary", text: "text-primary-foreground" },
                       { name: "secondary", token: "color-secondary", bg: "bg-secondary", text: "text-secondary-foreground" },
                       { name: "muted", token: "color-muted", bg: "bg-muted", text: "text-muted-foreground" },
+                      { name: "muted-darker", token: "color-muted-darker", bg: "bg-muted-darker", text: "text-foreground-soft" },
                       { name: "accent", token: "color-accent", bg: "bg-accent", text: "text-accent-foreground" },
                       { name: "destructive", token: "color-destructive", bg: "bg-destructive", text: "text-white" },
                       { name: "background", token: "color-background", bg: "bg-background", text: "text-foreground", border: true },

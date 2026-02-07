@@ -1,6 +1,6 @@
 'use client'
 
-import { IconX } from '@tabler/icons-react'
+import { X } from '@phosphor-icons/react'
 
 interface Props {
   isOpen: boolean
@@ -23,7 +23,7 @@ export default function RateHelpModal({ isOpen, onClose }: Props) {
           className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center bg-transparent hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500"
           aria-label="닫기"
         >
-          <IconX className="w-5 h-5 text-gray-600" />
+          <X className="w-5 h-5 text-gray-600" />
         </button>
 
         {/* 헤더 */}
