@@ -248,9 +248,7 @@ export function getNextPaymentDate(investment_days?: number[]): Date | null {
  */
 export function formatNextPaymentDate(date: Date): string {
   return `${date.getMonth() + 1}/${date.getDate()}`
-}
-
-/**
+}/**
  * 결제일을 "M/d (요일)" 형식으로 포맷 (예: "2/5 (수)")
  */
 export function formatPaymentDateShort(date: Date): string {
