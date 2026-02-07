@@ -214,7 +214,7 @@ export default function StatsPage() {
             )}
             <button
               onClick={() => setShowContributionSheet(true)}
-              className="inline-flex items-center rounded-full border border-border bg-muted text-foreground-soft font-semibold text-sm px-3 py-1.5 hover:bg-muted/80 transition-colors"
+              className="inline-flex items-center rounded-full border border-border bg-muted-darker text-foreground-soft font-semibold text-sm px-3 py-1.5 hover:brightness-95 transition-colors"
             >
               월 {formatCurrency(totalMonthlyPayment)}씩 투자 중
             </button>

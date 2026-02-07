@@ -185,7 +185,7 @@ export default function AssetGrowthChart({
     <div className="space-y-4">
       {/* 토리 메시지 */}
       {currentData && currentData.profit > 0 && (
-        <div className="bg-muted rounded-xl px-4 py-3">
+        <div className="bg-muted-darker rounded-xl px-4 py-3">
           <p className="text-sm text-foreground-soft">
             🐿️ <span className="font-medium">토리:</span> "복리 효과로{' '}
             <span className="font-bold text-foreground">+{formatCurrency(currentData.profit)}</span>
