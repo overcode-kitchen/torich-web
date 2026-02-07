@@ -1,16 +1,16 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { ArrowLeft } from '@phosphor-icons/react'
+import { useAuthNavigation } from '@/app/hooks/useAuthNavigation'
 
 export default function AuthCodeErrorPage() {
-  const router = useRouter()
+  const { goBack, goToLogin } = useAuthNavigation()
 
   return (
     <main className="min-h-screen bg-surface flex items-center justify-center px-4 relative">
       {/* 뒤로가기 버튼 */}
       <button
-        onClick={() => router.back()}
+        onClick={goBack}
         className="absolute top-4 left-4 p-2 text-foreground-soft hover:text-foreground transition-colors"
         aria-label="뒤로가기"
       >
@@ -36,7 +36,7 @@ export default function AuthCodeErrorPage() {
 
           {/* 로그인 화면으로 돌아가기 버튼 */}
           <button
-            onClick={() => router.push('/login')}
+            onClick={goToLogin}
             className="w-full bg-primary text-primary-foreground font-bold rounded-xl py-4 px-6 hover:bg-primary/90 transition-colors"
           >
             로그인 화면으로 돌아가기
