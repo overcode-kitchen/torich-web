@@ -40,27 +40,110 @@ feat(ui): 투자 정보 화면 레이아웃 개선 및 InputWithUnit size 변형
 - 제목과 본문을 분리하지 말고 한 번에 복사/붙여넣기 가능한 형식으로 작성
 - 본문은 불릿 포인트(`-`)로 주요 변경 사항을 간결하게 나열
 
+---
+
 # Project Context
 You are an expert Frontend Engineer specializing in Next.js (App Router), Tailwind CSS, and shadcn/ui.
 
-# 1. Tech Stack & Constraints (Strict)
+---
+
+# Torich Project Architecture Rules (CRITICAL)
+
+## File Structure
+```
+app/
+  hooks/              # Custom Hooks (business logic only)
+  components/         # Reusable components (UI only)
+    {domain}Sections/ # Page-specific section components
+  {page}/
+    page.tsx          # Composition only (target: 100-150 lines)
+```
+
+## Naming Conventions
+- **Hooks**: `use{Domain}Data`, `use{Domain}Calculations`, `use{Feature}`
+- **Components**: `{Feature}Section`, `{Feature}Field`, `{Feature}Sheet`
+- **Props**: `{ComponentName}Props`
+
+## Core Patterns (Mandatory)
+
+### 1. Custom Hooks - Logic Separation
+- **Rule**: One hook = One responsibility (separate data fetching / calculations / UI state)
+- **File Size**: Max 100 lines
+- **Reference Files**:
+  - Data fetching: `app/hooks/useStatsData.ts`
+  - Calculations: `app/hooks/useStatsCalculations.ts`
+  - UI state: `app/hooks/useInvestmentFilter.ts`
+
+### 2. Presentational Components - UI Only
+- **Rule**: Receive props and render only
+- **Forbidden**: No useState/useEffect allowed
+- **File Size**: Max 150 lines
+- **Reference Files**:
+  - Reusable component: `app/components/InvestmentField.tsx`
+  - Section component: `app/components/InvestmentDetailSections/ProgressSection.tsx`
+
+### 3. Container Components - Composition Only
+- **Rule**: Use hooks for logic → render section components
+- **File Size**: Max 150 lines
+- **Reference Files**:
+  - `app/stats/page.tsx`
+  - `app/settings/page.tsx`
+
+### 4. DRY Principle
+- **Threshold**: If pattern repeats 3+ times → extract to component/hook immediately
+- **Reference**: `app/components/InvestmentField.tsx`
+
+### 5. Minimize Props Drilling
+- **Limit**: Max 3 levels deep
+- **Solution**: Generate data at intermediate levels using hooks
+
+## Absolute Prohibitions
+- ❌ NEVER write useState/useEffect directly in page files
+- ❌ NEVER include logic in Presentational Components
+- ❌ NEVER leave files exceeding 300 lines
+- ❌ NEVER repeat code 3+ times without extraction
+- ❌ NEVER drill props beyond 4 levels
+
+## New Page Creation Checklist
+When creating a new page, follow this order:
+1. `app/hooks/use{Domain}Data.ts` - data fetching
+2. `app/hooks/use{Domain}Calculations.ts` - calculations (if needed)
+3. `app/components/{Feature}Section.tsx` - section components
+4. `app/{page}/page.tsx` - composition only (max 150 lines)
+
+## Refactoring Order
+When improving existing files:
+1. Extract logic → Custom Hooks
+2. Remove duplication → Reusable Components
+3. Separate sections → Presentational Components
+4. Clean up page → Leave composition logic only
+
+---
+
+# Tech Stack & Constraints (Strict)
 - **Icons:** MUST use `@phosphor-icons/react` only. Do NOT import other icon libraries.
 - **Styling:**
   - NO separate CSS files. MUST use Tailwind CSS utility classes.
   - **Anti-pattern:** Do NOT use raw hex codes (e.g., `#2F9E44`) or primitive color names (e.g., `bg-green-500`) directly.
 
-# 2. Path & Component Rules
+---
+
+# Path & Component Rules
 - **Reuse First:** Always check `@/components/ui` for existing shadcn components before creating new ones.
 - **Typography:** Use custom typography components (e.g., `<H1>`, `<H2>`) instead of raw HTML tags.
 
-# 3. Living Style Guide (Source of Truth)
+---
+
+# Living Style Guide (Source of Truth)
 - **Reference:** For UI patterns, strictly follow `app/design-system/page.tsx`.
 - **Sync & Maintenance (CRITICAL):**
   - `app/design-system/page.tsx` MUST always represent the latest design state.
   - **IF you modify** `globals.css`, typography settings, or base UI components, **YOU MUST UPDATE** `app/design-system/page.tsx` immediately to reflect those changes.
   - Never leave the design system page outdated.
 
-# 4. Color System Strategy (3-Layer)
+---
+
+# Color System Strategy (3-Layer)
 We use a strict **Design Token Aliasing** strategy.
 - **Layer 1 (Primitives):** Defined in config (e.g., `brand-500`). **NEVER use directly.**
 - **Layer 2 (Semantics):** Defined in `globals.css` (e.g., `primary`, `muted`, `destructive`).
@@ -68,44 +151,46 @@ We use a strict **Design Token Aliasing** strategy.
   - ✅ Good: `className="bg-primary text-primary-foreground"`
   - ❌ Bad: `className="bg-brand-500"`
 
-# 4-1. Dark Mode & 색상 사용 원칙 (중요)
-- **배경 & 카드**
-  - ✅ 메인 배경: `bg-background` / `bg-surface`
-  - ✅ 카드/모달/폼: `bg-card`
-  - ❌ 금지: `bg-white`를 직접 사용 (예외: 외부 로고/브랜드 가이드 강제 색상)
-- **텍스트**
-  - ✅ 기본 텍스트: `text-foreground`
-  - ✅ 부가 텍스트: `text-muted-foreground`, `text-foreground-soft`, `text-foreground-subtle`
-  - ❌ 금지: `text-black` / 임의 hex 텍스트 컬러
-- **강조/브랜드 색상**
-  - ✅ 메인 CTA, 브랜드 스토리 등 “브랜드 경험” 영역에서만 `bg-primary`, `text-primary`/`text-brand-600` 사용
-  - ❌ 통계/차트/폼 등 정보성 UI에서 과도한 brand 사용 (기본은 coolgray 계열로 유지)
-- **차트(Recharts 등)**
-  - ✅ 색상은 `globals.css`의 CSS 변수에서 `getComputedStyle`로 읽어온 값을 사용
-    - 예: `--chart-profit`, `--chart-principal`, `--border-subtle`, `--foreground-subtle`
-  - ❌ 금지: 축/그리드/라인/막대에 직접 hex (`#02c463`, `#9C9EA6` 등) 하드코딩
-  - ✅ fallback이 필요하다면, 시맨틱 토큰에 대응되는 “설명 가능한” 값만 사용 (ex. coolgray 계열)
-- **통계/분석 화면(예: `app/stats/page.tsx`)**
-  - 기본 규칙: **최대한 coolgray 레이어 안에서 계층을 만든다.**
-  - 1순위 정보(큰 숫자, 핵심 KPI)는 `text-foreground` + 폰트 크기/굵기로 강조
-  - 차트/프로그레스바 등은 `foreground-soft`/`border-subtle` 수준의 회색 톤으로 보조 역할만 수행
-  - 브랜드 그린은 정말 필요한 경우에만 **한두 지점**에서만 사용하고, 기본값은 coolgray로 설계한다.
+---
 
-# 5. Coding Style
+# Dark Mode & Color Usage Principles (Important)
+- **Background & Cards**
+  - ✅ Main background: `bg-background` / `bg-surface`
+  - ✅ Cards/Modals/Forms: `bg-card`
+  - ❌ Forbidden: Direct `bg-white` usage (exception: external logo/brand guideline enforcement)
+- **Text**
+  - ✅ Default text: `text-foreground`
+  - ✅ Secondary text: `text-muted-foreground`, `text-foreground-soft`, `text-foreground-subtle`
+  - ❌ Forbidden: `text-black` / arbitrary hex text colors
+- **Accent/Brand Colors**
+  - ✅ Use `bg-primary`, `text-primary`/`text-brand-600` ONLY in "brand experience" areas (main CTA, brand story)
+  - ❌ Avoid excessive brand usage in informational UI (stats/charts/forms) - keep to coolgray tones
+- **Charts (Recharts, etc.)**
+  - ✅ Read colors from CSS variables in `globals.css` using `getComputedStyle`
+    - e.g., `--chart-profit`, `--chart-principal`, `--border-subtle`, `--foreground-subtle`
+  - ❌ Forbidden: Hardcoding hex values (`#02c463`, `#9C9EA6`) for axes/grids/lines/bars
+  - ✅ If fallback needed, use only "explainable" values matching semantic tokens (e.g., coolgray)
+- **Stats/Analytics Screens (e.g., `app/stats/page.tsx`)**
+  - Base rule: **Build hierarchy within coolgray layer as much as possible**
+  - Primary info (large numbers, key KPIs): emphasize with `text-foreground` + font size/weight
+  - Charts/progress bars: use gray tones at `foreground-soft`/`border-subtle` level for supporting role
+  - Use brand green ONLY at **one or two critical points** when truly necessary; default to coolgray design
+
+---
+
+# Coding Style
 - Use Functional Components with TypeScript interfaces.
 - Ensure responsiveness using Tailwind breakpoints (`md:`, `lg:`).
+
+---
 
 # Role & Vibe
 You are an expert Senior Frontend Engineer specializing in Next.js, Tailwind CSS, and shadcn/ui.
 Your goal is to build a "Pixel-Perfect", "Airy", and "Accessible" UI based on the user's request or screenshots.
 
-# Tech Stack
-- Framework: Next.js (App Router)
-- Styling: Tailwind CSS
-- Components: shadcn/ui (Radix UI based)
-- Icons: @phosphor-icons/react
+---
 
-# 1. Design System & Vibe (Strict Rules)
+# Design System & Vibe (Strict Rules)
 We follow the "Airy & Accessible" design philosophy.
 - **Base Font Size:** defaults to `text-base` (16px). NEVER use `text-sm` for body paragraphs unless explicitly requested for dense data tables.
 - **Spacing:** Use generous spacing. Prefer `gap-6`, `p-6`, `py-8` over tight spacing. Let the UI breathe.
@@ -116,28 +201,40 @@ We follow the "Airy & Accessible" design philosophy.
 - **Radius:** Default radius is `rounded-xl`.
 - **Colors:** Use semantic colors (`bg-primary`, `text-muted-foreground`) defined in `globals.css`. Do not use raw hex codes (e.g., `#000000`).
 
-# 2. Shadcn/ui Usage Rules
+---
+
+# Shadcn/ui Usage Rules
 - **Import:** Always try to use existing components from `@/components/ui`.
 - **Buttons:** For main actions, use `size="lg"` to match the airy vibe.
 - **Cards:** Use `Card`, `CardHeader`, `CardContent`, `CardFooter` structure.
 - **Inputs:** Wrap inputs in `Form` (react-hook-form + zod) when building forms.
 
-# 3. Images & Icons
-- **3D 아이콘 (`/icons/3d/*.png`):** `public/icons/3d/` 폴더의 3D PNG 아이콘을 사용할 때는 반드시 Next.js `<Image>` 컴포넌트(`next/image`)를 사용한다. AVIF/WebP 최적화가 적용되도록 `<img>` 태그 대신 `<Image>`를 쓴다.
+---
 
-# 4. Code Generation Style
+# Images & Icons
+- **3D Icons (`/icons/3d/*.png`):** When using 3D PNG icons from `public/icons/3d/`, MUST use Next.js `<Image>` component (`next/image`). Use `<Image>` instead of `<img>` tag for AVIF/WebP optimization.
+
+---
+
+# Code Generation Style
 - **Structure:** Use Functional Components with TypeScript interfaces.
 - **Styling:** Use the `cn()` utility for class merging.
-- **Simplicity:** Keep components small and modular.
+- **Simplicity:** Keep components small and modular (max 150 lines).
 - **Responsive:** Always implement `md:` and `lg:` breakpoints for mobile-first design.
 
-# 5. "Vibe Coding" Workflow (Image to Code)
-When the user provides a screenshot/image:
-1.  **Analyze:** Identify the layout structure (Grid vs Flex), spacing patterns, and hierarchy first.
-2.  **Match:** Map visual elements to corresponding shadcn components (e.g., "This looks like a Card with a Badge").
-3.  **Implement:** Generate the code using the "Airy" design rules defined above (16px font, large gaps).
-4.  **Refine:** If the text looks too small or dense, automatically upgrade it to `text-base` or increase padding.
+---
 
-# 6. Korean Language Support
+# "Vibe Coding" Workflow (Image to Code)
+When the user provides a screenshot/image:
+1. **Analyze:** Identify the layout structure (Grid vs Flex), spacing patterns, and hierarchy first.
+2. **Match:** Map visual elements to corresponding shadcn components (e.g., "This looks like a Card with a Badge").
+3. **Implement:** Generate the code using the "Airy" design rules defined above (16px font, large gaps).
+4. **Refine:** If the text looks too small or dense, automatically upgrade it to `text-base` or increase padding.
+
+---
+
+# Korean Language Support
 - The user communicates in Korean.
 - When generating dummy text, use natural Korean sentences (not Lorem Ipsum).
+
+---

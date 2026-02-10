@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { useSettingsAuth } from '@/app/hooks/useSettingsAuth'
 import { useGlobalNotification } from '@/app/hooks/useGlobalNotification'
@@ -31,7 +32,7 @@ export default function SettingsPage() {
 
   return (
     <main className="min-h-screen bg-surface">
-      <div className="max-w-md mx-auto px-4 py-6 pb-24">
+      <div className="max-w-md mx-auto px-4 py-6 pb-24 space-y-4">
         <h1 className="text-xl font-bold text-foreground mb-6">설정</h1>
 
         {/* 다크모드 */}
@@ -43,6 +44,7 @@ export default function SettingsPage() {
 
         {/* 알림 설정 */}
         <SettingsSection title="알림">
+          {/* 전체 알림 토글 */}
           <div className="flex items-center justify-between px-4 py-3 border-t border-border-subtle">
             <span className="text-foreground font-medium">전체 알림</span>
             <Switch
@@ -51,7 +53,22 @@ export default function SettingsPage() {
               aria-label="전체 알림"
             />
           </div>
-          <p className="text-xs text-muted-foreground px-4 pb-4">(추후) 알림 시간대, 메시지 톤 설정</p>
+
+          {/* 알림 상세 설정으로 이동 */}
+          <Link
+            href="/settings/notifications"
+            className="flex items-center justify-between px-4 py-3 border-t border-border-subtle hover:bg-surface-hover transition-colors"
+          >
+            <div className="flex flex-col">
+              <span className="text-foreground font-medium">알림 상세 설정</span>
+              <span className="text-xs text-muted-foreground mt-1">
+                투자 리마인더, 서비스 알림, 방해금지 시간을 한 번에 관리해요.
+              </span>
+            </div>
+            <span className="ml-3 text-foreground-subtle text-lg" aria-hidden="true">
+              ›
+            </span>
+          </Link>
         </SettingsSection>
 
         {/* 계정 */}

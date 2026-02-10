@@ -178,7 +178,7 @@ export default function Dashboard({
                 <div className="mb-4">
                   <div className="relative w-full">
                     <Image
-                      src="/torich-squirrel.png"
+                      src="/images/torich-squirrel.png"
                       alt="도토리를 모으는 토리치 람쥐 일러스트"
                       width={368}
                       height={460}
@@ -223,7 +223,16 @@ export default function Dashboard({
         {/* 내 투자 목록 카드 */}
         {records.length > 0 ? (
           <div className="bg-card rounded-3xl p-6">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground mb-4">내 투자 목록</h2>
+            <h2 className="text-lg font-semibold tracking-tight text-foreground mb-4 flex items-center gap-1">
+              <Image
+                src="/icons/3d/piggy bank.png"
+                alt="내 투자 목록 아이콘"
+                width={24}
+                height={24}
+                className="w-6 h-6"
+              />
+              <span>내 투자 목록</span>
+            </h2>
 
             {/* 필터 및 정렬 컨트롤 바 */}
             <div className="flex items-center justify-between mb-4 gap-2">
