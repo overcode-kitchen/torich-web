@@ -1,78 +1,39 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import type { Dispatch, SetStateAction } from 'react'
-import { apiClient } from '@/lib/api-client'
-
-export interface SearchResult {
-  symbol: string
-  name: string
-  group?: string
-}
-
-export interface StockDetail {
-  symbol: string
-  name: string
-  averageRate: number
-  currentPrice: number
-}
-
-type Market = 'KR' | 'US'
-
-type UseStockSearchReturn = {
-  isSearching: boolean
-  searchResults: SearchResult[]
-  showDropdown: boolean
-  setShowDropdown: Dispatch<SetStateAction<boolean>>
-
-  selectedStock: StockDetail | null
-  setSelectedStock: Dispatch<SetStateAction<StockDetail | null>>
-
-  market: Market
-  setMarket: Dispatch<SetStateAction<Market>>
-
-  annualRate: number
-  setAnnualRate: Dispatch<SetStateAction<number>>
-  originalSystemRate: number | null
-  setOriginalSystemRate: Dispatch<SetStateAction<number | null>>
-  isRateLoading: boolean
-  rateFetchFailed: boolean
-  setRateFetchFailed: Dispatch<SetStateAction<boolean>>
-
-  handleSelectStock: (stock: SearchResult) => Promise<void>
-  resetSearch: () => void
-}
-
-type SearchApiResponse = {
-  stocks?: SearchResult[]
-}
-
-type StockApiResponse = Partial<StockDetail> & {
-  averageRate?: number
-}
+import type { Market } from './types/useStockSearch'
+import { useStockSearchQuery } from './useStockSearchQuery'
+import { useStockRate } from './useStockRate'
+import { useStockDropdown } from './useStockDropdown'
+import type { UseStockSearchReturn, SearchResult, StockDetail } from './types/useStockSearch'
 
 export function useStockSearch(stockName: string, isManualInput: boolean): UseStockSearchReturn {
-  const [isSearching, setIsSearching] = useState<boolean>(false)
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-  const [showDropdown, setShowDropdown] = useState<boolean>(false)
   const [selectedStock, setSelectedStock] = useState<StockDetail | null>(null)
   const [market, setMarket] = useState<Market>('KR')
 
-  const [annualRate, setAnnualRate] = useState<number>(10)
-  const [originalSystemRate, setOriginalSystemRate] = useState<number | null>(null)
-  const [isRateLoading, setIsRateLoading] = useState<boolean>(false)
-  const [rateFetchFailed, setRateFetchFailed] = useState<boolean>(false)
+  const searchQuery = useStockSearchQuery()
+  const stockRate = useStockRate()
+  const dropdown = useStockDropdown()
+
+  const handleSelectStock = useCallback(async (stock: SearchResult): Promise<void> => {
+    dropdown.setShowDropdown(false)
+    setSelectedStock({ symbol: stock.symbol, name: stock.name, averageRate: 0, currentPrice: 0 })
+
+    const stockDetail = await stockRate.fetchStockRate(stock)
+    
+    if (stockDetail) {
+      setSelectedStock(stockDetail)
+    } else {
+      setSelectedStock(null)
+    }
+  }, [dropdown, stockRate])
 
   const resetSearch = useCallback((): void => {
-    setSearchResults([])
-    setShowDropdown(false)
+    searchQuery.clearResults()
+    dropdown.setShowDropdown(false)
     setSelectedStock(null)
-    setAnnualRate(10)
-    setOriginalSystemRate(null)
-    setIsRateLoading(false)
-    setRateFetchFailed(false)
-    setIsSearching(false)
-  }, [])
+    stockRate.resetRate()
+  }, [searchQuery, dropdown, stockRate])
 
   useEffect((): (() => void) | void => {
     if (isManualInput) return
@@ -80,112 +41,46 @@ export function useStockSearch(stockName: string, isManualInput: boolean): UseSt
 
     const query: string = stockName.trim()
     if (!query || query.length < 2) {
-      setSearchResults([])
-      setShowDropdown(false)
+      searchQuery.clearResults()
+      dropdown.setShowDropdown(false)
       return
     }
 
     const timer: ReturnType<typeof setTimeout> = setTimeout((): void => {
-      void (async (): Promise<void> => {
-        try {
-          setIsSearching(true)
-          setShowDropdown(false)
-
-          const data: SearchApiResponse = await apiClient(
-            `/api/search?query=${encodeURIComponent(query)}&market=${market}`,
-          )
-
-          const results: SearchResult[] = Array.isArray(data.stocks) ? data.stocks : []
-          setSearchResults(results)
-          setShowDropdown(true)
-        } catch {
-          setSearchResults([])
-          setShowDropdown(false)
-        } finally {
-          setIsSearching(false)
-        }
-      })()
+      void searchQuery.performSearch(query, market).then(() => {
+        dropdown.setShowDropdown(true)
+      })
     }, 500)
 
     return (): void => {
       clearTimeout(timer)
     }
-  }, [stockName, market, selectedStock, isManualInput])
-
-  useEffect((): (() => void) => {
-    const handleClickOutside = (event: MouseEvent): void => {
-      const target: HTMLElement | null = event.target instanceof HTMLElement ? event.target : null
-      if (!target) return
-      if (target.closest('.stock-search-container')) return
-      setShowDropdown(false)
-    }
-
-    if (showDropdown) {
-      document.addEventListener('click', handleClickOutside)
-    }
-
-    return (): void => {
-      document.removeEventListener('click', handleClickOutside)
-    }
-  }, [showDropdown])
-
-  const handleSelectStock = useCallback(async (stock: SearchResult): Promise<void> => {
-    try {
-      setShowDropdown(false)
-      setSelectedStock({ symbol: stock.symbol, name: stock.name, averageRate: 0, currentPrice: 0 })
-      setIsSearching(true)
-      setIsRateLoading(true)
-      setRateFetchFailed(false)
-
-      const data: StockApiResponse = await apiClient(`/api/stock?symbol=${encodeURIComponent(stock.symbol)}`)
-
-      const averageRate: number | undefined = typeof data.averageRate === 'number' ? data.averageRate : undefined
-
-      if (averageRate !== undefined) {
-        const detail: StockDetail = {
-          symbol: typeof data.symbol === 'string' ? data.symbol : stock.symbol,
-          name: typeof data.name === 'string' ? data.name : stock.name,
-          averageRate,
-          currentPrice: typeof data.currentPrice === 'number' ? data.currentPrice : 0,
-        }
-        setSelectedStock(detail)
-        setAnnualRate(detail.averageRate)
-        setOriginalSystemRate(detail.averageRate)
-        setRateFetchFailed(false)
-      } else {
-        setSelectedStock(null)
-        setAnnualRate(10)
-        setOriginalSystemRate(null)
-        setRateFetchFailed(true)
-      }
-    } catch {
-      setSelectedStock(null)
-      setAnnualRate(10)
-      setOriginalSystemRate(null)
-      setRateFetchFailed(true)
-    } finally {
-      setIsSearching(false)
-      setIsRateLoading(false)
-    }
-  }, [])
+  }, [stockName, market, selectedStock, isManualInput, searchQuery, dropdown])
 
   return {
-    isSearching,
-    searchResults,
-    showDropdown,
-    setShowDropdown,
+    isSearching: searchQuery.isSearching,
+    searchResults: searchQuery.searchResults,
+    showDropdown: dropdown.showDropdown,
+    setShowDropdown: dropdown.setShowDropdown,
+
     selectedStock,
     setSelectedStock,
+
     market,
     setMarket,
-    annualRate,
-    setAnnualRate,
-    originalSystemRate,
-    setOriginalSystemRate,
-    isRateLoading,
-    rateFetchFailed,
-    setRateFetchFailed,
+
+    annualRate: stockRate.annualRate,
+    setAnnualRate: stockRate.setAnnualRate,
+    originalSystemRate: stockRate.originalSystemRate,
+    setOriginalSystemRate: stockRate.setOriginalSystemRate,
+    isRateLoading: stockRate.isRateLoading,
+    rateFetchFailed: stockRate.rateFetchFailed,
+    setRateFetchFailed: stockRate.setRateFetchFailed,
+
     handleSelectStock,
     resetSearch,
   }
 }
+
+// Re-export types for backward compatibility
+export type { SearchResult, StockDetail, Market } from './types/useStockSearch'
