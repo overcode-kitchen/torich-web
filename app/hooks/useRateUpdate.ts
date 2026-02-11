@@ -1,62 +1,13 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { apiClient } from '@/lib/api-client'
-
-type CheckResponse = {
-  needsUpdate?: boolean
-}
-
-type UpdateResponse = {
-  success?: boolean
-  updated?: boolean
-  updatedRecords?: number
-}
-
-type UseRateUpdateOptions = {
-  onUpdateComplete?: () => void | Promise<void>
-}
-
-type UseRateUpdateReturn = {
-  isUpdating: boolean
-  showToast: boolean
-  checkAndUpdate: () => Promise<boolean>
-  hideToast: () => void
-}
-
-const TOAST_AUTO_HIDE_MS: number = 4000
+import { useToast } from './useToast'
+import type { CheckResponse, UpdateResponse, UseRateUpdateOptions, UseRateUpdateReturn } from './types/useRateUpdate'
 
 export const useRateUpdate = (userId?: string, options?: UseRateUpdateOptions): UseRateUpdateReturn => {
   const [isUpdating, setIsUpdating] = useState<boolean>(false)
-  const [showToast, setShowToast] = useState<boolean>(false)
-
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const clearToastTimer = useCallback((): void => {
-    if (toastTimerRef.current !== null) {
-      clearTimeout(toastTimerRef.current)
-      toastTimerRef.current = null
-    }
-  }, [])
-
-  const hideToast = useCallback((): void => {
-    clearToastTimer()
-    setShowToast(false)
-  }, [clearToastTimer])
-
-  const scheduleAutoHide = useCallback((): void => {
-    clearToastTimer()
-    toastTimerRef.current = setTimeout((): void => {
-      setShowToast(false)
-      toastTimerRef.current = null
-    }, TOAST_AUTO_HIDE_MS)
-  }, [clearToastTimer])
-
-  useEffect((): (() => void) => {
-    return (): void => {
-      clearToastTimer()
-    }
-  }, [clearToastTimer])
+  const toast = useToast()
 
   const checkAndUpdate = useCallback(async (): Promise<boolean> => {
     if (!userId) return false
@@ -78,8 +29,7 @@ export const useRateUpdate = (userId?: string, options?: UseRateUpdateOptions): 
       const updated: boolean = Boolean(updateData.success && updateData.updated)
 
       if (updated) {
-        setShowToast(true)
-        scheduleAutoHide()
+        toast.show()
         await options?.onUpdateComplete?.()
       }
 
@@ -89,12 +39,12 @@ export const useRateUpdate = (userId?: string, options?: UseRateUpdateOptions): 
     } finally {
       setIsUpdating(false)
     }
-  }, [options, scheduleAutoHide, userId])
+  }, [options, toast, userId])
 
   return {
     isUpdating,
-    showToast,
+    showToast: toast.showToast,
     checkAndUpdate,
-    hideToast,
+    hideToast: toast.hide,
   }
 }
