@@ -1,19 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
-type PreReminderOption = 'none' | 'same_day' | '1d' | '2d' | '3d' | '1w'
-
-interface NotificationSettingsState {
-  defaultTime: string
-  preReminder: PreReminderOption
-  reReminderOn: boolean
-  streakOn: boolean
-  serviceAnnouncementsOn: boolean
-  dndOn: boolean
-  dndStart: string
-  dndEnd: string
-}
+import { useCallback } from 'react'
+import { useLocalStorage } from './useLocalStorage'
+import type { PreReminderOption, NotificationSettingsState, UseNotificationSettingsReturn } from './types/useNotificationSettings'
 
 const STORAGE_KEY = 'torich_notification_settings_v1'
 
@@ -28,74 +17,50 @@ const defaultSettings: NotificationSettingsState = {
   dndEnd: '08:00',
 }
 
-export function useNotificationSettings() {
-  const [settings, setSettings] = useState<NotificationSettingsState>(defaultSettings)
+export function useNotificationSettings(): UseNotificationSettingsReturn {
+  const [settings, setSettings] = useLocalStorage<NotificationSettingsState>(
+    STORAGE_KEY,
+    defaultSettings
+  )
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored) as Partial<NotificationSettingsState>
-        setSettings((prev) => ({
-          ...prev,
-          ...parsed,
-        }))
-      }
-    } catch (error) {
-      console.error('Failed to load notification settings', error)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-    } catch (error) {
-      console.error('Failed to save notification settings', error)
-    }
-  }, [settings])
-
-  const updateSettings = (partial: Partial<NotificationSettingsState>) => {
+  const updateSettings = useCallback((partial: Partial<NotificationSettingsState>) => {
     setSettings((prev) => ({
       ...prev,
       ...partial,
     }))
-  }
+  }, [setSettings])
 
-  const setDefaultTime = (time: string) => {
+  const setDefaultTime = useCallback((time: string) => {
     updateSettings({ defaultTime: time })
-  }
+  }, [updateSettings])
 
-  const setPreReminder = (preReminder: PreReminderOption) => {
+  const setPreReminder = useCallback((preReminder: PreReminderOption) => {
     updateSettings({ preReminder })
-  }
+  }, [updateSettings])
 
-  const toggleReReminder = () => {
+  const toggleReReminder = useCallback(() => {
     updateSettings({ reReminderOn: !settings.reReminderOn })
-  }
+  }, [updateSettings, settings.reReminderOn])
 
-  const toggleStreak = () => {
+  const toggleStreak = useCallback(() => {
     updateSettings({ streakOn: !settings.streakOn })
-  }
+  }, [updateSettings, settings.streakOn])
 
-  const toggleServiceAnnouncements = () => {
+  const toggleServiceAnnouncements = useCallback(() => {
     updateSettings({ serviceAnnouncementsOn: !settings.serviceAnnouncementsOn })
-  }
+  }, [updateSettings, settings.serviceAnnouncementsOn])
 
-  const toggleDnd = () => {
+  const toggleDnd = useCallback(() => {
     updateSettings({ dndOn: !settings.dndOn })
-  }
+  }, [updateSettings, settings.dndOn])
 
-  const setDndStart = (time: string) => {
+  const setDndStart = useCallback((time: string) => {
     updateSettings({ dndStart: time })
-  }
+  }, [updateSettings])
 
-  const setDndEnd = (time: string) => {
+  const setDndEnd = useCallback((time: string) => {
     updateSettings({ dndEnd: time })
-  }
+  }, [updateSettings])
 
   return {
     settings,
