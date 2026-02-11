@@ -55,7 +55,7 @@ export function useStockSearch(stockName: string, isManualInput: boolean): UseSt
     return (): void => {
       clearTimeout(timer)
     }
-  }, [stockName, market, selectedStock, isManualInput, searchQuery, dropdown])
+  }, [stockName, market, selectedStock, isManualInput, searchQuery.clearResults, searchQuery.performSearch, dropdown.setShowDropdown])
 
   return {
     isSearching: searchQuery.isSearching,

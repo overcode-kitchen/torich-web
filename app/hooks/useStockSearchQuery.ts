@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useState, useCallback } from 'react'
 import { apiClient } from '@/lib/api-client'
 import type { SearchResult, Market, SearchApiResponse } from './types/useStockSearch'
 
@@ -35,11 +35,11 @@ export function useStockSearchQuery(): UseStockSearchQueryReturn {
     } finally {
       setIsSearching(false)
     }
-  }, [])
+  }, [setSearchResults, setIsSearching])
 
   const clearResults = useCallback((): void => {
     setSearchResults([])
-  }, [])
+  }, [setSearchResults])
 
   return {
     isSearching,
