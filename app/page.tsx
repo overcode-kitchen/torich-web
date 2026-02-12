@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import { useAuth } from '@/app/hooks/useAuth'
 import { useInvestments } from '@/app/hooks/useInvestments'
 import { useRateUpdate } from '@/app/hooks/useRateUpdate'
 import { useInvestmentFilter } from '@/app/hooks/useInvestmentFilter'
 import { useLocalStorage } from '@/app/hooks/useLocalStorage'
+import { useHomePageUI } from '@/app/hooks/useHomePageUI'
 import Dashboard from '@/app/components/Dashboard'
 import LandingPage from '@/app/components/LandingPage'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
@@ -19,16 +19,7 @@ export default function Home() {
   const { isUpdating: isUpdatingRates, showToast, checkAndUpdate } = useRateUpdate(user?.id)
   const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records, calculateSimulatedValue)
   const [showMonthlyAmount, setShowMonthlyAmount] = useLocalStorage<boolean>('torich_show_monthly_amount', true)
-  const [detailItem, setDetailItem] = useState<Investment | null>(null)
-  const [isBrandStoryOpen, setIsBrandStoryOpen] = useState<boolean>(false)
-  const [showBrandStoryCard, setShowBrandStoryCard] = useState<boolean>(true)
-
-  useEffect((): void => {
-    if (!user?.id || records.length === 0) return
-    void checkAndUpdate().then((updated: boolean) => {
-      if (updated) void refetch()
-    })
-  }, [user?.id, records.length, checkAndUpdate, refetch])
+  const { detailItem, setDetailItem, isBrandStoryOpen, setIsBrandStoryOpen, showBrandStoryCard, setShowBrandStoryCard } = useHomePageUI({ userId: user?.id, records, checkAndUpdate, refetch })
 
   if (authLoading || dataLoading) {
     return (
