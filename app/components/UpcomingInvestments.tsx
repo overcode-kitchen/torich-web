@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import { formatCurrency } from '@/lib/utils'
-import { addDays } from 'date-fns'
-import { formatPaymentDateShort, getUpcomingPayments, getUpcomingPaymentsInRange } from '@/app/utils/date'
+import { formatPaymentDateShort } from '@/app/utils/date'
 import type { Investment } from '@/app/types/investment'
 import {
   DropdownMenu,
@@ -14,25 +12,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
-import type { DateRange } from 'react-day-picker'
 import { usePaymentCompletion } from '@/app/hooks/usePaymentCompletion'
+import { useUpcomingInvestments, type UpcomingItem } from '@/app/hooks/useUpcomingInvestments'
 import type { PaymentEvent } from '@/app/utils/stats'
-
-
-const PRESET_OPTIONS = [
-  { label: '오늘', days: 1 },
-  { label: '3일', days: 3 },
-  { label: '7일', days: 7 },
-  { label: '보름', days: 15 },
-  { label: '한달', days: 30 },
-  { label: '1년', days: 365 },
-] as const
-
-interface UpcomingItem {
-  investment: Investment
-  paymentDate: Date
-  dayOfMonth: number
-}
 
 interface UpcomingInvestmentsProps {
   records: Investment[]
@@ -40,51 +22,18 @@ interface UpcomingInvestmentsProps {
 
 
 export default function UpcomingInvestments({ records }: UpcomingInvestmentsProps) {
-  const [selectedPreset, setSelectedPreset] = useState<'preset' | 'custom'>('preset')
-  const [selectedDays, setSelectedDays] = useState(7)
-  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(() => {
-    const t = new Date()
-    return { from: t, to: addDays(t, 6) }
-  })
-  
   const { handleComplete, handleUndo, isEventCompleted, pendingUndo } = usePaymentCompletion()
-
-  const items = useMemo(() => {
-    if (selectedPreset === 'custom' && customDateRange?.from && customDateRange?.to) {
-      const payments = getUpcomingPaymentsInRange(records, customDateRange.from, customDateRange.to)
-      return payments.map((p) => {
-        const inv = records.find((r) => r.id === p.id)!
-        return { investment: inv, paymentDate: p.paymentDate, dayOfMonth: p.dayOfMonth }
-      })
-    }
-    const effectiveDays = selectedDays
-    const payments = getUpcomingPayments(records, effectiveDays)
-    return payments.map((p) => {
-      const inv = records.find((r) => r.id === p.id)!
-      return { investment: inv, paymentDate: p.paymentDate, dayOfMonth: p.dayOfMonth }
-    })
-  }, [records, selectedPreset, selectedDays, customDateRange])
-
-
-  const visibleItems = useMemo(() => {
-    return items.filter((item) => {
-      const event: PaymentEvent = {
-        investmentId: item.investment.id,
-        year: item.paymentDate.getFullYear(),
-        month: item.paymentDate.getMonth() + 1,
-        day: item.dayOfMonth,
-        yearMonth: `${item.paymentDate.getFullYear()}-${String(item.paymentDate.getMonth() + 1).padStart(2, '0')}`,
-        monthlyAmount: item.investment.monthly_amount,
-        title: item.investment.title
-      }
-      return !isEventCompleted(event)
-    })
-  }, [items, isEventCompleted])
-
-  const rangeLabel =
-    selectedPreset === 'custom' && customDateRange?.from && customDateRange?.to
-      ? `${customDateRange.from.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} - ${customDateRange.to.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}`
-      : PRESET_OPTIONS.find((p) => p.days === selectedDays)?.label ?? `${selectedDays}일`
+  const {
+    selectedPreset,
+    customDateRange,
+    setCustomDateRange,
+    visibleItems,
+    rangeLabel,
+    presetOptions,
+    handlePresetSelect,
+    handleCustomRangeSelect,
+    createPaymentEvent
+  } = useUpcomingInvestments({ records, isEventCompleted })
 
   if (records.length === 0) return null
 
@@ -112,23 +61,16 @@ export default function UpcomingInvestments({ records }: UpcomingInvestmentsProp
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[140px]">
-              {PRESET_OPTIONS.map((opt) => (
+              {presetOptions.map((opt) => (
                 <DropdownMenuItem
                   key={opt.days}
-                  onClick={() => {
-                    setSelectedPreset('preset')
-                    setSelectedDays(opt.days)
-                  }}
+                  onClick={() => handlePresetSelect(opt.days)}
                 >
                   {opt.label}
                 </DropdownMenuItem>
               ))}
               <DropdownMenuItem
-                onClick={() => {
-                  setSelectedPreset('custom')
-                  const t = new Date()
-                  setCustomDateRange({ from: t, to: addDays(t, 6) })
-                }}
+                onClick={handleCustomRangeSelect}
               >
                 기간 선택
               </DropdownMenuItem>
@@ -172,15 +114,7 @@ export default function UpcomingInvestments({ records }: UpcomingInvestmentsProp
               <button
                 type="button"
                 onClick={() => {
-                  const event: PaymentEvent = {
-                    investmentId: item.investment.id,
-                    year: item.paymentDate.getFullYear(),
-                    month: item.paymentDate.getMonth() + 1,
-                    day: item.dayOfMonth,
-                    yearMonth: `${item.paymentDate.getFullYear()}-${String(item.paymentDate.getMonth() + 1).padStart(2, '0')}`,
-                    monthlyAmount: item.investment.monthly_amount,
-                    title: item.investment.title
-                  }
+                  const event = createPaymentEvent(item)
                   handleComplete(event)
                 }}
                 className="px-3 py-1.5 rounded-lg border border-border text-foreground-muted text-xs font-medium hover:bg-surface-hover hover:border-surface-strong-hover transition-colors"
