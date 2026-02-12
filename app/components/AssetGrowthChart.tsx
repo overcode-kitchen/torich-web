@@ -1,6 +1,5 @@
 'use client'
 
-import { useMemo, useState } from 'react'
 import {
   BarChart,
   Bar,
@@ -12,20 +11,12 @@ import {
   Cell,
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
-import {
-  generatePortfolioGrowthData,
-  getMilestoneChartData,
-  type ChartDataPoint,
-} from '@/app/utils/finance'
-import type { Investment } from '@/app/types/investment'
+import { useAssetGrowthChart, type BarDataPoint } from '@/app/hooks/useAssetGrowthChart'
+import { useChartColors } from '@/app/hooks/useChartColors'
 
-interface AssetGrowthChartProps {
-  investments: Investment[]
+type AssetGrowthChartProps = {
+  investments: any[]
   selectedYear: number
-}
-
-interface BarDataPoint extends ChartDataPoint {
-  label: string
 }
 
 // 수익 막대: 상단에 총 자산, 내부에 +수익금
@@ -120,60 +111,17 @@ export default function AssetGrowthChart({
   investments,
   selectedYear,
 }: AssetGrowthChartProps) {
-  const [selectedBar, setSelectedBar] = useState<BarDataPoint | null>(null)
+  const chartColors = useChartColors()
+  const {
+    barData,
+    currentData,
+    selectedBar,
+    setSelectedBar,
+    handleBarClick,
+    hasData,
+  } = useAssetGrowthChart({ investments, selectedYear })
 
-  // CSS 변수에서 차트 색상 읽기
-  const chartColors = useMemo(() => {
-    if (typeof window === 'undefined') {
-      return {
-        profit: '#22C55E',
-        profitDark: '#16A34A',
-        principal: '#BBF7D0',
-        principalText: '#16a34a',
-        grid: '#E6E7E8',
-        axis: '#9C9EA6',
-        totalText: '#191f28',
-      }
-    }
-    const root = getComputedStyle(document.documentElement)
-    const profit = root.getPropertyValue('--chart-profit').trim() || '#22C55E'
-    const principal = root.getPropertyValue('--chart-principal').trim() || '#BBF7D0'
-    const axis = root.getPropertyValue('--foreground-subtle').trim() || '#9C9EA6'
-    const grid = root.getPropertyValue('--border-subtle').trim() || '#E6E7E8'
-    const totalText = root.getPropertyValue('--foreground').trim() || '#191f28'
-
-    return {
-      profit,
-      profitDark: profit,
-      principal,
-      principalText: principal,
-      grid,
-      axis,
-      totalText,
-    }
-  }, [])
-
-  const barData = useMemo(() => {
-    if (investments.length === 0) return []
-
-    const portfolioData = investments.map((inv) => ({
-      monthly_amount: inv.monthly_amount,
-      annual_rate: inv.annual_rate || 10,
-      period_years: inv.period_years,
-    }))
-
-    const fullData = generatePortfolioGrowthData(portfolioData, selectedYear)
-    const milestones = getMilestoneChartData(fullData, selectedYear)
-
-    return milestones.map((d) => ({
-      ...d,
-      label: `${d.month / 12}년 후`,
-    })) as BarDataPoint[]
-  }, [investments, selectedYear])
-
-  const currentData = barData.length > 0 ? barData[barData.length - 1] : null
-
-  if (investments.length === 0 || barData.length === 0) {
+  if (!hasData) {
     return (
       <div className="flex flex-col items-center justify-center h-[200px] text-foreground-subtle">
         <p className="text-sm">투자를 추가하면 차트가 표시됩니다</p>
@@ -202,12 +150,7 @@ export default function AssetGrowthChart({
             margin={{ top: 28, right: 12, left: 0, bottom: 8 }}
             barCategoryGap="20%"
             barGap={4}
-            onClick={(state) => {
-              const idx = state?.activeTooltipIndex ?? state?.activeIndex
-              if (typeof idx === 'number' && barData[idx]) {
-                setSelectedBar(barData[idx])
-              }
-            }}
+            onClick={handleBarClick}
           >
             <defs>
               <linearGradient id="barProfit" x1="0" y1="0" x2="0" y2="1">
