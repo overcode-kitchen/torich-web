@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import { useStatsData } from '@/app/hooks/useStatsData'
 import { usePeriodFilter } from '@/app/hooks/usePeriodFilter'
 import { useStatsCalculations } from '@/app/hooks/useStatsCalculations'
 import { useChartData } from '@/app/hooks/useChartData'
+import { useStatsPageUI } from '@/app/hooks/useStatsPageUI'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
 import AssetGrowthSection from '@/app/components/StatsSections/AssetGrowthSection'
 import MonthlyStatusSection from '@/app/components/StatsSections/MonthlyStatusSection'
@@ -16,9 +16,18 @@ import MonthlyContributionSheet from '@/app/components/MonthlyContributionSheet'
 
 export default function StatsPage() {
   const { user, records, activeRecords, isLoading, router } = useStatsData()
-  const [selectedYear, setSelectedYear] = useState(5)
-  const [showCashHoldSheet, setShowCashHoldSheet] = useState(false)
-  const [showContributionSheet, setShowContributionSheet] = useState(false)
+  
+  const {
+    selectedYear,
+    showCashHoldSheet,
+    showContributionSheet,
+    hasRecords,
+    setSelectedYear,
+    handleShowCashHold,
+    handleCloseCashHold,
+    handleShowContribution,
+    handleCloseContribution,
+  } = useStatsPageUI({ recordsLength: records.length })
 
   const {
     periodPreset,
@@ -65,20 +74,20 @@ export default function StatsPage() {
         <h1 className="text-xl font-bold text-foreground mb-6">통계</h1>
 
         {/* 예상 자산 */}
-        {records.length > 0 && (
+        {hasRecords && (
           <ExpectedAssetSection
             selectedYear={selectedYear}
             setSelectedYear={setSelectedYear}
             totalExpectedAsset={totalExpectedAsset}
             hasMaturedInvestments={hasMaturedInvestments}
             totalMonthlyPayment={totalMonthlyPayment}
-            onShowCashHold={() => setShowCashHoldSheet(true)}
-            onShowContribution={() => setShowContributionSheet(true)}
+            onShowCashHold={handleShowCashHold}
+            onShowContribution={handleShowContribution}
           />
         )}
 
         {/* 예상 수익 차트 */}
-        {records.length > 0 && (
+        {hasRecords && (
           <AssetGrowthSection
             selectedYear={selectedYear}
             setSelectedYear={setSelectedYear}
@@ -108,7 +117,7 @@ export default function StatsPage() {
         <CashHoldItemsSheet
           items={records}
           selectedYear={selectedYear}
-          onClose={() => setShowCashHoldSheet(false)}
+          onClose={handleCloseCashHold}
           calculateFutureValue={calculateFutureValue}
         />
       )}
@@ -117,7 +126,7 @@ export default function StatsPage() {
         <MonthlyContributionSheet
           items={records}
           totalAmount={totalMonthlyPayment}
-          onClose={() => setShowContributionSheet(false)}
+          onClose={handleCloseContribution}
         />
       )}
     </main>
