@@ -81,7 +81,7 @@ export default function CalendarPage() {
       onClick={clearSelection}
       role="presentation"
     >
-      <div className="max-w-md mx-auto px-4 py-6 pb-24">
+      <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-6 pb-24">
         <h1 className="text-xl font-bold text-foreground mb-4">캘린더</h1>
 
         <CalendarGridSection

@@ -70,7 +70,7 @@ export default function StatsPage() {
 
   return (
     <main className="min-h-screen bg-surface">
-      <div className="max-w-md mx-auto px-4 py-6 pb-24">
+      <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-6 pb-24">
         <h1 className="text-xl font-bold text-foreground mb-6">통계</h1>
 
         {/* 예상 자산 */}
