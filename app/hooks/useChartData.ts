@@ -13,12 +13,19 @@ interface UseChartDataProps {
   customDateRange?: DateRange
 }
 
-export function useChartData({ 
-  activeRecords, 
-  isCustomRange, 
-  effectiveMonths, 
-  customDateRange 
-}: UseChartDataProps) {
+export interface UseChartDataReturn {
+  monthlyRates: { monthLabel: string; rate: number; completed: number; total: number }[]
+  periodCompletionRate: number
+  chartData: { name: string; rate: number; completed: number; total: number }[]
+  chartBarColor: string
+}
+
+export function useChartData({
+  activeRecords,
+  isCustomRange,
+  effectiveMonths,
+  customDateRange
+}: UseChartDataProps): UseChartDataReturn {
   const monthlyRates = useMemo(() => {
     if (isCustomRange && customDateRange?.from && customDateRange?.to) {
       return getMonthlyCompletionRatesForRange(activeRecords, customDateRange.from, customDateRange.to)

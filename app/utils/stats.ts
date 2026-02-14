@@ -76,7 +76,7 @@ export function isPaymentEventCompleted(
 }
 
 /**
- * 이번 달 납입 현황 (총 건수, 완료 건수)
+ * 이번 달 납입 현황 (총 금액, 완료 금액, 진행률, 남은 금액)
  */
 export function getThisMonthStats(
   investments: Array<{
@@ -88,19 +88,26 @@ export function getThisMonthStats(
     start_date?: string | null
     created_at: string
   }>
-): { total: number; completed: number } {
+): { totalPayment: number; completedPayment: number; progress: number; remainingPayment: number } {
   const today = new Date()
   const year = today.getFullYear()
   const month = today.getMonth() + 1
 
   const events = getPaymentEventsForMonth(investments, year, month)
-  let completed = 0
+  let totalPayment = 0
+  let completedPayment = 0
+
   for (const e of events) {
+    totalPayment += e.monthlyAmount
     if (isPaymentEventCompleted(e.investmentId, e.year, e.month, e.day)) {
-      completed++
+      completedPayment += e.monthlyAmount
     }
   }
-  return { total: events.length, completed }
+
+  const progress = totalPayment > 0 ? Math.round((completedPayment / totalPayment) * 100) : 0
+  const remainingPayment = totalPayment - completedPayment
+
+  return { totalPayment, completedPayment, progress, remainingPayment }
 }
 
 /**

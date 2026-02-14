@@ -23,7 +23,20 @@ interface UseStatsCalculationsProps {
   selectedYear: number
 }
 
-export function useStatsCalculations({ records, activeRecords, selectedYear }: UseStatsCalculationsProps) {
+export interface UseStatsCalculationsReturn {
+  totalExpectedAsset: number
+  totalMonthlyPayment: number
+  hasMaturedInvestments: boolean
+  thisMonth: {
+    totalPayment: number
+    completedPayment: number
+    progress: number
+    remainingPayment: number
+  }
+  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R?: number) => number
+}
+
+export function useStatsCalculations({ records, activeRecords, selectedYear }: UseStatsCalculationsProps): UseStatsCalculationsReturn {
   const { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments } = useMemo(() => {
     if (records.length === 0) {
       return { totalExpectedAsset: 0, totalMonthlyPayment: 0, hasMaturedInvestments: false }

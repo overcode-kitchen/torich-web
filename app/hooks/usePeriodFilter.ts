@@ -4,7 +4,18 @@ import type { DateRange } from 'react-day-picker'
 
 export type PeriodPreset = '1' | '3' | '6' | '12' | 'custom'
 
-export function usePeriodFilter() {
+export interface UsePeriodFilterReturn {
+  periodPreset: PeriodPreset
+  setPeriodPreset: (preset: PeriodPreset) => void
+  customDateRange: DateRange | undefined
+  setCustomDateRange: (range: DateRange | undefined) => void
+  isCustomRange: boolean
+  effectiveMonths: number
+  periodLabel: string
+  handleCustomPeriod: () => void
+}
+
+export function usePeriodFilter(): UsePeriodFilterReturn {
   const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('6')
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(() => {
     const end = new Date()

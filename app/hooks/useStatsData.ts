@@ -4,7 +4,15 @@ import { createClient } from '@/utils/supabase/client'
 import { Investment, getStartDate } from '@/app/types/investment'
 import { isCompleted } from '@/app/utils/date'
 
-export function useStatsData() {
+export interface UseStatsDataReturn {
+  user: { id: string; email?: string } | null
+  records: Investment[]
+  activeRecords: Investment[]
+  isLoading: boolean
+  router: any
+}
+
+export function useStatsData(): UseStatsDataReturn {
   const router = useRouter()
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [records, setRecords] = useState<Investment[]>([])
