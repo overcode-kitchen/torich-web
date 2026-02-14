@@ -36,7 +36,7 @@ export default function NotificationSettingsPage() {
         </button>
       </header>
 
-      <div className="max-w-md mx-auto px-4 py-2 pb-20 space-y-6">
+      <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-2 pb-20 space-y-6">
         <div className="mb-4">
           <h1 className="text-xl font-bold text-foreground mb-1">알림 설정</h1>
           <p className="text-sm text-foreground-subtle">

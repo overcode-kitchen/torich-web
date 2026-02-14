@@ -248,8 +248,8 @@ export default function InvestmentDetailView({
         )}
       </header>
 
-      {/* 콘텐츠 - 좌우 24px 단일 여백 */}
-      <div className="max-w-md mx-auto px-6 pb-12">
+      {/* 콘텐츠 - 좌우 24px 단일 여백, 가변 컨테이너 폭 */}
+      <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-6 pb-12">
         {/* 종목명 & 상태 + 다음 투자일 */}
         <section ref={overviewRef} className="py-6 space-y-4">
               <div ref={titleRef}>
