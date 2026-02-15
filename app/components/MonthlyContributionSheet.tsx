@@ -3,6 +3,8 @@
 import { formatCurrency } from '@/lib/utils'
 import { X } from '@phosphor-icons/react'
 import { Investment } from '@/app/types/investment'
+import { calculatePercentage } from '@/app/utils/finance'
+import { getInitial } from '@/app/utils/string'
 
 interface MonthlyContributionSheetProps {
   items: Investment[]
@@ -15,25 +17,14 @@ export default function MonthlyContributionSheet({
   totalAmount,
   onClose,
 }: MonthlyContributionSheetProps) {
-  // 종목명에서 이니셜 추출
-  const getInitial = (title: string) => {
-    return title.charAt(0).toUpperCase()
-  }
-
-  // 비중 계산
-  const getPercentage = (amount: number) => {
-    if (totalAmount === 0) return 0
-    return Math.round((amount / totalAmount) * 100)
-  }
-
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* 오버레이 */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"
         onClick={onClose}
       />
-      
+
       {/* 바텀 시트 */}
       <div className="relative z-50 w-full max-w-md bg-card rounded-t-3xl shadow-xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col">
         {/* 핸들 바 */}
@@ -67,8 +58,8 @@ export default function MonthlyContributionSheet({
           {items.length > 0 ? (
             <div className="divide-y divide-border-subtle">
               {items.map((item) => {
-                const percentage = getPercentage(item.monthly_amount)
-                
+                const percentage = calculatePercentage(item.monthly_amount, totalAmount)
+
                 return (
                   <div
                     key={item.id}

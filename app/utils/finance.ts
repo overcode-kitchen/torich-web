@@ -187,14 +187,25 @@ export function calculateSimulatedValue(
 
 // 복리 계산 함수 (동적 수익률 적용)
 export function calculateFinalAmount(
-  monthlyAmount: number, 
-  periodYears: number, 
+  monthlyAmount: number,
+  periodYears: number,
   rate: number
 ): number {
   const monthlyRate = rate / 12 / 100
   const totalMonths = periodYears * 12
-  const finalAmount = monthlyAmount * 
-    ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * 
+  const finalAmount = monthlyAmount *
+    ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) *
     (1 + monthlyRate)
   return Math.round(finalAmount)
+}
+
+/**
+ * 비중 계산 (퍼센트)
+ * @param amount 대상 금액
+ * @param total 총 금액
+ * @returns 소수점 반올림된 퍼센트 (0~100)
+ */
+export function calculatePercentage(amount: number, total: number): number {
+  if (total === 0) return 0
+  return Math.round((amount / total) * 100)
 }
