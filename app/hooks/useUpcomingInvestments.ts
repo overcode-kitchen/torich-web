@@ -4,6 +4,12 @@ import type { DateRange } from 'react-day-picker'
 import { addDays } from 'date-fns'
 import { getUpcomingPayments, getUpcomingPaymentsInRange } from '@/app/utils/date'
 
+export interface DisplayItem {
+  investment: Investment
+  paymentDate: Date
+  dayOfMonth: number
+}
+
 const STORAGE_PREFIX = 'torich_completed_'
 export const PRESET_OPTIONS = [
   { label: '오늘', days: 1 },
