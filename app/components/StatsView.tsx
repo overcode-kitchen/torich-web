@@ -4,6 +4,7 @@ import { CircleNotch } from '@phosphor-icons/react'
 import CashHoldItemsSheet from '@/app/components/CashHoldItemsSheet'
 import MonthlyContributionSheet from '@/app/components/MonthlyContributionSheet'
 import type { Investment } from '@/app/types/investment'
+import { useMonthlyContribution } from '@/app/hooks/useMonthlyContribution'
 import StatsHeader from '@/app/components/StatsSections/StatsHeader'
 import StatsContent from '@/app/components/StatsSections/StatsContent'
 
@@ -81,6 +82,11 @@ export default function StatsView({
     const { records } = data
     const { totalMonthlyPayment, calculateFutureValue, maturedItems } = calculations
 
+    const { contributionItems } = useMonthlyContribution({
+        items: records,
+        totalAmount: totalMonthlyPayment,
+    })
+
     return (
         <main className="min-h-screen bg-surface">
             <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-6 pb-24">
@@ -104,7 +110,7 @@ export default function StatsView({
 
             {showContributionSheet && (
                 <MonthlyContributionSheet
-                    items={records}
+                    contributionItems={contributionItems}
                     totalAmount={totalMonthlyPayment}
                     onClose={handleCloseContribution}
                 />

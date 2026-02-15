@@ -2,18 +2,16 @@
 
 import { formatCurrency } from '@/lib/utils'
 import { X } from '@phosphor-icons/react'
-import { Investment } from '@/app/types/investment'
-import { calculatePercentage } from '@/app/utils/finance'
-import { getInitial } from '@/app/utils/string'
+import { MonthlyContributionItemVM } from '@/app/hooks/useMonthlyContribution'
 
 interface MonthlyContributionSheetProps {
-  items: Investment[]
+  contributionItems: MonthlyContributionItemVM[]
   totalAmount: number
   onClose: () => void
 }
 
 export default function MonthlyContributionSheet({
-  items,
+  contributionItems,
   totalAmount,
   onClose,
 }: MonthlyContributionSheetProps) {
@@ -55,11 +53,9 @@ export default function MonthlyContributionSheet({
 
         {/* 콘텐츠 - 스크롤 가능 */}
         <div className="flex-1 overflow-y-auto px-6 pb-6">
-          {items.length > 0 ? (
+          {contributionItems.length > 0 ? (
             <div className="divide-y divide-border-subtle">
-              {items.map((item) => {
-                const percentage = calculatePercentage(item.monthly_amount, totalAmount)
-
+              {contributionItems.map((item) => {
                 return (
                   <div
                     key={item.id}
@@ -70,7 +66,7 @@ export default function MonthlyContributionSheet({
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="w-10 h-10 rounded-full bg-[var(--brand-accent-bg)] flex items-center justify-center flex-shrink-0">
                           <span className="text-brand-600 font-bold text-sm">
-                            {getInitial(item.title)}
+                            {item.initial}
                           </span>
                         </div>
                         <h3 className="text-base font-semibold text-foreground truncate">
@@ -81,10 +77,10 @@ export default function MonthlyContributionSheet({
                       {/* 우측: 금액 + 비중 */}
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <p className="text-base font-bold text-foreground">
-                          {formatCurrency(item.monthly_amount)}
+                          {formatCurrency(item.amount)}
                         </p>
                         <span className="bg-secondary text-foreground-muted text-xs font-medium px-2 py-0.5 rounded-full">
-                          {percentage}%
+                          {item.percentage}%
                         </span>
                       </div>
                     </div>
