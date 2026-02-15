@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
 import { X } from '@phosphor-icons/react'
+import { useInvestmentDaysPicker } from '../hooks/useInvestmentDaysPicker'
 
 interface InvestmentDaysPickerSheetProps {
   /** 현재 선택된 날짜들 (1~31) */
@@ -10,29 +10,23 @@ interface InvestmentDaysPickerSheetProps {
   onApply: (days: number[]) => void
 }
 
-function normalizeDays(days: number[]) {
-  return Array.from(new Set(days))
-    .filter((d) => Number.isFinite(d) && d >= 1 && d <= 31)
-    .sort((a, b) => a - b)
-}
-
 export default function InvestmentDaysPickerSheet({
   days,
   onClose,
   onApply,
 }: InvestmentDaysPickerSheetProps) {
-  const [tempDays, setTempDays] = useState<number[]>(() => normalizeDays(days))
-
-  const isDirty = useMemo(() => {
-    const a = normalizeDays(days).join(',')
-    const b = normalizeDays(tempDays).join(',')
-    return a !== b
-  }, [days, tempDays])
+  const { tempDays, isDirty, toggleDay, applyChanges } = useInvestmentDaysPicker({
+    initialDays: days,
+    onApply,
+  })
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* 오버레이 */}
-      <div className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"
+        onClick={onClose}
+      />
 
       {/* 바텀 시트 */}
       <div className="relative z-50 w-full max-w-md bg-card rounded-t-3xl shadow-xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col">
@@ -67,7 +61,9 @@ export default function InvestmentDaysPickerSheet({
               ))}
             </div>
           ) : (
-            <p className="text-sm text-foreground-subtle text-right">선택된 날짜가 없어요</p>
+            <p className="text-sm text-foreground-subtle text-right">
+              선택된 날짜가 없어요
+            </p>
           )}
         </div>
 
@@ -80,17 +76,11 @@ export default function InvestmentDaysPickerSheet({
                 <button
                   key={day}
                   type="button"
-                  onClick={() => {
-                    setTempDays((prev) => {
-                      if (prev.includes(day)) return prev.filter((d) => d !== day)
-                      return normalizeDays([...prev, day])
-                    })
-                  }}
-                  className={`h-9 rounded-full text-sm font-semibold transition-colors ${
-                    selected
+                  onClick={() => toggleDay(day)}
+                  className={`h-9 rounded-full text-sm font-semibold transition-colors ${selected
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-surface-hover text-foreground-soft hover:bg-secondary'
-                  }`}
+                    }`}
                 >
                   {day}
                 </button>
@@ -110,7 +100,7 @@ export default function InvestmentDaysPickerSheet({
           </button>
           <button
             type="button"
-            onClick={() => onApply(normalizeDays(tempDays))}
+            onClick={applyChanges}
             disabled={!isDirty}
             className="flex-1 py-3 text-sm font-semibold text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-default"
           >
