@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { ArrowLeft } from '@phosphor-icons/react'
 
 interface AuthErrorViewProps {
@@ -19,9 +20,15 @@ export default function AuthErrorView({ onGoBack, onGoToLogin }: AuthErrorViewPr
 
             <div className="w-full max-w-xs">
                 {/* 타이틀 */}
-                <h1 className="text-3xl font-bold text-foreground text-center mb-4">
-                    티끌모아 태산
-                </h1>
+                <div className="relative h-10 w-36 mx-auto mb-4">
+                    <Image
+                        src="/images/torich-logo.png"
+                        alt="토리치 로고"
+                        fill
+                        className="object-contain"
+                        priority
+                    />
+                </div>
 
                 {/* 에러 메시지 카드 */}
                 <div className="bg-card rounded-3xl shadow-md p-8 text-center space-y-6">

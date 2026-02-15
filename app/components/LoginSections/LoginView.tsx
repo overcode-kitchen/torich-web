@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { CircleNotch, ArrowLeft } from '@phosphor-icons/react'
 import GoogleLogo from '@/app/components/GoogleLogo'
 
@@ -31,9 +32,15 @@ export default function LoginView({
 
             <div className="w-full max-w-xs">
                 {/* 타이틀 */}
-                <h1 className="text-3xl font-bold text-foreground text-center mb-12">
-                    티끌모아 태산
-                </h1>
+                <div className="relative h-10 w-36 mx-auto mb-12">
+                    <Image
+                        src="/images/torich-logo.png"
+                        alt="토리치 로고"
+                        fill
+                        className="object-contain"
+                        priority
+                    />
+                </div>
 
                 {/* 구글 로그인 버튼 */}
                 <button
