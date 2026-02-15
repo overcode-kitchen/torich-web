@@ -19,6 +19,15 @@ export interface ChartSummary {
   profit: number
 }
 
+export interface ChartColors {
+  grid: string
+  axis: string
+  principal: string
+  totalAsset: string
+  profit: string
+  breakEven: string
+}
+
 interface UseCompoundChartDataProps {
   investments: Investment[]
   selectedYear: number
@@ -45,7 +54,7 @@ export function useCompoundChartData({
       const R = investment.annual_rate ? investment.annual_rate / 100 : 0.10
       const monthlyRate = R / 12
       const P = investment.period_years * 12 // 만기 (개월)
-      
+
       return {
         investment,
         monthlyAmount: investment.monthly_amount,
@@ -71,7 +80,7 @@ export function useCompoundChartData({
 
       // 총 자산 계산: 각 투자별로 매월 복리 계산
       let totalAsset = 0
-      
+
       investmentBalances.forEach((item) => {
         // 만기 전이면 복리 계산
         if (month <= item.maturityMonths) {
@@ -82,7 +91,7 @@ export function useCompoundChartData({
           // 만기 시점의 자산을 그대로 유지 (이미 계산되어 있음)
           // balance는 이미 만기 시점에 계산되어 있으므로 그대로 유지
         }
-        
+
         totalAsset += item.balance
       })
 
