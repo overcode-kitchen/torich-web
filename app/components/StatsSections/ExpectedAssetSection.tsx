@@ -65,7 +65,7 @@ export default function ExpectedAssetSection({
       )}
       <button
         onClick={onShowContribution}
-        className="inline-flex items-center rounded-full border border-border bg-muted-darker text-foreground-soft font-semibold text-sm px-3 py-1.5 hover:brightness-95 transition-colors"
+        className="inline-flex items-center rounded-full border border-border-subtle bg-muted/30 text-muted-foreground font-medium text-sm px-3 py-1.5 hover:bg-muted/50 hover:text-foreground-muted transition-colors dark:border-border dark:bg-muted-darker dark:text-foreground-soft dark:font-semibold dark:hover:brightness-95 dark:hover:bg-muted-darker dark:hover:text-foreground-soft"
       >
         월 {formatCurrency(totalMonthlyPayment)}씩 투자 중
       </button>

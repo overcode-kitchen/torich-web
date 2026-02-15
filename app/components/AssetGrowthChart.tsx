@@ -46,12 +46,12 @@ export default function AssetGrowthChart({
 
   return (
     <div className="space-y-4">
-      {/* 토리 메시지 */}
+      {/* 토리 메시지 - 라이트만 주목도 낮춤, 다크는 기존 스타일 유지 */}
       {currentData && currentData.profit > 0 && (
-        <div className="bg-muted-darker rounded-xl px-4 py-3">
-          <p className="text-sm text-foreground-soft">
-            🐿️ <span className="font-medium">토리:</span> "복리 효과로{' '}
-            <span className="font-bold text-foreground">+{formatCurrency(currentData.profit)}</span>
+        <div className="rounded-xl border border-border-subtle bg-muted/30 px-4 py-3 dark:border-0 dark:bg-muted-darker">
+          <p className="text-sm text-muted-foreground dark:text-foreground-soft">
+            🐿️ <span className="font-medium text-foreground-muted dark:text-foreground-soft">토리:</span> "복리 효과로{' '}
+            <span className="font-semibold text-foreground dark:font-bold">+{formatCurrency(currentData.profit)}</span>
             이 자라났어요"
           </p>
         </div>
