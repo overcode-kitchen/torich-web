@@ -2,10 +2,11 @@
 
 import React from 'react'
 import { formatCurrency } from '@/lib/utils'
-import { formatInvestmentDays } from '@/app/types/investment'
 import { InvestmentField } from '@/app/components/Common/InvestmentField'
 import InvestmentEditSheet from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
+import { MetricsSection } from './MetricsSection'
+import { InvestmentDaysField } from './InvestmentDaysField'
 import type { InfoSectionProps as OriginalInfoSectionProps } from './types'
 
 interface InfoSectionProps extends Partial<OriginalInfoSectionProps> {
@@ -13,12 +14,11 @@ interface InfoSectionProps extends Partial<OriginalInfoSectionProps> {
 }
 
 export function InfoSection(props: InfoSectionProps) {
-  // Try to get context, but don't fail if it's missing (for InvestmentEditView)
   let contextValue: any = null
   try {
     contextValue = useInvestmentDetailContext()
   } catch (e) {
-    // Context missing, will rely on props
+    // Context missing, will rely on props (for InvestmentEditView)
   }
 
   const item = props.item || contextValue?.item
@@ -47,12 +47,10 @@ export function InfoSection(props: InfoSectionProps) {
   } = investmentData || {}
 
   const setIsDaysPickerOpen = props.setIsDaysPickerOpen || ui?.setIsDaysPickerOpen
-
   const originalRate = props.originalRate ?? config?.originalRate
   const formatRate = props.formatRate || config?.formatRate
   const rateSuggestions = props.rateSuggestions || config?.rateSuggestions
   const isCustomRate = props.isCustomRate ?? config?.isCustomRate
-
   const { infoRef } = props
 
   if (!item) return null
@@ -63,7 +61,6 @@ export function InfoSection(props: InfoSectionProps) {
         {isEditMode ? '투자 정보 수정' : '투자 정보'}
       </h3>
       <div className="space-y-6">
-        {/* 월 투자금 */}
         <InvestmentField
           label="월 투자금"
           value={formatCurrency(item.monthly_amount)}
@@ -74,7 +71,6 @@ export function InfoSection(props: InfoSectionProps) {
           onEdit={(value) => handleNumericInput(value, setEditMonthlyAmount)}
         />
 
-        {/* 목표 기간 */}
         <InvestmentField
           label="목표 기간"
           value={`${item.period_years}년`}
@@ -85,13 +81,10 @@ export function InfoSection(props: InfoSectionProps) {
           onEdit={(value) => handleNumericInput(value, setEditPeriodYears)}
         />
 
-        {/* 연 수익률 */}
         <InvestmentField
           label="연 수익률"
           value={`${displayAnnualRate.toFixed(0)}%`}
           editValue={editAnnualRate}
-          editPlaceholder="10"
-          editUnit="%"
           isEditMode={isEditMode}
           onEdit={handleRateInput}
           badge={{
@@ -116,68 +109,20 @@ export function InfoSection(props: InfoSectionProps) {
           </div>
         </InvestmentField>
 
-        {/* 매월 투자일 */}
-        {isEditMode ? (
-          <div className="space-y-1.5">
-            <label className="block text-foreground font-bold text-base">
-              매월 투자일
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {[...editInvestmentDays].sort((a, b) => a - b).map((day) => (
-                <span
-                  key={day}
-                  className="inline-flex items-center gap-1 bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] px-2 py-0.5 rounded-full text-xs font-medium"
-                >
-                  {day}일
-                  <button
-                    type="button"
-                    onClick={() => setEditInvestmentDays((prev: number[]) => prev.filter((d: number) => d !== day))}
-                    className="hover:text-brand-900"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-              <button
-                type="button"
-                onClick={() => setIsDaysPickerOpen(true)}
-                className="inline-flex items-center bg-surface-hover text-foreground-soft px-2 py-0.5 rounded-full text-xs font-semibold hover:bg-secondary transition-colors"
-              >
-                + 추가
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">매월 투자일</span>
-            <span className="text-base font-semibold text-foreground">
-              {formatInvestmentDays(item.investment_days)}
-            </span>
-          </div>
+        <InvestmentDaysField
+          isEditMode={isEditMode}
+          investmentDays={isEditMode ? editInvestmentDays : item.investment_days}
+          onToggleDay={(day) => setEditInvestmentDays((prev: number[]) => prev.filter((d) => d !== day))}
+          onOpenDaysPicker={() => setIsDaysPickerOpen(true)}
+        />
+
+        {!isEditMode && (
+          <MetricsSection
+            totalPrincipal={totalPrincipal}
+            calculatedProfit={calculatedProfit}
+            calculatedFutureValue={calculatedFutureValue}
+          />
         )}
-
-        <div className="border-t border-border-subtle-lighter my-2" />
-
-        {/* 총 원금 */}
-        <InvestmentField
-          label="총 원금"
-          value={formatCurrency(totalPrincipal)}
-          isEditMode={false}
-        />
-
-        {/* 예상 수익 */}
-        <InvestmentField
-          label="예상 수익"
-          value={`+ ${formatCurrency(calculatedProfit)}`}
-          isEditMode={false}
-        />
-
-        {/* 만기 시 예상 금액 */}
-        <InvestmentField
-          label="만기 시 예상 금액"
-          value={formatCurrency(calculatedFutureValue)}
-          isEditMode={false}
-        />
       </div>
     </section>
   )
