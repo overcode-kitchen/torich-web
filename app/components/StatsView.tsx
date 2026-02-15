@@ -1,92 +1,66 @@
 'use client'
 
 import { CircleNotch } from '@phosphor-icons/react'
-import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
-import AssetGrowthSection from '@/app/components/StatsSections/AssetGrowthSection'
-import MonthlyStatusSection from '@/app/components/StatsSections/MonthlyStatusSection'
-import CompletionRateSection from '@/app/components/StatsSections/CompletionRateSection'
 import CashHoldItemsSheet from '@/app/components/CashHoldItemsSheet'
 import MonthlyContributionSheet from '@/app/components/MonthlyContributionSheet'
-import type { UseStatsDataReturn } from '@/app/hooks/useStatsData'
-import type { UsePeriodFilterReturn } from '@/app/hooks/usePeriodFilter'
-import type { UseStatsCalculationsReturn } from '@/app/hooks/useStatsCalculations'
-import type { UseChartDataReturn } from '@/app/hooks/useChartData'
-import type { UseStatsPageUIReturn } from '@/app/hooks/useStatsPageUI'
 import type { Investment } from '@/app/types/investment'
+import StatsHeader from '@/app/components/StatsSections/StatsHeader'
+import StatsContent from '@/app/components/StatsSections/StatsContent'
 
-// Hook에서 export되지 않은 타입들 정의
-// 실제로는 Hook 파일에서 export해서 사용하는 것이 좋음
 interface StatsViewProps {
     isLoading: boolean
     user: { id: string; email?: string } | null
 
-    // Data
-    records: Investment[]
-
-    // UI State & Handlers
-    selectedYear: number
-    setSelectedYear: (year: number) => void
-    showCashHoldSheet: boolean
-    handleCloseCashHold: () => void
-    showContributionSheet: boolean
-    handleCloseContribution: () => void
-    hasRecords: boolean
-    handleShowCashHold: () => void
-    handleShowContribution: () => void
-
-    // Period Filter
-    periodPreset: string
-    setPeriodPreset: (preset: any) => void
-    periodLabel: string
-    customDateRange: any
-    setCustomDateRange: (range: any) => void
-    handleCustomPeriod: () => void
-
-    // Calculations
-    totalExpectedAsset: number
-    totalMonthlyPayment: number
-    hasMaturedInvestments: boolean
-    thisMonth: {
-        totalPayment: number
-        completedPayment: number
-        progress: number
-        remainingPayment: number
+    // Grouped Props
+    data: {
+        records: Investment[]
+        hasRecords: boolean
     }
-    calculateFutureValue: (monthlyAmount: number, T: number, P: number, R?: number) => number
-
-    // Chart Data
-    periodCompletionRate: number
-    chartData: any[]
-    chartBarColor: string
+    ui: {
+        selectedYear: number
+        setSelectedYear: (year: number) => void
+        showCashHoldSheet: boolean
+        handleCloseCashHold: () => void
+        showContributionSheet: boolean
+        handleCloseContribution: () => void
+        handleShowCashHold: () => void
+        handleShowContribution: () => void
+    }
+    filter: {
+        periodPreset: string
+        setPeriodPreset: (preset: any) => void
+        periodLabel: string
+        customDateRange: any
+        setCustomDateRange: (range: any) => void
+        handleCustomPeriod: () => void
+    }
+    calculations: {
+        totalExpectedAsset: number
+        totalMonthlyPayment: number
+        hasMaturedInvestments: boolean
+        thisMonth: {
+            totalPayment: number
+            completedPayment: number
+            progress: number
+            remainingPayment: number
+        }
+        calculateFutureValue: (monthlyAmount: number, T: number, P: number, R?: number) => number
+    }
+    chart: {
+        periodCompletionRate: number
+        chartData: any[]
+        chartBarColor: string
+    }
 }
 
 export default function StatsView({
     isLoading,
     user,
-    records,
-    selectedYear,
-    setSelectedYear,
-    showCashHoldSheet,
-    handleCloseCashHold,
-    showContributionSheet,
-    handleCloseContribution,
-    hasRecords,
-    handleShowCashHold,
-    handleShowContribution,
-    periodPreset,
-    setPeriodPreset,
-    periodLabel,
-    customDateRange,
-    setCustomDateRange,
-    handleCustomPeriod,
-    totalExpectedAsset,
-    totalMonthlyPayment,
-    hasMaturedInvestments,
-    thisMonth,
-    calculateFutureValue,
-    periodCompletionRate,
-    chartData,
-    chartBarColor,
+    data,
+    ui,
+    filter,
+    calculations,
+    chart,
 }: StatsViewProps) {
     if (isLoading) {
         return (
@@ -100,49 +74,22 @@ export default function StatsView({
         return null
     }
 
+    const { showCashHoldSheet, showContributionSheet, handleCloseCashHold, handleCloseContribution, selectedYear } = ui
+    const { records } = data
+    const { totalMonthlyPayment, calculateFutureValue } = calculations
+
     return (
         <main className="min-h-screen bg-surface">
             <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-6 pb-24">
-                <h1 className="text-xl font-bold text-foreground mb-6">통계</h1>
+                <StatsHeader />
 
-                {/* 예상 자산 */}
-                {hasRecords && (
-                    <ExpectedAssetSection
-                        selectedYear={selectedYear}
-                        setSelectedYear={setSelectedYear}
-                        totalExpectedAsset={totalExpectedAsset}
-                        hasMaturedInvestments={hasMaturedInvestments}
-                        totalMonthlyPayment={totalMonthlyPayment}
-                        onShowCashHold={handleShowCashHold}
-                        onShowContribution={handleShowContribution}
-                    />
-                )}
-
-                {/* 예상 수익 차트 */}
-                {hasRecords && (
-                    <AssetGrowthSection
-                        selectedYear={selectedYear}
-                        setSelectedYear={setSelectedYear}
-                        records={records}
-                    />
-                )}
-
-                {/* 이번 달 현황 */}
-                <MonthlyStatusSection thisMonth={thisMonth} />
-
-                {/* 기간별 완료율 */}
-                <CompletionRateSection
-                    periodPreset={periodPreset as any}
-                    setPeriodPreset={setPeriodPreset}
-                    periodLabel={periodLabel}
-                    customDateRange={customDateRange}
-                    setCustomDateRange={setCustomDateRange}
-                    handleCustomPeriod={handleCustomPeriod}
-                    periodCompletionRate={periodCompletionRate}
-                    chartData={chartData}
-                    chartBarColor={chartBarColor}
+                <StatsContent
+                    data={data}
+                    ui={ui}
+                    calculations={calculations}
+                    filter={filter}
+                    chart={chart}
                 />
-
             </div>
 
             {showCashHoldSheet && (

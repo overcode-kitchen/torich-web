@@ -57,30 +57,40 @@ export default function StatsPage() {
     <StatsView
       isLoading={isLoading}
       user={user}
-      records={records}
-      selectedYear={selectedYear}
-      setSelectedYear={setSelectedYear}
-      showCashHoldSheet={showCashHoldSheet}
-      handleCloseCashHold={handleCloseCashHold}
-      showContributionSheet={showContributionSheet}
-      handleCloseContribution={handleCloseContribution}
-      hasRecords={hasRecords}
-      handleShowCashHold={handleShowCashHold}
-      handleShowContribution={handleShowContribution}
-      periodPreset={periodPreset}
-      setPeriodPreset={setPeriodPreset}
-      periodLabel={periodLabel}
-      customDateRange={customDateRange}
-      setCustomDateRange={setCustomDateRange}
-      handleCustomPeriod={handleCustomPeriod}
-      totalExpectedAsset={totalExpectedAsset}
-      totalMonthlyPayment={totalMonthlyPayment}
-      hasMaturedInvestments={hasMaturedInvestments}
-      thisMonth={thisMonth}
-      calculateFutureValue={calculateFutureValue}
-      periodCompletionRate={periodCompletionRate}
-      chartData={chartData}
-      chartBarColor={chartBarColor}
+      data={{
+        records,
+        hasRecords,
+      }}
+      ui={{
+        selectedYear,
+        setSelectedYear,
+        showCashHoldSheet,
+        handleCloseCashHold,
+        showContributionSheet,
+        handleCloseContribution,
+        handleShowCashHold,
+        handleShowContribution,
+      }}
+      filter={{
+        periodPreset,
+        setPeriodPreset,
+        periodLabel,
+        customDateRange,
+        setCustomDateRange,
+        handleCustomPeriod,
+      }}
+      calculations={{
+        totalExpectedAsset,
+        totalMonthlyPayment,
+        hasMaturedInvestments,
+        thisMonth,
+        calculateFutureValue,
+      }}
+      chart={{
+        periodCompletionRate,
+        chartData,
+        chartBarColor,
+      }}
     />
   )
 }
