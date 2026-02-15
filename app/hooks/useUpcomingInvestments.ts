@@ -1,13 +1,11 @@
-'use client'
-
-import { useState, useMemo } from 'react'
-import { addDays } from 'date-fns'
-import { getUpcomingPayments, getUpcomingPaymentsInRange } from '@/app/utils/date'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import type { Investment } from '@/app/types/investment'
 import type { DateRange } from 'react-day-picker'
-import type { PaymentEvent } from '@/app/utils/stats'
+import { addDays } from 'date-fns'
+import { getUpcomingPayments, getUpcomingPaymentsInRange } from '@/app/utils/date'
 
-const PRESET_OPTIONS = [
+const STORAGE_PREFIX = 'torich_completed_'
+export const PRESET_OPTIONS = [
   { label: '오늘', days: 1 },
   { label: '3일', days: 3 },
   { label: '7일', days: 7 },
@@ -16,27 +14,53 @@ const PRESET_OPTIONS = [
   { label: '1년', days: 365 },
 ] as const
 
-export interface UpcomingItem {
-  investment: Investment
-  paymentDate: Date
-  dayOfMonth: number
+const TOAST_DURATION_MS = 5000
+const INITIAL_VISIBLE_COUNT = 5
+
+function getCompletedKey(investmentId: string, year: number, month: number, day: number): string {
+  const yearMonth = `${year}-${String(month).padStart(2, '0')}`
+  return `${STORAGE_PREFIX}${investmentId}_${yearMonth}_${day}`
 }
 
-interface UseUpcomingInvestmentsProps {
-  records: Investment[]
-  isEventCompleted: (event: PaymentEvent) => boolean
+function isPaymentCompleted(investmentId: string, date: Date, dayOfMonth: number): boolean {
+  if (typeof window === 'undefined') return false
+  const key = getCompletedKey(investmentId, date.getFullYear(), date.getMonth() + 1, dayOfMonth)
+  return !!localStorage.getItem(key)
 }
 
-export function useUpcomingInvestments({ 
-  records, 
-  isEventCompleted 
-}: UseUpcomingInvestmentsProps) {
+function setPaymentCompleted(investmentId: string, date: Date, dayOfMonth: number): void {
+  if (typeof window === 'undefined') return
+  const key = getCompletedKey(investmentId, date.getFullYear(), date.getMonth() + 1, dayOfMonth)
+  localStorage.setItem(key, new Date().toISOString())
+}
+
+function clearPaymentCompleted(investmentId: string, date: Date, dayOfMonth: number): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem(getCompletedKey(investmentId, date.getFullYear(), date.getMonth() + 1, dayOfMonth))
+}
+
+export function useUpcomingInvestments(records: Investment[]) {
+  const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set())
   const [selectedPreset, setSelectedPreset] = useState<'preset' | 'custom'>('preset')
+  const [expanded, setExpanded] = useState(false)
   const [selectedDays, setSelectedDays] = useState(7)
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(() => {
     const t = new Date()
     return { from: t, to: addDays(t, 6) }
   })
+  const [pendingUndo, setPendingUndo] = useState<{
+    investmentId: string
+    date: Date
+    dayOfMonth: number
+  } | null>(null)
+
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
+    }
+  }, [])
 
   const items = useMemo(() => {
     if (selectedPreset === 'custom' && customDateRange?.from && customDateRange?.to) {
@@ -46,72 +70,91 @@ export function useUpcomingInvestments({
         return { investment: inv, paymentDate: p.paymentDate, dayOfMonth: p.dayOfMonth }
       })
     }
-    const effectiveDays = selectedDays
-    const payments = getUpcomingPayments(records, effectiveDays)
+    const payments = getUpcomingPayments(records, selectedDays)
     return payments.map((p) => {
       const inv = records.find((r) => r.id === p.id)!
       return { investment: inv, paymentDate: p.paymentDate, dayOfMonth: p.dayOfMonth }
     })
   }, [records, selectedPreset, selectedDays, customDateRange])
 
-  const visibleItems = useMemo(() => {
-    return items.filter((item) => {
-      const event: PaymentEvent = {
-        investmentId: item.investment.id,
-        year: item.paymentDate.getFullYear(),
-        month: item.paymentDate.getMonth() + 1,
-        day: item.dayOfMonth,
-        yearMonth: `${item.paymentDate.getFullYear()}-${String(item.paymentDate.getMonth() + 1).padStart(2, '0')}`,
-        monthlyAmount: item.investment.monthly_amount,
-        title: item.investment.title
-      }
-      return !isEventCompleted(event)
+  const pendingUndoRef = useRef(pendingUndo)
+  pendingUndoRef.current = pendingUndo
+
+  const handleUndo = useCallback(() => {
+    const p = pendingUndoRef.current
+    if (!p) return
+    clearPaymentCompleted(p.investmentId, p.date, p.dayOfMonth)
+    const key = `${p.investmentId}_${p.date.getTime()}_${p.dayOfMonth}`
+    setCompletedIds((prev) => {
+      const next = new Set(prev)
+      next.delete(key)
+      return next
     })
-  }, [items, isEventCompleted])
+    setPendingUndo(null)
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current)
+      toastTimeoutRef.current = null
+    }
+  }, [])
 
-  const rangeLabel = useMemo(() => 
-    selectedPreset === 'custom' && customDateRange?.from && customDateRange?.to
-      ? `${customDateRange.from.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} - ${customDateRange.to.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}`
-      : PRESET_OPTIONS.find((p) => p.days === selectedDays)?.label ?? `${selectedDays}일`
-  , [selectedPreset, selectedDays, customDateRange])
+  const toggleComplete = useCallback((investmentId: string, date: Date, dayOfMonth: number) => {
+    setPaymentCompleted(investmentId, date, dayOfMonth)
+    const key = `${investmentId}_${date.getTime()}_${dayOfMonth}`
+    setCompletedIds((prev) => new Set(prev).add(key))
+    setPendingUndo({ investmentId, date, dayOfMonth })
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
+    toastTimeoutRef.current = setTimeout(() => {
+      setPendingUndo(null)
+      toastTimeoutRef.current = null
+    }, TOAST_DURATION_MS)
+  }, [])
 
-  const handlePresetSelect = (days: number) => {
+  const selectPreset = useCallback((days: number) => {
     setSelectedPreset('preset')
     setSelectedDays(days)
-  }
+  }, [])
 
-  const handleCustomRangeSelect = () => {
+  const selectCustomPreset = useCallback(() => {
     setSelectedPreset('custom')
     const t = new Date()
     setCustomDateRange({ from: t, to: addDays(t, 6) })
-  }
+  }, [])
 
-  const createPaymentEvent = (item: UpcomingItem): PaymentEvent => ({
-    investmentId: item.investment.id,
-    year: item.paymentDate.getFullYear(),
-    month: item.paymentDate.getMonth() + 1,
-    day: item.dayOfMonth,
-    yearMonth: `${item.paymentDate.getFullYear()}-${String(item.paymentDate.getMonth() + 1).padStart(2, '0')}`,
-    monthlyAmount: item.investment.monthly_amount,
-    title: item.investment.title
-  })
+  const visibleItems = useMemo(() => {
+    return items.filter((item) => {
+      const key = `${item.investment.id}_${item.paymentDate.getTime()}_${item.dayOfMonth}`
+      if (completedIds.has(key)) return false
+      return !isPaymentCompleted(item.investment.id, item.paymentDate, item.dayOfMonth)
+    })
+  }, [items, completedIds])
+
+  const displayItems = expanded ? visibleItems : visibleItems.slice(0, INITIAL_VISIBLE_COUNT)
+  const hasMore = visibleItems.length > INITIAL_VISIBLE_COUNT
+  const remainingCount = visibleItems.length - INITIAL_VISIBLE_COUNT
+
+  const rangeLabel =
+    selectedPreset === 'custom' && customDateRange?.from && customDateRange?.to
+      ? `${customDateRange.from.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} - ${customDateRange.to.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}`
+      : PRESET_OPTIONS.find((p) => p.days === selectedDays)?.label ?? `${selectedDays}일`
 
   return {
-    // State
     selectedPreset,
+    setSelectedPreset,
     selectedDays,
+    setSelectedDays,
     customDateRange,
     setCustomDateRange,
-    
-    // Computed values
-    items,
-    visibleItems,
+    expanded,
+    setExpanded,
+    pendingUndo,
+    handleUndo,
+    toggleComplete,
+    selectPreset,
+    selectCustomPreset,
+    displayItems,
+    hasMore,
+    remainingCount,
     rangeLabel,
-    presetOptions: PRESET_OPTIONS,
-    
-    // Actions
-    handlePresetSelect,
-    handleCustomRangeSelect,
-    createPaymentEvent
+    visibleItemsCount: visibleItems.length,
   }
 }
