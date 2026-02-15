@@ -7,13 +7,9 @@ import { useScrollHeader } from '@/app/hooks/useScrollHeader'
 import { useInvestmentDetailUI } from '@/app/hooks/useInvestmentDetailUI'
 import { useInvestmentDetailHandlers } from '@/app/hooks/useInvestmentDetailHandlers'
 import DeleteConfirmModal from '@/app/components/DeleteConfirmModal'
-import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
-import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSection'
-import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
 import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailHeader'
-import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailOverview'
-import { InvestmentDetailActions } from '@/app/components/InvestmentDetailActions'
 import type { RateSuggestion } from '@/app/components/InvestmentEditSheet'
+import { InvestmentDetailContent } from '@/app/components/InvestmentDetailContent'
 
 interface InvestmentDetailViewProps {
   item: Investment
@@ -98,71 +94,21 @@ function InternalInvestmentDetailView({
         toggleNotification={investmentData.toggleNotification}
       />
 
-      {/* 콘텐츠 - 좌우 24px 단일 여백, 가변 컨테이너 폭 */}
-      <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-6 pb-12">
-        <InvestmentDetailOverview
-          item={item}
-          isEditMode={isEditMode}
-          nextPaymentDate={investmentData.nextPaymentDate}
-          completed={investmentData.completed}
-        />
-
-        {/* 진행률 - 수정 모드에서는 숨김 */}
-        {!isEditMode && (
-          <ProgressSection
-            progress={investmentData.progress}
-            completed={investmentData.completed}
-            startDate={investmentData.startDate}
-            endDate={investmentData.endDate}
-          />
-        )}
-
-        <div className="divide-y divide-border-subtle-lighter">
-          <InfoSection
-            item={item}
-            isEditMode={isEditMode}
-            editMonthlyAmount={investmentData.editMonthlyAmount}
-            setEditMonthlyAmount={investmentData.setEditMonthlyAmount}
-            editPeriodYears={investmentData.editPeriodYears}
-            setEditPeriodYears={investmentData.setEditPeriodYears}
-            editAnnualRate={investmentData.editAnnualRate}
-            setEditAnnualRate={investmentData.setEditAnnualRate}
-            editInvestmentDays={investmentData.editInvestmentDays}
-            setEditInvestmentDays={investmentData.setEditInvestmentDays}
-            setIsDaysPickerOpen={setIsDaysPickerOpen}
-            handleNumericInput={investmentData.handleNumericInput}
-            handleRateInput={investmentData.handleRateInput}
-            displayAnnualRate={investmentData.displayAnnualRate}
-            totalPrincipal={investmentData.totalPrincipal}
-            calculatedProfit={investmentData.calculatedProfit}
-            calculatedFutureValue={investmentData.calculatedFutureValue}
-            originalRate={originalRate}
-            isRateManuallyEdited={investmentData.isRateManuallyEdited}
-            setIsRateManuallyEdited={investmentData.setIsRateManuallyEdited}
-            formatRate={formatRate}
-            rateSuggestions={rateSuggestions}
-            isCustomRate={isCustomRate}
-            infoRef={infoRef}
-          />
-          {investmentData.paymentHistory.length > 0 && (
-            <PaymentHistorySection
-              item={item}
-              paymentHistory={investmentData.paymentHistory}
-              hasMorePaymentHistory={investmentData.hasMorePaymentHistory}
-              loadMore={investmentData.loadMore}
-              historyRef={historyRef}
-            />
-          )}
-        </div>
-
-        {isEditMode && (
-          <InvestmentDetailActions
-            handleCancel={handleCancel}
-            handleSave={handleSave}
-            isUpdating={isUpdating}
-          />
-        )}
-      </div>
+      <InvestmentDetailContent
+        item={item}
+        isEditMode={isEditMode}
+        investmentData={investmentData}
+        onCancel={handleCancel}
+        onSave={handleSave}
+        isUpdating={isUpdating}
+        setIsDaysPickerOpen={setIsDaysPickerOpen}
+        infoRef={infoRef}
+        historyRef={historyRef}
+        originalRate={originalRate}
+        formatRate={formatRate}
+        rateSuggestions={rateSuggestions}
+        isCustomRate={isCustomRate}
+      />
 
       {/* 삭제 확인 모달 */}
       <DeleteConfirmModal
