@@ -26,7 +26,7 @@ export function NotificationDndSection({
   return (
     <>
       {/* 방해금지 토글 */}
-      <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between gap-4">
+      <div className="px-4 py-3  flex items-center justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-foreground font-medium">방해금지</span>
           <span className="text-xs text-muted-foreground mt-1">
@@ -39,7 +39,7 @@ export function NotificationDndSection({
       {/* 시작 시간 */}
       <div
         className={cn(
-          'px-4 py-3 border-t border-border-subtle flex items-center justify-between gap-4',
+          'px-4 py-3 flex items-center justify-between gap-4',
           dimmed && 'opacity-60'
         )}
       >
@@ -57,7 +57,7 @@ export function NotificationDndSection({
       {/* 종료 시간 */}
       <div
         className={cn(
-          'px-4 py-3 border-t border-border-subtle flex items-center justify-between gap-4',
+          'px-4 py-3 flex items-center justify-between gap-4',
           dimmed && 'opacity-60'
         )}
       >

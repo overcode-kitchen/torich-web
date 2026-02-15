@@ -15,7 +15,7 @@ export function NotificationServiceSection({
   return (
     <>
       {/* 공지사항 푸시 */}
-      <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between gap-4">
+      <div className="px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-foreground font-medium">공지사항 푸시</span>
           <span className="text-xs text-muted-foreground mt-1">
@@ -29,7 +29,7 @@ export function NotificationServiceSection({
       </div>
 
       {/* 계정/보안 알림 */}
-      <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between gap-4 opacity-70">
+      <div className="px-4 py-3 flex items-center justify-between gap-4 opacity-70">
         <div className="flex flex-col">
           <span className="inline-flex items-center gap-1 text-foreground font-medium">
             <LockSimple className="w-4 h-4 text-foreground-subtle" weight="fill" />

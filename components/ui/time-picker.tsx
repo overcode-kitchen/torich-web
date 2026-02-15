@@ -19,6 +19,7 @@ export function TimePicker({ value, onChange, className, disabled, ...props }: T
         'h-11 w-full rounded-2xl border border-border-subtle bg-card px-3 text-sm text-foreground',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary',
         'disabled:cursor-not-allowed disabled:opacity-60',
+        'dark:[&::-webkit-calendar-picker-indicator]:invert',
         className
       )}
       {...props}

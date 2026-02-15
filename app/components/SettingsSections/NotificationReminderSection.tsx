@@ -48,7 +48,7 @@ export function NotificationReminderSection({
   return (
     <>
       {/* 기본 알림 시간 */}
-      <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between gap-4">
+      <div className="px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-foreground font-medium">기본 알림 시간</span>
           <span className="text-xs text-muted-foreground mt-1">
@@ -61,7 +61,7 @@ export function NotificationReminderSection({
       </div>
 
       {/* 기본 사전 알림 */}
-      <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between gap-4">
+      <div className="px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-foreground font-medium">기본 사전 알림</span>
           <span className="text-xs text-muted-foreground mt-1">
@@ -98,7 +98,7 @@ export function NotificationReminderSection({
       </div>
 
       {/* 미완료 재알림 */}
-      <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between gap-4">
+      <div className="px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-foreground font-medium">미완료 재알림</span>
           <span className="text-xs text-muted-foreground mt-1">
@@ -109,7 +109,7 @@ export function NotificationReminderSection({
       </div>
 
       {/* 연속 투자 알림 */}
-      <div className="px-4 py-3 border-t border-border-subtle flex items-center justify-between gap-4">
+      <div className="px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-foreground font-medium">연속 투자 알림</span>
           <span className="text-xs text-muted-foreground mt-1">
