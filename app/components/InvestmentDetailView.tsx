@@ -28,7 +28,10 @@ function InternalInvestmentDetailView({
 }: InvestmentDetailViewProps) {
   // Context
   const {
+    activeTab,
+    handleTabClick,
     scrollContainerRef,
+    overviewRef,
     infoRef,
     historyRef,
     titleRef,
@@ -108,6 +111,10 @@ function InternalInvestmentDetailView({
         formatRate={formatRate}
         rateSuggestions={rateSuggestions}
         isCustomRate={isCustomRate}
+        activeTab={activeTab}
+        handleTabClick={handleTabClick}
+        overviewRef={overviewRef}
+        titleRef={titleRef}
       />
 
       {/* 삭제 확인 모달 */}

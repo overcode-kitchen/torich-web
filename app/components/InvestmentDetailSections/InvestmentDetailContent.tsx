@@ -23,6 +23,10 @@ interface InvestmentDetailContentProps {
     formatRate: (rate: number) => string
     rateSuggestions: RateSuggestion[]
     isCustomRate: boolean
+    activeTab: any
+    handleTabClick: (tab: any) => void
+    overviewRef: React.RefObject<HTMLElement | null>
+    titleRef: React.RefObject<HTMLDivElement | null>
 }
 
 export function InvestmentDetailContent({
@@ -39,6 +43,10 @@ export function InvestmentDetailContent({
     formatRate,
     rateSuggestions,
     isCustomRate,
+    activeTab,
+    handleTabClick,
+    overviewRef,
+    titleRef,
 }: InvestmentDetailContentProps) {
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-6 pb-12">
@@ -47,6 +55,10 @@ export function InvestmentDetailContent({
                 isEditMode={isEditMode}
                 nextPaymentDate={investmentData.nextPaymentDate}
                 completed={investmentData.completed}
+                activeTab={activeTab}
+                handleTabClick={handleTabClick}
+                overviewRef={overviewRef}
+                titleRef={titleRef}
             />
 
             {/* 진행률 - 수정 모드에서는 숨김 */}

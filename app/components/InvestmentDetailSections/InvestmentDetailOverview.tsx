@@ -2,15 +2,19 @@
 
 import { CalendarBlank } from '@phosphor-icons/react'
 import { Investment } from '@/app/types/investment'
-import { useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { formatNextPaymentDate } from '@/app/utils/date'
+import type { TabType } from '@/app/contexts/InvestmentTabContext'
 
 interface InvestmentDetailOverviewProps {
     item: Investment
     isEditMode: boolean
     nextPaymentDate: Date | null
     completed: boolean
+    activeTab: TabType
+    handleTabClick: (tab: TabType) => void
+    overviewRef: React.RefObject<HTMLElement | null>
+    titleRef: React.RefObject<HTMLDivElement | null>
 }
 
 export function InvestmentDetailOverview({
@@ -18,13 +22,11 @@ export function InvestmentDetailOverview({
     isEditMode,
     nextPaymentDate,
     completed,
+    activeTab,
+    handleTabClick,
+    overviewRef,
+    titleRef,
 }: InvestmentDetailOverviewProps) {
-    const {
-        activeTab,
-        overviewRef,
-        titleRef,
-        handleTabClick,
-    } = useInvestmentTabContext()
 
     return (
         <section ref={overviewRef} className="py-6 space-y-4">
@@ -50,8 +52,8 @@ export function InvestmentDetailOverview({
                         type="button"
                         onClick={() => handleTabClick('overview')}
                         className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'overview'
-                                ? 'border-foreground text-foreground'
-                                : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
+                            ? 'border-foreground text-foreground'
+                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
                             }`}
                     >
                         개요
@@ -60,8 +62,8 @@ export function InvestmentDetailOverview({
                         type="button"
                         onClick={() => handleTabClick('info')}
                         className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'info'
-                                ? 'border-foreground text-foreground'
-                                : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
+                            ? 'border-foreground text-foreground'
+                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
                             }`}
                     >
                         투자 정보
@@ -70,8 +72,8 @@ export function InvestmentDetailOverview({
                         type="button"
                         onClick={() => handleTabClick('history')}
                         className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'history'
-                                ? 'border-foreground text-foreground'
-                                : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
+                            ? 'border-foreground text-foreground'
+                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
                             }`}
                     >
                         납입 기록
