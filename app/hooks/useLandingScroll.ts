@@ -7,24 +7,35 @@ function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3)
 }
 
-/** 스크롤을 목표 위치로 자석처럼 끌어당기는 애니메이션 */
-function scrollToWithMagnet(
+/** 슈르륵 스크롤용: 시작·끝 모두 부드럽게 */
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+}
+
+function scrollToAnimated(
   element: HTMLElement,
   targetTop: number,
-  duration = 350
+  duration: number,
+  easing: (t: number) => number
 ) {
   const startTop = element.scrollTop
   const distance = targetTop - startTop
   if (Math.abs(distance) < 2) return
 
   const startTime = performance.now()
+  const originalSnap = element.style.scrollSnapType
+  element.style.scrollSnapType = 'none'
 
   function tick(currentTime: number) {
     const elapsed = currentTime - startTime
     const progress = Math.min(elapsed / duration, 1)
-    const eased = easeOutCubic(progress)
+    const eased = easing(progress)
     element.scrollTop = startTop + distance * eased
-    if (progress < 1) requestAnimationFrame(tick)
+    if (progress < 1) {
+      requestAnimationFrame(tick)
+    } else {
+      element.style.scrollSnapType = originalSnap
+    }
   }
 
   requestAnimationFrame(tick)
@@ -57,7 +68,7 @@ export function useLandingScroll(mainRef: React.RefObject<HTMLElement | null>) {
 
     if (targetTop !== null && Math.abs(main.scrollTop - targetTop) > 5) {
       isAnimatingRef.current = true
-      scrollToWithMagnet(main, targetTop)
+      scrollToAnimated(main, targetTop, 350, easeOutCubic)
       setTimeout(() => {
         isAnimatingRef.current = false
       }, 350)
@@ -69,7 +80,13 @@ export function useLandingScroll(mainRef: React.RefObject<HTMLElement | null>) {
     const section2 = document.getElementById('landing-section-2')
     if (!main || !section2) return
     const targetTop = section2.offsetTop
-    scrollToWithMagnet(main, targetTop, 450)
+    scrollToAnimated(main, targetTop, 550, easeInOutCubic)
+  }, [])
+
+  const scrollToTop = useCallback(() => {
+    const main = mainRef.current
+    if (!main) return
+    scrollToAnimated(main, 0, 550, easeInOutCubic)
   }, [])
 
   useEffect(() => {
@@ -92,6 +109,7 @@ export function useLandingScroll(mainRef: React.RefObject<HTMLElement | null>) {
   }, [snapToNearestSection])
 
   return {
-    scrollToSection2
+    scrollToSection2,
+    scrollToTop
   }
 }

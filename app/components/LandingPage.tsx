@@ -7,7 +7,7 @@ import ConcernSection from './LandingPageSections/ConcernSection'
 
 function LandingPage() {
   const mainRef = useRef<HTMLElement>(null)
-  const { scrollToSection2 } = useLandingScroll(mainRef)
+  const { scrollToSection2, scrollToTop } = useLandingScroll(mainRef)
 
   return (
     <main
@@ -20,7 +20,7 @@ function LandingPage() {
         <HeroSection scrollToSection2={scrollToSection2} />
 
         {/* 섹션 2: 고민 & 해결 온보딩 - 뷰포트 1개, 자석처럼 스냅 */}
-        <ConcernSection />
+        <ConcernSection onScrollToTop={scrollToTop} />
       </div>
     </main>
   )

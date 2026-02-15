@@ -1,8 +1,14 @@
 'use client'
 
 import Image from 'next/image'
+import { CaretUp } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
 
-export default function ConcernSection() {
+interface ConcernSectionProps {
+  onScrollToTop: () => void
+}
+
+export default function ConcernSection({ onScrollToTop }: ConcernSectionProps) {
   return (
     <section
       id="landing-section-2"
@@ -72,6 +78,18 @@ export default function ConcernSection() {
                 }}
                 aria-hidden
               />
+              {/* 맨 위로 가기 - 우측 하단 아이콘 버튼 (btn-icon-md, 띠용띠용 애니메이션) */}
+              <div className="absolute right-4 bottom-4 z-20">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={onScrollToTop}
+                  aria-label="맨 위로 가기"
+                  className="animate-bounce"
+                >
+                  <CaretUp className="size-5" weight="bold" aria-hidden />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
