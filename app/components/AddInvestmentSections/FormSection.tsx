@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import StockSearchInput from '@/app/components/Common/StockSearchInput'
-import RateDisplay from '@/app/components/RateDisplay'
+import RateDisplay from '@/app/components/RateDisplay/RateDisplay'
 import AmountInput from '@/app/components/Common/AmountInput'
 import PeriodInput from '@/app/components/Common/PeriodInput'
 

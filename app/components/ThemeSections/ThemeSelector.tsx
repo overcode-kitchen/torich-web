@@ -1,7 +1,7 @@
 'use client'
 
 import { Sun, Moon, Devices, CaretDown } from '@phosphor-icons/react'
-import { type Theme } from '@/app/components/ThemeProvider'
+import { type Theme } from './ThemeProvider'
 import {
   DropdownMenu,
   DropdownMenuContent,

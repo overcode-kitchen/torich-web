@@ -1,6 +1,6 @@
 'use client'
 
-import InvestmentPreviewCard from '@/app/components/InvestmentPreviewCard'
+import InvestmentPreviewCard from '@/app/components/Common/Investments/InvestmentPreviewCard'
 
 interface PreviewSectionProps {
   stockName: string

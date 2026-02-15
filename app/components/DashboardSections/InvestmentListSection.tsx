@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { Investment } from '@/app/types/investment'
-import InvestmentItem from '@/app/components/InvestmentItem'
+import InvestmentItem from '@/app/components/Common/Investments/InvestmentItem'
 
 type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
 type SortBy = 'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME' | 'NEXT_PAYMENT'
@@ -69,31 +69,28 @@ export default function InvestmentListSection({
         <div className="flex items-center gap-1.5 flex-1 overflow-x-auto">
           <button
             onClick={() => onFilterChange('ALL')}
-            className={`px-3 py-1 text-xs rounded-lg whitespace-nowrap transition-colors ${
-              filterStatus === 'ALL'
+            className={`px-3 py-1 text-xs rounded-lg whitespace-nowrap transition-colors ${filterStatus === 'ALL'
                 ? 'bg-surface-dark text-white font-medium'
                 : 'bg-surface text-foreground-muted hover:bg-surface-hover font-normal'
-            }`}
+              }`}
           >
             전체
           </button>
           <button
             onClick={() => onFilterChange('ACTIVE')}
-            className={`px-3 py-1 text-xs rounded-lg whitespace-nowrap transition-colors ${
-              filterStatus === 'ACTIVE'
+            className={`px-3 py-1 text-xs rounded-lg whitespace-nowrap transition-colors ${filterStatus === 'ACTIVE'
                 ? 'bg-surface-dark text-white font-medium'
                 : 'bg-surface text-foreground-muted hover:bg-surface-hover font-normal'
-            }`}
+              }`}
           >
             진행 중
           </button>
           <button
             onClick={() => onFilterChange('ENDED')}
-            className={`px-3 py-1 text-xs rounded-lg whitespace-nowrap transition-colors ${
-              filterStatus === 'ENDED'
+            className={`px-3 py-1 text-xs rounded-lg whitespace-nowrap transition-colors ${filterStatus === 'ENDED'
                 ? 'bg-surface-dark text-white font-medium'
                 : 'bg-surface text-foreground-muted hover:bg-surface-hover font-normal'
-            }`}
+              }`}
           >
             종료
           </button>

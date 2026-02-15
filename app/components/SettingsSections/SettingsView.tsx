@@ -2,11 +2,11 @@
 
 import { CircleNotch } from '@phosphor-icons/react'
 import { Switch } from '@/components/ui/switch'
-import { SettingsSection } from '@/app/components/SettingsSection'
-import { ThemeSelector } from '@/app/components/ThemeSelector'
+import { SettingsSection } from './SettingsSection'
+import { ThemeSelector } from '@/app/components/ThemeSections/ThemeSelector'
 import { BrandStorySheet } from '@/app/components/BrandStorySheet'
-import { SettingsItem } from '@/app/components/SettingsItem'
-import type { Theme } from '@/app/components/ThemeProvider'
+import { SettingsItem } from './SettingsItem'
+import type { Theme } from '@/app/components/ThemeSections/ThemeProvider'
 
 interface SettingsViewProps {
     // Auth

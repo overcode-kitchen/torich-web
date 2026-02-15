@@ -2,8 +2,8 @@
 
 import { useCompoundChartData } from '@/app/hooks/useCompoundChartData'
 import type { Investment } from '@/app/types/investment'
-import CompoundChartSummary from './CompoundChartSections/CompoundChartSummary'
-import CompoundChartGraph from './CompoundChartSections/CompoundChartGraph'
+import CompoundChartSummary from './CompoundChartSummary'
+import CompoundChartGraph from './CompoundChartGraph'
 
 interface CompoundChartProps {
   investments: Investment[]

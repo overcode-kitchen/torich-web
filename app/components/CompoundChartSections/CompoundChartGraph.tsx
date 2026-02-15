@@ -11,7 +11,7 @@ import {
     ReferenceLine,
     Legend,
 } from 'recharts'
-import CompoundChartTooltip from '@/app/components/CompoundChartTooltip'
+import CompoundChartTooltip from './CompoundChartTooltip'
 import {
     formatYAxisTick,
     formatXAxisTick,

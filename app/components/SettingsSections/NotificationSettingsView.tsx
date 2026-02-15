@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowLeft } from '@phosphor-icons/react'
-import { SettingsSection } from '@/app/components/SettingsSection'
+import { SettingsSection } from './SettingsSection'
 import { NotificationReminderSection } from '@/app/components/SettingsSections/NotificationReminderSection'
 import { NotificationServiceSection } from '@/app/components/SettingsSections/NotificationServiceSection'
 import { NotificationDndSection } from '@/app/components/SettingsSections/NotificationDndSection'

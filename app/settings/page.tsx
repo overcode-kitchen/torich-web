@@ -3,8 +3,8 @@
 import { useSettingsAuth } from '@/app/hooks/useSettingsAuth'
 import { useGlobalNotification } from '@/app/hooks/useGlobalNotification'
 import { useSettingsPageUI } from '@/app/hooks/useSettingsPageUI'
-import { useTheme } from '@/app/components/ThemeProvider'
-import SettingsView from '@/app/components/SettingsView'
+import { useTheme } from '@/app/components/ThemeSections/ThemeProvider'
+import SettingsView from '@/app/components/SettingsSections/SettingsView'
 
 export default function SettingsPage() {
   const { user, isLoading, isLoggingOut, handleLogout } = useSettingsAuth()

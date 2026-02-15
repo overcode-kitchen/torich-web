@@ -5,7 +5,7 @@ import { usePeriodFilter } from '@/app/hooks/usePeriodFilter'
 import { useStatsCalculations } from '@/app/hooks/useStatsCalculations'
 import { useChartData } from '@/app/hooks/useChartData'
 import { useStatsPageUI } from '@/app/hooks/useStatsPageUI'
-import StatsView from '@/app/components/StatsView'
+import StatsView from '@/app/components/StatsSections/StatsView'
 
 export default function StatsPage() {
   const { user, records, activeRecords, isLoading, router } = useStatsData()

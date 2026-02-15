@@ -1,10 +1,10 @@
 'use client'
 
 import { type SearchResult } from '@/app/hooks/useStockSearch'
-import RateLoading from './RateDisplay/RateLoading'
-import RateError from './RateDisplay/RateError'
-import RateEditing from './RateDisplay/RateEditing'
-import RateView from './RateDisplay/RateView'
+import RateLoading from './RateLoading'
+import RateError from './RateError'
+import RateEditing from './RateEditing'
+import RateView from './RateView'
 
 interface RateDisplayProps {
   // 상태

@@ -1,8 +1,8 @@
 'use client'
 
 import { CircleNotch } from '@phosphor-icons/react'
-import CashHoldItemsSheet from '@/app/components/CashHoldItemsSheet'
-import MonthlyContributionSheet from '@/app/components/MonthlyContributionSheet'
+import CashHoldItemsSheet from './CashHoldItemsSheet'
+import MonthlyContributionSheet from './MonthlyContributionSheet'
 import type { Investment } from '@/app/types/investment'
 import { useMonthlyContribution } from '@/app/hooks/useMonthlyContribution'
 import StatsHeader from '@/app/components/StatsSections/StatsHeader'
