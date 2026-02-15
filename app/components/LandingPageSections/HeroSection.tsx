@@ -14,9 +14,11 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
 
   return (
     <section
-      className="flex h-dvh shrink-0 snap-start snap-always flex-col overflow-y-auto overflow-x-hidden px-4 pt-8"
+      className="relative flex h-dvh shrink-0 snap-start snap-always flex-col overflow-hidden px-4 pt-8"
       aria-label="토리치 소개"
     >
+      {/* 스크롤 영역 - 콘텐츠가 버튼에 가려지지 않도록 하단 패딩 확보 */}
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pb-52">
       {/* 상단 브랜드 영역 */}
       <header className="mb-3">
         <div className="relative h-10 w-36">
@@ -32,8 +34,8 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
 
       {/* 히어로 카피 + 그래픽 영역 */}
       <div className="flex flex-1 flex-col gap-8">
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight lg:leading-[1.1]">
+        <div className="space-y-4 pl-4 pr-4">
+          <h1 className="text-[2rem] font-bold tracking-tight lg:leading-[1.1]">
             매달 투자,
             <br />
             까먹지 않게 관리해줄게
@@ -63,7 +65,6 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
           </div>
           {/* Layer 2: 흰 박스 (중간) */}
           <div className="relative z-10 mt-0 space-y-4 rounded-3xl bg-card p-5 shadow-sm">
-            <p className="text-sm font-semibold text-[var(--brand-accent-text)]">토리치가 해주는 일</p>
             <ul className="space-y-4 text-base">
               <li className="flex items-center gap-3">
                 <div className="relative h-7 w-7 shrink-0">
@@ -74,7 +75,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
                     className="object-contain"
                   />
                 </div>
-                <span className="font-semibold text-foreground">다음 투자일 알려줌!</span>
+                <span className="font-semibold text-foreground">투자일 놓치지 않게 미리 알려줘요</span>
               </li>
               <li className="flex items-center gap-3">
                 <div className="relative h-7 w-7 shrink-0">
@@ -85,7 +86,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
                     className="object-contain"
                   />
                 </div>
-                <span className="font-semibold text-foreground">납입 완료 체크!</span>
+                <span className="font-semibold text-foreground">이번 달 납입, 했는지 안 했는지 바로 확인</span>
               </li>
               <li className="flex items-center gap-3">
                 <div className="relative h-7 w-7 shrink-0">
@@ -97,7 +98,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
                   />
                 </div>
                 <span className="font-semibold text-foreground">
-                  내 적립식 투자 현황 한눈에!
+                  내 적립식 투자가 얼마나 쌓였는지 한눈에
                 </span>
               </li>
             </ul>
@@ -119,8 +120,19 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
           </div>
         </div>
 
-        {/* 메인 CTA + 스크롤 유도 */}
-        <div className="space-y-4 pb-4 pt-2">
+      </div>
+      </div>
+
+      {/* 하단 고정 CTA - 그라데이션 페이드 + safe area */}
+      <div
+        className="absolute bottom-0 left-0 right-0 z-10 flex flex-col px-4 pt-8 pb-4"
+        style={{
+          paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))',
+          background:
+            'linear-gradient(to top, var(--background) 40%, transparent 100%)',
+        }}
+      >
+        <div className="space-y-4">
           <Button
             size="lg"
             className="w-full py-3.5 text-base font-semibold"
@@ -128,11 +140,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
           >
             시작하기
           </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            계정 없이도 언제든지 나중에 다시 돌아올 수 있어요.
-          </p>
-
-          <div className="mt-2 flex items-center justify-center">
+          <div className="flex justify-center pb-2">
             <button
               type="button"
               className="flex flex-col items-center gap-1 text-xs text-foreground-subtle"
