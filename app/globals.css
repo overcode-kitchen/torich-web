@@ -321,3 +321,10 @@
     background-clip: content-box;
   }
 }
+
+/* ConcernSection: 중간 이하 뷰포트에서 그래픽 영역 높이 제한 → 말풍선과 그래픽이 붙어 보이게, 긴 기기(850px+)에서만 flex-1로 아래까지 채움 */
+@media (max-height: 850px) {
+  .concern-graphic-cap {
+    max-height: 52dvh;
+  }
+}
