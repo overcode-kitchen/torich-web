@@ -1,11 +1,11 @@
 'use client'
 
-import Link from 'next/link'
 import { CircleNotch } from '@phosphor-icons/react'
 import { Switch } from '@/components/ui/switch'
 import { SettingsSection } from '@/app/components/SettingsSection'
 import { ThemeSelector } from '@/app/components/ThemeSelector'
 import { BrandStorySheet } from '@/app/components/BrandStorySheet'
+import { SettingsItem } from '@/app/components/SettingsItem'
 import type { Theme } from '@/app/components/ThemeProvider'
 
 interface SettingsViewProps {
@@ -66,61 +66,42 @@ export default function SettingsView({
 
                 {/* 알림 설정 */}
                 <SettingsSection title="알림">
-                    {/* 전체 알림 토글 */}
-                    <div className="flex items-center justify-between px-4 py-3">
-                        <span className="text-foreground font-medium">전체 알림</span>
-                        <Switch
-                            checked={notificationOn}
-                            onCheckedChange={toggleNotification}
-                            aria-label="전체 알림"
-                        />
-                    </div>
-
-                    {/* 알림 상세 설정으로 이동 */}
-                    <Link
+                    <SettingsItem
+                        label="전체 알림"
+                        rightElement={
+                            <Switch
+                                checked={notificationOn}
+                                onCheckedChange={toggleNotification}
+                                aria-label="전체 알림"
+                            />
+                        }
+                    />
+                    <SettingsItem
+                        label="알림 상세 설정"
                         href="/settings/notifications"
-                        className="flex items-center justify-between px-4 py-3 hover:bg-surface-hover transition-colors"
-                    >
-                        <div className="flex flex-col">
-                            <span className="text-foreground font-medium">알림 상세 설정</span>
-                        </div>
-                        <span className="ml-3 text-foreground-subtle text-lg" aria-hidden="true">
-                            ›
-                        </span>
-                    </Link>
+                    />
                 </SettingsSection>
 
                 {/* 계정 */}
                 <SettingsSection title="계정">
-                    <div className="px-4 py-3">
-                        <p className="text-foreground font-medium">{user.email || '-'}</p>
-                    </div>
-                    <button
-                        type="button"
+                    <SettingsItem
+                        label={user.email || '-'}
+                    />
+                    <SettingsItem
+                        label={isLoggingOut ? '로그아웃 중...' : '로그아웃'}
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="w-full px-4 py-3 text-left text-destructive font-medium hover:bg-destructive/10 dark:hover:bg-destructive/20 transition-colors"
-                    >
-                        {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
-                    </button>
+                        destructive
+                        showChevron={false}
+                    />
                 </SettingsSection>
 
                 {/* 브랜드 스토리 */}
                 <SettingsSection title="브랜드 스토리">
-                    <button
-                        type="button"
+                    <SettingsItem
+                        label="토리치가 궁금하다면"
                         onClick={openBrandStory}
-                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-surface-hover transition-colors"
-                        aria-haspopup="dialog"
-                        aria-expanded={isBrandStoryOpen}
-                    >
-                        <div className="flex flex-col items-start">
-                            <span className="text-foreground font-medium">토리치가 궁금하다면</span>
-                        </div>
-                        <span className="ml-3 text-foreground-subtle text-lg" aria-hidden="true">
-                            ›
-                        </span>
-                    </button>
+                    />
                 </SettingsSection>
 
                 <BrandStorySheet
@@ -130,28 +111,22 @@ export default function SettingsView({
 
                 {/* 앱 정보 */}
                 <SettingsSection title="앱 정보">
-                    <div className="px-4 py-3 flex justify-between items-center">
-                        <span className="text-foreground">버전</span>
-                        <span className="text-muted-foreground text-sm">1.0.0</span>
-                    </div>
-                    <a
+                    <SettingsItem
+                        label="버전"
+                        rightElement={<span className="text-muted-foreground text-sm">1.0.0</span>}
+                    />
+                    <SettingsItem
+                        label="문의하기"
                         href="mailto:support@torich.app"
-                        className="block px-4 py-3 text-foreground font-medium hover:bg-surface-hover"
-                    >
-                        문의하기
-                    </a>
-                    <a
+                    />
+                    <SettingsItem
+                        label="이용약관"
                         href="#"
-                        className="block px-4 py-3 text-foreground-muted text-sm hover:bg-surface-hover"
-                    >
-                        이용약관
-                    </a>
-                    <a
+                    />
+                    <SettingsItem
+                        label="개인정보처리방침"
                         href="#"
-                        className="block px-4 py-3 text-foreground-muted text-sm hover:bg-surface-hover"
-                    >
-                        개인정보처리방침
-                    </a>
+                    />
                 </SettingsSection>
             </div>
         </main>
