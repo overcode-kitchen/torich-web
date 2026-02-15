@@ -11,30 +11,30 @@ import {
   Cell,
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
-import { useAssetGrowthChart } from '@/app/hooks/useAssetGrowthChart'
 import { useChartColors } from '@/app/hooks/useChartColors'
 import AssetGrowthChartTooltip from '@/app/components/AssetGrowthChartTooltip'
 import AssetGrowthChartSummary from '@/app/components/AssetGrowthChartSummary'
 import { RenderProfitBarLabel, RenderPrincipalLabel } from '@/app/components/AssetGrowthChartLabels'
+import { BarDataPoint } from '@/app/hooks/useAssetGrowthChart'
 
 type AssetGrowthChartProps = {
-  investments: any[]
-  selectedYear: number
+  barData: BarDataPoint[]
+  currentData: any
+  selectedBar: BarDataPoint | null
+  setSelectedBar: (bar: BarDataPoint | null) => void
+  handleBarClick: (state: any) => void
+  hasData: boolean
 }
 
 export default function AssetGrowthChart({
-  investments,
-  selectedYear,
+  barData,
+  currentData,
+  selectedBar,
+  setSelectedBar,
+  handleBarClick,
+  hasData,
 }: AssetGrowthChartProps) {
   const chartColors = useChartColors()
-  const {
-    barData,
-    currentData,
-    selectedBar,
-    setSelectedBar,
-    handleBarClick,
-    hasData,
-  } = useAssetGrowthChart({ investments, selectedYear })
 
   if (!hasData) {
     return (

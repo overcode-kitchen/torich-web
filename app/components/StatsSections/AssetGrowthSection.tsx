@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Investment } from '@/app/types/investment'
 import AssetGrowthChart from '@/app/components/AssetGrowthChart'
+import { useAssetGrowthChart } from '@/app/hooks/useAssetGrowthChart'
 
 interface AssetGrowthSectionProps {
   selectedYear: number
@@ -19,6 +20,15 @@ export default function AssetGrowthSection({
   setSelectedYear,
   records,
 }: AssetGrowthSectionProps) {
+  const {
+    barData,
+    currentData,
+    selectedBar,
+    setSelectedBar,
+    handleBarClick,
+    hasData,
+  } = useAssetGrowthChart({ investments: records, selectedYear })
+
   return (
     <section className="bg-card rounded-2xl p-5 mb-4">
       <div className="flex items-center gap-3 mb-3">
@@ -43,7 +53,14 @@ export default function AssetGrowthSection({
         </DropdownMenu>
         <h2 className="text-sm font-semibold text-foreground-muted">예상 수익 차트</h2>
       </div>
-      <AssetGrowthChart investments={records} selectedYear={selectedYear} />
+      <AssetGrowthChart
+        barData={barData}
+        currentData={currentData}
+        selectedBar={selectedBar}
+        setSelectedBar={setSelectedBar}
+        handleBarClick={handleBarClick}
+        hasData={hasData}
+      />
     </section>
   )
 }
