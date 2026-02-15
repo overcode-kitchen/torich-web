@@ -43,6 +43,9 @@ interface HomeViewProps {
     setIsBrandStoryOpen: (open: boolean) => void
     showBrandStoryCard: boolean
     setShowBrandStoryCard: (show: boolean) => void
+    pendingBrandStoryUndo: boolean
+    onCloseBrandStoryCard: () => void
+    onUndoBrandStory: () => void
 
     // UI Actions
     showToast: boolean
@@ -72,6 +75,9 @@ export default function HomeView({
     setIsBrandStoryOpen,
     showBrandStoryCard,
     setShowBrandStoryCard,
+    pendingBrandStoryUndo,
+    onCloseBrandStoryCard,
+    onUndoBrandStory,
     showToast,
     calculateSimulatedValue,
 }: HomeViewProps) {
@@ -109,7 +115,9 @@ export default function HomeView({
                 onToggleMonthlyAmount={onToggleMonthlyAmount}
                 onItemClick={setDetailItem}
                 showBrandStoryCard={showBrandStoryCard}
-                onCloseBrandStoryCard={() => setShowBrandStoryCard(false)}
+                onCloseBrandStoryCard={onCloseBrandStoryCard}
+                pendingBrandStoryUndo={pendingBrandStoryUndo}
+                onUndoBrandStory={onUndoBrandStory}
                 isBrandStoryOpen={isBrandStoryOpen}
                 onOpenBrandStory={() => setIsBrandStoryOpen(true)}
                 onCloseBrandStory={() => setIsBrandStoryOpen(false)}

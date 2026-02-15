@@ -15,7 +15,7 @@ export default function Home() {
   const { isUpdating: isUpdatingRates, showToast, checkAndUpdate } = useRateUpdate(user?.id)
   const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records, calculateSimulatedValue)
   const [showMonthlyAmount, setShowMonthlyAmount] = useLocalStorage<boolean>('torich_show_monthly_amount', true)
-  const { detailItem, setDetailItem, isBrandStoryOpen, setIsBrandStoryOpen, showBrandStoryCard, setShowBrandStoryCard } = useHomePageUI({ userId: user?.id, records, checkAndUpdate, refetch })
+  const { detailItem, setDetailItem, isBrandStoryOpen, setIsBrandStoryOpen, showBrandStoryCard, setShowBrandStoryCard, pendingBrandStoryUndo, dismissBrandStoryCard, undoBrandStoryDismiss } = useHomePageUI({ userId: user?.id, records, checkAndUpdate, refetch })
 
   return (
     <HomeView
@@ -40,6 +40,9 @@ export default function Home() {
       setIsBrandStoryOpen={setIsBrandStoryOpen}
       showBrandStoryCard={showBrandStoryCard}
       setShowBrandStoryCard={setShowBrandStoryCard}
+      pendingBrandStoryUndo={pendingBrandStoryUndo}
+      onCloseBrandStoryCard={dismissBrandStoryCard}
+      onUndoBrandStory={undoBrandStoryDismiss}
       showToast={showToast}
       calculateSimulatedValue={calculateSimulatedValue}
       refetch={refetch}
