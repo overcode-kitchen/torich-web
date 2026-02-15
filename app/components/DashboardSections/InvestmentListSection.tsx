@@ -51,7 +51,7 @@ export default function InvestmentListSection({
   const showMoreButton = hasMoreList && onListExpandToggle !== undefined && remainingListCount !== undefined
 
   return (
-    <div className="bg-card rounded-3xl p-6">
+    <div className="bg-card rounded-3xl p-6 pb-4">
       <h2 className="text-lg font-semibold tracking-tight text-foreground mb-4 flex items-center gap-1">
         <Image
           src="/icons/3d/piggy bank.png"
@@ -134,7 +134,7 @@ export default function InvestmentListSection({
               <button
                 type="button"
                 onClick={onListExpandToggle}
-                className="w-full py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-hover/50 transition-colors border-t border-border-subtle-lighter -mb-px"
+                className="w-full mt-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-hover rounded-xl transition-colors"
                 aria-expanded={listExpanded}
               >
                 {listExpanded ? '접기' : `${remainingListCount}개 더 보기`}

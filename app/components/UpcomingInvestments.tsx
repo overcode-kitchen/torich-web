@@ -141,7 +141,7 @@ export default function UpcomingInvestments({ records }: UpcomingInvestmentsProp
   if (records.length === 0) return null
 
   return (
-    <div className="bg-card rounded-3xl p-6">
+    <div className="bg-card rounded-3xl p-6 pb-4">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-1">
           <Image
@@ -211,7 +211,7 @@ export default function UpcomingInvestments({ records }: UpcomingInvestmentsProp
             {displayItems.map((item) => (
               <div
                 key={`${item.investment.id}-${item.paymentDate.getTime()}-${item.dayOfMonth}`}
-                className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-surface border border-border-subtle"
+                className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-surface"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
