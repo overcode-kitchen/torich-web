@@ -37,6 +37,7 @@ export default function StatsPage() {
     totalExpectedAsset,
     totalMonthlyPayment,
     hasMaturedInvestments,
+    maturedItems,
     thisMonth,
     calculateFutureValue,
   } = useStatsCalculations({ records, activeRecords, selectedYear })
@@ -83,6 +84,7 @@ export default function StatsPage() {
         totalExpectedAsset,
         totalMonthlyPayment,
         hasMaturedInvestments,
+        maturedItems,
         thisMonth,
         calculateFutureValue,
       }}

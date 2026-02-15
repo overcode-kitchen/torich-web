@@ -1,6 +1,14 @@
 import { useMemo } from 'react'
-import { Investment } from '@/app/types/investment'
+import { Investment, getStartDate } from '@/app/types/investment'
 import { getThisMonthStats } from '@/app/utils/stats'
+import { calculateEndDate } from '@/app/utils/date'
+
+export interface CashHoldItemVM {
+  id: string
+  title: string
+  endDate: Date
+  maturityValue: number
+}
 
 const calculateSimulatedValue = (
   monthlyAmount: number,
@@ -27,6 +35,7 @@ export interface UseStatsCalculationsReturn {
   totalExpectedAsset: number
   totalMonthlyPayment: number
   hasMaturedInvestments: boolean
+  maturedItems: CashHoldItemVM[]
   thisMonth: {
     totalPayment: number
     completedPayment: number
@@ -37,9 +46,9 @@ export interface UseStatsCalculationsReturn {
 }
 
 export function useStatsCalculations({ records, activeRecords, selectedYear }: UseStatsCalculationsProps): UseStatsCalculationsReturn {
-  const { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments } = useMemo(() => {
+  const { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments, maturedItems } = useMemo(() => {
     if (records.length === 0) {
-      return { totalExpectedAsset: 0, totalMonthlyPayment: 0, hasMaturedInvestments: false }
+      return { totalExpectedAsset: 0, totalMonthlyPayment: 0, hasMaturedInvestments: false, maturedItems: [] }
     }
     const totalExpectedAsset = records.reduce((sum, record) => {
       const P = record.period_years
@@ -47,8 +56,32 @@ export function useStatsCalculations({ records, activeRecords, selectedYear }: U
       return sum + calculateSimulatedValue(record.monthly_amount, selectedYear, P, R)
     }, 0)
     const totalMonthlyPayment = records.reduce((sum, record) => sum + record.monthly_amount, 0)
-    const hasMaturedInvestments = records.some((r) => r.period_years < selectedYear)
-    return { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments }
+
+    // Matured Items Logic
+    const maturedItems = records
+      .filter((item) => item.period_years < selectedYear)
+      .map((item): CashHoldItemVM => {
+        const startDate = getStartDate(item)
+        const endDate = calculateEndDate(startDate, item.period_years)
+        const R = item.annual_rate ? item.annual_rate / 100 : 0.10
+
+        const maturityValue = calculateSimulatedValue(
+          item.monthly_amount,
+          item.period_years,
+          item.period_years,
+          R
+        )
+
+        return {
+          id: item.id,
+          title: item.title,
+          endDate,
+          maturityValue,
+        }
+      })
+
+    const hasMaturedInvestments = maturedItems.length > 0
+    return { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments, maturedItems }
   }, [records, selectedYear])
 
   const thisMonth = useMemo(() => getThisMonthStats(activeRecords), [activeRecords])
@@ -57,6 +90,7 @@ export function useStatsCalculations({ records, activeRecords, selectedYear }: U
     totalExpectedAsset,
     totalMonthlyPayment,
     hasMaturedInvestments,
+    maturedItems,
     thisMonth,
     calculateFutureValue: calculateSimulatedValue,
   }

@@ -7,6 +7,8 @@ import type { Investment } from '@/app/types/investment'
 import StatsHeader from '@/app/components/StatsSections/StatsHeader'
 import StatsContent from '@/app/components/StatsSections/StatsContent'
 
+import { CashHoldItemVM } from '@/app/hooks/useStatsCalculations'
+
 interface StatsViewProps {
     isLoading: boolean
     user: { id: string; email?: string } | null
@@ -38,6 +40,7 @@ interface StatsViewProps {
         totalExpectedAsset: number
         totalMonthlyPayment: number
         hasMaturedInvestments: boolean
+        maturedItems: CashHoldItemVM[]
         thisMonth: {
             totalPayment: number
             completedPayment: number
@@ -76,7 +79,7 @@ export default function StatsView({
 
     const { showCashHoldSheet, showContributionSheet, handleCloseCashHold, handleCloseContribution, selectedYear } = ui
     const { records } = data
-    const { totalMonthlyPayment, calculateFutureValue } = calculations
+    const { totalMonthlyPayment, calculateFutureValue, maturedItems } = calculations
 
     return (
         <main className="min-h-screen bg-surface">
@@ -94,10 +97,8 @@ export default function StatsView({
 
             {showCashHoldSheet && (
                 <CashHoldItemsSheet
-                    items={records}
-                    selectedYear={selectedYear}
+                    maturedItems={maturedItems}
                     onClose={handleCloseCashHold}
-                    calculateFutureValue={calculateFutureValue}
                 />
             )}
 

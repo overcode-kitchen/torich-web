@@ -1,29 +1,17 @@
-'use client'
-
-import { formatCurrency } from '@/lib/utils'
 import { X } from '@phosphor-icons/react'
-import { Investment } from '@/app/types/investment'
+import { formatCurrency } from '@/lib/utils'
 import { formatFullDate } from '@/app/utils/date'
-import { useCashHoldItems } from '@/app/hooks/useCashHoldItems'
+import { CashHoldItemVM } from '@/app/hooks/useStatsCalculations'
 
 interface CashHoldItemsSheetProps {
-  items: Investment[]
-  selectedYear: number
+  maturedItems: CashHoldItemVM[]
   onClose: () => void
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
 export default function CashHoldItemsSheet({
-  items,
-  selectedYear,
+  maturedItems,
   onClose,
-  calculateFutureValue,
 }: CashHoldItemsSheetProps) {
-  const { maturedItems } = useCashHoldItems({
-    items,
-    selectedYear,
-    calculateFutureValue,
-  })
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
