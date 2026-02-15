@@ -5,6 +5,7 @@ import { useRef } from 'react'
 import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSection'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import type { InfoSectionProps } from '@/app/components/InvestmentDetailSections/types'
+import { useInvestmentDaysPicker } from '@/app/hooks/useInvestmentDaysPicker'
 
 interface InvestmentEditViewProps extends Omit<InfoSectionProps, 'infoRef'> {
   isUpdating: boolean
@@ -24,12 +25,20 @@ export function InvestmentEditView({
 }: InvestmentEditViewProps) {
   const infoRef = useRef<HTMLElement | null>(null)
 
+  const daysPicker = useInvestmentDaysPicker({
+    initialDays: infoSectionProps.editInvestmentDays,
+    onApply: (days) => {
+      infoSectionProps.setEditInvestmentDays(days)
+      setIsDaysPickerOpen(false)
+    },
+  })
+
   return (
     <>
       {/* 수정 폼 섹션 */}
       <section className="py-6">
-        <InfoSection 
-          {...infoSectionProps} 
+        <InfoSection
+          {...infoSectionProps}
           infoRef={infoRef}
           setIsDaysPickerOpen={setIsDaysPickerOpen}
         />
@@ -60,10 +69,12 @@ export function InvestmentEditView({
       {/* 투자일 선택 바텀 시트 */}
       {isDaysPickerOpen && (
         <InvestmentDaysPickerSheet
-          days={infoSectionProps.editInvestmentDays}
-          onClose={() => setIsDaysPickerOpen(false)}
-          onApply={(days) => {
-            infoSectionProps.setEditInvestmentDays(days)
+          tempDays={daysPicker.tempDays}
+          isDirty={daysPicker.isDirty}
+          onToggleDay={daysPicker.toggleDay}
+          onApply={daysPicker.applyChanges}
+          onClose={() => {
+            daysPicker.reset()
             setIsDaysPickerOpen(false)
           }}
         />

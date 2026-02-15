@@ -9,6 +9,7 @@ import ManualInputModal from '@/app/components/ManualInputModal'
 import RateHelpModal from '@/app/components/RateHelpModal'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
 import type { UseModalStateReturn } from '@/app/hooks/useModalState'
+import { useInvestmentDaysPicker } from '@/app/hooks/useInvestmentDaysPicker'
 
 interface AddInvestmentViewProps {
     form: UseAddInvestmentFormReturn
@@ -21,6 +22,13 @@ export default function AddInvestmentView({
     modals,
     onBack
 }: AddInvestmentViewProps) {
+    const daysPicker = useInvestmentDaysPicker({
+        initialDays: form.investmentDays,
+        onApply: (days) => {
+            form.setInvestmentDays(days)
+            modals.setIsDaysPickerOpen(false)
+        },
+    })
     return (
         <main className="min-h-screen bg-surface">
             {/* 뒤로가기 버튼 */}
@@ -83,10 +91,12 @@ export default function AddInvestmentView({
             {/* 매월 투자일 선택 바텀 시트 */}
             {modals.isDaysPickerOpen && (
                 <InvestmentDaysPickerSheet
-                    days={form.investmentDays}
-                    onClose={() => modals.setIsDaysPickerOpen(false)}
-                    onApply={(days) => {
-                        form.setInvestmentDays(days)
+                    tempDays={daysPicker.tempDays}
+                    isDirty={daysPicker.isDirty}
+                    onToggleDay={daysPicker.toggleDay}
+                    onApply={daysPicker.applyChanges}
+                    onClose={() => {
+                        daysPicker.reset()
                         modals.setIsDaysPickerOpen(false)
                     }}
                 />

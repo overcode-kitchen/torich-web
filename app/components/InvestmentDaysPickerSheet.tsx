@@ -1,24 +1,23 @@
 'use client'
 
 import { X } from '@phosphor-icons/react'
-import { useInvestmentDaysPicker } from '../hooks/useInvestmentDaysPicker'
 
 interface InvestmentDaysPickerSheetProps {
   /** 현재 선택된 날짜들 (1~31) */
-  days: number[]
+  tempDays: number[]
+  isDirty: boolean
+  onToggleDay: (day: number) => void
+  onApply: () => void
   onClose: () => void
-  onApply: (days: number[]) => void
 }
 
 export default function InvestmentDaysPickerSheet({
-  days,
-  onClose,
+  tempDays,
+  isDirty,
+  onToggleDay,
   onApply,
+  onClose,
 }: InvestmentDaysPickerSheetProps) {
-  const { tempDays, isDirty, toggleDay, applyChanges } = useInvestmentDaysPicker({
-    initialDays: days,
-    onApply,
-  })
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -76,10 +75,10 @@ export default function InvestmentDaysPickerSheet({
                 <button
                   key={day}
                   type="button"
-                  onClick={() => toggleDay(day)}
+                  onClick={() => onToggleDay(day)}
                   className={`h-9 rounded-full text-sm font-semibold transition-colors ${selected
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-surface-hover text-foreground-soft hover:bg-secondary'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-surface-hover text-foreground-soft hover:bg-secondary'
                     }`}
                 >
                   {day}
@@ -100,7 +99,7 @@ export default function InvestmentDaysPickerSheet({
           </button>
           <button
             type="button"
-            onClick={applyChanges}
+            onClick={onApply}
             disabled={!isDirty}
             className="flex-1 py-3 text-sm font-semibold text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-default"
           >
