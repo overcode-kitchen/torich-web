@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect } from 'react'
-import { ArrowLeft, Bell, BellSlash, CalendarBlank, DotsThreeVertical } from '@phosphor-icons/react'
 import { Investment } from '@/app/types/investment'
 import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
 import { useScrollHeader } from '@/app/hooks/useScrollHeader'
@@ -11,14 +10,9 @@ import DeleteConfirmModal from '@/app/components/DeleteConfirmModal'
 import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
 import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSection'
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { formatNextPaymentDate } from '@/app/utils/date'
+import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailHeader'
+import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailOverview'
+import { InvestmentDetailActions } from '@/app/components/InvestmentDetailActions'
 import type { RateSuggestion } from '@/app/components/InvestmentEditSheet'
 
 interface InvestmentDetailViewProps {
@@ -38,13 +32,10 @@ function InternalInvestmentDetailView({
 }: InvestmentDetailViewProps) {
   // Context
   const {
-    activeTab,
     scrollContainerRef,
-    overviewRef,
     infoRef,
     historyRef,
     titleRef,
-    handleTabClick,
   } = useInvestmentTabContext()
 
   const { showStickyTitle } = useScrollHeader(titleRef)
@@ -55,7 +46,6 @@ function InternalInvestmentDetailView({
     setShowDeleteModal,
     isEditMode,
     setIsEditMode,
-    isDaysPickerOpen,
     setIsDaysPickerOpen,
   } = useInvestmentDetailUI()
 
@@ -66,8 +56,6 @@ function InternalInvestmentDetailView({
     isUpdating,
     handleSave,
     handleCancel,
-    handleEdit,
-    handleDeleteClick,
     handleDelete,
   } = useInvestmentDetailHandlers({
     item,
@@ -85,12 +73,8 @@ function InternalInvestmentDetailView({
       investmentData.initializeFromItem(item)
       setIsDaysPickerOpen(false)
     }
-  }, [isEditMode, item, investmentData.initializeFromItem])
-
-  // 삭제 모달 열기 핸들러
-  const handleDeleteModalOpen = () => {
-    setShowDeleteModal(true)
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, item])
 
 
   // 공통 props
@@ -101,164 +85,27 @@ function InternalInvestmentDetailView({
   ]
   const isCustomRate = !!item.is_custom_rate
 
-  const infoSectionProps = {
-    item,
-    editMonthlyAmount: investmentData.editMonthlyAmount,
-    setEditMonthlyAmount: investmentData.setEditMonthlyAmount,
-    editPeriodYears: investmentData.editPeriodYears,
-    setEditPeriodYears: investmentData.setEditPeriodYears,
-    editAnnualRate: investmentData.editAnnualRate,
-    setEditAnnualRate: investmentData.setEditAnnualRate,
-    editInvestmentDays: investmentData.editInvestmentDays,
-    setEditInvestmentDays: investmentData.setEditInvestmentDays,
-    setIsDaysPickerOpen: setIsDaysPickerOpen,
-    handleNumericInput: investmentData.handleNumericInput,
-    handleRateInput: investmentData.handleRateInput,
-    displayAnnualRate: investmentData.displayAnnualRate,
-    totalPrincipal: investmentData.totalPrincipal,
-    calculatedProfit: investmentData.calculatedProfit,
-    calculatedFutureValue: investmentData.calculatedFutureValue,
-    originalRate,
-    isRateManuallyEdited: investmentData.isRateManuallyEdited,
-    setIsRateManuallyEdited: investmentData.setIsRateManuallyEdited,
-    formatRate,
-    rateSuggestions,
-    isCustomRate,
-  }
-
   return (
     <div ref={scrollContainerRef} className="fixed inset-0 z-50 bg-background overflow-y-auto">
-      {/* 헤더 - 스크롤 시에도 종목명 고정 */}
-      <header className="h-[52px] flex items-center justify-between px-6 bg-background sticky top-0 z-10 border-b border-border-subtle-lighter">
-        <button
-          onClick={onBack}
-          className="p-2 text-foreground hover:text-foreground transition-colors -ml-1"
-          aria-label="뒤로가기"
-        >
-          <ArrowLeft className="w-6 h-6" weight="regular" />
-        </button>
-        {showStickyTitle && (
-          <h1 className="flex-1 text-center text-base font-semibold tracking-tight text-foreground truncate mx-2">
-            {item.title}
-          </h1>
-        )}
-        {!showStickyTitle && <div className="flex-1" />}
-
-        {!isEditMode ? (
-          <div className="flex items-center -mr-1">
-            <button
-              type="button"
-              onClick={investmentData.toggleNotification}
-              className="p-2 text-foreground hover:text-foreground transition-colors"
-              aria-label={investmentData.notificationOn ? '알림 끄기' : '알림 켜기'}
-            >
-              {investmentData.notificationOn ? (
-                <Bell className="w-6 h-6" weight="regular" />
-              ) : (
-                <BellSlash className="w-6 h-6 text-muted-foreground" weight="regular" />
-              )}
-            </button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="p-2 text-foreground hover:text-foreground transition-colors"
-                  aria-label="메뉴"
-                >
-                  <DotsThreeVertical className="w-6 h-6" weight="regular" />
-                </button>
-              </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[140px]">
-              <DropdownMenuItem onClick={() => setIsEditMode(true)}>
-                수정하기
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setShowDeleteModal(true)}
-                className="text-red-600 focus:text-red-600"
-              >
-                삭제하기
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ) : (
-          <div className="w-10" />
-        )}
-      </header>
+      <InvestmentDetailHeader
+        item={item}
+        onBack={onBack}
+        showStickyTitle={showStickyTitle}
+        isEditMode={isEditMode}
+        setIsEditMode={setIsEditMode}
+        setShowDeleteModal={setShowDeleteModal}
+        notificationOn={investmentData.notificationOn}
+        toggleNotification={investmentData.toggleNotification}
+      />
 
       {/* 콘텐츠 - 좌우 24px 단일 여백, 가변 컨테이너 폭 */}
       <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-6 pb-12">
-        {/* 종목명 & 상태 + 다음 투자일 */}
-        <section ref={overviewRef} className="py-6 space-y-4">
-              <div ref={titleRef}>
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
-                  {item.title}
-                </h2>
-                {isEditMode ? (
-                  <p className="text-sm text-foreground-subtle">종목명은 수정할 수 없습니다</p>
-                ) : (
-                  investmentData.completed && (
-                    <p className="text-sm font-medium text-green-600">
-                      목표 달성! 🎉
-                    </p>
-                  )
-                )}
-              </div>
-              
-              {/* 섹션 내비게이션 탭 - 제목 바로 아래에 위치, 스크롤 시 헤더 아래에 고정 */}
-              <div className="sticky top-[52px] z-10 -mx-6 px-6 bg-background border-b border-border-subtle-lighter">
-                <div className="flex gap-6">
-                  <button
-                    type="button"
-                    onClick={() => handleTabClick('overview')}
-                    className={`py-3 text-sm font-medium transition-colors border-b-2 ${
-                      activeTab === 'overview'
-                        ? 'border-foreground text-foreground'
-                        : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                    }`}
-                  >
-                    개요
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTabClick('info')}
-                    className={`py-3 text-sm font-medium transition-colors border-b-2 ${
-                      activeTab === 'info'
-                        ? 'border-foreground text-foreground'
-                        : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                    }`}
-                  >
-                    투자 정보
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTabClick('history')}
-                    className={`py-3 text-sm font-medium transition-colors border-b-2 ${
-                      activeTab === 'history'
-                        ? 'border-foreground text-foreground'
-                        : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                    }`}
-                  >
-                    납입 기록
-                  </button>
-                </div>
-              </div>
-              {!isEditMode && investmentData.nextPaymentDate && (
-                <Alert className="mt-1 border-none bg-primary/10 text-foreground px-4 py-3 rounded-2xl">
-                  <CalendarBlank className="w-5 h-5 text-primary" />
-                  <div className="flex items-baseline justify-between gap-4 col-start-2 w-full">
-                    <div>
-                      <AlertTitle className="text-sm font-medium text-foreground-soft">
-                        다음 투자일
-                      </AlertTitle>
-                      <AlertDescription className="mt-0.5 text-base font-semibold text-primary">
-                        {formatNextPaymentDate(investmentData.nextPaymentDate)}
-                      </AlertDescription>
-                    </div>
-                  </div>
-                </Alert>
-              )}
-        </section>
+        <InvestmentDetailOverview
+          item={item}
+          isEditMode={isEditMode}
+          nextPaymentDate={investmentData.nextPaymentDate}
+          completed={investmentData.completed}
+        />
 
         {/* 진행률 - 수정 모드에서는 숨김 */}
         {!isEditMode && (
@@ -275,12 +122,12 @@ function InternalInvestmentDetailView({
             item={item}
             isEditMode={isEditMode}
             editMonthlyAmount={investmentData.editMonthlyAmount}
-            editPeriodYears={investmentData.editPeriodYears}
-            editAnnualRate={investmentData.editAnnualRate}
-            editInvestmentDays={investmentData.editInvestmentDays}
             setEditMonthlyAmount={investmentData.setEditMonthlyAmount}
+            editPeriodYears={investmentData.editPeriodYears}
             setEditPeriodYears={investmentData.setEditPeriodYears}
+            editAnnualRate={investmentData.editAnnualRate}
             setEditAnnualRate={investmentData.setEditAnnualRate}
+            editInvestmentDays={investmentData.editInvestmentDays}
             setEditInvestmentDays={investmentData.setEditInvestmentDays}
             setIsDaysPickerOpen={setIsDaysPickerOpen}
             handleNumericInput={investmentData.handleNumericInput}
@@ -307,27 +154,13 @@ function InternalInvestmentDetailView({
             />
           )}
         </div>
+
         {isEditMode && (
-          <div className="sticky bottom-0 bg-background pt-4 pb-6 px-6 -mx-6 border-t border-border-subtle-lighter">
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={isUpdating}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-secondary hover:bg-surface-strong text-foreground-soft font-semibold rounded-xl transition-colors disabled:opacity-50"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isUpdating}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-primary text-primary-foreground font-semibold rounded-xl transition-colors disabled:opacity-50"
-              >
-                {isUpdating ? '저장 중...' : '저장'}
-              </button>
-            </div>
-          </div>
+          <InvestmentDetailActions
+            handleCancel={handleCancel}
+            handleSave={handleSave}
+            isUpdating={isUpdating}
+          />
         )}
       </div>
 
