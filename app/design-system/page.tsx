@@ -318,6 +318,125 @@ export default function DesignSystemPage() {
                   </div>
                 </div>
                 <div>
+                  <p className="text-sm font-medium text-coolgray-700 mb-3">Surface (역할별 시맨틱)</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    페이지 배경, 호버, 플로팅 바 등에 사용. 다크모드에서 자동 매핑됩니다.
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {[
+                      { name: "surface", token: "color-surface", bg: "bg-surface", text: "text-foreground", usage: "페이지 배경 (Dashboard, settings 등)" },
+                      { name: "surface-hover", token: "color-surface-hover", bg: "bg-surface-hover", text: "text-foreground", usage: "호버 배경" },
+                      { name: "surface-strong", token: "color-surface-strong", bg: "bg-surface-strong", text: "text-foreground-soft", usage: "강조 배경 (칩, 탭)" },
+                      { name: "surface-strong-hover", token: "color-surface-strong-hover", bg: "bg-surface-strong-hover", text: "text-foreground-soft", usage: "강조 배경 호버" },
+                      { name: "surface-dark", token: "color-surface-dark", bg: "bg-surface-dark", text: "text-white", usage: "플로팅 바, 다크 CTA" },
+                      { name: "surface-dark-hover", token: "color-surface-dark-hover", bg: "bg-surface-dark-hover", text: "text-white", usage: "surface-dark 호버" },
+                    ].map((c) => (
+                      <div key={c.name} className="space-y-2">
+                        <NameLabel label={c.name} token={c.token} usage={c.usage} />
+                        <div className={cn("rounded-lg p-3 text-sm font-medium", c.bg, c.text)}>
+                          {c.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-coolgray-700 mb-3">Foreground 계층</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    텍스트 계층 구분. muted → soft → subtle 순으로 약해집니다.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { name: "foreground-muted", token: "color-foreground-muted", text: "text-foreground-muted", usage: "보조 텍스트 (라벨, 설명)" },
+                      { name: "foreground-soft", token: "color-foreground-soft", text: "text-foreground-soft", usage: "차선 텍스트 (서브 라벨)" },
+                      { name: "foreground-subtle", token: "color-foreground-subtle", text: "text-foreground-subtle", usage: "가장 연한 텍스트 (힌트)" },
+                      { name: "placeholder", token: "color-placeholder", text: "text-placeholder", usage: "입력 필드 placeholder (placeholder: 모디파이어)" },
+                    ].map((c) => (
+                      <div key={c.name} className="space-y-2">
+                        <NameLabel label={c.name} token={c.token} usage={c.usage} />
+                        <p className={cn("rounded-lg p-3 text-sm font-medium bg-surface", c.text)}>
+                          {c.name} 예시 텍스트
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-coolgray-700 mb-3">Border 계열</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[
+                      { name: "border-subtle", token: "color-border-subtle", borderClass: "border-border-subtle", usage: "리스트 구분선, 테이블 보더" },
+                      { name: "border-subtle-lighter", token: "color-border-subtle-lighter", borderClass: "border-border-subtle-lighter", usage: "더 연한 구분선" },
+                      { name: "card-border", token: "color-card-border", borderClass: "border-card-border", usage: "카드 테두리 (라이트에만 표시)" },
+                    ].map((c) => (
+                      <div key={c.name} className="space-y-2">
+                        <NameLabel label={c.name} token={c.token} usage={c.usage} />
+                        <div className={cn("rounded-lg p-3 bg-white border-2", c.borderClass)}>
+                          <span className="text-sm text-foreground">{c.name}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-coolgray-700 mb-3">Brand Accent</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    배지, 태그, 캘린더 선택일 등 브랜드 강조 영역
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[
+                      { name: "brand-accent-bg", token: "color-brand-accent-bg", className: "bg-brand-accent-bg text-brand-accent-text", usage: "배경" },
+                      { name: "brand-accent-text", token: "color-brand-accent-text", className: "bg-surface text-brand-accent-text", usage: "텍스트" },
+                      { name: "brand-accent-border", token: "color-brand-accent-border", className: "bg-surface border-2 border-brand-accent-border", usage: "테두리" },
+                    ].map((c) => (
+                      <div key={c.name} className="space-y-2">
+                        <NameLabel label={c.name} token={c.token} usage={c.usage} />
+                        <div className={cn("rounded-lg p-3 text-sm font-medium", c.className)}>
+                          {c.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-coolgray-700 mb-3">차트 (Chart)</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Recharts 등 데이터 시각화에서 getComputedStyle로 읽어 사용
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { name: "chart-profit", token: "color-chart-profit", bg: "bg-chart-profit", text: "text-white", usage: "수익 라인/막대" },
+                      { name: "chart-principal", token: "color-chart-principal", bg: "bg-chart-principal", text: "text-coolgray-900", usage: "원금 라인/막대" },
+                    ].map((c) => (
+                      <div key={c.name} className="space-y-2">
+                        <NameLabel label={c.name} token={c.token} usage={c.usage} />
+                        <div className={cn("rounded-lg p-3 text-sm font-medium", c.bg, c.text)}>
+                          {c.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-coolgray-700 mb-3">Torich</p>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    토리치 브랜드 전용 (로고, 외부 가이드라인 등)
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { name: "torich-brown", token: "color-torich-brown", bg: "bg-torich-brown", text: "text-white" },
+                      { name: "torich-brown-light", token: "color-torich-brown-light", bg: "bg-torich-brown-light", text: "text-coolgray-900" },
+                    ].map((c) => (
+                      <div key={c.name} className="space-y-2">
+                        <NameLabel label={c.name} token={c.token} />
+                        <div className={cn("rounded-lg p-3 text-sm font-medium", c.bg, c.text)}>
+                          {c.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
                   <p className="text-sm font-medium text-coolgray-700 mb-3">Brand</p>
                   <div className="grid grid-cols-5 gap-3">
                     {[
