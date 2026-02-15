@@ -1,5 +1,7 @@
 'use client'
 
+'use client'
+
 import Image from 'next/image'
 import type { Investment } from '@/app/types/investment'
 import {
@@ -10,15 +12,33 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
-import { useUpcomingInvestments, PRESET_OPTIONS } from '@/app/hooks/useUpcomingInvestments'
+import { PRESET_OPTIONS, DisplayItem } from '@/app/hooks/useUpcomingInvestments'
 import UpcomingInvestmentsEmptyState from '@/app/components/UpcomingInvestmentsSections/UpcomingInvestmentsEmptyState'
 import UpcomingInvestmentsList from '@/app/components/UpcomingInvestmentsSections/UpcomingInvestmentsList'
+import type { DateRange } from 'react-day-picker'
 
 interface UpcomingInvestmentsProps {
   records: Investment[]
+  data: {
+    selectedPreset: 'preset' | 'custom'
+    customDateRange: DateRange | undefined
+    setCustomDateRange: (range: DateRange | undefined) => void
+    expanded: boolean
+    setExpanded: (expanded: boolean | ((prev: boolean) => boolean)) => void
+    pendingUndo: { investmentId: string; date: Date; dayOfMonth: number } | null
+    handleUndo: () => void
+    toggleComplete: (investmentId: string, date: Date, dayOfMonth: number) => void
+    selectPreset: (days: number) => void
+    selectCustomPreset: () => void
+    displayItems: DisplayItem[]
+    hasMore: boolean
+    remainingCount: number
+    rangeLabel: string
+    visibleItemsCount: number
+  }
 }
 
-export default function UpcomingInvestments({ records }: UpcomingInvestmentsProps) {
+export default function UpcomingInvestments({ records, data }: UpcomingInvestmentsProps) {
   const {
     selectedPreset,
     customDateRange,
@@ -35,7 +55,7 @@ export default function UpcomingInvestments({ records }: UpcomingInvestmentsProp
     remainingCount,
     rangeLabel,
     visibleItemsCount,
-  } = useUpcomingInvestments(records)
+  } = data
 
   if (records.length === 0) return null
 

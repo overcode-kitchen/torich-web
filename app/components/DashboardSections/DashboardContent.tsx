@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import type { Investment } from '@/app/types/investment'
 import UpcomingInvestments from '@/app/components/UpcomingInvestments'
+import { useUpcomingInvestments } from '@/app/hooks/useUpcomingInvestments'
 import RateUpdateToast from './RateUpdateToast'
 import MonthlyAmountCard from './MonthlyAmountCard'
 import BrandStoryCard from './BrandStoryCard'
@@ -75,11 +76,18 @@ export default function DashboardContent({
     const { showMonthlyAmount, onToggleMonthlyAmount } = settings
     const { calculateFutureValue } = calculations
 
+    const upcomingInvestmentsData = useUpcomingInvestments(activeRecords)
+
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
             <RateUpdateToast showRateUpdateToast={showRateUpdateToast} />
 
-            {activeRecords.length > 0 && <UpcomingInvestments records={activeRecords} />}
+            {activeRecords.length > 0 && (
+                <UpcomingInvestments
+                    records={activeRecords}
+                    data={upcomingInvestmentsData}
+                />
+            )}
 
             <Button
                 size="lg"
