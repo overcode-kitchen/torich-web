@@ -9,15 +9,34 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { PaymentHistorySectionProps } from './types'
+import { useInvestmentDetailContext } from './InvestmentDetailContext'
+import type { PaymentHistorySectionProps as OriginalPaymentHistorySectionProps } from './types'
 
-export function PaymentHistorySection({
-  item,
-  paymentHistory,
-  hasMorePaymentHistory,
-  loadMore,
-  historyRef,
-}: PaymentHistorySectionProps) {
+interface PaymentHistorySectionProps extends Partial<OriginalPaymentHistorySectionProps> {
+  historyRef: React.RefObject<HTMLElement | null>
+}
+
+export function PaymentHistorySection(props: PaymentHistorySectionProps) {
+  let contextValue: any = null
+  try {
+    contextValue = useInvestmentDetailContext()
+  } catch (e) {
+    // Context missing, will rely on props
+  }
+
+  const item = props.item || contextValue?.item
+  const investmentData = props.paymentHistory !== undefined ? props : contextValue?.investmentData
+
+  const {
+    paymentHistory = props.paymentHistory,
+    hasMorePaymentHistory = props.hasMorePaymentHistory,
+    loadMore = props.loadMore,
+  } = investmentData || {}
+
+  const { historyRef } = props
+
+  if (!item || !paymentHistory) return null
+
   return (
     <section ref={historyRef} className="py-6">
       <h3 className="text-lg font-semibold tracking-tight text-foreground mb-3">
@@ -34,7 +53,7 @@ export function PaymentHistorySection({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paymentHistory.map(({ monthLabel, yearMonth, completed: monthCompleted }) => (
+            {paymentHistory.map(({ yearMonth, completed: monthCompleted }: { yearMonth: string, completed: boolean }) => (
               <TableRow key={yearMonth} className="border-border-subtle">
                 <TableCell className="font-medium text-foreground text-sm">
                   {yearMonth.replace('-', '.')}
@@ -42,9 +61,9 @@ export function PaymentHistorySection({
                 <TableCell className="text-foreground-muted text-sm">
                   {item.investment_days && item.investment_days.length > 0
                     ? [...item.investment_days].sort((a, b) => a - b).map((d) => {
-                        const [y, m] = yearMonth.split('-')
-                        return `${y}.${m}.${String(d).padStart(2, '0')}` 
-                      }).join(', ')
+                      const [y, m] = yearMonth.split('-')
+                      return `${y}.${m}.${String(d).padStart(2, '0')}`
+                    }).join(', ')
                     : '-'}
                 </TableCell>
                 <TableCell className="text-foreground-muted text-sm">

@@ -9,45 +9,27 @@ import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailSecti
 import { InvestmentDetailActions } from '@/app/components/InvestmentDetailSections/InvestmentDetailActions'
 import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 
-interface InvestmentDetailContentProps {
-    item: Investment
-    isEditMode: boolean
-    investmentData: any
-    onCancel: () => void
-    onSave: () => Promise<void>
-    isUpdating: boolean
-    setIsDaysPickerOpen: (value: boolean) => void
-    infoRef: React.RefObject<HTMLElement | null>
-    historyRef: React.RefObject<HTMLElement | null>
-    originalRate: number
-    formatRate: (rate: number) => string
-    rateSuggestions: RateSuggestion[]
-    isCustomRate: boolean
-    activeTab: any
-    handleTabClick: (tab: any) => void
-    overviewRef: React.RefObject<HTMLElement | null>
-    titleRef: React.RefObject<HTMLDivElement | null>
-}
+import { useInvestmentDetailContext } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
+import { useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
 
-export function InvestmentDetailContent({
-    item,
-    isEditMode,
-    investmentData,
-    onCancel,
-    onSave,
-    isUpdating,
-    setIsDaysPickerOpen,
-    infoRef,
-    historyRef,
-    originalRate,
-    formatRate,
-    rateSuggestions,
-    isCustomRate,
-    activeTab,
-    handleTabClick,
-    overviewRef,
-    titleRef,
-}: InvestmentDetailContentProps) {
+export function InvestmentDetailContent() {
+    const {
+        item,
+        isEditMode,
+        investmentData,
+        ui,
+        handlers,
+    } = useInvestmentDetailContext()
+
+    const {
+        activeTab,
+        handleTabClick,
+        overviewRef,
+        titleRef,
+        infoRef,
+        historyRef,
+    } = useInvestmentTabContext()
+
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-6 pb-12">
             <InvestmentDetailOverview
@@ -63,57 +45,21 @@ export function InvestmentDetailContent({
 
             {/* 진행률 - 수정 모드에서는 숨김 */}
             {!isEditMode && (
-                <ProgressSection
-                    progress={investmentData.progress}
-                    completed={investmentData.completed}
-                    startDate={investmentData.startDate}
-                    endDate={investmentData.endDate}
-                />
+                <ProgressSection />
             )}
 
             <div className="divide-y divide-border-subtle-lighter">
-                <InfoSection
-                    item={item}
-                    isEditMode={isEditMode}
-                    editMonthlyAmount={investmentData.editMonthlyAmount}
-                    setEditMonthlyAmount={investmentData.setEditMonthlyAmount}
-                    editPeriodYears={investmentData.editPeriodYears}
-                    setEditPeriodYears={investmentData.setEditPeriodYears}
-                    editAnnualRate={investmentData.editAnnualRate}
-                    setEditAnnualRate={investmentData.setEditAnnualRate}
-                    editInvestmentDays={investmentData.editInvestmentDays}
-                    setEditInvestmentDays={investmentData.setEditInvestmentDays}
-                    setIsDaysPickerOpen={setIsDaysPickerOpen}
-                    handleNumericInput={investmentData.handleNumericInput}
-                    handleRateInput={investmentData.handleRateInput}
-                    displayAnnualRate={investmentData.displayAnnualRate}
-                    totalPrincipal={investmentData.totalPrincipal}
-                    calculatedProfit={investmentData.calculatedProfit}
-                    calculatedFutureValue={investmentData.calculatedFutureValue}
-                    originalRate={originalRate}
-                    isRateManuallyEdited={investmentData.isRateManuallyEdited}
-                    setIsRateManuallyEdited={investmentData.setIsRateManuallyEdited}
-                    formatRate={formatRate}
-                    rateSuggestions={rateSuggestions}
-                    isCustomRate={isCustomRate}
-                    infoRef={infoRef}
-                />
+                <InfoSection infoRef={infoRef} />
                 {investmentData.paymentHistory.length > 0 && (
-                    <PaymentHistorySection
-                        item={item}
-                        paymentHistory={investmentData.paymentHistory}
-                        hasMorePaymentHistory={investmentData.hasMorePaymentHistory}
-                        loadMore={investmentData.loadMore}
-                        historyRef={historyRef}
-                    />
+                    <PaymentHistorySection historyRef={historyRef} />
                 )}
             </div>
 
             {isEditMode && (
                 <InvestmentDetailActions
-                    handleCancel={onCancel}
-                    handleSave={onSave}
-                    isUpdating={isUpdating}
+                    handleCancel={handlers.onCancel}
+                    handleSave={handlers.onSave}
+                    isUpdating={ui.isUpdating}
                 />
             )}
         </div>

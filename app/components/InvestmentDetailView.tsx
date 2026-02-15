@@ -10,6 +10,7 @@ import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSections/InvestmentDetailHeader'
 import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 import { InvestmentDetailContent } from '@/app/components/InvestmentDetailSections/InvestmentDetailContent'
+import { InvestmentDetailProvider } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 
 interface InvestmentDetailViewProps {
   item: Investment
@@ -85,46 +86,55 @@ function InternalInvestmentDetailView({
   const isCustomRate = !!item.is_custom_rate
 
   return (
-    <div ref={scrollContainerRef} className="fixed inset-0 z-50 bg-background overflow-y-auto">
-      <InvestmentDetailHeader
-        item={item}
-        onBack={onBack}
-        showStickyTitle={showStickyTitle}
-        isEditMode={isEditMode}
-        setIsEditMode={setIsEditMode}
-        setShowDeleteModal={setShowDeleteModal}
-        notificationOn={investmentData.notificationOn}
-        toggleNotification={investmentData.toggleNotification}
-      />
+    <InvestmentDetailProvider
+      value={{
+        item,
+        isEditMode,
+        investmentData,
+        ui: {
+          isDeleting,
+          isUpdating,
+          showDeleteModal,
+          setShowDeleteModal,
+          setIsEditMode,
+          setIsDaysPickerOpen,
+        },
+        handlers: {
+          onSave: handleSave,
+          onCancel: handleCancel,
+          onDelete: handleDelete,
+        },
+        config: {
+          originalRate,
+          formatRate,
+          rateSuggestions,
+          isCustomRate,
+        },
+      }}
+    >
+      <div ref={scrollContainerRef} className="fixed inset-0 z-50 bg-background overflow-y-auto">
+        <InvestmentDetailHeader
+          item={item}
+          onBack={onBack}
+          showStickyTitle={showStickyTitle}
+          isEditMode={isEditMode}
+          setIsEditMode={setIsEditMode}
+          setShowDeleteModal={setShowDeleteModal}
+          notificationOn={investmentData.notificationOn}
+          toggleNotification={investmentData.toggleNotification}
+        />
 
-      <InvestmentDetailContent
-        item={item}
-        isEditMode={isEditMode}
-        investmentData={investmentData}
-        onCancel={handleCancel}
-        onSave={handleSave}
-        isUpdating={isUpdating}
-        setIsDaysPickerOpen={setIsDaysPickerOpen}
-        infoRef={infoRef}
-        historyRef={historyRef}
-        originalRate={originalRate}
-        formatRate={formatRate}
-        rateSuggestions={rateSuggestions}
-        isCustomRate={isCustomRate}
-        activeTab={activeTab}
-        handleTabClick={handleTabClick}
-        overviewRef={overviewRef}
-        titleRef={titleRef}
-      />
+        <InvestmentDetailContent />
 
-      {/* 삭제 확인 모달 */}
-      <DeleteConfirmModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDelete}
-        isDeleting={isDeleting}
-      />
-    </div>
+        {/* 삭제 확인 모달 */}
+        <DeleteConfirmModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDelete}
+          isDeleting={isDeleting}
+        />
+      </div>
+    </InvestmentDetailProvider>
   )
 }
 

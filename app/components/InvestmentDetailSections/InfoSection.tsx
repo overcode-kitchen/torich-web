@@ -1,37 +1,62 @@
 'use client'
 
+import React from 'react'
 import { formatCurrency } from '@/lib/utils'
 import { formatInvestmentDays } from '@/app/types/investment'
 import { InvestmentField } from '@/app/components/Common/InvestmentField'
 import InvestmentEditSheet from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
-import type { InfoSectionProps } from './types'
+import { useInvestmentDetailContext } from './InvestmentDetailContext'
+import type { InfoSectionProps as OriginalInfoSectionProps } from './types'
 
-export function InfoSection({
-  item,
-  isEditMode,
-  editMonthlyAmount,
-  editPeriodYears,
-  editAnnualRate,
-  editInvestmentDays,
-  setEditMonthlyAmount,
-  setEditPeriodYears,
-  setEditAnnualRate,
-  setEditInvestmentDays,
-  setIsDaysPickerOpen,
-  handleNumericInput,
-  handleRateInput,
-  displayAnnualRate,
-  totalPrincipal,
-  calculatedProfit,
-  calculatedFutureValue,
-  originalRate,
-  isRateManuallyEdited,
-  setIsRateManuallyEdited,
-  formatRate,
-  rateSuggestions,
-  isCustomRate,
-  infoRef,
-}: InfoSectionProps) {
+interface InfoSectionProps extends Partial<OriginalInfoSectionProps> {
+  infoRef: React.RefObject<HTMLElement | null>
+}
+
+export function InfoSection(props: InfoSectionProps) {
+  // Try to get context, but don't fail if it's missing (for InvestmentEditView)
+  let contextValue: any = null
+  try {
+    contextValue = useInvestmentDetailContext()
+  } catch (e) {
+    // Context missing, will rely on props
+  }
+
+  const item = props.item || contextValue?.item
+  const isEditMode = props.isEditMode ?? contextValue?.isEditMode
+  const investmentData = props.editMonthlyAmount !== undefined ? props : contextValue?.investmentData
+  const ui = contextValue?.ui
+  const config = contextValue?.config
+
+  const {
+    editMonthlyAmount = props.editMonthlyAmount,
+    editPeriodYears = props.editPeriodYears,
+    editAnnualRate = props.editAnnualRate,
+    editInvestmentDays = props.editInvestmentDays,
+    setEditMonthlyAmount = props.setEditMonthlyAmount,
+    setEditPeriodYears = props.setEditPeriodYears,
+    setEditAnnualRate = props.setEditAnnualRate,
+    setEditInvestmentDays = props.setEditInvestmentDays,
+    handleNumericInput = props.handleNumericInput,
+    handleRateInput = props.handleRateInput,
+    displayAnnualRate = props.displayAnnualRate,
+    totalPrincipal = props.totalPrincipal,
+    calculatedProfit = props.calculatedProfit,
+    calculatedFutureValue = props.calculatedFutureValue,
+    isRateManuallyEdited = props.isRateManuallyEdited,
+    setIsRateManuallyEdited = props.setIsRateManuallyEdited,
+  } = investmentData || {}
+
+  const setIsDaysPickerOpen = props.setIsDaysPickerOpen || ui?.setIsDaysPickerOpen
+
+  const originalRate = props.originalRate ?? config?.originalRate
+  const formatRate = props.formatRate || config?.formatRate
+  const rateSuggestions = props.rateSuggestions || config?.rateSuggestions
+  const isCustomRate = props.isCustomRate ?? config?.isCustomRate
+
+  const { infoRef } = props
+
+  if (!item) return null
+
   return (
     <section ref={infoRef} className="py-6">
       <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
@@ -106,7 +131,7 @@ export function InfoSection({
                   {day}일
                   <button
                     type="button"
-                    onClick={() => setEditInvestmentDays(prev => prev.filter(d => d !== day))}
+                    onClick={() => setEditInvestmentDays((prev: number[]) => prev.filter((d: number) => d !== day))}
                     className="hover:text-brand-900"
                   >
                     ×
