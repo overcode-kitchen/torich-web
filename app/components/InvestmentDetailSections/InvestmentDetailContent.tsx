@@ -5,9 +5,9 @@ import { Investment } from '@/app/types/investment'
 import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
 import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSection'
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
-import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailOverview'
-import { InvestmentDetailActions } from '@/app/components/InvestmentDetailActions'
-import type { RateSuggestion } from '@/app/components/InvestmentEditSheet'
+import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailSections/InvestmentDetailOverview'
+import { InvestmentDetailActions } from '@/app/components/InvestmentDetailSections/InvestmentDetailActions'
+import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 
 interface InvestmentDetailContentProps {
     item: Investment

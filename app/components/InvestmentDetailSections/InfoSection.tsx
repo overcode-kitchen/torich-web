@@ -2,8 +2,8 @@
 
 import { formatCurrency } from '@/lib/utils'
 import { formatInvestmentDays } from '@/app/types/investment'
-import { InvestmentField } from '@/app/components/InvestmentField'
-import InvestmentEditSheet from '@/app/components/InvestmentEditSheet'
+import { InvestmentField } from '@/app/components/Common/InvestmentField'
+import InvestmentEditSheet from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 import type { InfoSectionProps } from './types'
 
 export function InfoSection({

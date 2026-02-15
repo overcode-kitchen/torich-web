@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Investment } from '@/app/types/investment'
-import AssetGrowthChart from '@/app/components/AssetGrowthChart'
+import AssetGrowthChart from '@/app/components/AssetGrowthSections/AssetGrowthChart'
 import { useAssetGrowthChart } from '@/app/hooks/useAssetGrowthChart'
 
 interface AssetGrowthSectionProps {

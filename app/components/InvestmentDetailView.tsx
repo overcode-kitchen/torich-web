@@ -6,10 +6,10 @@ import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/I
 import { useScrollHeader } from '@/app/hooks/useScrollHeader'
 import { useInvestmentDetailUI } from '@/app/hooks/useInvestmentDetailUI'
 import { useInvestmentDetailHandlers } from '@/app/hooks/useInvestmentDetailHandlers'
-import DeleteConfirmModal from '@/app/components/DeleteConfirmModal'
-import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailHeader'
-import type { RateSuggestion } from '@/app/components/InvestmentEditSheet'
-import { InvestmentDetailContent } from '@/app/components/InvestmentDetailContent'
+import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
+import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSections/InvestmentDetailHeader'
+import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
+import { InvestmentDetailContent } from '@/app/components/InvestmentDetailSections/InvestmentDetailContent'
 
 interface InvestmentDetailViewProps {
   item: Investment

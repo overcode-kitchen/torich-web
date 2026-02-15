@@ -12,9 +12,9 @@ import {
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
 import { useChartColors } from '@/app/hooks/useChartColors'
-import AssetGrowthChartTooltip from '@/app/components/AssetGrowthChartTooltip'
-import AssetGrowthChartSummary from '@/app/components/AssetGrowthChartSummary'
-import { RenderProfitBarLabel, RenderPrincipalLabel } from '@/app/components/AssetGrowthChartLabels'
+import AssetGrowthChartTooltip from '@/app/components/AssetGrowthSections/AssetGrowthChartTooltip'
+import AssetGrowthChartSummary from '@/app/components/AssetGrowthSections/AssetGrowthChartSummary'
+import { RenderProfitBarLabel, RenderPrincipalLabel } from '@/app/components/AssetGrowthSections/AssetGrowthChartLabels'
 import { BarDataPoint } from '@/app/hooks/useAssetGrowthChart'
 
 type AssetGrowthChartProps = {

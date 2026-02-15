@@ -4,10 +4,10 @@ import { CalendarBlank, CaretDown } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import StockSearchInput from '@/app/components/StockSearchInput'
+import StockSearchInput from '@/app/components/Common/StockSearchInput'
 import RateDisplay from '@/app/components/RateDisplay'
-import AmountInput from '@/app/components/AmountInput'
-import PeriodInput from '@/app/components/PeriodInput'
+import AmountInput from '@/app/components/Common/AmountInput'
+import PeriodInput from '@/app/components/Common/PeriodInput'
 
 interface FormSectionProps {
   form: any
@@ -44,7 +44,7 @@ export default function FormSection({ form, modals }: FormSectionProps) {
           }}
           onDropdownClose={() => form.setShowDropdown(false)}
         />
-        
+
         <RateDisplay
           isRateLoading={form.isRateLoading}
           rateFetchFailed={form.rateFetchFailed}
@@ -93,8 +93,8 @@ export default function FormSection({ form, modals }: FormSectionProps) {
         </label>
         <Popover open={modals.isDatePickerOpen} onOpenChange={modals.setIsDatePickerOpen}>
           <PopoverTrigger asChild>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full justify-between font-normal bg-card rounded-2xl h-12 px-4 text-foreground border-border-subtle hover:bg-surface"
             >
               {form.startDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}

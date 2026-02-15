@@ -1,5 +1,5 @@
 import { Investment } from '@/app/types/investment'
-import { RateSuggestion } from '@/app/components/InvestmentEditSheet'
+import { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 
 export interface InfoSectionProps {
   item: Investment

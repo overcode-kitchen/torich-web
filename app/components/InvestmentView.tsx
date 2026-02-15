@@ -3,8 +3,8 @@
 import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
 import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSection'
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
-import InvestmentViewHeader from '@/app/components/InvestmentViewHeader'
-import InvestmentViewOverview from '@/app/components/InvestmentViewOverview'
+import InvestmentViewHeader from '@/app/components/InvestmentViewSections/InvestmentViewHeader'
+import InvestmentViewOverview from '@/app/components/InvestmentViewSections/InvestmentViewOverview'
 import type { Investment } from '@/app/types/investment'
 import type { InfoSectionProps } from '@/app/components/InvestmentDetailSections/types'
 
@@ -87,7 +87,7 @@ export function InvestmentView({
             {...infoSectionProps}
             isEditMode={false}
             infoRef={infoRef as any}
-            setIsDaysPickerOpen={() => {}}
+            setIsDaysPickerOpen={() => { }}
           />
 
           {paymentHistory.length > 0 && (
