@@ -1,25 +1,13 @@
 'use client'
 
-
 import { useRouter } from 'next/navigation'
-import { Plus } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import type { Investment } from '@/app/types/investment'
-import UpcomingInvestments from '@/app/components/UpcomingInvestments'
 import { useDashboardUI } from '@/app/hooks/useDashboardUI'
-import RateUpdateToast from './DashboardSections/RateUpdateToast'
 import Header from './DashboardSections/Header'
-import MonthlyAmountCard from './DashboardSections/MonthlyAmountCard'
-import BrandStoryCard from './DashboardSections/BrandStoryCard'
-import BrandStoryBottomSheet from './DashboardSections/BrandStoryBottomSheet'
-import InvestmentListSection from './DashboardSections/InvestmentListSection'
-import EmptyState from './DashboardSections/EmptyState'
+import DashboardContent from './DashboardSections/DashboardContent'
 
 type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
 type SortBy = 'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME' | 'NEXT_PAYMENT'
-
-const INITIAL_LIST_COUNT = 10
 
 export interface DashboardProps {
   records: Investment[]
@@ -73,10 +61,7 @@ export default function Dashboard({
   calculateFutureValue,
 }: DashboardProps) {
   const router = useRouter()
-  /* 
-   * Anti-pattern Fix: Moved UI state (listExpanded) and logic to custom hook 
-   * to keep this component pure composition.
-   */
+
   const {
     listExpanded,
     displayRecords,
@@ -91,84 +76,50 @@ export default function Dashboard({
 
   return (
     <main className="min-h-screen bg-surface">
-      <RateUpdateToast showRateUpdateToast={showRateUpdateToast} />
       <Header />
 
-      <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
-        {activeRecords.length > 0 && <UpcomingInvestments records={activeRecords} />}
-
-        <Button
-          size="lg"
-          className="w-full rounded-2xl"
-          onClick={() => router.push('/add')}
-        >
-          <Plus className="w-5 h-5" />
-          투자 목록 추가하기
-        </Button>
-
-        <MonthlyAmountCard
-          records={records}
-          totalMonthlyPayment={totalMonthlyPayment}
-          showMonthlyAmount={showMonthlyAmount}
-          onToggleMonthlyAmount={onToggleMonthlyAmount}
-        />
-
-        <BrandStoryCard
-          showBrandStoryCard={showBrandStoryCard}
-          onOpenBrandStory={onOpenBrandStory}
-          onCloseBrandStoryCard={onCloseBrandStoryCard}
-        />
-
-        {pendingBrandStoryUndo && (
-          <div
-            className="fixed bottom-24 left-4 right-4 z-50 flex items-center justify-between gap-3 rounded-xl bg-surface-dark text-white px-4 py-3 shadow-lg max-w-md md:max-w-lg lg:max-w-2xl mx-auto"
-            role="status"
-          >
-            <span className="text-sm font-medium">카드가 닫혔어요</span>
-            <button
-              type="button"
-              onClick={onUndoBrandStory}
-              className="text-sm font-semibold text-brand-300 hover:text-brand-200 transition-colors"
-            >
-              되돌리기
-            </button>
-          </div>
-        )}
-
-        <BrandStoryBottomSheet
-          isBrandStoryOpen={isBrandStoryOpen}
-          onCloseBrandStory={onCloseBrandStory}
-        />
-
-        {records.length > 0 ? (
-          <InvestmentListSection
-            records={records}
-            filteredRecords={filteredRecords}
-            displayRecords={displayRecords}
-            filterStatus={filterStatus}
-            onFilterChange={onFilterChange}
-            sortBy={sortBy}
-            onSortChange={onSortChange}
-            onItemClick={onItemClick}
-            calculateFutureValue={calculateFutureValue}
-            listExpanded={listExpanded}
-            onListExpandToggle={toggleListExpansion}
-            hasMoreList={hasMoreList}
-            remainingListCount={remainingListCount}
-          />
-        ) : (
-          <EmptyState onAddClick={() => router.push('/add')} />
-        )}
-
-        {records.length > 0 && (
-          <Link
-            href="/stats"
-            className="block text-center py-3 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
-          >
-            예상 자산 · 수익 차트 보기 →
-          </Link>
-        )}
-      </div>
+      <DashboardContent
+        data={{
+          records,
+          filteredRecords,
+          activeRecords,
+          totalMonthlyPayment,
+        }}
+        ui={{
+          showRateUpdateToast,
+          onAddClick: () => router.push('/add'),
+        }}
+        filter={{
+          filterStatus,
+          onFilterChange,
+          sortBy,
+          onSortChange,
+        }}
+        list={{
+          listExpanded,
+          displayRecords,
+          hasMoreList,
+          remainingListCount,
+          toggleListExpansion,
+          onItemClick,
+        }}
+        brandStory={{
+          showBrandStoryCard,
+          onCloseBrandStoryCard,
+          pendingBrandStoryUndo,
+          onUndoBrandStory,
+          isBrandStoryOpen,
+          onOpenBrandStory,
+          onCloseBrandStory,
+        }}
+        settings={{
+          showMonthlyAmount,
+          onToggleMonthlyAmount,
+        }}
+        calculations={{
+          calculateFutureValue,
+        }}
+      />
     </main>
   )
 }
