@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+
 import { useRouter } from 'next/navigation'
 import { Plus } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import type { Investment } from '@/app/types/investment'
 import UpcomingInvestments from '@/app/components/UpcomingInvestments'
+import { useDashboardUI } from '@/app/hooks/useDashboardUI'
 import RateUpdateToast from './DashboardSections/RateUpdateToast'
 import Header from './DashboardSections/Header'
 import MonthlyAmountCard from './DashboardSections/MonthlyAmountCard'
@@ -72,14 +73,21 @@ export default function Dashboard({
   calculateFutureValue,
 }: DashboardProps) {
   const router = useRouter()
-  const [listExpanded, setListExpanded] = useState(false)
-  const displayRecords = listExpanded ? filteredRecords : filteredRecords.slice(0, INITIAL_LIST_COUNT)
-  const hasMoreList = filteredRecords.length > INITIAL_LIST_COUNT
-  const remainingListCount = filteredRecords.length - INITIAL_LIST_COUNT
-
-  useEffect(() => {
-    setListExpanded(false)
-  }, [filterStatus, sortBy])
+  /* 
+   * Anti-pattern Fix: Moved UI state (listExpanded) and logic to custom hook 
+   * to keep this component pure composition.
+   */
+  const {
+    listExpanded,
+    displayRecords,
+    hasMoreList,
+    remainingListCount,
+    toggleListExpansion,
+  } = useDashboardUI({
+    filteredRecords,
+    filterStatus,
+    sortBy,
+  })
 
   return (
     <main className="min-h-screen bg-surface">
@@ -144,7 +152,7 @@ export default function Dashboard({
             onItemClick={onItemClick}
             calculateFutureValue={calculateFutureValue}
             listExpanded={listExpanded}
-            onListExpandToggle={() => setListExpanded((prev) => !prev)}
+            onListExpandToggle={toggleListExpansion}
             hasMoreList={hasMoreList}
             remainingListCount={remainingListCount}
           />
