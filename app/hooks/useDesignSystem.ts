@@ -6,6 +6,7 @@ export const TABS = [
     { id: 'core', label: '기본' },
     { id: 'patterns', label: '패턴' },
     { id: 'tokens', label: '토큰' },
+    { id: 'icons3d', label: '3D 아이콘' },
 ] as const
 
 export type TabId = (typeof TABS)[number]['id']
