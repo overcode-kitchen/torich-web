@@ -9,26 +9,21 @@ import ManualInputModal from '@/app/components/ManualInputModal'
 import RateHelpModal from '@/app/components/RateDisplay/RateHelpModal'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
 import type { UseModalStateReturn } from '@/app/hooks/useModalState'
-import { useInvestmentDaysPicker } from '@/app/hooks/useInvestmentDaysPicker'
+import type { useInvestmentDaysPicker } from '@/app/hooks/useInvestmentDaysPicker'
 
 interface AddInvestmentViewProps {
     form: UseAddInvestmentFormReturn
     modals: UseModalStateReturn
+    daysPicker: ReturnType<typeof useInvestmentDaysPicker>
     onBack: () => void
 }
 
 export default function AddInvestmentView({
     form,
     modals,
+    daysPicker,
     onBack
 }: AddInvestmentViewProps) {
-    const daysPicker = useInvestmentDaysPicker({
-        initialDays: form.investmentDays,
-        onApply: (days) => {
-            form.setInvestmentDays(days)
-            modals.setIsDaysPickerOpen(false)
-        },
-    })
     return (
         <main className="min-h-screen bg-surface">
             {/* 뒤로가기 버튼 */}
