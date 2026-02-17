@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import type { Investment } from '@/app/types/investment'
 import { useDashboardUI } from '@/app/hooks/useDashboardUI'
+import { useUpcomingInvestments } from '@/app/hooks/useUpcomingInvestments'
 import Header from './DashboardSections/Header'
 import DashboardContent from './DashboardSections/DashboardContent'
 
@@ -61,6 +62,7 @@ export default function Dashboard({
   calculateFutureValue,
 }: DashboardProps) {
   const router = useRouter()
+  const upcomingInvestmentsData = useUpcomingInvestments(activeRecords)
 
   const {
     listExpanded,
@@ -84,6 +86,7 @@ export default function Dashboard({
           filteredRecords,
           activeRecords,
           totalMonthlyPayment,
+          upcomingInvestments: upcomingInvestmentsData,
         }}
         ui={{
           showRateUpdateToast,

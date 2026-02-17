@@ -5,11 +5,10 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import type { Investment } from '@/app/types/investment'
 import UpcomingInvestments from '@/app/components/UpcomingInvestments'
-import { useUpcomingInvestments } from '@/app/hooks/useUpcomingInvestments'
+import type { useUpcomingInvestments } from '@/app/hooks/useUpcomingInvestments'
 import RateUpdateToast from './RateUpdateToast'
 import MonthlyAmountCard from './MonthlyAmountCard'
-import BrandStoryCard from './BrandStoryCard'
-import BrandStoryBottomSheet from './BrandStoryBottomSheet'
+import BrandStorySection from './BrandStorySection'
 import InvestmentListSection from './InvestmentListSection'
 import EmptyState from './EmptyState'
 
@@ -22,6 +21,7 @@ interface DashboardContentProps {
         filteredRecords: Investment[]
         activeRecords: Investment[]
         totalMonthlyPayment: number
+        upcomingInvestments: ReturnType<typeof useUpcomingInvestments>
     }
     ui: {
         showRateUpdateToast: boolean
@@ -68,15 +68,13 @@ export default function DashboardContent({
     settings,
     calculations,
 }: DashboardContentProps) {
-    const { records, filteredRecords, activeRecords, totalMonthlyPayment } = data
+    const { records, filteredRecords, activeRecords, totalMonthlyPayment, upcomingInvestments } = data
     const { showRateUpdateToast, onAddClick } = ui
     const { filterStatus, onFilterChange, sortBy, onSortChange } = filter
     const { listExpanded, displayRecords, hasMoreList, remainingListCount, toggleListExpansion, onItemClick } = list
     const { showBrandStoryCard, onCloseBrandStoryCard, pendingBrandStoryUndo, onUndoBrandStory, isBrandStoryOpen, onOpenBrandStory, onCloseBrandStory } = brandStory
     const { showMonthlyAmount, onToggleMonthlyAmount } = settings
     const { calculateFutureValue } = calculations
-
-    const upcomingInvestmentsData = useUpcomingInvestments(activeRecords)
 
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
@@ -85,7 +83,7 @@ export default function DashboardContent({
             {activeRecords.length > 0 && (
                 <UpcomingInvestments
                     records={activeRecords}
-                    data={upcomingInvestmentsData}
+                    data={upcomingInvestments}
                 />
             )}
 
@@ -105,29 +103,12 @@ export default function DashboardContent({
                 onToggleMonthlyAmount={onToggleMonthlyAmount}
             />
 
-            <BrandStoryCard
+            <BrandStorySection
                 showBrandStoryCard={showBrandStoryCard}
                 onOpenBrandStory={onOpenBrandStory}
                 onCloseBrandStoryCard={onCloseBrandStoryCard}
-            />
-
-            {pendingBrandStoryUndo && (
-                <div
-                    className="fixed bottom-24 left-4 right-4 z-50 flex items-center justify-between gap-3 rounded-xl bg-surface-dark text-white px-4 py-3 shadow-lg max-w-md md:max-w-lg lg:max-w-2xl mx-auto"
-                    role="status"
-                >
-                    <span className="text-sm font-medium">카드가 닫혔어요</span>
-                    <button
-                        type="button"
-                        onClick={onUndoBrandStory}
-                        className="text-sm font-semibold text-brand-300 hover:text-brand-200 transition-colors"
-                    >
-                        되돌리기
-                    </button>
-                </div>
-            )}
-
-            <BrandStoryBottomSheet
+                pendingBrandStoryUndo={pendingBrandStoryUndo}
+                onUndoBrandStory={onUndoBrandStory}
                 isBrandStoryOpen={isBrandStoryOpen}
                 onCloseBrandStory={onCloseBrandStory}
             />
