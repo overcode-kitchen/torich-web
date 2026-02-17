@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,8 @@ import {
 function minutesAgo(mins: number): string {
   return new Date(Date.now() - mins * 60_000).toISOString()
 }
+
+// ... existing MOCK_NOTIFICATIONS ...
 
 const MOCK_NOTIFICATIONS: NotificationItem[] = [
   {
@@ -36,7 +39,7 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
 
 const isDev = process.env.NODE_ENV === 'development'
 
-export default function NotificationsPage() {
+function NotificationsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { notifications } = useNotificationInbox()
@@ -120,5 +123,13 @@ export default function NotificationsPage() {
         )}
       </div>
     </main>
+  )
+}
+
+export default function NotificationsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-surface" />}>
+      <NotificationsContent />
+    </Suspense>
   )
 }
