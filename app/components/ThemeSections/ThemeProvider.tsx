@@ -1,20 +1,14 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { useAuth } from '@/app/hooks/useAuth'
 
 export type Theme = 'light' | 'dark' | 'system'
-
-const STORAGE_KEY = 'torich_theme'
 
 function getSystemTheme(): 'light' | 'dark' {
   if (typeof window === 'undefined') return 'light'
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-}
-
-function getStoredTheme(): Theme {
-  if (typeof window === 'undefined') return 'system'
-  const stored = localStorage.getItem(STORAGE_KEY) as Theme | null
-  return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
 }
 
 function getResolvedTheme(theme: Theme): 'light' | 'dark' {
@@ -35,27 +29,51 @@ export function useTheme() {
 }
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth()
+  const supabase = createClient()
   const [theme, setThemeState] = useState<Theme>('system')
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
   const [mounted, setMounted] = useState(false)
 
+  // 1. Mount & Initial System Check
   useEffect(() => {
     setMounted(true)
-    const stored = getStoredTheme()
-    setThemeState(stored)
-    const resolved = getResolvedTheme(stored)
+    // Default to system initially
+    const initial = 'system'
+    setThemeState(initial)
+    const resolved = getResolvedTheme(initial)
     setResolvedTheme(resolved)
     document.documentElement.classList.toggle('dark', resolved === 'dark')
   }, [])
 
+  // 2. Fetch from DB if logged in
+  useEffect(() => {
+    if (!user) return
+
+    const fetchTheme = async () => {
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('theme')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!error && data && data.theme) {
+        setThemeState(data.theme as Theme)
+      }
+    }
+
+    fetchTheme()
+  }, [user, supabase])
+
+  // 3. Reflect Theme Changes to DOM
   useEffect(() => {
     if (!mounted) return
     const resolved = getResolvedTheme(theme)
     setResolvedTheme(resolved)
     document.documentElement.classList.toggle('dark', resolved === 'dark')
-    localStorage.setItem(STORAGE_KEY, theme)
   }, [theme, mounted])
 
+  // 4. Listen for System Changes
   useEffect(() => {
     if (!mounted || theme !== 'system') return
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -68,8 +86,18 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     return () => mq.removeEventListener('change', handler)
   }, [theme, mounted])
 
-  const setTheme = (t: Theme) => {
+  const setTheme = async (t: Theme) => {
     setThemeState(t)
+
+    if (user) {
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({ user_id: user.id, theme: t }, { onConflict: 'user_id' })
+
+      if (error) {
+        console.error('Failed to update theme setting', error)
+      }
+    }
   }
 
   return (

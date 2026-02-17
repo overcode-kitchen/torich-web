@@ -20,6 +20,8 @@ interface InvestmentDetailViewProps {
   calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
+import { usePaymentHistory } from '@/app/hooks/usePaymentHistory'
+
 function InternalInvestmentDetailView({
   item,
   onBack,
@@ -39,6 +41,9 @@ function InternalInvestmentDetailView({
   } = useInvestmentTabContext()
 
   const { showStickyTitle } = useScrollHeader(titleRef)
+
+  // Payment History Hook
+  const { completedPayments } = usePaymentHistory()
 
   // UI 상태 훅
   const {
@@ -65,6 +70,7 @@ function InternalInvestmentDetailView({
     isEditMode,
     setIsEditMode,
     setIsDaysPickerOpen,
+    completedPayments,
   })
 
   // 수정 모드 진입 시 초기화

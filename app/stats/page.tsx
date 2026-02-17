@@ -5,10 +5,12 @@ import { usePeriodFilter } from '@/app/hooks/usePeriodFilter'
 import { useStatsCalculations } from '@/app/hooks/useStatsCalculations'
 import { useChartData } from '@/app/hooks/useChartData'
 import { useStatsPageUI } from '@/app/hooks/useStatsPageUI'
+import { usePaymentHistory } from '@/app/hooks/usePaymentHistory'
 import StatsView from '@/app/components/StatsSections/StatsView'
 
 export default function StatsPage() {
   const { user, records, activeRecords, isLoading, router } = useStatsData()
+  const { completedPayments, isLoading: historyLoading } = usePaymentHistory()
 
   const {
     selectedYear,
@@ -40,14 +42,14 @@ export default function StatsPage() {
     maturedItems,
     thisMonth,
     calculateFutureValue,
-  } = useStatsCalculations({ records, activeRecords, selectedYear })
+  } = useStatsCalculations({ records, activeRecords, completedPayments, selectedYear })
 
   const {
     monthlyRates,
     periodCompletionRate,
     chartData,
     chartBarColor,
-  } = useChartData({ activeRecords, isCustomRange, effectiveMonths, customDateRange })
+  } = useChartData({ activeRecords, completedPayments, isCustomRange, effectiveMonths, customDateRange })
 
   if (!isLoading && !user) {
     router.replace('/login')
@@ -56,7 +58,7 @@ export default function StatsPage() {
 
   return (
     <StatsView
-      isLoading={isLoading}
+      isLoading={isLoading || historyLoading}
       user={user}
       data={{
         records,

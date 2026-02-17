@@ -1,9 +1,12 @@
 import { Investment } from '@/app/types/investment'
 
+import { PaymentHistoryMap } from '@/app/hooks/usePaymentHistory'
+
 export interface UseInvestmentDataProps {
   item: Investment
   isEditMode: boolean
   calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
+  completedPayments: PaymentHistoryMap
 }
 
 export interface UseInvestmentDataReturn {

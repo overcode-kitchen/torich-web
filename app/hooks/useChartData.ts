@@ -5,9 +5,11 @@ import {
   getMonthlyCompletionRates,
   getMonthlyCompletionRatesForRange,
 } from '@/app/utils/stats'
+import { PaymentHistoryMap } from './usePaymentHistory'
 
 interface UseChartDataProps {
   activeRecords: Investment[]
+  completedPayments: PaymentHistoryMap
   isCustomRange: boolean
   effectiveMonths: number
   customDateRange?: DateRange
@@ -22,16 +24,17 @@ export interface UseChartDataReturn {
 
 export function useChartData({
   activeRecords,
+  completedPayments,
   isCustomRange,
   effectiveMonths,
   customDateRange
 }: UseChartDataProps): UseChartDataReturn {
   const monthlyRates = useMemo(() => {
     if (isCustomRange && customDateRange?.from && customDateRange?.to) {
-      return getMonthlyCompletionRatesForRange(activeRecords, customDateRange.from, customDateRange.to)
+      return getMonthlyCompletionRatesForRange(activeRecords, completedPayments, customDateRange.from, customDateRange.to)
     }
-    return getMonthlyCompletionRates(activeRecords, effectiveMonths)
-  }, [activeRecords, effectiveMonths, isCustomRange, customDateRange])
+    return getMonthlyCompletionRates(activeRecords, completedPayments, effectiveMonths)
+  }, [activeRecords, completedPayments, effectiveMonths, isCustomRange, customDateRange])
 
   const periodCompletionRate = useMemo(() => {
     const rates = monthlyRates

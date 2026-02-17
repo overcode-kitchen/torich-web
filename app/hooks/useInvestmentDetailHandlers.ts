@@ -5,6 +5,8 @@ import { Investment } from '@/app/types/investment'
 import { useInvestmentData } from './useInvestmentData'
 import { useInvestmentActions } from './useInvestmentActions'
 
+import { PaymentHistoryMap } from '@/app/hooks/usePaymentHistory'
+
 interface UseInvestmentDetailHandlersProps {
   item: Investment
   onUpdate: (data: { monthly_amount: number; period_years: number; annual_rate: number; investment_days?: number[] }) => Promise<void>
@@ -13,6 +15,7 @@ interface UseInvestmentDetailHandlersProps {
   isEditMode: boolean
   setIsEditMode: (value: boolean) => void
   setIsDaysPickerOpen: (value: boolean) => void
+  completedPayments: PaymentHistoryMap
 }
 
 export function useInvestmentDetailHandlers({
@@ -23,12 +26,14 @@ export function useInvestmentDetailHandlers({
   isEditMode,
   setIsEditMode,
   setIsDaysPickerOpen,
+  completedPayments,
 }: UseInvestmentDetailHandlersProps) {
   // 데이터 훅
   const investmentData = useInvestmentData({
     item,
     isEditMode,
     calculateFutureValue,
+    completedPayments,
   })
 
   // API 액션 훅
@@ -48,13 +53,18 @@ export function useInvestmentDetailHandlers({
       return
     }
 
-    await handleUpdate({
-      monthly_amount: monthlyAmountInWon,
-      period_years: periodYears,
-      annual_rate: annualRate,
-      investment_days: investmentData.editInvestmentDays.length > 0 ? investmentData.editInvestmentDays : undefined,
-    })
-    setIsEditMode(false)
+    try {
+      await handleUpdate({
+        monthly_amount: monthlyAmountInWon,
+        period_years: periodYears,
+        annual_rate: annualRate,
+        investment_days: investmentData.editInvestmentDays.length > 0 ? investmentData.editInvestmentDays : undefined,
+      })
+      setIsEditMode(false)
+    } catch (error: any) {
+      console.error('Failed to update investment:', error)
+      alert(`투자 정보 수정 실패: ${error.message || '알 수 없는 오류가 발생했습니다.'}`)
+    }
   }, [investmentData, handleUpdate, setIsEditMode])
 
   // 취소 핸들러

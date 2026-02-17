@@ -35,6 +35,7 @@ interface UpcomingInvestmentsProps {
     remainingCount: number
     rangeLabel: string
     visibleItemsCount: number
+    isLoading: boolean
   }
 }
 
@@ -58,6 +59,8 @@ export default function UpcomingInvestments({ records, data }: UpcomingInvestmen
   } = data
 
   if (records.length === 0) return null
+  if (data.isLoading) return null // Or a skeleton
+
 
   return (
     <div className="bg-card rounded-3xl p-6 pb-4">

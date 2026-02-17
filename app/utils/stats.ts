@@ -1,4 +1,5 @@
-const STORAGE_PREFIX = 'torich_completed_'
+import { PaymentHistoryMap } from '@/app/hooks/usePaymentHistory'
+import { isPaymentCompleted } from './payment-completion'
 
 export interface PaymentEvent {
   investmentId: string
@@ -58,24 +59,6 @@ export function getPaymentEventsForMonth(
 }
 
 /**
- * localStorage에서 해당 납입 완료 여부 확인
- * 키: torich_completed_{investmentId}_{YYYY-MM}_{day}
- * 값: "1" 또는 ISO datetime (둘 다 완료로 간주)
- */
-export function isPaymentEventCompleted(
-  investmentId: string,
-  year: number,
-  month: number,
-  day: number
-): boolean {
-  if (typeof window === 'undefined') return false
-  const yearMonth = `${year}-${String(month).padStart(2, '0')}`
-  const key = `${STORAGE_PREFIX}${investmentId}_${yearMonth}_${day}`
-  const val = localStorage.getItem(key)
-  return !!val
-}
-
-/**
  * 이번 달 납입 현황 (총 금액, 완료 금액, 진행률, 남은 금액)
  */
 export function getThisMonthStats(
@@ -87,7 +70,8 @@ export function getThisMonthStats(
     period_years: number
     start_date?: string | null
     created_at: string
-  }>
+  }>,
+  completedPayments: PaymentHistoryMap
 ): { totalPayment: number; completedPayment: number; progress: number; remainingPayment: number } {
   const today = new Date()
   const year = today.getFullYear()
@@ -99,7 +83,7 @@ export function getThisMonthStats(
 
   for (const e of events) {
     totalPayment += e.monthlyAmount
-    if (isPaymentEventCompleted(e.investmentId, e.year, e.month, e.day)) {
+    if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
       completedPayment += e.monthlyAmount
     }
   }
@@ -123,6 +107,7 @@ export function getPeriodTotalPaid(
     start_date?: string | null
     created_at: string
   }>,
+  completedPayments: PaymentHistoryMap,
   monthsBack: number
 ): number {
   const today = new Date()
@@ -135,7 +120,7 @@ export function getPeriodTotalPaid(
 
     const events = getPaymentEventsForMonth(investments, year, month)
     for (const e of events) {
-      if (isPaymentEventCompleted(e.investmentId, e.year, e.month, e.day)) {
+      if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         total += e.monthlyAmount
       }
     }
@@ -157,6 +142,7 @@ export function getMonthlyCompletionRates(
     start_date?: string | null
     created_at: string
   }>,
+  completedPayments: PaymentHistoryMap,
   monthsBack: number
 ): Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> {
   const today = new Date()
@@ -172,7 +158,7 @@ export function getMonthlyCompletionRates(
     const events = getPaymentEventsForMonth(investments, year, month)
     let completed = 0
     for (const e of events) {
-      if (isPaymentEventCompleted(e.investmentId, e.year, e.month, e.day)) {
+      if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         completed++
       }
     }
@@ -201,6 +187,7 @@ export function getMonthlyCompletionRatesForRange(
     start_date?: string | null
     created_at: string
   }>,
+  completedPayments: PaymentHistoryMap,
   fromDate: Date,
   toDate: Date
 ): Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> {
@@ -218,7 +205,7 @@ export function getMonthlyCompletionRatesForRange(
     const events = getPaymentEventsForMonth(investments, year, month)
     let completed = 0
     for (const e of events) {
-      if (isPaymentEventCompleted(e.investmentId, e.year, e.month, e.day)) {
+      if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         completed++
       }
     }
@@ -243,6 +230,7 @@ export function getPeriodTotalPaidForRange(
     start_date?: string | null
     created_at: string
   }>,
+  completedPayments: PaymentHistoryMap,
   fromDate: Date,
   toDate: Date
 ): number {
@@ -257,7 +245,7 @@ export function getPeriodTotalPaidForRange(
 
     const events = getPaymentEventsForMonth(investments, year, month)
     for (const e of events) {
-      if (isPaymentEventCompleted(e.investmentId, e.year, e.month, e.day)) {
+      if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         total += e.monthlyAmount
       }
     }

@@ -25,9 +25,12 @@ const calculateSimulatedValue = (
   return monthlyAmount * ((Math.pow(1 + monthlyRate, maturityMonths) - 1) / monthlyRate) * (1 + monthlyRate)
 }
 
+import { PaymentHistoryMap } from '@/app/hooks/usePaymentHistory'
+
 interface UseStatsCalculationsProps {
   records: Investment[]
   activeRecords: Investment[]
+  completedPayments: PaymentHistoryMap
   selectedYear: number
 }
 
@@ -45,7 +48,7 @@ export interface UseStatsCalculationsReturn {
   calculateFutureValue: (monthlyAmount: number, T: number, P: number, R?: number) => number
 }
 
-export function useStatsCalculations({ records, activeRecords, selectedYear }: UseStatsCalculationsProps): UseStatsCalculationsReturn {
+export function useStatsCalculations({ records, activeRecords, completedPayments, selectedYear }: UseStatsCalculationsProps): UseStatsCalculationsReturn {
   const { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments, maturedItems } = useMemo(() => {
     if (records.length === 0) {
       return { totalExpectedAsset: 0, totalMonthlyPayment: 0, hasMaturedInvestments: false, maturedItems: [] }
@@ -84,7 +87,7 @@ export function useStatsCalculations({ records, activeRecords, selectedYear }: U
     return { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments, maturedItems }
   }, [records, selectedYear])
 
-  const thisMonth = useMemo(() => getThisMonthStats(activeRecords), [activeRecords])
+  const thisMonth = useMemo(() => getThisMonthStats(activeRecords, completedPayments), [activeRecords, completedPayments])
 
   return {
     totalExpectedAsset,

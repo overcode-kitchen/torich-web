@@ -2,16 +2,13 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { PaymentEvent } from '@/app/utils/stats'
-import {
-  setPaymentCompleted,
-  clearPaymentCompleted,
-  isPaymentCompleted
-} from '@/app/utils/payment-completion'
+import { usePaymentHistory } from '@/app/hooks/usePaymentHistory'
+import { isPaymentCompleted } from '@/app/utils/payment-completion'
 
 const TOAST_DURATION_MS = 5000
 
 export function usePaymentCompletion() {
-  const [completedKeys, setCompletedKeys] = useState<Set<string>>(new Set())
+  const { completedPayments, togglePayment } = usePaymentHistory()
   const [pendingUndo, setPendingUndo] = useState<PaymentEvent | null>(null)
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingUndoRef = useRef<PaymentEvent | null>(null)
@@ -26,15 +23,15 @@ export function usePaymentCompletion() {
   }, [])
 
   const isEventCompleted = useCallback((e: PaymentEvent) => {
-    const key = `${e.investmentId}_${e.year}_${e.month}_${e.day}` 
-    if (completedKeys.has(key)) return true
-    return isPaymentCompleted(e.investmentId, e.year, e.month, e.day)
-  }, [completedKeys])
+    return isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)
+  }, [completedPayments])
 
-  const handleComplete = useCallback((e: PaymentEvent) => {
-    setPaymentCompleted(e.investmentId, e.year, e.month, e.day)
-    const key = `${e.investmentId}_${e.year}_${e.month}_${e.day}` 
-    setCompletedKeys((prev) => new Set(prev).add(key))
+  const handleComplete = useCallback(async (e: PaymentEvent) => {
+    const dateStr = `${e.year}-${String(e.month).padStart(2, '0')}-${String(e.day).padStart(2, '0')}`
+
+    // Toggle to true (currently false)
+    await togglePayment(e.investmentId, dateStr, false)
+
     setPendingUndo(e)
 
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
@@ -42,26 +39,24 @@ export function usePaymentCompletion() {
       setPendingUndo(null)
       toastTimeoutRef.current = null
     }, TOAST_DURATION_MS)
-  }, [])
+  }, [togglePayment])
 
-  const handleUndo = useCallback(() => {
+  const handleUndo = useCallback(async () => {
     const p = pendingUndoRef.current
     if (!p) return
 
-    clearPaymentCompleted(p.investmentId, p.year, p.month, p.day)
-    const key = `${p.investmentId}_${p.year}_${p.month}_${p.day}` 
-    setCompletedKeys((prev) => {
-      const next = new Set(prev)
-      next.delete(key)
-      return next
-    })
+    const dateStr = `${p.year}-${String(p.month).padStart(2, '0')}-${String(p.day).padStart(2, '0')}`
+
+    // Toggle to false (currently true)
+    await togglePayment(p.investmentId, dateStr, true)
+
     setPendingUndo(null)
 
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current)
       toastTimeoutRef.current = null
     }
-  }, [])
+  }, [togglePayment])
 
   return {
     isEventCompleted,

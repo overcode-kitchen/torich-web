@@ -1,24 +1,46 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
-const STORAGE_KEY_PREFIX = 'torich_notification_'
+import { createClient } from '@/utils/supabase/client'
+import { useAuth } from './useAuth'
 
 export function useNotificationToggle(itemId: string) {
+  const { user } = useAuth()
+  const supabase = createClient()
   const [notificationOn, setNotificationOn] = useState(true)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${itemId}`)
-      setNotificationOn(stored === null ? true : stored === '1')
-    }
-  }, [itemId])
+    if (!user || !itemId) return
 
-  const toggleNotification = () => {
+    const fetchSetting = async () => {
+      const { data, error } = await supabase
+        .from('records')
+        .select('notification_enabled')
+        .eq('id', itemId)
+        .single()
+
+      if (!error && data) {
+        setNotificationOn(data.notification_enabled ?? true)
+      }
+    }
+
+    fetchSetting()
+  }, [user, itemId, supabase])
+
+  const toggleNotification = async () => {
+    if (!user || !itemId) return
+
     const next = !notificationOn
     setNotificationOn(next)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(`${STORAGE_KEY_PREFIX}${itemId}`, next ? '1' : '0')
+
+    const { error } = await supabase
+      .from('records')
+      .update({ notification_enabled: next })
+      .eq('id', itemId)
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Failed to toggle notification for item', error)
     }
   }
 

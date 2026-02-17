@@ -3,6 +3,8 @@ import type { Investment } from '@/app/types/investment'
 import type { DateRange } from 'react-day-picker'
 import { addDays } from 'date-fns'
 import { getUpcomingPayments, getUpcomingPaymentsInRange } from '@/app/utils/date'
+import { usePaymentHistory } from './usePaymentHistory'
+import { isPaymentCompleted } from '@/app/utils/payment-completion'
 
 export interface DisplayItem {
   investment: Investment
@@ -10,7 +12,6 @@ export interface DisplayItem {
   dayOfMonth: number
 }
 
-const STORAGE_PREFIX = 'torich_completed_'
 export const PRESET_OPTIONS = [
   { label: '오늘', days: 1 },
   { label: '3일', days: 3 },
@@ -23,30 +24,9 @@ export const PRESET_OPTIONS = [
 const TOAST_DURATION_MS = 5000
 const INITIAL_VISIBLE_COUNT = 5
 
-function getCompletedKey(investmentId: string, year: number, month: number, day: number): string {
-  const yearMonth = `${year}-${String(month).padStart(2, '0')}`
-  return `${STORAGE_PREFIX}${investmentId}_${yearMonth}_${day}`
-}
-
-function isPaymentCompleted(investmentId: string, date: Date, dayOfMonth: number): boolean {
-  if (typeof window === 'undefined') return false
-  const key = getCompletedKey(investmentId, date.getFullYear(), date.getMonth() + 1, dayOfMonth)
-  return !!localStorage.getItem(key)
-}
-
-function setPaymentCompleted(investmentId: string, date: Date, dayOfMonth: number): void {
-  if (typeof window === 'undefined') return
-  const key = getCompletedKey(investmentId, date.getFullYear(), date.getMonth() + 1, dayOfMonth)
-  localStorage.setItem(key, new Date().toISOString())
-}
-
-function clearPaymentCompleted(investmentId: string, date: Date, dayOfMonth: number): void {
-  if (typeof window === 'undefined') return
-  localStorage.removeItem(getCompletedKey(investmentId, date.getFullYear(), date.getMonth() + 1, dayOfMonth))
-}
-
 export function useUpcomingInvestments(records: Investment[]) {
-  const [completedIds, setCompletedIds] = useState<Set<string>>(() => new Set())
+  const { completedPayments, togglePayment, isLoading } = usePaymentHistory()
+
   const [selectedPreset, setSelectedPreset] = useState<'preset' | 'custom'>('preset')
   const [expanded, setExpanded] = useState(false)
   const [selectedDays, setSelectedDays] = useState(7)
@@ -86,34 +66,51 @@ export function useUpcomingInvestments(records: Investment[]) {
   const pendingUndoRef = useRef(pendingUndo)
   pendingUndoRef.current = pendingUndo
 
+  const getFormatDate = (date: Date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  }
+
   const handleUndo = useCallback(() => {
     const p = pendingUndoRef.current
     if (!p) return
-    clearPaymentCompleted(p.investmentId, p.date, p.dayOfMonth)
-    const key = `${p.investmentId}_${p.date.getTime()}_${p.dayOfMonth}`
-    setCompletedIds((prev) => {
-      const next = new Set(prev)
-      next.delete(key)
-      return next
-    })
+
+    // Undo means toggling back. Logic: if it allowed undo, it means we marked it as completed.
+    // So current status in DB/Map is "completed". We want to revert to "incomplete".
+    // Is that right? 
+    // toggleComplete marks as completed.
+    // So we want to mark as incomplete.
+    // togglePayment takes current status. If current is true (completed), it deletes.
+    // So we pass true (it IS completed now).
+    // Or we use `isPaymentCompleted` to check current status.
+    // Let's rely on what we did. We did `toggleComplete` -> it became completed.
+
+    const dateStr = getFormatDate(p.date)
+    togglePayment(p.investmentId, dateStr, true) // Undo completion -> set to incomplete
+
     setPendingUndo(null)
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current)
       toastTimeoutRef.current = null
     }
-  }, [])
+  }, [togglePayment])
 
   const toggleComplete = useCallback((investmentId: string, date: Date, dayOfMonth: number) => {
-    setPaymentCompleted(investmentId, date, dayOfMonth)
-    const key = `${investmentId}_${date.getTime()}_${dayOfMonth}`
-    setCompletedIds((prev) => new Set(prev).add(key))
+    const dateStr = getFormatDate(date)
+    // We assume we are marking as completed (since this is "Upcoming" section, items are incomplete)
+    // But `togglePayment` handles toggle. 
+    // If it is in list, it is incomplete.
+    togglePayment(investmentId, dateStr, false) // Mark as completed
+
     setPendingUndo({ investmentId, date, dayOfMonth })
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
     toastTimeoutRef.current = setTimeout(() => {
       setPendingUndo(null)
       toastTimeoutRef.current = null
     }, TOAST_DURATION_MS)
-  }, [])
+  }, [togglePayment])
 
   const selectPreset = useCallback((days: number) => {
     setSelectedPreset('preset')
@@ -127,12 +124,11 @@ export function useUpcomingInvestments(records: Investment[]) {
   }, [])
 
   const visibleItems = useMemo(() => {
+    if (isLoading) return []
     return items.filter((item) => {
-      const key = `${item.investment.id}_${item.paymentDate.getTime()}_${item.dayOfMonth}`
-      if (completedIds.has(key)) return false
-      return !isPaymentCompleted(item.investment.id, item.paymentDate, item.dayOfMonth)
+      return !isPaymentCompleted(completedPayments, item.investment.id, item.paymentDate.getFullYear(), item.paymentDate.getMonth() + 1, item.paymentDate.getDate())
     })
-  }, [items, completedIds])
+  }, [items, completedPayments, isLoading])
 
   const displayItems = expanded ? visibleItems : visibleItems.slice(0, INITIAL_VISIBLE_COUNT)
   const hasMore = visibleItems.length > INITIAL_VISIBLE_COUNT
@@ -162,5 +158,6 @@ export function useUpcomingInvestments(records: Investment[]) {
     remainingCount,
     rangeLabel,
     visibleItemsCount: visibleItems.length,
+    isLoading
   }
 }

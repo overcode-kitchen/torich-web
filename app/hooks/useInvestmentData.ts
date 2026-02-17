@@ -11,6 +11,7 @@ export function useInvestmentData({
   item,
   isEditMode,
   calculateFutureValue,
+  completedPayments,
 }: UseInvestmentDataProps): UseInvestmentDataReturn {
   // 알림 훅
   const { notificationOn, toggleNotification } = useNotificationToggle(item.id)
@@ -32,6 +33,7 @@ export function useInvestmentData({
   // 납입 기록
   const fullPaymentHistory = getPaymentHistoryFromStart(
     item.id,
+    completedPayments,
     item.investment_days ?? undefined,
     item.start_date ?? item.created_at ?? undefined,
     item.period_years
