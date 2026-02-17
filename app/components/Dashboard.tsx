@@ -5,6 +5,8 @@ import type { Investment } from '@/app/types/investment'
 import { useDashboardUI } from '@/app/hooks/useDashboardUI'
 import { useUpcomingInvestments } from '@/app/hooks/useUpcomingInvestments'
 import Header from './DashboardSections/Header'
+import RateUpdateToast from './DashboardSections/RateUpdateToast'
+import NotificationInbox from './DashboardSections/NotificationInbox'
 import DashboardContent from './DashboardSections/DashboardContent'
 
 type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
@@ -78,7 +80,8 @@ export default function Dashboard({
 
   return (
     <main className="min-h-screen bg-surface">
-      <Header />
+      <RateUpdateToast showRateUpdateToast={showRateUpdateToast} />
+      <Header rightSlot={<NotificationInbox />} />
 
       <DashboardContent
         data={{

@@ -33,17 +33,26 @@ export function NameLabel({
     label,
     token,
     usage,
+    tokenOnly,
 }: {
     label: string
     token: string
     usage?: string
+    /** 색상 스와치 등: 라벨은 토큰만 표시 (이름·토큰 중복 방지) */
+    tokenOnly?: boolean
 }) {
     return (
         <div className="flex items-start justify-between gap-2 text-xs">
             <div>
-                <span className="font-medium text-coolgray-700">{label}</span>
-                <span className="text-coolgray-500"> · </span>
-                <code className="text-coolgray-600">{token}</code>
+                {tokenOnly ? (
+                    <code className="font-medium text-coolgray-700">{token}</code>
+                ) : (
+                    <>
+                        <span className="font-medium text-coolgray-700">{label}</span>
+                        <span className="text-coolgray-500"> · </span>
+                        <code className="text-coolgray-600">{token}</code>
+                    </>
+                )}
                 {usage && <p className="mt-0.5 text-coolgray-500">{usage}</p>}
             </div>
             <CopyButton value={token} />

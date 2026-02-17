@@ -246,7 +246,7 @@ export function CoreSection() {
                 </h2>
                 <div className="space-y-6 rounded-xl border border-coolgray-200 bg-white p-6">
                     <div>
-                        <p className="text-sm font-medium text-coolgray-700 mb-3">Semantic (시맨틱)</p>
+                        <p className="text-sm font-medium text-coolgray-700 mb-3">Semantic (시맨틱) - 기본</p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                             {[
                                 { name: "primary", token: "color-primary", bg: "bg-primary", text: "text-primary-foreground" },
@@ -258,20 +258,134 @@ export function CoreSection() {
                                 { name: "background", token: "color-background", bg: "bg-background", text: "text-foreground", border: true },
                             ].map((c) => (
                                 <div key={c.name} className="space-y-2">
-                                    <NameLabel label={c.name} token={c.token} />
+                                    <NameLabel label={c.name} token={c.token} tokenOnly />
                                     <div
                                         className={cn(
-                                            "rounded-lg p-3 text-sm font-medium",
+                                            "rounded-lg h-12 min-h-12",
                                             c.bg,
                                             c.text,
                                             c.border && "border border-border"
                                         )}
+                                        aria-label={c.name}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-coolgray-700 mb-3">Semantic (시맨틱) - Surface</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {[
+                                { name: "surface", token: "color-surface", bg: "bg-surface", text: "text-foreground", border: true },
+                                { name: "surface-hover", token: "color-surface-hover", bg: "bg-surface-hover", text: "text-foreground", border: true },
+                                { name: "surface-strong", token: "color-surface-strong", bg: "bg-surface-strong", text: "text-foreground", border: true },
+                                { name: "surface-strong-hover", token: "color-surface-strong-hover", bg: "bg-surface-strong-hover", text: "text-foreground", border: true },
+                                { name: "surface-dark", token: "color-surface-dark", bg: "bg-surface-dark", text: "text-white" },
+                                { name: "surface-dark-hover", token: "color-surface-dark-hover", bg: "bg-surface-dark-hover", text: "text-white" },
+                            ].map((c) => (
+                                <div key={c.name} className="space-y-2">
+                                    <NameLabel label={c.name} token={c.token} tokenOnly />
+                                    <div
+                                        className={cn(
+                                            "rounded-lg h-12 min-h-12",
+                                            c.bg,
+                                            c.text,
+                                            c.border && "border border-border"
+                                        )}
+                                        aria-label={c.name}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-coolgray-700 mb-3">Semantic (시맨틱) - Foreground</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {[
+                                { name: "foreground-muted", token: "color-foreground-muted", style: { backgroundColor: "var(--background)", color: "var(--foreground-muted)" }, border: true },
+                                { name: "foreground-soft", token: "color-foreground-soft", style: { backgroundColor: "var(--background)", color: "var(--foreground-soft)" }, border: true },
+                                { name: "foreground-subtle", token: "color-foreground-subtle", style: { backgroundColor: "var(--background)", color: "var(--foreground-subtle)" }, border: true },
+                            ].map((c) => (
+                                <div key={c.name} className="space-y-2">
+                                    <NameLabel label={c.name} token={c.token} tokenOnly />
+                                    <div
+                                        className={cn(
+                                            "rounded-lg h-12 min-h-12",
+                                            c.border && "border border-border"
+                                        )}
+                                        style={c.style}
+                                        aria-label={c.name}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-coolgray-700 mb-3">Semantic (시맨틱) - Border</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {[
+                                { name: "border-subtle", token: "color-border-subtle", style: { backgroundColor: "var(--background)", borderColor: "var(--border-subtle)", color: "var(--foreground)" }, border: true },
+                                { name: "border-subtle-lighter", token: "color-border-subtle-lighter", style: { backgroundColor: "var(--background)", borderColor: "var(--border-subtle-lighter)", color: "var(--foreground)" }, border: true },
+                                { name: "card-border", token: "color-card-border", style: { backgroundColor: "var(--background)", borderColor: "var(--card-border)", color: "var(--foreground)" }, border: true },
+                            ].map((c) => (
+                                <div key={c.name} className="space-y-2">
+                                    <NameLabel label={c.name} token={c.token} tokenOnly />
+                                    <div
+                                        className="rounded-lg h-12 min-h-12 border-2"
+                                        style={c.style}
+                                        aria-label={c.name}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-coolgray-700 mb-3">Semantic (시맨틱) - Brand Accent</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {[
+                                { name: "brand-accent-bg", token: "color-brand-accent-bg", style: { backgroundColor: "var(--brand-accent-bg)", color: "var(--brand-accent-text)", borderColor: "var(--brand-accent-border)" }, border: true },
+                                { name: "brand-accent-text", token: "color-brand-accent-text", style: { backgroundColor: "var(--background)", color: "var(--brand-accent-text)" }, border: true },
+                                { name: "brand-accent-border", token: "color-brand-accent-border", style: { backgroundColor: "var(--background)", borderColor: "var(--brand-accent-border)", color: "var(--foreground)" }, border: true },
+                            ].map((c) => (
+                                <div key={c.name} className="space-y-2">
+                                    <NameLabel label={c.name} token={c.token} tokenOnly />
+                                    <div
+                                        className={cn(
+                                            "rounded-lg p-3 text-sm font-medium",
+                                            c.border && "border-2"
+                                        )}
+                                        style={c.style}
                                     >
                                         {c.name}
                                     </div>
                                 </div>
                             ))}
                         </div>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-coolgray-700 mb-3">Semantic (시맨틱) - Chart & Placeholder</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {[
+                                { name: "chart-profit", token: "color-chart-profit", style: { backgroundColor: "var(--chart-profit)", color: "white" } },
+                                { name: "chart-principal", token: "color-chart-principal", style: { backgroundColor: "var(--chart-principal)", color: "var(--foreground)" }, border: true },
+                                { name: "placeholder", token: "color-placeholder", style: { backgroundColor: "var(--background)", color: "var(--placeholder)" }, border: true },
+                            ].map((c) => (
+                                <div key={c.name} className="space-y-2">
+                                    <NameLabel label={c.name} token={c.token} tokenOnly />
+                                    <div
+                                        className={cn(
+                                            "rounded-lg h-12 min-h-12",
+                                            c.border && "border border-border"
+                                        )}
+                                        style={c.style}
+                                        aria-label={c.name}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                            chart-profit, chart-principal: 차트 데이터 시각화용 (useChartColors 훅에서 사용)
+                        </p>
                     </div>
                     <div>
                         <p className="text-sm font-medium text-coolgray-700 mb-3">Brand</p>

@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { CoreSection } from '@/app/components/design-system/CoreSection'
+import { Icons3DSection } from '@/app/components/design-system/Icons3DSection'
 import { PatternsSection } from '@/app/components/design-system/PatternsSection'
 import { TokensSection } from '@/app/components/design-system/TokensSection'
 import type { UseDesignSystemReturn } from '@/app/hooks/useDesignSystem'
@@ -19,7 +20,7 @@ export default function DesignSystemView({
 }: DesignSystemViewProps) {
     return (
         <main className="min-h-screen bg-coolgray-25">
-            <div className="max-w-2xl mx-auto px-4 py-8 space-y-12">
+            <div className="max-w-[1000px] mx-auto px-4 py-8 space-y-12">
                 {/* 페이지 제목 */}
                 <header className="border-b border-coolgray-200 pb-6">
                     <h1 className="text-4xl md:text-5xl font-bold tracking-tight lg:leading-[1.1] text-coolgray-900">
@@ -52,6 +53,7 @@ export default function DesignSystemView({
                 {activeTab === "core" && <CoreSection />}
                 {activeTab === "patterns" && <PatternsSection />}
                 {activeTab === "tokens" && <TokensSection />}
+                {activeTab === "icons3d" && <Icons3DSection />}
 
                 {/* Footer */}
                 <footer className="pt-4 text-center text-sm text-muted-foreground">
