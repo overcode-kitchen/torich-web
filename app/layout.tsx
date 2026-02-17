@@ -5,6 +5,8 @@ import "./globals.css";
 import AppLayout from "./components/AppLayout";
 import ThemeProvider from "./components/ThemeSections/ThemeProvider";
 
+import NotificationProvider from "@/providers/NotificationProvider";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,7 +33,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <AppLayout>{children}</AppLayout>
+          <NotificationProvider>
+            <AppLayout>{children}</AppLayout>
+          </NotificationProvider>
           {/* <GoogleAnalytics gaId="G-C8E4VZ883Y" /> */}
         </ThemeProvider>
       </body>
