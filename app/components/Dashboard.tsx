@@ -9,6 +9,7 @@ import type { Investment } from '@/app/types/investment'
 import UpcomingInvestments from '@/app/components/UpcomingInvestments'
 import RateUpdateToast from './DashboardSections/RateUpdateToast'
 import Header from './DashboardSections/Header'
+import NotificationInbox from './DashboardSections/NotificationInbox'
 import MonthlyAmountCard from './DashboardSections/MonthlyAmountCard'
 import BrandStoryCard from './DashboardSections/BrandStoryCard'
 import BrandStoryBottomSheet from './DashboardSections/BrandStoryBottomSheet'
@@ -84,7 +85,7 @@ export default function Dashboard({
   return (
     <main className="min-h-screen bg-surface">
       <RateUpdateToast showRateUpdateToast={showRateUpdateToast} />
-      <Header />
+      <Header rightSlot={<NotificationInbox />} />
 
       <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
         {activeRecords.length > 0 && <UpcomingInvestments records={activeRecords} />}
