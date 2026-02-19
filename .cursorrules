@@ -68,7 +68,7 @@ app/
 
 ### 1. Custom Hooks - Logic Separation
 - **Rule**: One hook = One responsibility (separate data fetching / calculations / UI state)
-- **File Size**: Max 100 lines
+- **File Size**: Max 150 lines (flexible: 155 lines acceptable for minor overflow)
 - **Reference Files**:
   - Data fetching: `app/hooks/useStatsData.ts`
   - Calculations: `app/hooks/useStatsCalculations.ts`
@@ -78,13 +78,15 @@ app/
 - **Rule**: Receive props and render only
 - **Forbidden**: No useState/useEffect allowed
 - **File Size**: Max 150 lines
+- **Exception**: Design System documentation components (`app/components/design-system/*`) may exceed 150 lines up to 500 lines for comprehensive documentation purposes
 - **Reference Files**:
   - Reusable component: `app/components/InvestmentField.tsx`
   - Section component: `app/components/InvestmentDetailSections/ProgressSection.tsx`
+  - Design system: `app/components/design-system/CoreSection.tsx` (exception case)
 
 ### 3. Container Components - Composition Only
 - **Rule**: Use hooks for logic → render section components
-- **File Size**: Max 150 lines
+- **File Size**: Max 150 lines (flexible: 155 lines acceptable for minor overflow)
 - **Reference Files**:
   - `app/stats/page.tsx`
   - `app/settings/page.tsx`
@@ -100,9 +102,16 @@ app/
 ## Absolute Prohibitions
 - ❌ NEVER write useState/useEffect directly in page files
 - ❌ NEVER include logic in Presentational Components
-- ❌ NEVER leave files exceeding 300 lines
+- ❌ NEVER leave files exceeding 300 lines (exception: design system documentation components up to 500 lines)
 - ❌ NEVER repeat code 3+ times without extraction
 - ❌ NEVER drill props beyond 4 levels
+
+## File Size Guidelines (Flexible Enforcement)
+- **Strict Limit**: 150 lines for components/hooks/pages
+- **Acceptable Overflow**: Up to 155 lines (5 lines tolerance) - minor cleanup recommended but not blocking
+- **Design System Exception**: `app/components/design-system/*` files may extend to 500 lines for comprehensive documentation
+- **Priority**: Files exceeding limits should be refactored, but 5-line overflow is acceptable for practical development
+- **Note**: If a hook exceeds 150 lines significantly (e.g., 180+ lines), consider extracting helper functions to utility files or splitting into multiple focused hooks
 
 ## New Page Creation Checklist
 When creating a new page, follow this order:
@@ -219,7 +228,8 @@ We follow the "Airy & Accessible" design philosophy.
 # Code Generation Style
 - **Structure:** Use Functional Components with TypeScript interfaces.
 - **Styling:** Use the `cn()` utility for class merging.
-- **Simplicity:** Keep components small and modular (max 150 lines).
+- **Simplicity:** Keep components small and modular (max 150 lines, 155 lines acceptable for minor overflow).
+- **Design System:** Documentation components in `app/components/design-system/*` may extend to 500 lines.
 - **Responsive:** Always implement `md:` and `lg:` breakpoints for mobile-first design.
 
 ---
