@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useUserData } from './useUserData'
 import { validateInvestmentForm, validateAndHandleError } from '@/app/utils/validation'
 import { createClient } from '@/utils/supabase/client'
+import { formatInvestmentData } from '@/app/utils/investment-formatter'
 
 export interface UseAddInvestmentSubmitProps {
   stockName: string
@@ -63,34 +64,26 @@ export function useAddInvestmentSubmit({
       setIsSubmitting(true)
 
       const supabase = createClient()
-      // 콤마 제거 후 숫자로 변환하고 만원 단위로 처리 (원 단위로 변환)
-      const monthlyAmountInWon = parseInt(monthlyAmount.replace(/,/g, '')) * 10000
-      const periodYearsNum = parseInt(period)
-      
-      // 최종 금액 계산을 위한 임포트
-      const { calculateFinalAmount } = await import('@/app/utils/finance')
-      const finalAmount = calculateFinalAmount(monthlyAmountInWon, periodYearsNum, annualRate)
 
-      // is_custom_rate 판별: 직접 입력했거나, 시스템 값을 수정한 경우 true
-      const isCustomRate = isManualInput || (originalSystemRate !== null && annualRate !== originalSystemRate)
-
-      // symbol 결정: 검색을 통해 선택한 경우 selectedStock.symbol, 직접 입력은 null
-      const stockSymbol = !isManualInput && selectedStock?.symbol ? selectedStock.symbol : null
+      // 데이터 변환
+      const formattedData = await formatInvestmentData({
+        stockName,
+        monthlyAmount,
+        period,
+        startDate,
+        investmentDays,
+        annualRate,
+        isManualInput,
+        originalSystemRate,
+        selectedStock,
+      })
 
       // Supabase에 데이터 저장
       const { error } = await supabase
         .from('records')
         .insert({
           user_id: userId,
-          title: stockName.trim(),
-          symbol: stockSymbol,
-          monthly_amount: monthlyAmountInWon,
-          period_years: periodYearsNum,
-          annual_rate: annualRate,
-          final_amount: finalAmount,
-          start_date: startDate.toISOString().split('T')[0],
-          investment_days: investmentDays.length > 0 ? investmentDays : null,
-          is_custom_rate: isCustomRate,
+          ...formattedData,
         })
 
       if (error) {
