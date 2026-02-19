@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
+import { useFCMToken } from './useFCMToken'
 
 type UseAuthOptions = {
   onLogout?: () => void | Promise<void>
@@ -28,6 +29,7 @@ type UseAuthReturn = {
 
 export const useAuth = (options?: UseAuthOptions): UseAuthReturn => {
   const supabase = useMemo(() => createClient(), [])
+  const { registerFCMToken } = useFCMToken()
 
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -59,17 +61,22 @@ export const useAuth = (options?: UseAuthOptions): UseAuthReturn => {
 
     void init()
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return
       setUser(session?.user ?? null)
       setIsLoading(false)
+
+      // 로그인 완료 시 FCM 토큰 등록
+      if (event === 'SIGNED_IN' && session?.user) {
+        void registerFCMToken(session.user)
+      }
     })
 
     return (): void => {
       isMounted = false
       data.subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [supabase, registerFCMToken])
 
   const logout = useCallback(async (): Promise<void> => {
     setIsLoggingOut(true)

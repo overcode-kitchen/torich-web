@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from './useAuth'
+import { useFCMToken } from './useFCMToken'
 
 export function useGlobalNotification() {
   const { user } = useAuth()
   const supabase = createClient()
+  const { registerFCMToken } = useFCMToken()
   const [notificationOn, setNotificationOn] = useState(true)
 
   useEffect(() => {
@@ -43,6 +45,12 @@ export function useGlobalNotification() {
     if (error) {
       console.error('Failed to update global notification', error)
       // Optionally revert state
+      return
+    }
+
+    // notification_global_enabled가 ON으로 바뀔 때 FCM 토큰 등록
+    if (next) {
+      await registerFCMToken(user)
     }
   }
 
