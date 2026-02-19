@@ -5,7 +5,7 @@ import {
   getMonthlyCompletionRates,
   getMonthlyCompletionRatesForRange,
 } from '@/app/utils/stats'
-import { PaymentHistoryMap } from './usePaymentHistory'
+import { PaymentHistoryMap } from '../payment/usePaymentHistory'
 
 interface UseChartDataProps {
   activeRecords: Investment[]

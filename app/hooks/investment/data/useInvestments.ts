@@ -5,7 +5,7 @@ import type { Investment } from '@/app/types/investment'
 import { useInvestmentsFetch } from './useInvestmentsFetch'
 import { useInvestmentsUpdate } from './useInvestmentsUpdate'
 import { useInvestmentsDelete } from './useInvestmentsDelete'
-import type { UseInvestmentsReturn } from './types/useInvestments'
+import type { UseInvestmentsReturn } from '../../types/useInvestments'
 
 export const useInvestments = (userId?: string): UseInvestmentsReturn => {
   const [records, setRecords] = useState<Investment[]>([])

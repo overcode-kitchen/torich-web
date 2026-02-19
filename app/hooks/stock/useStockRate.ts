@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import { apiClient } from '@/lib/api-client'
-import type { SearchResult, StockDetail, StockApiResponse } from './types/useStockSearch'
+import type { SearchResult, StockDetail, StockApiResponse } from '../types/useStockSearch'
 
 export interface UseStockRateReturn {
   annualRate: number

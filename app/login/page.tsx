@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useLoginAuth } from '@/app/hooks/useLoginAuth'
+import { useLoginAuth } from '@/app/hooks/auth/useLoginAuth'
 import LoginView from '@/app/components/LoginSections/LoginView'
 
 export default function LoginPage() {

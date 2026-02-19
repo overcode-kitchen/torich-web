@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Investment } from '@/app/types/investment'
 import AssetGrowthChart from '@/app/components/AssetGrowthSections/AssetGrowthChart'
-import { useAssetGrowthChart } from '@/app/hooks/useAssetGrowthChart'
+import { useAssetGrowthChart } from '@/app/hooks/chart/useAssetGrowthChart'
 
 interface AssetGrowthSectionProps {
   selectedYear: number

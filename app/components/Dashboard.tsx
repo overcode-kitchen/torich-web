@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import type { Investment } from '@/app/types/investment'
-import { useDashboardUI } from '@/app/hooks/useDashboardUI'
-import { useUpcomingInvestments } from '@/app/hooks/useUpcomingInvestments'
+import { useDashboardUI } from '@/app/hooks/ui/useDashboardUI'
+import { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
 import Header from './DashboardSections/Header'
 import RateUpdateToast from './DashboardSections/RateUpdateToast'
 import NotificationInbox from './DashboardSections/NotificationInbox'

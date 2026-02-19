@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Bell } from '@phosphor-icons/react'
-import { useNotificationInbox } from '@/app/hooks/useNotificationInbox'
+import { useNotificationInbox } from '@/app/hooks/notification/useNotificationInbox'
 import { cn } from '@/lib/utils'
 
 export default function NotificationInbox() {

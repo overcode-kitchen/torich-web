@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { SearchResult } from './useStockSearch'
+import type { SearchResult } from '../../stock/useStockSearch'
 
 export interface UseAddInvestmentUIReturn {
   // 기본 폼 상태

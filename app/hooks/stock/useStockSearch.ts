@@ -1,11 +1,11 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import type { Market } from './types/useStockSearch'
+import type { Market } from '../types/useStockSearch'
 import { useStockSearchQuery } from './useStockSearchQuery'
 import { useStockRate } from './useStockRate'
 import { useStockDropdown } from './useStockDropdown'
-import type { UseStockSearchReturn, SearchResult, StockDetail } from './types/useStockSearch'
+import type { UseStockSearchReturn, SearchResult, StockDetail } from '../types/useStockSearch'
 
 export function useStockSearch(stockName: string, isManualInput: boolean): UseStockSearchReturn {
   const [selectedStock, setSelectedStock] = useState<StockDetail | null>(null)
@@ -83,4 +83,4 @@ export function useStockSearch(stockName: string, isManualInput: boolean): UseSt
 }
 
 // Re-export types for backward compatibility
-export type { SearchResult, StockDetail, Market } from './types/useStockSearch'
+export type { SearchResult, StockDetail, Market } from '../types/useStockSearch'

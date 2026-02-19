@@ -5,7 +5,7 @@ import { CoreSection } from '@/app/components/design-system/CoreSection'
 import { Icons3DSection } from '@/app/components/design-system/Icons3DSection'
 import { PatternsSection } from '@/app/components/design-system/PatternsSection'
 import { TokensSection } from '@/app/components/design-system/TokensSection'
-import type { UseDesignSystemReturn } from '@/app/hooks/useDesignSystem'
+import type { UseDesignSystemReturn } from '@/app/hooks/ui/useDesignSystem'
 
 interface DesignSystemViewProps {
     activeTab: UseDesignSystemReturn['activeTab']

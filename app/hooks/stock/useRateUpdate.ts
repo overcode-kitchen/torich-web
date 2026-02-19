@@ -2,8 +2,8 @@
 
 import { useCallback, useState } from 'react'
 import { apiClient } from '@/lib/api-client'
-import { useToast } from './useToast'
-import type { CheckResponse, UpdateResponse, UseRateUpdateOptions, UseRateUpdateReturn } from './types/useRateUpdate'
+import { useToast } from '../ui/useToast'
+import type { CheckResponse, UpdateResponse, UseRateUpdateOptions, UseRateUpdateReturn } from '../types/useRateUpdate'
 
 export const useRateUpdate = (userId?: string, options?: UseRateUpdateOptions): UseRateUpdateReturn => {
   const [isUpdating, setIsUpdating] = useState<boolean>(false)

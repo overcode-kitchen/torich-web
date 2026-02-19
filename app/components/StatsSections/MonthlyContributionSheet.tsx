@@ -2,7 +2,7 @@
 
 import { formatCurrency } from '@/lib/utils'
 import { X } from '@phosphor-icons/react'
-import { MonthlyContributionItemVM } from '@/app/hooks/useMonthlyContribution'
+import { MonthlyContributionItemVM } from '@/app/hooks/investment/calculations/useMonthlyContribution'
 
 interface MonthlyContributionSheetProps {
   contributionItems: MonthlyContributionItemVM[]

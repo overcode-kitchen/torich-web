@@ -1,7 +1,7 @@
 'use client'
 
 import { formatCurrency } from '@/lib/utils'
-import type { ChartColors } from '@/app/hooks/useChartColors'
+import type { ChartColors } from '@/app/hooks/chart/useChartColors'
 
 interface LabelProps {
   x?: number

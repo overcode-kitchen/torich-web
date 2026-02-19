@@ -3,9 +3,9 @@
 import { useEffect } from 'react'
 import { Investment } from '@/app/types/investment'
 import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
-import { useScrollHeader } from '@/app/hooks/useScrollHeader'
-import { useInvestmentDetailUI } from '@/app/hooks/useInvestmentDetailUI'
-import { useInvestmentDetailHandlers } from '@/app/hooks/useInvestmentDetailHandlers'
+import { useScrollHeader } from '@/app/hooks/ui/useScrollHeader'
+import { useInvestmentDetailUI } from '@/app/hooks/investment/detail/useInvestmentDetailUI'
+import { useInvestmentDetailHandlers } from '@/app/hooks/investment/detail/useInvestmentDetailHandlers'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSections/InvestmentDetailHeader'
 import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
@@ -20,7 +20,7 @@ interface InvestmentDetailViewProps {
   calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
-import { usePaymentHistory } from '@/app/hooks/usePaymentHistory'
+import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 
 function InternalInvestmentDetailView({
   item,

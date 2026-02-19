@@ -1,7 +1,7 @@
 'use client'
 
 import { formatCurrency } from '@/lib/utils'
-import type { BarDataPoint } from '@/app/hooks/useAssetGrowthChart'
+import type { BarDataPoint } from '@/app/hooks/chart/useAssetGrowthChart'
 
 interface AssetGrowthChartTooltipProps {
   active?: boolean

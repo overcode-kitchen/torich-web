@@ -1,8 +1,8 @@
 'use client'
 
 import { formatCurrency } from '@/lib/utils'
-import type { BarDataPoint } from '@/app/hooks/useAssetGrowthChart'
-import type { ChartColors } from '@/app/hooks/useChartColors'
+import type { BarDataPoint } from '@/app/hooks/chart/useAssetGrowthChart'
+import type { ChartColors } from '@/app/hooks/chart/useChartColors'
 
 interface AssetGrowthChartSummaryProps {
   currentData: BarDataPoint | null

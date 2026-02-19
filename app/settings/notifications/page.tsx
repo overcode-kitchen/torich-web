@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useNotificationSettings } from '@/app/hooks/useNotificationSettings'
+import { useNotificationSettings } from '@/app/hooks/notification/useNotificationSettings'
 import NotificationSettingsView from '@/app/components/SettingsSections/NotificationSettingsView'
 
 export default function NotificationSettingsPage() {

@@ -8,8 +8,8 @@ import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerShee
 import ManualInputModal from '@/app/components/ManualInputModal'
 import RateHelpModal from '@/app/components/RateDisplay/RateHelpModal'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
-import type { UseModalStateReturn } from '@/app/hooks/useModalState'
-import type { useInvestmentDaysPicker } from '@/app/hooks/useInvestmentDaysPicker'
+import type { UseModalStateReturn } from '@/app/hooks/ui/useModalState'
+import type { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
 
 interface AddInvestmentViewProps {
     form: UseAddInvestmentFormReturn

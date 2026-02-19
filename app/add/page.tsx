@@ -1,9 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useAddInvestmentForm } from '@/app/hooks/useAddInvestmentForm'
-import { useModalState } from '@/app/hooks/useModalState'
-import { useInvestmentDaysPicker } from '@/app/hooks/useInvestmentDaysPicker'
+import { useAddInvestmentForm } from '@/app/hooks/investment/add/useAddInvestmentForm'
+import { useModalState } from '@/app/hooks/ui/useModalState'
+import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
 import AddInvestmentView from '@/app/components/AddInvestmentView'
 
 export default function AddInvestmentPage() {

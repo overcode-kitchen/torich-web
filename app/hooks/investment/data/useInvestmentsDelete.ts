@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import type { Investment } from '@/app/types/investment'
-import type { RecordDeleteResult } from './types/useInvestments'
+import type { RecordDeleteResult } from '../../types/useInvestments'
 
 export interface UseInvestmentsDeleteReturn {
   deleteInvestment: (id: string) => Promise<void>

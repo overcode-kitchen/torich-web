@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useAuth } from '@/app/hooks/useAuth'
-import { useInvestments } from '@/app/hooks/useInvestments'
-import { useRateUpdate } from '@/app/hooks/useRateUpdate'
-import { useInvestmentFilter } from '@/app/hooks/useInvestmentFilter'
-import { useHomePageUI } from '@/app/hooks/useHomePageUI'
+import { useAuth } from '@/app/hooks/auth/useAuth'
+import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
+import { useRateUpdate } from '@/app/hooks/stock/useRateUpdate'
+import { useInvestmentFilter } from '@/app/hooks/investment/filter/useInvestmentFilter'
+import { useHomePageUI } from '@/app/hooks/ui/useHomePageUI'
 import HomeView from '@/app/components/HomeView'
 import { calculateSimulatedValue } from '@/app/utils/finance'
 

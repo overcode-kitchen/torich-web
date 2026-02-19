@@ -3,7 +3,7 @@
 import { formatCurrency } from '@/lib/utils'
 import { formatPaymentDateShort } from '@/app/utils/date'
 import type { Investment } from '@/app/types/investment'
-import type { DisplayItem } from '@/app/hooks/useUpcomingInvestments'
+import type { DisplayItem } from '@/app/hooks/upcoming/useUpcomingInvestments'
 
 interface UpcomingInvestmentsListProps {
     displayItems: DisplayItem[]

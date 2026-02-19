@@ -1,7 +1,7 @@
 import { X } from '@phosphor-icons/react'
 import { formatCurrency } from '@/lib/utils'
 import { formatFullDate } from '@/app/utils/date'
-import { CashHoldItemVM } from '@/app/hooks/useStatsCalculations'
+import { CashHoldItemVM } from '@/app/hooks/investment/calculations/useStatsCalculations'
 
 interface CashHoldItemsSheetProps {
   maturedItems: CashHoldItemVM[]

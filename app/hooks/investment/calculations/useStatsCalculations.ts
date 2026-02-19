@@ -25,7 +25,7 @@ const calculateSimulatedValue = (
   return monthlyAmount * ((Math.pow(1 + monthlyRate, maturityMonths) - 1) / monthlyRate) * (1 + monthlyRate)
 }
 
-import { PaymentHistoryMap } from '@/app/hooks/usePaymentHistory'
+import { PaymentHistoryMap } from '../../payment/usePaymentHistory'
 
 interface UseStatsCalculationsProps {
   records: Investment[]

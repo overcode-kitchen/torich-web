@@ -1,6 +1,6 @@
 'use client'
 
-import { useCompoundChartData } from '@/app/hooks/useCompoundChartData'
+import { useCompoundChartData } from '@/app/hooks/chart/useCompoundChartData'
 import type { Investment } from '@/app/types/investment'
 import CompoundChartSummary from './CompoundChartSummary'
 import CompoundChartGraph from './CompoundChartGraph'

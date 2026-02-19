@@ -5,7 +5,7 @@ import { useRef } from 'react'
 import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSection'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import type { InfoSectionProps } from '@/app/components/InvestmentDetailSections/types'
-import { useInvestmentDaysPicker } from '@/app/hooks/useInvestmentDaysPicker'
+import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
 
 interface InvestmentEditViewProps extends Omit<InfoSectionProps, 'infoRef'> {
   isUpdating: boolean

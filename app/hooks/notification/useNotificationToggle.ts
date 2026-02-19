@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useAuth } from './useAuth'
+import { useAuth } from '../auth/useAuth'
 
 export function useNotificationToggle(itemId: string) {
   const { user } = useAuth()

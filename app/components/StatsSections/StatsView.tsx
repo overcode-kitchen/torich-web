@@ -4,11 +4,11 @@ import { CircleNotch } from '@phosphor-icons/react'
 import CashHoldItemsSheet from './CashHoldItemsSheet'
 import MonthlyContributionSheet from './MonthlyContributionSheet'
 import type { Investment } from '@/app/types/investment'
-import { useMonthlyContribution } from '@/app/hooks/useMonthlyContribution'
+import { useMonthlyContribution } from '@/app/hooks/investment/calculations/useMonthlyContribution'
 import StatsHeader from '@/app/components/StatsSections/StatsHeader'
 import StatsContent from '@/app/components/StatsSections/StatsContent'
 
-import { CashHoldItemVM } from '@/app/hooks/useStatsCalculations'
+import { CashHoldItemVM } from '@/app/hooks/investment/calculations/useStatsCalculations'
 
 interface StatsViewProps {
     isLoading: boolean

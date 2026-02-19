@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
-import { PRESET_OPTIONS, DisplayItem } from '@/app/hooks/useUpcomingInvestments'
+import { PRESET_OPTIONS, DisplayItem } from '@/app/hooks/upcoming/useUpcomingInvestments'
 import UpcomingInvestmentsEmptyState from '@/app/components/UpcomingInvestmentsSections/UpcomingInvestmentsEmptyState'
 import UpcomingInvestmentsList from '@/app/components/UpcomingInvestmentsSections/UpcomingInvestmentsList'
 import type { DateRange } from 'react-day-picker'

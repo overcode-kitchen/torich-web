@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import type { RecordsSelectResult } from './types/useInvestments'
+import type { RecordsSelectResult } from '../../types/useInvestments'
 
 export interface UseInvestmentsFetchReturn {
   refetch: () => Promise<void>

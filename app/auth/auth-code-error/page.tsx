@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuthNavigation } from '@/app/hooks/useAuthNavigation'
+import { useAuthNavigation } from '@/app/hooks/auth/useAuthNavigation'
 import AuthErrorView from '@/app/components/AuthSections/AuthErrorView'
 
 export default function AuthCodeErrorPage() {

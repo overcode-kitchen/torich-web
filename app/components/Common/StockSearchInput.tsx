@@ -1,7 +1,7 @@
 'use client'
 
 import { CircleNotch } from '@phosphor-icons/react'
-import { type SearchResult } from '@/app/hooks/useStockSearch'
+import { type SearchResult } from '@/app/hooks/stock/useStockSearch'
 
 interface StockSearchInputProps {
   stockName: string

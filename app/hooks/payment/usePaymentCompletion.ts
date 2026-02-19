@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { PaymentEvent } from '@/app/utils/stats'
-import { usePaymentHistory } from '@/app/hooks/usePaymentHistory'
+import { usePaymentHistory } from './usePaymentHistory'
 import { isPaymentCompleted } from '@/app/utils/payment-completion'
 
 const TOAST_DURATION_MS = 5000

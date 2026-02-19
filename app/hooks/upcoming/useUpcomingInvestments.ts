@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { Investment } from '@/app/types/investment'
 import { getUpcomingPayments, getUpcomingPaymentsInRange } from '@/app/utils/date'
-import { usePaymentHistory } from './usePaymentHistory'
+import { usePaymentHistory } from '../payment/usePaymentHistory'
 import { isPaymentCompleted } from '@/app/utils/payment-completion'
 import { useUpcomingInvestmentsFilter, PRESET_OPTIONS } from './useUpcomingInvestmentsFilter'
 import { useUpcomingInvestmentsCompletion } from './useUpcomingInvestmentsCompletion'

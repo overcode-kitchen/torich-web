@@ -1,7 +1,7 @@
 'use client'
 
 import { formatCurrency } from '@/lib/utils'
-import type { ChartDataPoint } from '@/app/hooks/useCompoundChartData'
+import type { ChartDataPoint } from '@/app/hooks/chart/useCompoundChartData'
 
 interface CompoundChartSummaryProps {
     summary: {

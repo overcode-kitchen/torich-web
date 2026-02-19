@@ -1,12 +1,12 @@
 'use client'
 
-import { useStockSearch } from './useStockSearch'
-import { useManualInput } from './useManualInput'
-import { useRateEditor } from './useRateEditor'
+import { useStockSearch } from '../../stock/useStockSearch'
+import { useManualInput } from '../../stock/useManualInput'
+import { useRateEditor } from '../../stock/useRateEditor'
 import { useAddInvestmentUI } from './useAddInvestmentUI'
 import { useAddInvestmentCalculations } from './useAddInvestmentCalculations'
 import { useAddInvestmentSubmit } from './useAddInvestmentSubmit'
-import type { UseAddInvestmentFormReturn } from './types/useAddInvestmentForm'
+import type { UseAddInvestmentFormReturn } from '../../types/useAddInvestmentForm'
 
 export function useAddInvestmentForm(): UseAddInvestmentFormReturn {
   // 기존 훅들 사용

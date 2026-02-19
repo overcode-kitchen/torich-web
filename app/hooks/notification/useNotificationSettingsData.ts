@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import type { NotificationSettingsState } from './types/useNotificationSettings'
+import type { NotificationSettingsState } from '../types/useNotificationSettings'
 import { defaultNotificationSettings, mapDbDataToSettings } from '@/app/utils/notification-settings'
 
 export function useNotificationSettingsData(userId: string | undefined) {

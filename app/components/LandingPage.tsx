@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { useLandingScroll } from '@/app/hooks/useLandingScroll'
+import { useLandingScroll } from '@/app/hooks/common/useLandingScroll'
 import HeroSection from './LandingPageSections/HeroSection'
 import ConcernSection from './LandingPageSections/ConcernSection'
 

@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import type { Investment } from '@/app/types/investment'
-import type { RecordUpdateResult } from './types/useInvestments'
+import type { RecordUpdateResult } from '../../types/useInvestments'
 
 export interface UseInvestmentsUpdateReturn {
   updateInvestment: (id: string, data: Partial<Investment>) => Promise<void>

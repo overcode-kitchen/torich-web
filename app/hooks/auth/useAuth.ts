@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
-import { useFCMToken } from './useFCMToken'
+import { useFCMToken } from '../notification/useFCMToken'
 
 type UseAuthOptions = {
   onLogout?: () => void | Promise<void>

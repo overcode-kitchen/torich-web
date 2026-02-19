@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useAuth } from '@/app/hooks/useAuth'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 
 export type Theme = 'light' | 'dark' | 'system'
 

@@ -1,4 +1,4 @@
-import { PaymentHistoryMap } from '@/app/hooks/usePaymentHistory'
+import { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
 
 export function isPaymentCompleted(
   completedPayments: PaymentHistoryMap,

@@ -8,7 +8,7 @@ import {
   useNotificationInbox,
   formatNotificationTime,
   type NotificationItem,
-} from '@/app/hooks/useNotificationInbox'
+} from '@/app/hooks/notification/useNotificationInbox'
 
 function minutesAgo(mins: number): string {
   return new Date(Date.now() - mins * 60_000).toISOString()

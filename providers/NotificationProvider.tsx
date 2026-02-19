@@ -5,8 +5,8 @@ import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import { createClient } from "@/utils/supabase/client";
-import { useFCMToken } from "@/app/hooks/useFCMToken";
-import { useAuth } from "@/app/hooks/useAuth";
+import { useFCMToken } from "@/app/hooks/notification/useFCMToken";
+import { useAuth } from "@/app/hooks/auth/useAuth";
 
 export default function NotificationProvider({
     children,

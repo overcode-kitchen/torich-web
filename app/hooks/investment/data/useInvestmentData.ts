@@ -1,11 +1,11 @@
 'use client'
 
-import { useNotificationToggle } from '@/app/hooks/useNotificationToggle'
-import { useInvestmentDetailEdit } from '@/app/hooks/useInvestmentDetailEdit'
-import { useInvestmentCalculations } from '@/app/hooks/useInvestmentCalculations'
+import { useNotificationToggle } from '../../notification/useNotificationToggle'
+import { useInvestmentDetailEdit } from '../detail/useInvestmentDetailEdit'
+import { useInvestmentCalculations } from '../calculations/useInvestmentCalculations'
 import { getPaymentHistoryFromStart } from '@/app/utils/payment-history'
-import { usePaymentPagination } from '@/app/hooks/usePaymentPagination'
-import type { UseInvestmentDataProps, UseInvestmentDataReturn } from './types/useInvestmentData'
+import { usePaymentPagination } from '../../payment/usePaymentPagination'
+import type { UseInvestmentDataProps, UseInvestmentDataReturn } from '../../types/useInvestmentData'
 
 export function useInvestmentData({
   item,

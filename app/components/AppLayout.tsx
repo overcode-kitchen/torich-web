@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useAuth } from '@/app/hooks/useAuth'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 import BottomNavigation from './BottomNavigation'
 
 const HIDE_NAV_PATHS = ['/login', '/add', '/auth', '/design-system']

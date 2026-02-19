@@ -1,6 +1,6 @@
 'use client'
 
-import { useDesignSystem } from '@/app/hooks/useDesignSystem'
+import { useDesignSystem } from '@/app/hooks/ui/useDesignSystem'
 import DesignSystemView from '@/app/components/design-system/DesignSystemView'
 
 export default function DesignSystemPage() {

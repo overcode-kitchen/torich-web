@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation'
 
 // 기존 훅 재사용
-import { useAuth } from '@/app/hooks/useAuth'
-import { useInvestments } from '@/app/hooks/useInvestments'
+import { useAuth } from '@/app/hooks/auth/useAuth'
+import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
 
 // 새로 만든 훅
-import { useCalendar } from '@/app/hooks/useCalendar'
-import { usePaymentCompletion } from '@/app/hooks/usePaymentCompletion'
-import { useCalendarEvents } from '@/app/hooks/useCalendarEvents'
+import { useCalendar } from '@/app/hooks/calendar/useCalendar'
+import { usePaymentCompletion } from '@/app/hooks/payment/usePaymentCompletion'
+import { useCalendarEvents } from '@/app/hooks/calendar/useCalendarEvents'
 
 // View 컴포넌트
 import CalendarView from '@/app/components/CalendarView'

@@ -1,11 +1,11 @@
 'use client'
 
-import { useStatsData } from '@/app/hooks/useStatsData'
-import { usePeriodFilter } from '@/app/hooks/usePeriodFilter'
-import { useStatsCalculations } from '@/app/hooks/useStatsCalculations'
-import { useChartData } from '@/app/hooks/useChartData'
-import { useStatsPageUI } from '@/app/hooks/useStatsPageUI'
-import { usePaymentHistory } from '@/app/hooks/usePaymentHistory'
+import { useStatsData } from '@/app/hooks/investment/data/useStatsData'
+import { usePeriodFilter } from '@/app/hooks/stats/usePeriodFilter'
+import { useStatsCalculations } from '@/app/hooks/investment/calculations/useStatsCalculations'
+import { useChartData } from '@/app/hooks/chart/useChartData'
+import { useStatsPageUI } from '@/app/hooks/stats/useStatsPageUI'
+import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import StatsView from '@/app/components/StatsSections/StatsView'
 
 export default function StatsPage() {

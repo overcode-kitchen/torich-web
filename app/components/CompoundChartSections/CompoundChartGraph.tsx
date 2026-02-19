@@ -18,7 +18,7 @@ import {
     legendFormatter,
     chartMargins,
 } from './CompoundChartConfig'
-import type { ChartColors, ChartDataPoint } from '@/app/hooks/useCompoundChartData'
+import type { ChartColors, ChartDataPoint } from '@/app/hooks/chart/useCompoundChartData'
 
 interface CompoundChartGraphProps {
     chartData: any[]

@@ -11,11 +11,11 @@ import {
   Cell,
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
-import { useChartColors } from '@/app/hooks/useChartColors'
+import { useChartColors } from '@/app/hooks/chart/useChartColors'
 import AssetGrowthChartTooltip from '@/app/components/AssetGrowthSections/AssetGrowthChartTooltip'
 import AssetGrowthChartSummary from '@/app/components/AssetGrowthSections/AssetGrowthChartSummary'
 import { RenderProfitBarLabel, RenderPrincipalLabel } from '@/app/components/AssetGrowthSections/AssetGrowthChartLabels'
-import { BarDataPoint } from '@/app/hooks/useAssetGrowthChart'
+import { BarDataPoint } from '@/app/hooks/chart/useAssetGrowthChart'
 
 type AssetGrowthChartProps = {
   barData: BarDataPoint[]

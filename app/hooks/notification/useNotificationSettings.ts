@@ -2,8 +2,8 @@
 
 import { useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { useAuth } from './useAuth'
-import type { PreReminderOption, UseNotificationSettingsReturn } from './types/useNotificationSettings'
+import { useAuth } from '../auth/useAuth'
+import type { PreReminderOption, UseNotificationSettingsReturn } from '../types/useNotificationSettings'
 import { useNotificationSettingsData } from './useNotificationSettingsData'
 import { mapSettingsToDbUpdates } from '@/app/utils/notification-settings'
 

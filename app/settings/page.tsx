@@ -1,8 +1,8 @@
 'use client'
 
-import { useSettingsAuth } from '@/app/hooks/useSettingsAuth'
-import { useGlobalNotification } from '@/app/hooks/useGlobalNotification'
-import { useSettingsPageUI } from '@/app/hooks/useSettingsPageUI'
+import { useSettingsAuth } from '@/app/hooks/auth/useSettingsAuth'
+import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
+import { useSettingsPageUI } from '@/app/hooks/ui/useSettingsPageUI'
 import { useTheme } from '@/app/components/ThemeSections/ThemeProvider'
 import SettingsView from '@/app/components/SettingsSections/SettingsView'
 

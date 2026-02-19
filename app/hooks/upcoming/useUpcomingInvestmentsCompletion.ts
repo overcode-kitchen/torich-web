@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { usePaymentHistory } from './usePaymentHistory'
+import { usePaymentHistory } from '../payment/usePaymentHistory'
 
 const TOAST_DURATION_MS = 5000
 

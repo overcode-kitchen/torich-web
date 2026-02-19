@@ -7,7 +7,7 @@ import PeriodInput from '@/app/components/Common/PeriodInput'
 import InvestmentStartDateField from './InvestmentStartDateField'
 import InvestmentDaysField from './InvestmentDaysField'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
-import type { UseModalStateReturn } from '@/app/hooks/useModalState'
+import type { UseModalStateReturn } from '@/app/hooks/ui/useModalState'
 
 interface FormSectionProps {
   form: UseAddInvestmentFormReturn

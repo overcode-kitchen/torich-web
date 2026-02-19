@@ -2,10 +2,9 @@
 
 import { useCallback } from 'react'
 import { Investment } from '@/app/types/investment'
-import { useInvestmentData } from './useInvestmentData'
-import { useInvestmentActions } from './useInvestmentActions'
-
-import { PaymentHistoryMap } from '@/app/hooks/usePaymentHistory'
+import { useInvestmentData } from '../data/useInvestmentData'
+import { useInvestmentActions } from '../../ui/useInvestmentActions'
+import { PaymentHistoryMap } from '../../payment/usePaymentHistory'
 
 interface UseInvestmentDetailHandlersProps {
   item: Investment

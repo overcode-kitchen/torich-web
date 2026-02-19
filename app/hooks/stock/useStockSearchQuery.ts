@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { apiClient } from '@/lib/api-client'
-import type { SearchResult, Market, SearchApiResponse } from './types/useStockSearch'
+import type { SearchResult, Market, SearchApiResponse } from '../types/useStockSearch'
 
 export interface UseStockSearchQueryReturn {
   isSearching: boolean

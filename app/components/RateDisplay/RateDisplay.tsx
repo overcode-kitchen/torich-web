@@ -1,6 +1,6 @@
 'use client'
 
-import { type SearchResult } from '@/app/hooks/useStockSearch'
+import { type SearchResult } from '@/app/hooks/stock/useStockSearch'
 import RateLoading from './RateLoading'
 import RateError from './RateError'
 import RateEditing from './RateEditing'

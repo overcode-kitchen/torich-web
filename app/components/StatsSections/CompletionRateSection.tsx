@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts'
 import type { DateRange } from 'react-day-picker'
-import { PeriodPreset } from '@/app/hooks/usePeriodFilter'
+import { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
 
 interface CompletionRateSectionProps {
   periodPreset: PeriodPreset
