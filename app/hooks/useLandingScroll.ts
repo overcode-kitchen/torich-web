@@ -1,45 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef } from 'react'
-
-/** 자석 느낌 easing: 빨리 시작해서 끝에서 끌어당기는 느낌 */
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3)
-}
-
-/** 슈르륵 스크롤용: 시작·끝 모두 부드럽게 */
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
-}
-
-function scrollToAnimated(
-  element: HTMLElement,
-  targetTop: number,
-  duration: number,
-  easing: (t: number) => number
-) {
-  const startTop = element.scrollTop
-  const distance = targetTop - startTop
-  if (Math.abs(distance) < 2) return
-
-  const startTime = performance.now()
-  const originalSnap = element.style.scrollSnapType
-  element.style.scrollSnapType = 'none'
-
-  function tick(currentTime: number) {
-    const elapsed = currentTime - startTime
-    const progress = Math.min(elapsed / duration, 1)
-    const eased = easing(progress)
-    element.scrollTop = startTop + distance * eased
-    if (progress < 1) {
-      requestAnimationFrame(tick)
-    } else {
-      element.style.scrollSnapType = originalSnap
-    }
-  }
-
-  requestAnimationFrame(tick)
-}
+import { scrollToAnimated, easeOutCubic, easeInOutCubic } from '@/app/utils/scroll-animation'
 
 export function useLandingScroll(mainRef: React.RefObject<HTMLElement | null>) {
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
