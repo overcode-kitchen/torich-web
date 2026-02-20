@@ -108,7 +108,7 @@
 
 ### 4.3 로그인 페이지 (`/login`)
 
-- **Google 로그인**: OAuth → `/auth/callback`
+- **Google 로그인**: OAuth → 웹은 `/auth/callback`, 네이티브 앱은 `torich://auth/callback` (딥링크로 앱 복귀 후 세션 교환). Supabase Redirect URLs에 `torich://**` 추가 필요 → [NATIVE_OAUTH_REDIRECT.md](./NATIVE_OAUTH_REDIRECT.md)
 - **테스트 계정**: 개발 환경에서만 "테스트 계정으로 입장" 버튼 표시
 - **뒤로가기**: `router.back()`
 

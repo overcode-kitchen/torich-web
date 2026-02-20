@@ -6,6 +6,7 @@ import AppLayout from "./components/AppLayout";
 import ThemeProvider from "./components/ThemeSections/ThemeProvider";
 
 import NotificationProvider from "@/providers/NotificationProvider";
+import AuthDeepLinkHandler from "./components/AuthDeepLinkHandler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <NotificationProvider>
+            <AuthDeepLinkHandler />
             <AppLayout>{children}</AppLayout>
           </NotificationProvider>
           {/* <GoogleAnalytics gaId="G-C8E4VZ883Y" /> */}

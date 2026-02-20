@@ -6,6 +6,14 @@ import { createClient } from '@/utils/supabase/client'
 const TEST_EMAIL = 'test@test.com'
 const TEST_PASSWORD = 'password1234'
 
+const AUTH_CALLBACK_DEEP_LINK = 'torich://auth/callback'
+
+function isCapacitorNative(): boolean {
+  if (typeof window === 'undefined') return false
+  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
+  return !!cap?.isNativePlatform?.()
+}
+
 export function useLoginAuth() {
   const [isLoading, setIsLoading] = useState(false)
 
@@ -14,11 +22,14 @@ export function useLoginAuth() {
       setIsLoading(true)
       
       const supabase = createClient()
+      const redirectTo = isCapacitorNative()
+        ? AUTH_CALLBACK_DEEP_LINK
+        : `${location.origin}/auth/callback`
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${location.origin}/auth/callback`,
+          redirectTo,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
