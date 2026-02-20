@@ -93,10 +93,9 @@ export async function getWebFCMToken(): Promise<string | null> {
     // Firebase Messaging 초기화
     const messaging = getMessaging(app) as Messaging
 
-    // VAPID 키 확인
+    // 웹 푸시를 쓰지 않으면 VAPID 키를 설정하지 않아도 됨. 없으면 조용히 스킵
     const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
     if (!vapidKey) {
-      console.error('NEXT_PUBLIC_FIREBASE_VAPID_KEY is not set')
       return null
     }
 
