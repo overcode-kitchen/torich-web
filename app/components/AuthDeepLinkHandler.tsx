@@ -61,8 +61,8 @@ export default function AuthDeepLinkHandler() {
         }
         listenerRef.current = listener
 
-        const { url } = await App.getLaunchUrl()
-        if (url && !cancelled) await handleAuthCallbackUrl(url)
+        const launchUrl = await App.getLaunchUrl()
+        if (launchUrl?.url && !cancelled) await handleAuthCallbackUrl(launchUrl.url)
       } catch (e) {
         console.warn('AuthDeepLinkHandler Capacitor App not available', e)
       }
