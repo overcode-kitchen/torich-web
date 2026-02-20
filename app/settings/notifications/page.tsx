@@ -13,9 +13,6 @@ export default function NotificationSettingsPage() {
     toggleReReminder,
     toggleStreak,
     toggleServiceAnnouncements,
-    toggleDnd,
-    setDndStart,
-    setDndEnd,
   } = useNotificationSettings()
 
   return (
@@ -26,9 +23,6 @@ export default function NotificationSettingsPage() {
       toggleReReminder={toggleReReminder}
       toggleStreak={toggleStreak}
       toggleServiceAnnouncements={toggleServiceAnnouncements}
-      toggleDnd={toggleDnd}
-      setDndStart={setDndStart}
-      setDndEnd={setDndEnd}
       onBack={() => router.back()}
     />
   )

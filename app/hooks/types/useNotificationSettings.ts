@@ -6,9 +6,6 @@ export interface NotificationSettingsState {
   reReminderOn: boolean
   streakOn: boolean
   serviceAnnouncementsOn: boolean
-  dndOn: boolean
-  dndStart: string
-  dndEnd: string
 }
 
 export interface UseNotificationSettingsReturn {
@@ -18,7 +15,4 @@ export interface UseNotificationSettingsReturn {
   toggleReReminder: () => void
   toggleStreak: () => void
   toggleServiceAnnouncements: () => void
-  toggleDnd: () => void
-  setDndStart: (time: string) => void
-  setDndEnd: (time: string) => void
 }

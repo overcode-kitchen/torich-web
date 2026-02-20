@@ -23,9 +23,6 @@ interface UserSettings {
   notification_global_enabled: boolean
   notification_default_time: string // HH:MM:SS 형식
   notification_pre_reminder: string // '0', '1', '3', '7'
-  notification_dnd_enabled: boolean
-  notification_dnd_start: string // HH:MM:SS 형식
-  notification_dnd_end: string // HH:MM:SS 형식
 }
 
 interface PushToken {
@@ -122,24 +119,6 @@ function setTime(date: Date, timeStr: string): Date {
 /**
  * 시간이 두 시간 사이에 있는지 확인 (하루를 넘어갈 수 있음)
  */
-function isTimeBetween(
-  checkTime: Date,
-  startTime: Date,
-  endTime: Date
-): boolean {
-  const check = checkTime.getHours() * 60 + checkTime.getMinutes()
-  const start = startTime.getHours() * 60 + startTime.getMinutes()
-  const end = endTime.getHours() * 60 + endTime.getMinutes()
-
-  if (start <= end) {
-    // 같은 날 내 범위 (예: 22:00 ~ 23:00)
-    return check >= start && check <= end
-  } else {
-    // 하루를 넘어가는 범위 (예: 22:00 ~ 08:00)
-    return check >= start || check <= end
-  }
-}
-
 /**
  * 알림 시각 계산 (KST 기준)
  */
@@ -156,38 +135,6 @@ function calculateScheduledAt(
 
   // scheduled_at 계산 (base_date + default_time)
   const scheduledAt = setTime(baseDate, defaultTime)
-
-  return scheduledAt
-}
-
-/**
- * 방해금지 시간 체크 및 조정
- */
-function adjustForDnd(
-  scheduledAt: Date,
-  dndEnabled: boolean,
-  dndStart: string,
-  dndEnd: string
-): Date {
-  if (!dndEnabled) {
-    return scheduledAt
-  }
-
-  const scheduledTime = new Date(scheduledAt)
-  const startTime = setTime(new Date(scheduledAt), dndStart)
-  const endTime = setTime(new Date(scheduledAt), dndEnd)
-
-  // 방해금지 시간 내에 있으면 해당 날짜의 dnd_end로 조정
-  if (isTimeBetween(scheduledTime, startTime, endTime)) {
-    const adjustedTime = setTime(new Date(scheduledAt), dndEnd)
-    
-    // dnd_end가 scheduled_at보다 이전 시간이면 (하루를 넘어가는 경우) 다음날로 이동
-    if (adjustedTime < scheduledTime) {
-      adjustedTime.setDate(adjustedTime.getDate() + 1)
-    }
-    
-    return adjustedTime
-  }
 
   return scheduledAt
 }
@@ -250,7 +197,7 @@ Deno.serve(async (req) => {
     const { data: settings, error: settingsError } = await supabase
       .from('user_settings')
       .select(
-        'notification_global_enabled, notification_default_time, notification_pre_reminder, notification_dnd_enabled, notification_dnd_start, notification_dnd_end'
+        'notification_global_enabled, notification_default_time, notification_pre_reminder'
       )
       .eq('user_id', userId)
       .single()
@@ -369,16 +316,8 @@ Deno.serve(async (req) => {
         userSettings.notification_default_time
       )
 
-      // 방해금지 체크 및 조정
-      const adjustedScheduledAtKST = adjustForDnd(
-        scheduledAtKST,
-        userSettings.notification_dnd_enabled,
-        userSettings.notification_dnd_start,
-        userSettings.notification_dnd_end
-      )
-
       // KST → UTC 변환
-      const scheduledAtUTC = kstToUTC(adjustedScheduledAtKST)
+      const scheduledAtUTC = kstToUTC(scheduledAtKST)
       const scheduledAtUTCStr = scheduledAtUTC.toISOString()
 
       // 과거 알림 시각 체크: scheduled_at <= now()인 경우 스킵

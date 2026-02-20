@@ -4,7 +4,6 @@ import { ArrowLeft } from '@phosphor-icons/react'
 import { SettingsSection } from './SettingsSection'
 import { NotificationReminderSection } from '@/app/components/SettingsSections/NotificationReminderSection'
 import { NotificationServiceSection } from '@/app/components/SettingsSections/NotificationServiceSection'
-import { NotificationDndSection } from '@/app/components/SettingsSections/NotificationDndSection'
 import type { UseNotificationSettingsReturn } from '@/app/hooks/types/useNotificationSettings'
 
 interface NotificationSettingsViewProps extends UseNotificationSettingsReturn {
@@ -18,9 +17,6 @@ export default function NotificationSettingsView({
     toggleReReminder,
     toggleStreak,
     toggleServiceAnnouncements,
-    toggleDnd,
-    setDndStart,
-    setDndEnd,
     onBack,
 }: NotificationSettingsViewProps) {
     return (
@@ -41,7 +37,7 @@ export default function NotificationSettingsView({
                 <div className="mb-4">
                     <h1 className="text-xl font-bold text-foreground mb-1">알림 설정</h1>
                     <p className="text-sm text-foreground-subtle">
-                        투자 리마인더와 서비스 알림, 방해금지 시간을 한 번에 관리해요.
+                        투자 리마인더와 서비스 알림을 한 번에 관리해요.
                     </p>
                 </div>
 
@@ -64,18 +60,6 @@ export default function NotificationSettingsView({
                     <NotificationServiceSection
                         serviceAnnouncementsOn={settings.serviceAnnouncementsOn}
                         onToggleServiceAnnouncements={toggleServiceAnnouncements}
-                    />
-                </SettingsSection>
-
-                {/* 방해금지 */}
-                <SettingsSection title="방해금지">
-                    <NotificationDndSection
-                        dndOn={settings.dndOn}
-                        onToggleDnd={toggleDnd}
-                        dndStart={settings.dndStart}
-                        dndEnd={settings.dndEnd}
-                        onDndStartChange={setDndStart}
-                        onDndEndChange={setDndEnd}
                     />
                 </SettingsSection>
             </div>

@@ -6,9 +6,6 @@ export const defaultNotificationSettings: NotificationSettingsState = {
   reReminderOn: true,
   streakOn: true,
   serviceAnnouncementsOn: true,
-  dndOn: false,
-  dndStart: '22:00',
-  dndEnd: '08:00',
 }
 
 /**
@@ -21,9 +18,6 @@ export function mapDbDataToSettings(data: any): NotificationSettingsState {
     reReminderOn: data.notification_re_reminder_enabled ?? defaultNotificationSettings.reReminderOn,
     streakOn: data.notification_streak_enabled ?? defaultNotificationSettings.streakOn,
     serviceAnnouncementsOn: data.notification_service_announcement_enabled ?? defaultNotificationSettings.serviceAnnouncementsOn,
-    dndOn: data.notification_dnd_enabled ?? defaultNotificationSettings.dndOn,
-    dndStart: data.notification_dnd_start || defaultNotificationSettings.dndStart,
-    dndEnd: data.notification_dnd_end || defaultNotificationSettings.dndEnd,
   }
 }
 
@@ -41,9 +35,6 @@ export function mapSettingsToDbUpdates(
   if (partial.reReminderOn !== undefined) updates.notification_re_reminder_enabled = partial.reReminderOn
   if (partial.streakOn !== undefined) updates.notification_streak_enabled = partial.streakOn
   if (partial.serviceAnnouncementsOn !== undefined) updates.notification_service_announcement_enabled = partial.serviceAnnouncementsOn
-  if (partial.dndOn !== undefined) updates.notification_dnd_enabled = partial.dndOn
-  if (partial.dndStart !== undefined) updates.notification_dnd_start = partial.dndStart
-  if (partial.dndEnd !== undefined) updates.notification_dnd_end = partial.dndEnd
 
   return updates
 }

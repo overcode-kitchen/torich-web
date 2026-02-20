@@ -55,15 +55,6 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
   const toggleReReminder = createToggle('reReminderOn')
   const toggleStreak = createToggle('streakOn')
   const toggleServiceAnnouncements = createToggle('serviceAnnouncementsOn')
-  const toggleDnd = createToggle('dndOn')
-
-  const setDndStart = useCallback((time: string) => {
-    updateSettings({ dndStart: time })
-  }, [updateSettings])
-
-  const setDndEnd = useCallback((time: string) => {
-    updateSettings({ dndEnd: time })
-  }, [updateSettings])
 
   return {
     settings,
@@ -72,9 +63,6 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
     toggleReReminder,
     toggleStreak,
     toggleServiceAnnouncements,
-    toggleDnd,
-    setDndStart,
-    setDndEnd,
   }
 }
 
