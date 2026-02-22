@@ -2,17 +2,50 @@
 
 import { useEffect, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { isCapacitorNative } from '@/lib/auth/capacitor-native'
 
-const AUTH_CALLBACK_SCHEME = 'torich://auth/callback'
+/** iOS 인앱 브라우저 OAuth 복귀 URL (useLoginAuth의 NATIVE_AUTH_CALLBACK과 동일) */
+const AUTH_CALLBACK_PREFIX = 'torich://login-callback'
+const STORAGE_KEY_HANDLED_LAUNCH_URL = 'torich_auth_launch_url_handled'
 
-function isCapacitorNative(): boolean {
-  if (typeof window === 'undefined') return false
-  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
-  return !!cap?.isNativePlatform?.()
+/** 이미 처리한 URL이면 스킵 (무한 리다이렉트 방지) */
+function shouldSkipHandledUrl(url: string): boolean {
+  if (typeof sessionStorage === 'undefined') return false
+  try {
+    const handled = sessionStorage.getItem(STORAGE_KEY_HANDLED_LAUNCH_URL)
+    return handled === url
+  } catch {
+    return false
+  }
 }
 
-async function handleAuthCallbackUrl(url: string): Promise<boolean> {
-  if (!url.startsWith(AUTH_CALLBACK_SCHEME)) return false
+function markUrlAsHandled(url: string): void {
+  try {
+    sessionStorage.setItem(STORAGE_KEY_HANDLED_LAUNCH_URL, url)
+  } catch {
+    // ignore
+  }
+}
+
+async function handleAuthCallbackUrl(
+  url: string,
+  options: { closeBrowser?: boolean } = {}
+): Promise<boolean> {
+  if (!url.startsWith(AUTH_CALLBACK_PREFIX)) return false
+
+  if (shouldSkipHandledUrl(url)) return true
+  markUrlAsHandled(url)
+
+  const { closeBrowser = false } = options
+  if (closeBrowser) {
+    try {
+      const { Browser } = await import('@capacitor/browser')
+      await Browser.close()
+    } catch {
+      // 인앱 브라우저가 이미 닫혀 있으면 무시 (No active window to close)
+    }
+  }
+
   const parsed = new URL(url)
   const code = parsed.searchParams.get('code')
   const error = parsed.searchParams.get('error')
@@ -51,7 +84,7 @@ export default function AuthDeepLinkHandler() {
       try {
         const { App } = await import('@capacitor/app')
         const handler = async (data: { url: string }) => {
-          await handleAuthCallbackUrl(data.url)
+          await handleAuthCallbackUrl(data.url, { closeBrowser: true })
         }
 
         const listener = await App.addListener('appUrlOpen', handler)
@@ -62,7 +95,9 @@ export default function AuthDeepLinkHandler() {
         listenerRef.current = listener
 
         const launchUrl = await App.getLaunchUrl()
-        if (launchUrl?.url && !cancelled) await handleAuthCallbackUrl(launchUrl.url)
+        if (launchUrl?.url && !cancelled) {
+          await handleAuthCallbackUrl(launchUrl.url, { closeBrowser: false })
+        }
       } catch (e) {
         console.warn('AuthDeepLinkHandler Capacitor App not available', e)
       }

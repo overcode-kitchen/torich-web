@@ -3,12 +3,16 @@ PODS:
     - CapacitorCordova
   - CapacitorApp (8.0.1):
     - Capacitor
+  - CapacitorBrowser (8.0.1):
+    - Capacitor
   - CapacitorCordova (8.0.2)
   - CapacitorDevice (8.0.1):
     - Capacitor
   - CapacitorFirebaseMessaging (8.0.1):
     - Capacitor
     - FirebaseMessaging (~> 12.7.0)
+  - CapacitorPreferences (8.0.1):
+    - Capacitor
   - CapacitorPushNotifications (8.0.1):
     - Capacitor
   - Firebase/CoreOnly (12.7.0):
@@ -73,9 +77,11 @@ PODS:
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorDevice (from `../../node_modules/@capacitor/device`)"
   - "CapacitorFirebaseMessaging (from `../../node_modules/@capacitor-firebase/messaging`)"
+  - "CapacitorPreferences (from `../../node_modules/@capacitor/preferences`)"
   - "CapacitorPushNotifications (from `../../node_modules/@capacitor/push-notifications`)"
   - Firebase/Messaging
 
@@ -96,21 +102,27 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
     :path: "../../node_modules/@capacitor/app"
+  CapacitorBrowser:
+    :path: "../../node_modules/@capacitor/browser"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorDevice:
     :path: "../../node_modules/@capacitor/device"
   CapacitorFirebaseMessaging:
     :path: "../../node_modules/@capacitor-firebase/messaging"
+  CapacitorPreferences:
+    :path: "../../node_modules/@capacitor/preferences"
   CapacitorPushNotifications:
     :path: "../../node_modules/@capacitor/push-notifications"
 
 SPEC CHECKSUMS:
   Capacitor: 2b79172ad27f3be2d103cce88b8eb9803fdcc744
   CapacitorApp: 942306cd1acf7774a00e89a3986af3a67c8cad7a
+  CapacitorBrowser: e72e572d5dbdbb854fda5950586a2451e981f2d6
   CapacitorCordova: 921bdb690ebe82421b24fce45552fd3dea2ae43a
   CapacitorDevice: ff033fa0c4ec19f5e059a073769a9b2347e69f57
   CapacitorFirebaseMessaging: 5cc096872062ffbc89cc7982b75bcf00124060ef
+  CapacitorPreferences: cca2021f386efb75947c850334447d9ff22b14f1
   CapacitorPushNotifications: 99644101c6a82036e459929b6d897ee1cb27d97f
   Firebase: 2d19a10c9a2e48ac532a4303115d3fc9b2798396
   FirebaseCore: c7b57863ce0859281a66d16ca36d665c45d332b5
@@ -122,6 +134,6 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
 
-PODFILE CHECKSUM: 59fc307f84b2ef155f914b84d76aeb0323685b05
+PODFILE CHECKSUM: 5965fcf6e5fcf7c6d881f139427114f0500678fa
 
 COCOAPODS: 1.16.2

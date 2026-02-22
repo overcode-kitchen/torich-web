@@ -2,17 +2,13 @@
 
 import { useState, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { isCapacitorNative } from '@/lib/auth/capacitor-native'
 
 const TEST_EMAIL = 'test@test.com'
 const TEST_PASSWORD = 'password1234'
 
-const AUTH_CALLBACK_DEEP_LINK = 'torich://auth/callback'
-
-function isCapacitorNative(): boolean {
-  if (typeof window === 'undefined') return false
-  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
-  return !!cap?.isNativePlatform?.()
-}
+/** iOS/네이티브 앱: 인앱 브라우저 OAuth 후 앱 복귀용 딥링크 */
+const NATIVE_AUTH_CALLBACK = 'torich://login-callback'
 
 export function useLoginAuth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -20,26 +16,45 @@ export function useLoginAuth() {
   const handleGoogleLogin = useCallback(async () => {
     try {
       setIsLoading(true)
-      
       const supabase = createClient()
-      const redirectTo = isCapacitorNative()
-        ? AUTH_CALLBACK_DEEP_LINK
-        : `${location.origin}/auth/callback`
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
+      if (isCapacitorNative()) {
+        try {
+          sessionStorage.removeItem('torich_auth_launch_url_handled')
+        } catch {
+          // ignore
+        }
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: NATIVE_AUTH_CALLBACK,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            },
+            skipBrowserRedirect: true,
           },
-          skipBrowserRedirect: false,
-        },
-      })
-      
-      if (error) throw error
-      
+        })
+        if (error) throw error
+        if (data?.url) {
+          await new Promise((r) => setTimeout(r, 300))
+          const { Browser } = await import('@capacitor/browser')
+          await Browser.open({ url: data.url })
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${location.origin}/auth/callback`,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            },
+            skipBrowserRedirect: false,
+          },
+        })
+        if (error) throw error
+      }
     } catch (error) {
       console.error('Login Error:', error)
       alert('로그인 에러가 발생했습니다. 콘솔을 확인해주세요.')
