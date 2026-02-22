@@ -6,6 +6,7 @@ import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/I
 import { useScrollHeader } from '@/app/hooks/useScrollHeader'
 import { useInvestmentDetailUI } from '@/app/hooks/useInvestmentDetailUI'
 import { useInvestmentDetailHandlers } from '@/app/hooks/useInvestmentDetailHandlers'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSections/InvestmentDetailHeader'
 import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
@@ -112,28 +113,33 @@ function InternalInvestmentDetailView({
         },
       }}
     >
-      <div ref={scrollContainerRef} className="fixed inset-0 z-50 bg-background overflow-y-auto">
-        <InvestmentDetailHeader
-          item={item}
-          onBack={onBack}
-          showStickyTitle={showStickyTitle}
-          isEditMode={isEditMode}
-          setIsEditMode={setIsEditMode}
-          setShowDeleteModal={setShowDeleteModal}
-          notificationOn={investmentData.notificationOn}
-          toggleNotification={investmentData.toggleNotification}
-        />
+      <ScrollArea
+        viewportRef={scrollContainerRef}
+        className="fixed inset-0 z-50 h-dvh bg-background"
+      >
+        <div>
+          <InvestmentDetailHeader
+            item={item}
+            onBack={onBack}
+            showStickyTitle={showStickyTitle}
+            isEditMode={isEditMode}
+            setIsEditMode={setIsEditMode}
+            setShowDeleteModal={setShowDeleteModal}
+            notificationOn={investmentData.notificationOn}
+            toggleNotification={investmentData.toggleNotification}
+          />
 
-        <InvestmentDetailContent />
+          <InvestmentDetailContent />
 
-        {/* 삭제 확인 모달 */}
-        <DeleteConfirmModal
-          isOpen={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleDelete}
-          isDeleting={isDeleting}
-        />
-      </div>
+          {/* 삭제 확인 모달 */}
+          <DeleteConfirmModal
+            isOpen={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            onConfirm={handleDelete}
+            isDeleting={isDeleting}
+          />
+        </div>
+      </ScrollArea>
     </InvestmentDetailProvider>
   )
 }

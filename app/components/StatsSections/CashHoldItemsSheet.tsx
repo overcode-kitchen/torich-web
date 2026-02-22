@@ -1,5 +1,6 @@
 import { X } from '@phosphor-icons/react'
 import { formatCurrency } from '@/lib/utils'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { formatFullDate } from '@/app/utils/date'
 import { CashHoldItemVM } from '@/app/hooks/useStatsCalculations'
 
@@ -47,8 +48,8 @@ export default function CashHoldItemsSheet({
           설정한 목표 기간이 지나서, 더 이상 수익 없이 현금으로만 계산되는 항목들이에요.
         </p>
 
-        {/* 콘텐츠 - 스크롤 가능 */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
+        {/* 콘텐츠 - 스크롤 필요 시에만 스크롤바 표시 */}
+        <ScrollArea className="flex-1 min-h-0 px-6 pb-6">
           {/* 만기된 항목 리스트 */}
           {maturedItems.length > 0 ? (
             <div className="divide-y divide-border-subtle">
@@ -94,7 +95,7 @@ export default function CashHoldItemsSheet({
               </p>
             </div>
           )}
-        </div>
+        </ScrollArea>
       </div>
     </div>
   )

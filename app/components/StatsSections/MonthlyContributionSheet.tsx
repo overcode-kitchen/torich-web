@@ -2,6 +2,7 @@
 
 import { formatCurrency } from '@/lib/utils'
 import { X } from '@phosphor-icons/react'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { MonthlyContributionItemVM } from '@/app/hooks/useMonthlyContribution'
 
 interface MonthlyContributionSheetProps {
@@ -51,8 +52,8 @@ export default function MonthlyContributionSheet({
           </p>
         </div>
 
-        {/* 콘텐츠 - 스크롤 가능 */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
+        {/* 콘텐츠 - 스크롤 필요 시에만 스크롤바 표시 */}
+        <ScrollArea className="flex-1 min-h-0 px-6 pb-6">
           {contributionItems.length > 0 ? (
             <div className="divide-y divide-border-subtle">
               {contributionItems.map((item) => {
@@ -95,7 +96,7 @@ export default function MonthlyContributionSheet({
               </p>
             </div>
           )}
-        </div>
+        </ScrollArea>
       </div>
     </div>
   )

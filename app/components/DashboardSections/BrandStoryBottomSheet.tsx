@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 export interface BrandStoryBottomSheetProps {
   isBrandStoryOpen: boolean
@@ -27,7 +28,7 @@ export default function BrandStoryBottomSheet({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mt-3 mb-3 h-1 w-10 rounded-full bg-surface-strong shrink-0" />
-        <div className="flex-1 overflow-y-auto scrollbar-thin px-6 pb-4 pt-1 min-h-0">
+        <ScrollArea className="flex-1 min-h-0 px-6 pb-4 pt-1">
           <div className="mb-4">
             <div className="relative w-full">
               <Image
@@ -63,7 +64,7 @@ export default function BrandStoryBottomSheet({
               </ul>
             </div>
           </div>
-        </div>
+        </ScrollArea>
         <div className="shrink-0 px-6 pb-6 pt-4 bg-card rounded-b-3xl">
           <Button type="button" onClick={onCloseBrandStory} size="lg" className="w-full">
             닫기
