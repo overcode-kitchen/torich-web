@@ -61,15 +61,15 @@ export default function CalendarView({
 
     return (
         <main
-            className="min-h-screen bg-surface"
+            className="fixed inset-0 flex flex-col bg-surface overflow-hidden"
             onClick={clearSelection}
             role="presentation"
             style={{
-                // 앱바 실제 높이(safe area + 48px) + 여유 8px
-                paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)',
+                paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px)',
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             }}
         >
-            {/* 앱바: 배경은 화면 맨 위까지, 콘텐츠는 상태바 아래로만 (Safe Area) */}
+            {/* 앱바: 상단 고정 (홈/통계 등과 동일) */}
             <header
                 className="fixed inset-x-0 top-0 z-30 w-full bg-surface"
                 style={{
@@ -83,24 +83,29 @@ export default function CalendarView({
                 </div>
             </header>
 
-            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 pb-24">
-                <CalendarGridSection
-                    currentMonth={currentMonth}
-                    calendarDays={calendarDays}
-                    selectedDate={selectedDate}
-                    getDayStatus={getDayStatus}
-                    goToPrevMonth={goToPrevMonth}
-                    goToNextMonth={goToNextMonth}
-                    selectDate={selectDate}
-                    clearSelection={clearSelection}
-                />
+            {/* 캘린더 그리드: 고정, 예정 투자 영역만 카드 많을 때 스크롤 */}
+            <div className="flex-1 min-h-0 flex flex-col max-w-md md:max-w-lg lg:max-w-2xl mx-auto w-full px-4 overflow-hidden">
+                <div className="flex-shrink-0 pt-2">
+                    <CalendarGridSection
+                        currentMonth={currentMonth}
+                        calendarDays={calendarDays}
+                        selectedDate={selectedDate}
+                        getDayStatus={getDayStatus}
+                        goToPrevMonth={goToPrevMonth}
+                        goToNextMonth={goToNextMonth}
+                        selectDate={selectDate}
+                        clearSelection={clearSelection}
+                    />
+                </div>
 
-                <SelectedDateSection
-                    selectedDate={selectedDate}
-                    selectedEvents={selectedEvents}
-                    isEventCompleted={isEventCompleted}
-                    handleComplete={handleComplete}
-                />
+                <div className="flex-1 min-h-0 overflow-y-auto pb-24">
+                    <SelectedDateSection
+                        selectedDate={selectedDate}
+                        selectedEvents={selectedEvents}
+                        isEventCompleted={isEventCompleted}
+                        handleComplete={handleComplete}
+                    />
+                </div>
             </div>
 
             <UndoToastSection
