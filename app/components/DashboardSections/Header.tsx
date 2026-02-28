@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export default function Header({ rightSlot }: HeaderProps) {
   return (
-    <header className="h-[52px] flex items-center justify-between px-4">
+    <div role="banner" className="h-12 min-h-[48px] max-h-[48px] w-full flex items-center justify-between px-4">
       <div className="relative h-8 w-28">
         <Image
           src="/images/torich-logo.png"
@@ -17,6 +17,6 @@ export default function Header({ rightSlot }: HeaderProps) {
         />
       </div>
       {rightSlot && <div className="flex items-center">{rightSlot}</div>}
-    </header>
+    </div>
   )
 }

@@ -79,9 +79,26 @@ export default function Dashboard({
   })
 
   return (
-    <main className="min-h-screen bg-surface">
+    <main
+      className="min-h-screen bg-surface"
+      style={{
+        // 앱바 실제 높이(safe area + 48px) + 여유 8px
+        paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)',
+      }}
+    >
       <RateUpdateToast showRateUpdateToast={showRateUpdateToast} />
-      <Header rightSlot={<NotificationInbox />} />
+
+      {/* 앱바: 상태바 아래 패딩 + 정확히 48px 높이의 바 (로고·알림) */}
+      <header
+        className="fixed inset-x-0 top-0 z-30 w-full bg-surface"
+        style={{
+          paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
+        }}
+      >
+        <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
+          <Header rightSlot={<NotificationInbox />} />
+        </div>
+      </header>
 
       <DashboardContent
         data={{

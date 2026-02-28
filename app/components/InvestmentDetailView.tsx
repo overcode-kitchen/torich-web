@@ -123,7 +123,14 @@ function InternalInvestmentDetailView({
         viewportRef={scrollContainerRef}
         className="fixed inset-0 z-50 h-dvh bg-background"
       >
-        <div>
+        <div
+          className="min-h-dvh"
+          style={{
+            // 디테일 오버레이 상단/하단 Safe Area: 기본 24px + safe area inset
+            paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+          }}
+        >
           <InvestmentDetailHeader
             item={item}
             onBack={onBack}
