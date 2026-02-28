@@ -5,7 +5,7 @@ import { useAuth } from '@/app/hooks/auth/useAuth'
 import BottomNavigation from './BottomNavigation'
 import SafeArea from './SafeArea'
 
-const HIDE_NAV_PATHS = ['/login', '/add', '/auth', '/design-system']
+const HIDE_NAV_PATHS = ['/login', '/add', '/auth', '/design-system', '/investment']
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

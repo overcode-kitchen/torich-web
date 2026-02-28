@@ -3,7 +3,6 @@
 import { CircleNotch } from '@phosphor-icons/react'
 import Dashboard from '@/app/components/Dashboard'
 import LandingPage from '@/app/components/LandingPage'
-import InvestmentDetailView from '@/app/components/InvestmentDetailView'
 import type { Investment } from '@/app/types/investment'
 import type { User } from '@supabase/supabase-js'
 
@@ -32,11 +31,8 @@ interface HomeViewProps {
     showMonthlyAmount: boolean
     onToggleMonthlyAmount: () => void
 
-    // Detail View
-    detailItem: Investment | null
-    setDetailItem: (item: Investment | null) => void
-    updateInvestment: (id: string, data: Partial<Investment>) => Promise<void>
-    deleteInvestment: (id: string) => Promise<void>
+    // List item click → navigate to detail page
+    onItemClick: (item: Investment) => void
 
     // Brand Story
     isBrandStoryOpen: boolean
@@ -50,7 +46,6 @@ interface HomeViewProps {
     // UI Actions
     showToast: boolean
     calculateSimulatedValue: (monthlyAmount: number, T: number, P: number, R: number) => number
-    refetch: () => Promise<void>
 }
 
 export default function HomeView({
@@ -67,10 +62,7 @@ export default function HomeView({
     setSortBy,
     showMonthlyAmount,
     onToggleMonthlyAmount,
-    detailItem,
-    setDetailItem,
-    updateInvestment,
-    deleteInvestment,
+    onItemClick,
     isBrandStoryOpen,
     setIsBrandStoryOpen,
     showBrandStoryCard,
@@ -101,44 +93,27 @@ export default function HomeView({
     if (!user) return <LandingPage />
 
     return (
-        <>
-            <Dashboard
-                records={records}
-                filteredRecords={filteredRecords}
-                activeRecords={activeRecords}
-                totalMonthlyPayment={totalMonthlyPayment}
-                filterStatus={filterStatus}
-                onFilterChange={setFilterStatus}
-                sortBy={sortBy}
-                onSortChange={setSortBy}
-                showMonthlyAmount={showMonthlyAmount}
-                onToggleMonthlyAmount={onToggleMonthlyAmount}
-                onItemClick={setDetailItem}
-                showBrandStoryCard={showBrandStoryCard}
-                onCloseBrandStoryCard={onCloseBrandStoryCard}
-                pendingBrandStoryUndo={pendingBrandStoryUndo}
-                onUndoBrandStory={onUndoBrandStory}
-                isBrandStoryOpen={isBrandStoryOpen}
-                onOpenBrandStory={() => setIsBrandStoryOpen(true)}
-                onCloseBrandStory={() => setIsBrandStoryOpen(false)}
-                showRateUpdateToast={showToast}
-                calculateFutureValue={calculateSimulatedValue}
-            />
-            {detailItem && (
-                <InvestmentDetailView
-                    item={detailItem}
-                    onBack={() => setDetailItem(null)}
-                    onUpdate={async (data) => {
-                        await updateInvestment(detailItem.id, data)
-                        setDetailItem(detailItem ? { ...detailItem, ...data } : null)
-                    }}
-                    onDelete={async () => {
-                        await deleteInvestment(detailItem.id)
-                        setDetailItem(null)
-                    }}
-                    calculateFutureValue={calculateSimulatedValue}
-                />
-            )}
-        </>
+        <Dashboard
+            records={records}
+            filteredRecords={filteredRecords}
+            activeRecords={activeRecords}
+            totalMonthlyPayment={totalMonthlyPayment}
+            filterStatus={filterStatus}
+            onFilterChange={setFilterStatus}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            showMonthlyAmount={showMonthlyAmount}
+            onToggleMonthlyAmount={onToggleMonthlyAmount}
+            onItemClick={onItemClick}
+            showBrandStoryCard={showBrandStoryCard}
+            onCloseBrandStoryCard={onCloseBrandStoryCard}
+            pendingBrandStoryUndo={pendingBrandStoryUndo}
+            onUndoBrandStory={onUndoBrandStory}
+            isBrandStoryOpen={isBrandStoryOpen}
+            onOpenBrandStory={() => setIsBrandStoryOpen(true)}
+            onCloseBrandStory={() => setIsBrandStoryOpen(false)}
+            showRateUpdateToast={showToast}
+            calculateFutureValue={calculateSimulatedValue}
+        />
     )
 }
