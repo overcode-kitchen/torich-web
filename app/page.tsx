@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
@@ -50,7 +51,8 @@ export default function Home() {
     }
   }
 
-  const { detailItem, setDetailItem, isBrandStoryOpen, setIsBrandStoryOpen, showBrandStoryCard, setShowBrandStoryCard, pendingBrandStoryUndo, dismissBrandStoryCard, undoBrandStoryDismiss } = useHomePageUI({ userId: user?.id, records, checkAndUpdate, refetch })
+  const router = useRouter()
+  const { isBrandStoryOpen, setIsBrandStoryOpen, showBrandStoryCard, setShowBrandStoryCard, pendingBrandStoryUndo, dismissBrandStoryCard, undoBrandStoryDismiss } = useHomePageUI({ userId: user?.id, records, checkAndUpdate, refetch })
 
   return (
     <HomeView
@@ -67,10 +69,7 @@ export default function Home() {
       setSortBy={setSortBy}
       showMonthlyAmount={showMonthlyAmount}
       onToggleMonthlyAmount={toggleMonthlyAmount}
-      detailItem={detailItem}
-      setDetailItem={setDetailItem}
-      updateInvestment={updateInvestment}
-      deleteInvestment={deleteInvestment}
+      onItemClick={(item) => router.push(`/investment/${item.id}`)}
       isBrandStoryOpen={isBrandStoryOpen}
       setIsBrandStoryOpen={setIsBrandStoryOpen}
       showBrandStoryCard={showBrandStoryCard}
@@ -80,7 +79,6 @@ export default function Home() {
       onUndoBrandStory={undoBrandStoryDismiss}
       showToast={showToast}
       calculateSimulatedValue={calculateSimulatedValue}
-      refetch={refetch}
     />
   )
 }

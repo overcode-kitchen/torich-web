@@ -6,6 +6,7 @@ import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/I
 import { useScrollHeader } from '@/app/hooks/ui/useScrollHeader'
 import { useInvestmentDetailUI } from '@/app/hooks/investment/detail/useInvestmentDetailUI'
 import { useInvestmentDetailHandlers } from '@/app/hooks/investment/detail/useInvestmentDetailHandlers'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSections/InvestmentDetailHeader'
 import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
@@ -118,28 +119,50 @@ function InternalInvestmentDetailView({
         },
       }}
     >
-      <div ref={scrollContainerRef} className="fixed inset-0 z-50 bg-background overflow-y-auto">
-        <InvestmentDetailHeader
-          item={item}
-          onBack={onBack}
-          showStickyTitle={showStickyTitle}
-          isEditMode={isEditMode}
-          setIsEditMode={setIsEditMode}
-          setShowDeleteModal={setShowDeleteModal}
-          notificationOn={investmentData.notificationOn}
-          toggleNotification={investmentData.toggleNotification}
-        />
+      {/* 상단 고정 헤더: 홈/통계/캘린더/설정과 동일 패턴 (Safe Area + 48px) */}
+      <header
+        className="fixed inset-x-0 top-0 z-30 w-full bg-background border-b border-border-subtle-lighter"
+        style={{
+          paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
+        }}
+      >
+        <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
+          <InvestmentDetailHeader
+            item={item}
+            onBack={onBack}
+            showStickyTitle={showStickyTitle}
+            isEditMode={isEditMode}
+            setIsEditMode={setIsEditMode}
+            setShowDeleteModal={setShowDeleteModal}
+            notificationOn={investmentData.notificationOn}
+            toggleNotification={investmentData.toggleNotification}
+          />
+        </div>
+      </header>
 
-        <InvestmentDetailContent />
+      <ScrollArea
+        viewportRef={scrollContainerRef}
+        className="fixed inset-0 z-20 h-dvh bg-background"
+      >
+        <div
+          className="min-h-dvh"
+          style={{
+            // 고정 헤더 높이(Safe Area + 48px) + 여유 8px
+            paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+          }}
+        >
+          <InvestmentDetailContent />
 
-        {/* 삭제 확인 모달 */}
-        <DeleteConfirmModal
-          isOpen={showDeleteModal}
-          onClose={() => setShowDeleteModal(false)}
-          onConfirm={handleDelete}
-          isDeleting={isDeleting}
-        />
-      </div>
+          {/* 삭제 확인 모달 */}
+          <DeleteConfirmModal
+            isOpen={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            onConfirm={handleDelete}
+            isDeleting={isDeleting}
+          />
+        </div>
+      </ScrollArea>
     </InvestmentDetailProvider>
   )
 }

@@ -123,11 +123,11 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
       </div>
       </div>
 
-      {/* 하단 고정 CTA - 그라데이션 페이드 + safe area */}
+      {/* 하단 고정 CTA - 그라데이션 페이드 */}
       <div
         className="absolute bottom-0 left-0 right-0 z-10 flex flex-col px-4 pt-8 pb-4"
         style={{
-          paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))',
+          paddingBottom: '1rem',
           background:
             'linear-gradient(to top, var(--background) 40%, transparent 100%)',
         }}

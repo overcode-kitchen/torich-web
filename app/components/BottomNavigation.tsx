@@ -16,7 +16,10 @@ export default function BottomNavigation() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border-subtle shadow-[0_-2px_10px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border-subtle shadow-[0_-2px_10px_rgba(0,0,0,0.04)] pb-3"
+      style={{
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+      }}
       aria-label="하단 네비게이션"
     >
       <div className="flex items-stretch justify-around h-16 max-w-md mx-auto">

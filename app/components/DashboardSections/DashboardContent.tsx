@@ -136,7 +136,7 @@ export default function DashboardContent({
             {records.length > 0 && (
                 <Link
                     href="/stats"
-                    className="block text-center py-3 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
+                    className="block text-center pt-3 pb-12 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
                 >
                     예상 자산 · 수익 차트 보기 →
                 </Link>

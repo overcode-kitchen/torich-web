@@ -13,7 +13,6 @@ interface UseHomePageUIProps {
 }
 
 export function useHomePageUI({ userId, records, checkAndUpdate, refetch }: UseHomePageUIProps) {
-  const [detailItem, setDetailItem] = useState<Investment | null>(null)
   const [isBrandStoryOpen, setIsBrandStoryOpen] = useState<boolean>(false)
   const [showBrandStoryCard, setShowBrandStoryCard] = useState<boolean>(true)
   const [pendingBrandStoryUndo, setPendingBrandStoryUndo] = useState<boolean>(false)
@@ -52,8 +51,6 @@ export function useHomePageUI({ userId, records, checkAndUpdate, refetch }: UseH
   }, [])
 
   return {
-    detailItem,
-    setDetailItem,
     isBrandStoryOpen,
     setIsBrandStoryOpen,
     showBrandStoryCard,

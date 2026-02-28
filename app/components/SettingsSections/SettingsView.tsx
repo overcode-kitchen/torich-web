@@ -55,12 +55,30 @@ export default function SettingsView({
     }
 
     return (
-        <main className="min-h-screen bg-surface">
-            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-6 pb-24 space-y-4">
-                <h1 className="text-xl font-bold text-foreground mb-6">설정</h1>
+        <main
+            className="min-h-screen bg-surface"
+            style={{
+                // 앱바 실제 높이(safe area + 48px) + 여유 8px
+                paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)',
+            }}
+        >
+            {/* 앱바: 배경은 화면 맨 위까지, 콘텐츠는 상태바 아래로만 (Safe Area) */}
+            <header
+                className="fixed inset-x-0 top-0 z-30 w-full bg-surface"
+                style={{
+                    paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
+                }}
+            >
+                <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4">
+                    <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
+                        <h1 className="text-xl font-bold text-foreground">설정</h1>
+                    </div>
+                </div>
+            </header>
 
+            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 pb-24 space-y-4">
                 {/* 테마 설정 카드 (전용 스타일) */}
-                <section className="bg-card rounded-2xl px-4 py-4">
+                <section className="bg-card rounded-2xl px-4 py-4 mt-2">
                     <ThemeSelector theme={theme} setTheme={setTheme} />
                 </section>
 

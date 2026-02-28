@@ -1,6 +1,7 @@
 'use client'
 
 import { X } from '@phosphor-icons/react'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface InvestmentDaysPickerSheetProps {
   /** 현재 선택된 날짜들 (1~31) */
@@ -66,8 +67,8 @@ export default function InvestmentDaysPickerSheet({
           )}
         </div>
 
-        {/* 날짜 선택 그리드 */}
-        <div className="px-6 pb-6 overflow-y-auto">
+        {/* 날짜 선택 그리드 - 스크롤 필요 시에만 스크롤바 표시 */}
+        <ScrollArea className="flex-1 min-h-0 px-6 pb-6">
           <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
               const selected = tempDays.includes(day)
@@ -86,7 +87,7 @@ export default function InvestmentDaysPickerSheet({
               )
             })}
           </div>
-        </div>
+        </ScrollArea>
 
         {/* 푸터 */}
         <div className="px-6 py-4 border-t border-border-subtle flex gap-3">

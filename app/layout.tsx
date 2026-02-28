@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 // import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
@@ -21,6 +21,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "토리치 - 투자 알림",
   description: "매달 꾸준히 적립 투자, 복리로 미래를 계산해보세요.",
+};
+
+/** Capacitor 앱에서 상태바/노치 아래로 콘텐츠가 오도록 viewport-fit=cover 필수 */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

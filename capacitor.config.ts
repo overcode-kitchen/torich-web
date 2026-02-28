@@ -9,7 +9,7 @@ const config: CapacitorConfig & { launchUrl?: string } = {
   server: {
     // 개발 시에만 주석 해제
     // url: 'http://localhost:3000', // 로컬 서버 연결
-    url: 'http://192.168.1.103:3000', // Mac IP
+    url: 'http://192.168.35.237:3000', // Mac IP
     // cleartext: true
   },
   plugins: {
