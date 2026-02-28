@@ -1,12 +1,13 @@
 'use client'
 
 import Image from 'next/image'
-import { CircleNotch, ArrowLeft } from '@phosphor-icons/react'
+import { CircleNotch, ArrowLeft, AppleLogo } from '@phosphor-icons/react'
 import GoogleLogo from '@/app/components/GoogleLogo'
 
 interface LoginViewProps {
     isLoading: boolean
     onGoogleLogin: () => void
+    onAppleLogin: () => void
     onTestLogin: () => void
     onBack: () => void
     showTestLogin: boolean
@@ -15,6 +16,7 @@ interface LoginViewProps {
 export default function LoginView({
     isLoading,
     onGoogleLogin,
+    onAppleLogin,
     onTestLogin,
     onBack,
     showTestLogin,
@@ -57,6 +59,25 @@ export default function LoginView({
                         <>
                             <GoogleLogo />
                             <span>Google로 계속하기</span>
+                        </>
+                    )}
+                </button>
+
+                {/* Apple 로그인 버튼 */}
+                <button
+                    onClick={onAppleLogin}
+                    disabled={isLoading}
+                    className="w-full bg-foreground text-background font-medium rounded-xl shadow-md py-4 px-6 flex items-center justify-center gap-3 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-3"
+                >
+                    {isLoading ? (
+                        <>
+                            <CircleNotch className="w-5 h-5 animate-spin" />
+                            <span>연결 중...</span>
+                        </>
+                    ) : (
+                        <>
+                            <AppleLogo className="w-5 h-5" weight="fill" />
+                            <span>Apple로 계속하기</span>
                         </>
                     )}
                 </button>

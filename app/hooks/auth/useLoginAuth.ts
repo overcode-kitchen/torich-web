@@ -3,12 +3,16 @@
 import { useState, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { isCapacitorNative } from '@/lib/auth/capacitor-native'
+import sha256 from 'js-sha256'
 
 const TEST_EMAIL = 'test@test.com'
 const TEST_PASSWORD = 'password1234'
 
 /** iOS/네이티브 앱: 인앱 브라우저 OAuth 후 앱 복귀용 딥링크 */
 const NATIVE_AUTH_CALLBACK = 'torich://login-callback'
+
+/** 네이티브 Apple 로그인: Bundle ID (capacitor.config appId와 동일) */
+const APPLE_CLIENT_ID = 'com.overcode.torich'
 
 export function useLoginAuth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -63,6 +67,65 @@ export function useLoginAuth() {
     }
   }, [])
 
+  const handleAppleLogin = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const supabase = createClient()
+
+      if (isCapacitorNative()) {
+        const { SignInWithApple } = await import('@capacitor-community/apple-sign-in')
+
+        // 1. raw nonce 생성
+        const rawNonce =
+          Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
+
+        // 2. SHA256 해싱 (js-sha256 사용, HTTP 환경에서도 동작)
+        const hashedNonce = (sha256 as unknown as (msg: string) => string)(rawNonce)
+
+        console.log('rawNonce:', rawNonce)
+        console.log('hashedNonce:', hashedNonce)
+
+        // 3. Apple authorize (해시값 전달)
+        const result = await SignInWithApple.authorize({
+          clientId: 'com.overcode.torich',
+          redirectURI: 'https://cdskgwyfjqdycwrwfxmp.supabase.co/auth/v1/callback',
+          scopes: 'email name',
+          nonce: hashedNonce,
+        })
+
+        console.log('identityToken:', result.response.identityToken)
+
+        // 4. Supabase signInWithIdToken (raw nonce 전달)
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: result.response.identityToken,
+          nonce: rawNonce,
+        })
+
+        if (error) throw error
+        if (data?.session) {
+          window.location.href = `${window.location.origin}/`
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'apple',
+          options: {
+            redirectTo: `${location.origin}/auth/callback`,
+            skipBrowserRedirect: false,
+          },
+        })
+        if (error) throw error
+      }
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      if (err?.message?.includes('1001')) return
+      console.error('Apple 로그인 실패:', error)
+      alert(`로그인 실패: ${err?.message ?? (error instanceof Error ? error.message : '알 수 없음')}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
   const handleTestLogin = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -102,6 +165,7 @@ export function useLoginAuth() {
   return {
     isLoading,
     handleGoogleLogin,
+    handleAppleLogin,
     handleTestLogin,
   }
 }

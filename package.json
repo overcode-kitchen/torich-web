@@ -10,6 +10,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@capacitor-community/apple-sign-in": "^7.1.0",
     "@capacitor-firebase/messaging": "^8.0.1",
     "@capacitor/app": "^8.0.1",
     "@capacitor/browser": "^8.0.1",
@@ -37,6 +38,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "firebase": "^12.9.0",
+    "js-sha256": "^0.11.1",
     "next": "16.1.1",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
