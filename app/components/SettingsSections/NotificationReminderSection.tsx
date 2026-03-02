@@ -48,14 +48,14 @@ export function NotificationReminderSection({
   return (
     <>
       {/* 기본 알림 시간 */}
-      <div className="px-4 py-3 flex items-center justify-between gap-4">
-        <div className="flex flex-col">
+      <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-1 flex-col">
           <span className="text-foreground font-medium">기본 알림 시간</span>
           <span className="text-xs text-muted-foreground mt-1">
             새 리마인더 생성 시 기본 적용
           </span>
         </div>
-        <div className="w-[120px]">
+        <div className="mt-2 w-full max-w-[160px] shrink-0 sm:mt-0 sm:w-[120px] sm:max-w-none">
           <TimePicker value={defaultTime} onChange={onDefaultTimeChange} />
         </div>
       </div>
