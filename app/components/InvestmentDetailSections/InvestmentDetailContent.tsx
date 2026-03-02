@@ -11,6 +11,7 @@ import type { RateSuggestion } from '@/app/components/InvestmentEditSections/Inv
 
 import { useInvestmentDetailContext } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 import { useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
+import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout'
 
 export function InvestmentDetailContent() {
     const {
@@ -37,11 +38,48 @@ export function InvestmentDetailContent() {
                 isEditMode={isEditMode}
                 nextPaymentDate={investmentData.nextPaymentDate}
                 completed={investmentData.completed}
-                activeTab={activeTab}
-                handleTabClick={handleTabClick}
                 overviewRef={overviewRef}
                 titleRef={titleRef}
             />
+
+            {/* 전역 섹션 탭바 - 스크롤 전체 기준으로 헤더 바로 아래에 고정 */}
+            <div
+                className="sticky z-40 -mx-6 px-6 bg-background border-b border-border-subtle-lighter"
+                style={{ top: APP_HEADER_TOTAL_HEIGHT }}
+            >
+                <div className="flex gap-6">
+                    <button
+                        type="button"
+                        onClick={() => handleTabClick('overview')}
+                        className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'overview'
+                            ? 'border-foreground text-foreground'
+                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
+                            }`}
+                    >
+                        개요
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleTabClick('info')}
+                        className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'info'
+                            ? 'border-foreground text-foreground'
+                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
+                            }`}
+                    >
+                        투자 정보
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleTabClick('history')}
+                        className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'history'
+                            ? 'border-foreground text-foreground'
+                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
+                            }`}
+                    >
+                        납입 기록
+                    </button>
+                </div>
+            </div>
 
             {/* 진행률 - 수정 모드에서는 숨김 */}
             {!isEditMode && (

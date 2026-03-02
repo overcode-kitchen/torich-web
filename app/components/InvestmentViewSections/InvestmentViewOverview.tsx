@@ -33,7 +33,7 @@ export default function InvestmentViewOverview({
       </div>
 
       {/* 섹션 내비게이션 탭 */}
-      <div className="sticky top-[52px] z-10 -mx-6 px-6 bg-background border-b border-border-subtle-lighter">
+      <div className="sticky top-[52px] z-40 -mx-6 px-6 bg-background border-b border-border-subtle-lighter">
         <div className="flex gap-6">
           <button
             type="button"
