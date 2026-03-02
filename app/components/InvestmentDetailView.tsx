@@ -12,6 +12,10 @@ import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSection
 import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 import { InvestmentDetailContent } from '@/app/components/InvestmentDetailSections/InvestmentDetailContent'
 import { InvestmentDetailProvider } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
+import {
+  APP_HEADER_SAFE_AREA_PADDING,
+  APP_HEADER_CONTENT_PADDING_TOP,
+} from '@/app/constants/layout'
 
 interface InvestmentDetailViewProps {
   item: Investment
@@ -121,9 +125,9 @@ function InternalInvestmentDetailView({
     >
       {/* 상단 고정 헤더: 홈/통계/캘린더/설정과 동일 패턴 (Safe Area + 48px) */}
       <header
-        className="fixed inset-x-0 top-0 z-30 w-full bg-background border-b border-border-subtle-lighter"
+        className="fixed inset-x-0 top-0 z-50 w-full bg-background border-b border-border-subtle-lighter"
         style={{
-          paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
+          paddingTop: APP_HEADER_SAFE_AREA_PADDING,
         }}
       >
         <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
@@ -148,7 +152,7 @@ function InternalInvestmentDetailView({
           className="min-h-dvh"
           style={{
             // 고정 헤더 높이(Safe Area + 48px) + 여유 8px
-            paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)',
+            paddingTop: APP_HEADER_CONTENT_PADDING_TOP,
             paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
           }}
         >
