@@ -11,7 +11,7 @@ import type { RateSuggestion } from '@/app/components/InvestmentEditSections/Inv
 
 import { useInvestmentDetailContext } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 import { useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
-import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout'
+import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
 
 export function InvestmentDetailContent() {
     const {

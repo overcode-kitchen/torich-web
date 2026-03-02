@@ -14,4 +14,3 @@ export const APP_HEADER_CONTENT_PADDING_TOP = `calc(${APP_HEADER_SAFE_AREA} + ${
 
 // 스크롤 헤더 관찰용 rootMargin (현재는 사용 안 함, px 전용이므로 사용 시 주의)
 export const APP_HEADER_ROOT_MARGIN = `-52px 0px 0px 0px`
-

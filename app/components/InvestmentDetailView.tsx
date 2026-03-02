@@ -14,7 +14,7 @@ import { InvestmentDetailProvider } from '@/app/components/InvestmentDetailSecti
 import {
   APP_HEADER_SAFE_AREA_PADDING,
   APP_HEADER_CONTENT_PADDING_TOP,
-} from '@/app/constants/layout'
+} from '@/app/constants/layout-constants'
 
 interface InvestmentDetailViewProps {
   item: Investment
