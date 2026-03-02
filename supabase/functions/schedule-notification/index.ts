@@ -20,6 +20,7 @@ interface WebhookPayload {
     start_date: string // YYYY-MM-DD 형식
     period_years: number
     investment_days: number[] // 납입일 배열 예: [18, 19, 20, 21]
+    notification_enabled?: boolean // 투자별 알림 on/off (없으면 true로 간주)
   }
   old_record: null
 }
@@ -184,7 +185,16 @@ Deno.serve(async (req) => {
       start_date: startDate,
       period_years: periodYears,
       investment_days: investmentDays,
+      notification_enabled: notificationEnabled = true,
     } = payload.record
+
+    if (notificationEnabled === false) {
+      console.log(`Record ${recordId}: notification_enabled is false, skipping schedule`)
+      return new Response(
+        JSON.stringify({ message: 'Per-investment notifications disabled for this record' }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
 
     console.log(
       `Processing record: ${recordId} for user: ${userId}, period: ${periodYears} years, investment_days: ${investmentDays}`

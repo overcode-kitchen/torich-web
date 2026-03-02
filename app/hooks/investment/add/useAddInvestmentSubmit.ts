@@ -78,12 +78,13 @@ export function useAddInvestmentSubmit({
         selectedStock,
       })
 
-      // Supabase에 데이터 저장
+      // Supabase에 데이터 저장 (개별 알림 기본값: 켜짐)
       const { error } = await supabase
         .from('records')
         .insert({
           user_id: userId,
           ...formattedData,
+          notification_enabled: true,
         })
 
       if (error) {

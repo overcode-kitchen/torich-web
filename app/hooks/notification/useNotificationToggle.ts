@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '../auth/useAuth'
 
 export function useNotificationToggle(itemId: string) {
   const { user } = useAuth()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const [notificationOn, setNotificationOn] = useState(true)
 
   useEffect(() => {
@@ -19,7 +19,11 @@ export function useNotificationToggle(itemId: string) {
         .eq('id', itemId)
         .single()
 
-      if (!error && data) {
+      if (error) {
+        console.warn('Failed to fetch notification_enabled for record:', itemId, error)
+        return
+      }
+      if (data) {
         setNotificationOn(data.notification_enabled ?? true)
       }
     }
@@ -30,17 +34,33 @@ export function useNotificationToggle(itemId: string) {
   const toggleNotification = async () => {
     if (!user || !itemId) return
 
-    const next = !notificationOn
+    const prev = notificationOn
+    const next = !prev
     setNotificationOn(next)
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('records')
       .update({ notification_enabled: next })
       .eq('id', itemId)
       .eq('user_id', user.id)
+      .select('id')
+      .single()
 
-    if (error) {
-      console.error('Failed to toggle notification for item', error)
+    if (error || !data) {
+      console.error('Failed to toggle notification for item', itemId, error ?? 'no rows updated (check RLS)')
+      setNotificationOn(prev)
+      return
+    }
+
+    if (!next) {
+      const { error: cancelError } = await supabase
+        .from('scheduled_notifications')
+        .delete()
+        .eq('record_id', itemId)
+        .eq('status', 'pending')
+      if (cancelError) {
+        console.warn('Failed to cancel scheduled notifications for record:', itemId, cancelError)
+      }
     }
   }
 
