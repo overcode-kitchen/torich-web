@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '@/app/hooks/auth/useAuth'
+import { useEnsureUserSettings } from '@/app/hooks/settings/useEnsureUserSettings'
 
 export type Theme = 'light' | 'dark' | 'system'
 
@@ -31,6 +32,9 @@ export function useTheme() {
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
   const supabase = createClient()
+
+  // 로그인된 유저의 user_settings가 없으면 최초 1회 디폴트값으로 생성
+  useEnsureUserSettings(user?.id)
   const [theme, setThemeState] = useState<Theme>('system')
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
   const [mounted, setMounted] = useState(false)
