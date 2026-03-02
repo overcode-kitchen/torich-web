@@ -28,7 +28,7 @@ export default function InvestmentViewHeader({
   toggleNotification,
 }: InvestmentViewHeaderProps) {
   return (
-    <header className="h-[52px] flex items-center justify-between px-6 bg-background sticky top-0 z-10 border-b border-border-subtle-lighter">
+    <header className="h-[52px] flex items-center justify-between px-6 bg-background sticky top-0 z-50 border-b border-border-subtle-lighter">
       <button
         onClick={onBack}
         className="p-2 text-foreground hover:text-foreground transition-colors -ml-1"
