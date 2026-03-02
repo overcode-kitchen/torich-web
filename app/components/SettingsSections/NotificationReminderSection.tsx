@@ -55,8 +55,12 @@ export function NotificationReminderSection({
             새 리마인더 생성 시 기본 적용
           </span>
         </div>
-        <div className="mt-2 w-full max-w-[160px] shrink-0 sm:mt-0 sm:w-[120px] sm:max-w-none">
-          <TimePicker value={defaultTime} onChange={onDefaultTimeChange} />
+        <div className="mt-2 shrink-0 sm:mt-0">
+          <TimePicker
+            value={defaultTime}
+            onChange={onDefaultTimeChange}
+            className="w-[120px]"
+          />
         </div>
       </div>
 
