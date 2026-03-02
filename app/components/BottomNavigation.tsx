@@ -18,7 +18,7 @@ export default function BottomNavigation() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border-subtle shadow-[0_-2px_10px_rgba(0,0,0,0.04)] pb-3"
       style={{
-        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
       }}
       aria-label="하단 네비게이션"
     >
