@@ -6,7 +6,6 @@ import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/I
 import { useScrollHeader } from '@/app/hooks/ui/useScrollHeader'
 import { useInvestmentDetailUI } from '@/app/hooks/investment/detail/useInvestmentDetailUI'
 import { useInvestmentDetailHandlers } from '@/app/hooks/investment/detail/useInvestmentDetailHandlers'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSections/InvestmentDetailHeader'
 import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
@@ -144,9 +143,9 @@ function InternalInvestmentDetailView({
         </div>
       </header>
 
-      <ScrollArea
-        viewportRef={scrollContainerRef}
-        className="fixed inset-0 z-20 h-dvh bg-background"
+      <div
+        ref={scrollContainerRef}
+        className="fixed inset-0 z-20 h-dvh bg-background overflow-y-auto"
       >
         <div
           className="min-h-dvh"
@@ -166,7 +165,7 @@ function InternalInvestmentDetailView({
             isDeleting={isDeleting}
           />
         </div>
-      </ScrollArea>
+      </div>
     </InvestmentDetailProvider>
   )
 }
