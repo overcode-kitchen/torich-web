@@ -1,5 +1,10 @@
 // Supabase Edge Function: schedule-notification
 // records 테이블 INSERT 시 Database Webhook으로 호출되어 알림 예약
+//
+// Webhook 설정: HTTP Headers의 Authorization에는 반드시 Service Role Key를 사용하세요.
+// (Bearer <SUPABASE_SERVICE_ROLE_KEY>). 특정 사용자 JWT를 넣으면 다른 계정에서 알림 예약이
+// 실패할 수 있습니다. 사용자 식별은 payload.record.user_id로만 이루어집니다.
+/// <reference path="../../../types/supabase-deno.d.ts" />
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -19,10 +24,15 @@ interface WebhookPayload {
   old_record: null
 }
 
+/**
+ * user_settings 테이블 중 이 Edge Function에서 사용하는 컬럼만 정의.
+ * DB 실제 컬럼명과 일치해야 함. (앱 기준: app/utils/notification-settings.ts, useGlobalNotification)
+ * 주의: notification_dnd_enabled 같은 존재하지 않는 컬럼은 select에 넣지 말 것.
+ */
 interface UserSettings {
   notification_global_enabled: boolean
-  notification_default_time: string // HH:MM:SS 형식
-  notification_pre_reminder: string // '0', '1', '3', '7'
+  notification_default_time: string // HH:MM:SS 또는 HH:MM
+  notification_pre_reminder: string // '0', '1', '3', '7' 또는 앱의 '1d', '3d' 등
 }
 
 interface PushToken {
@@ -193,12 +203,12 @@ Deno.serve(async (req) => {
       )
     }
 
-    // 1. user_settings 조회
+    // 1. user_settings 조회 (실제 DB 컬럼명만 사용. notification_dnd_enabled 등 미존재 컬럼 사용 금지)
+    const USER_SETTINGS_COLUMNS =
+      'notification_global_enabled, notification_default_time, notification_pre_reminder'
     const { data: settings, error: settingsError } = await supabase
       .from('user_settings')
-      .select(
-        'notification_global_enabled, notification_default_time, notification_pre_reminder'
-      )
+      .select(USER_SETTINGS_COLUMNS)
       .eq('user_id', userId)
       .single()
 

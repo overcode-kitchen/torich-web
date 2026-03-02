@@ -1,5 +1,6 @@
 // Supabase Edge Function: send-push
 // pg_cron으로 1분마다 호출되어 scheduled_notifications의 pending 항목을 FCM으로 발송
+/// <reference path="../../../types/supabase-deno.d.ts" />
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getToken } from 'https://deno.land/x/google_jwt_sa@v0.2.5/mod.ts'
