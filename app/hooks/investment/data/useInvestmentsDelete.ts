@@ -31,6 +31,18 @@ export function useInvestmentsDelete(
       )
 
       try {
+        // 해당 record의 미발송 알림 취소 (scheduled_notifications에서 pending 삭제)
+        const { error: cancelError } = await supabase
+          .from('scheduled_notifications')
+          .delete()
+          .eq('record_id', id)
+          .eq('status', 'pending')
+
+        if (cancelError) {
+          console.warn('Failed to cancel scheduled notifications for record:', id, cancelError)
+          // 알림 취소 실패해도 record 삭제는 진행
+        }
+
         const result: RecordDeleteResult = await supabase.from('records').delete().eq('id', id)
         if (result.error) throw result.error
       } catch (error) {
