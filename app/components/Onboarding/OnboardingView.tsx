@@ -48,24 +48,6 @@ export default function OnboardingView() {
     >
       <main className="h-full w-full overflow-hidden flex flex-col">
       <div className="mx-auto flex max-w-md flex-col flex-1 min-h-0 w-full h-full">
-        {/* 진행 인디케이터 - 탭하면 해당 스텝으로 이동 */}
-        <div className="flex shrink-0 justify-center gap-1.5 px-4 pt-4" role="tablist" aria-label="온보딩 단계">
-          {Array.from({ length: totalSteps }, (_, i) => (
-            <button
-              key={i}
-              type="button"
-              role="tab"
-              aria-label={`${i + 1}단계`}
-              aria-selected={i + 1 === step}
-              onClick={() => goToStep(i + 1)}
-              className={cn(
-                'h-1.5 w-6 rounded-full transition-colors cursor-pointer touch-manipulation',
-                i + 1 === step ? 'bg-primary' : 'bg-muted hover:bg-muted/80'
-              )}
-            />
-          ))}
-        </div>
-
         {/* 현재 스텝: 가로 스와이프/스크롤로 이전·다음 이동 */}
         <div
           className="flex-1 min-h-0 overflow-hidden touch-pan-y"
@@ -82,6 +64,24 @@ export default function OnboardingView() {
               steps={ONBOARDING_STEPS.map((s) => ({ imageSrc: s.imageSrc, imageAlt: s.imageAlt }))}
               currentStep={step}
             />
+          }
+          paginationSlot={
+            <div className="flex shrink-0 justify-center gap-1.5 py-5" role="tablist" aria-label="온보딩 단계">
+              {Array.from({ length: totalSteps }, (_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-label={`${i + 1}단계`}
+                  aria-selected={i + 1 === step}
+                  onClick={() => goToStep(i + 1)}
+                  className={cn(
+                    'h-1.5 w-6 rounded-full transition-colors cursor-pointer touch-manipulation',
+                    i + 1 === step ? 'bg-primary' : 'bg-muted hover:bg-muted/80'
+                  )}
+                />
+              ))}
+            </div>
           }
         >
           {isLast ? (

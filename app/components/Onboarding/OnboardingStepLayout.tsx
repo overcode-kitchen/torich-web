@@ -13,6 +13,8 @@ export interface OnboardingStepLayoutProps {
   imageAlt?: string
   /** 이미지 영역을 커스텀(예: 슬라이드 스트립)으로 대체할 때 */
   imageSlot?: ReactNode
+  /** 이미지 아래 노출 (예: 페이지네이션 점) */
+  paginationSlot?: ReactNode
   /** 하단 CTA (이전/다음 또는 시작하기 등) */
   children: ReactNode
 }
@@ -28,13 +30,14 @@ export default function OnboardingStepLayout({
   imageSrc,
   imageAlt,
   imageSlot,
+  paginationSlot,
   children,
 }: OnboardingStepLayoutProps) {
   return (
-    <section className="flex h-full min-h-0 flex-col overflow-hidden px-4 pt-4" aria-label={title}>
+    <section className="flex h-full min-h-0 flex-col overflow-hidden px-4 pt-5" aria-label={title}>
       {/* 상단: 로고 */}
       {showLogo && (
-        <header className="mb-3 shrink-0">
+        <header className="mb-4 shrink-0">
           <div className="relative h-10 w-36">
             <Image
               src="/images/torich-logo.png"
@@ -48,7 +51,7 @@ export default function OnboardingStepLayout({
       )}
 
       {/* 타이틀 · 서브타이틀 */}
-      <div className="mb-4 shrink-0 space-y-1">
+      <div className="mb-5 shrink-0 space-y-2">
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl whitespace-pre-line leading-tight">{title}</h1>
         <p className="text-sm text-foreground-muted whitespace-pre-line leading-snug">{subtitle}</p>
       </div>
@@ -72,9 +75,12 @@ export default function OnboardingStepLayout({
             </div>
           )}
 
+      {/* 이미지 아래: 페이지네이션 등 */}
+      {paginationSlot != null ? paginationSlot : null}
+
       {/* 하단 CTA - safe-area로 노치/웹 프레임에서 잘리지 않게 */}
       <div
-        className="flex shrink-0 flex-col gap-2 pt-4 pb-6"
+        className="flex shrink-0 flex-col gap-3 pt-5 pb-6"
         style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px))' }}
       >
         {children}
