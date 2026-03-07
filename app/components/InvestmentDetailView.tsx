@@ -25,6 +25,7 @@ interface InvestmentDetailViewProps {
 }
 
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
 
 function InternalInvestmentDetailView({
   item,
@@ -48,6 +49,9 @@ function InternalInvestmentDetailView({
 
   // Payment History Hook
   const { completedPayments } = usePaymentHistory()
+
+  // Global notification setting (read-only)
+  const { notificationOn: isGlobalNotificationOn } = useGlobalNotification()
 
   // UI 상태 훅
   const {
@@ -139,6 +143,7 @@ function InternalInvestmentDetailView({
             setShowDeleteModal={setShowDeleteModal}
             notificationOn={investmentData.notificationOn}
             toggleNotification={investmentData.toggleNotification}
+            isGlobalNotificationOn={isGlobalNotificationOn}
           />
         </div>
       </header>
