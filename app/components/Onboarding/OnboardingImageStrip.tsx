@@ -19,8 +19,8 @@ export default function OnboardingImageStrip({ steps, currentStep }: OnboardingI
   const percentPerSlide = 100 / steps.length
 
   return (
-    <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-hidden">
-      {/* 보이는 영역(윈도우) - 카드가 이 안에서 슬라이드됨 */}
+    <div className="flex flex-1 min-h-0 w-full max-h-[427px] items-center justify-center overflow-hidden">
+      {/* 보이는 영역(윈도우) - 카드가 이 안에서 슬라이드됨, 큰 디바이스에서도 최대 높이 제한 */}
       <div className="relative h-full max-h-full w-full max-w-[320px] overflow-hidden rounded-2xl">
         <div
           className="flex h-full transition-transform duration-450 ease-out"
