@@ -9,6 +9,7 @@ import {
     X,
     Info,
     Warning,
+    WarningCircle,
 } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 
@@ -215,6 +216,48 @@ export function PatternsSection() {
                             <CircleNotch className="size-4 animate-spin" />
                             처리 중입니다
                         </Button>
+                    </div>
+                </div>
+            </section>
+
+            {/* 에러 상태 패턴 */}
+            <section className="space-y-6">
+                <h2 className="text-3xl font-semibold tracking-tight text-coolgray-900">
+                    에러 상태 패턴
+                </h2>
+                <div className="rounded-xl border border-coolgray-200 bg-white p-6 space-y-6">
+                    <div className="space-y-2">
+                        <NameLabel label="에러 · 전체 화면 (네트워크)" token="pattern-error-fullscreen-network" />
+                        <p className="text-xs text-muted-foreground">
+                            375×812 모바일 뷰포트 기준 전체 화면 에러 레이아웃 미리보기입니다.
+                        </p>
+                        <div className="flex justify-center">
+                            <div className="w-[375px] h-[812px] rounded-[40px] border border-coolgray-200 bg-coolgray-900/5 flex items-center justify-center overflow-hidden">
+                                <div className="w-full h-full bg-background flex items-center justify-center px-6">
+                                    <div className="w-full max-w-md bg-card rounded-2xl p-8 text-center space-y-6">
+                                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                                            <WarningCircle className="size-8" weight="bold" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-base font-semibold text-foreground">
+                                                네트워크에 연결할 수 없어요
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                인터넷 연결을 확인한 뒤 다시 시도해 주세요.
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-col gap-2 pt-1">
+                                            <Button size="lg" className="w-full">
+                                                다시 시도하기
+                                            </Button>
+                                            <Button size="lg" variant="outline" className="w-full">
+                                                홈으로 돌아가기
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
