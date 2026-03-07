@@ -21,6 +21,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "토리치 - 투자 알림",
   description: "매달 꾸준히 적립 투자, 복리로 미래를 계산해보세요.",
+  icons: {
+    icon: "/icon.png?v=5",
+  },
 };
 
 /** Capacitor 앱에서 상태바/노치 아래로 콘텐츠가 오도록 viewport-fit=cover 필수 */
