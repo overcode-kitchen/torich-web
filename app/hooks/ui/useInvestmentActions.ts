@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
 interface UpdateData {
   monthly_amount: number
@@ -45,6 +46,8 @@ export function useInvestmentActions({
     setIsDeleting(true)
     try {
       await onDelete()
+    } catch {
+      toastError(TOAST_MESSAGES.deleteFailed)
     } finally {
       setIsDeleting(false)
     }

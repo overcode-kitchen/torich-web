@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 // import { GoogleAnalytics } from "@next/third-parties/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import AppLayout from "./components/AppLayout";
 import ThemeProvider from "./components/ThemeSections/ThemeProvider";
@@ -47,6 +48,7 @@ export default function RootLayout({
           <NotificationProvider>
             <AuthDeepLinkHandler />
             <AppLayout>{children}</AppLayout>
+            <Toaster richColors position="top-center" closeButton />
           </NotificationProvider>
           {/* <GoogleAnalytics gaId="G-C8E4VZ883Y" /> */}
         </ThemeProvider>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '@/app/hooks/auth/useAuth'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
 import { useRateUpdate } from '@/app/hooks/stock/useRateUpdate'
 import { useInvestmentFilter } from '@/app/hooks/investment/filter/useInvestmentFilter'
@@ -33,6 +34,8 @@ export default function Home() {
 
       if (!error && data) {
         setShowMonthlyAmount(data.show_monthly_amount ?? true)
+      } else if (error) {
+        toastError(TOAST_MESSAGES.settingsLoadFailed)
       }
     }
     fetchSetting()
@@ -47,7 +50,10 @@ export default function Home() {
         .from('user_settings')
         .upsert({ user_id: user.id, show_monthly_amount: next }, { onConflict: 'user_id' })
 
-      if (error) console.error('Error updating show_monthly_amount', error)
+      if (error) {
+        setShowMonthlyAmount(!next)
+        toastError(TOAST_MESSAGES.saveFailed)
+      }
     }
   }
 

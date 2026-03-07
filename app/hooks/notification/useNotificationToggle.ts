@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '../auth/useAuth'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
 export function useNotificationToggle(itemId: string) {
   const { user } = useAuth()
@@ -40,7 +41,8 @@ export function useNotificationToggle(itemId: string) {
       .eq('user_id', user.id)
 
     if (error) {
-      console.error('Failed to toggle notification for item', error)
+      setNotificationOn(!next)
+      toastError(TOAST_MESSAGES.notificationSettingsSaveFailed)
     }
   }
 

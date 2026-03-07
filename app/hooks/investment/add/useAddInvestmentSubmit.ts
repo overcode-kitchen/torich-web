@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUserData } from '../../auth/useUserData'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { validateInvestmentForm, validateAndHandleError } from '@/app/utils/validation'
 import { createClient } from '@/utils/supabase/client'
 import { formatInvestmentData } from '@/app/utils/investment-formatter'
@@ -87,17 +88,15 @@ export function useAddInvestmentSubmit({
         })
 
       if (error) {
-        console.error('저장 오류:', error)
-        alert('저장에 실패했습니다. 다시 시도해주세요.')
+        toastError(TOAST_MESSAGES.updateSaveFailed)
         return
       }
 
       // 성공 시 메인으로 이동
       router.refresh()
       router.push('/')
-    } catch (error) {
-      console.error('저장 오류:', error)
-      alert('저장에 실패했습니다. 다시 시도해주세요.')
+    } catch {
+      toastError(TOAST_MESSAGES.updateSaveFailed)
     } finally {
       setIsSubmitting(false)
     }
