@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '../auth/useAuth'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
 export type PaymentHistoryMap = Map<string, Set<string>> // recordId -> Set<YYYY-MM-DD>
 
@@ -35,8 +36,8 @@ export function usePaymentHistory() {
                 newMap.get(item.record_id)?.add(item.payment_date)
             })
             setCompletedPayments(newMap)
-        } catch (err) {
-            console.error('Failed to fetch payment history:', err)
+        } catch {
+            toastError(TOAST_MESSAGES.paymentHistoryLoadFailed)
         } finally {
             setIsLoading(false)
         }
@@ -86,9 +87,8 @@ export function usePaymentHistory() {
 
                 if (error) throw error
             }
-        } catch (err) {
-            console.error('Failed to toggle payment:', err)
-            // Revert on error
+        } catch {
+            toastError(TOAST_MESSAGES.paymentToggleFailed)
             fetchHistory()
         }
     }, [user, supabase, fetchHistory])

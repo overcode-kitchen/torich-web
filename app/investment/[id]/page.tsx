@@ -7,12 +7,17 @@ import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
 import { calculateSimulatedValue } from '@/app/utils/finance'
+import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 
 export default function InvestmentDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
   const { records, isLoading: dataLoading, updateInvestment, deleteInvestment } = useInvestments(user?.id)
+  const { goBack } = useFlowBack({
+    rootPath: '/',
+    enableHistoryFallback: true,
+  })
 
   const rawId = params?.id
   const id = typeof rawId === 'string' ? rawId : null
@@ -61,7 +66,7 @@ export default function InvestmentDetailPage() {
   return (
     <InvestmentDetailView
       item={item}
-      onBack={() => router.back()}
+      onBack={goBack}
       onUpdate={async (data) => {
         await updateInvestment(item.id, data)
       }}

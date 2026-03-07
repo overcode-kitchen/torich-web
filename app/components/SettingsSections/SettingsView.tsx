@@ -14,6 +14,8 @@ interface SettingsViewProps {
     isLoading: boolean
     isLoggingOut: boolean
     handleLogout: () => Promise<void>
+    isDeletingAccount: boolean
+    handleDeleteAccount: () => Promise<void>
 
     // Notification
     notificationOn: boolean
@@ -34,6 +36,8 @@ export default function SettingsView({
     isLoading,
     isLoggingOut,
     handleLogout,
+    isDeletingAccount,
+    handleDeleteAccount,
     notificationOn,
     toggleNotification,
     theme,
@@ -109,6 +113,17 @@ export default function SettingsView({
                         label={isLoggingOut ? '로그아웃 중...' : '로그아웃'}
                         onClick={handleLogout}
                         disabled={isLoggingOut}
+                        destructive
+                        showChevron={false}
+                    />
+                </SettingsSection>
+
+                {/* 회원 탈퇴 */}
+                <SettingsSection title="계정 삭제" className="mt-6">
+                    <SettingsItem
+                        label={isDeletingAccount ? '회원 탈퇴 중...' : '회원 탈퇴'}
+                        onClick={handleDeleteAccount}
+                        disabled={isDeletingAccount || isLoggingOut}
                         destructive
                         showChevron={false}
                     />

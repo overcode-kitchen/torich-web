@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import type { RecordsSelectResult } from '../../types/useInvestments'
 
 export interface UseInvestmentsFetchReturn {
@@ -35,6 +36,8 @@ export function useInvestmentsFetch(
       if (result.error) throw result.error
 
       setRecords(result.data ?? [])
+    } catch (err) {
+      toastError(TOAST_MESSAGES.investmentListLoadFailed)
     } finally {
       setIsLoading(false)
     }

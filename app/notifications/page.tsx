@@ -9,6 +9,7 @@ import {
   formatNotificationTime,
   type NotificationItem,
 } from '@/app/hooks/notification/useNotificationInbox'
+import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 
 function minutesAgo(mins: number): string {
   return new Date(Date.now() - mins * 60_000).toISOString()
@@ -43,6 +44,10 @@ function NotificationsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { notifications } = useNotificationInbox()
+  const { goBack } = useFlowBack({
+    rootPath: '/settings',
+    enableHistoryFallback: true,
+  })
 
   const isDemo = isDev && searchParams.get('demo') === '1'
   const displayNotifications = isDemo ? MOCK_NOTIFICATIONS : notifications
@@ -52,7 +57,7 @@ function NotificationsContent() {
       <header className="h-[52px] flex items-center px-4">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={goBack}
           className="p-2 text-foreground-soft hover:text-foreground transition-colors -ml-1"
           aria-label="뒤로가기"
         >

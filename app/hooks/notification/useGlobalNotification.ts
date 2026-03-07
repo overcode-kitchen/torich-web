@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '../auth/useAuth'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { useFCMToken } from './useFCMToken'
 
 export function useGlobalNotification() {
@@ -43,8 +44,8 @@ export function useGlobalNotification() {
       }, { onConflict: 'user_id' })
 
     if (error) {
-      console.error('Failed to update global notification', error)
-      // Optionally revert state
+      setNotificationOn(!next)
+      toastError(TOAST_MESSAGES.notificationSettingsSaveFailed)
       return
     }
 
