@@ -5,6 +5,7 @@ import { useAddInvestmentForm } from '@/app/hooks/investment/add/useAddInvestmen
 import { useModalState } from '@/app/hooks/ui/useModalState'
 import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
 import AddInvestmentView from '@/app/components/AddInvestmentView'
+import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 
 export default function AddInvestmentPage() {
   const router = useRouter()
@@ -17,13 +18,17 @@ export default function AddInvestmentPage() {
       modals.setIsDaysPickerOpen(false)
     },
   })
+  const { goBack } = useFlowBack({
+    rootPath: '/',
+    enableHistoryFallback: true,
+  })
 
   return (
     <AddInvestmentView
       form={form}
       modals={modals}
       daysPicker={daysPicker}
-      onBack={() => router.back()}
+      onBack={goBack}
     />
   )
 }

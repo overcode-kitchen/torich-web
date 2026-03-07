@@ -3,6 +3,7 @@
 import { useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '../auth/useAuth'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import type { PreReminderOption, UseNotificationSettingsReturn } from '../types/useNotificationSettings'
 import { useNotificationSettingsData } from './useNotificationSettingsData'
 import { mapSettingsToDbUpdates } from '@/app/utils/notification-settings'
@@ -22,7 +23,7 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
       .upsert(updates, { onConflict: 'user_id' })
 
     if (error) {
-      console.error('Error updating notification settings:', error)
+      toastError(TOAST_MESSAGES.notificationSettingsSaveFailed)
     }
   }, [user, supabase])
 

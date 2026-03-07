@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react'
 import { Investment } from '@/app/types/investment'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { useInvestmentData } from '../data/useInvestmentData'
 import { useInvestmentActions } from '../../ui/useInvestmentActions'
 import { PaymentHistoryMap } from '../../payment/usePaymentHistory'
@@ -60,9 +61,8 @@ export function useInvestmentDetailHandlers({
         investment_days: investmentData.editInvestmentDays.length > 0 ? investmentData.editInvestmentDays : undefined,
       })
       setIsEditMode(false)
-    } catch (error: any) {
-      console.error('Failed to update investment:', error)
-      alert(`투자 정보 수정 실패: ${error.message || '알 수 없는 오류가 발생했습니다.'}`)
+    } catch {
+      toastError(TOAST_MESSAGES.updateSaveFailed)
     }
   }, [investmentData, handleUpdate, setIsEditMode])
 

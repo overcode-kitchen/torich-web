@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toastError } from '@/app/utils/toast'
 
 type UseAccountDeletionReturn = {
   isDeletingAccount: boolean
@@ -32,9 +33,8 @@ export function useAccountDeletion(): UseAccountDeletionReturn {
       // 서버에서 세션을 정리한 뒤 클라이언트에서도 즉시 로그인 페이지로 이동
       router.replace('/login')
       window.location.href = '/login'
-    } catch (error) {
-      console.error(error)
-      alert('회원 탈퇴 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.')
+    } catch {
+      toastError('회원 탈퇴 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
       setIsDeletingAccount(false)
     }

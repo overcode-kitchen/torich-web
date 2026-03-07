@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import type { NotificationSettingsState } from '../types/useNotificationSettings'
 import { defaultNotificationSettings, mapDbDataToSettings } from '@/app/utils/notification-settings'
 
@@ -25,16 +26,15 @@ export function useNotificationSettingsData(userId: string | undefined) {
           .single()
 
         if (error && error.code !== 'PGRST116') {
-          // PGRST116 is not found
-          console.error('Error fetching settings:', error)
+          toastError(TOAST_MESSAGES.settingsLoadFailed)
           return
         }
 
         if (data) {
           setSettings(mapDbDataToSettings(data))
         }
-      } catch (err) {
-        console.error('Failed to load settings', err)
+      } catch {
+        toastError(TOAST_MESSAGES.settingsLoadFailed)
       } finally {
         setLoading(false)
       }

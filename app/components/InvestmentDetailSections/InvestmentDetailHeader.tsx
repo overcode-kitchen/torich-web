@@ -8,6 +8,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
 
 interface InvestmentDetailHeaderProps {
     item: Investment
@@ -18,6 +19,7 @@ interface InvestmentDetailHeaderProps {
     setShowDeleteModal: (show: boolean) => void
     notificationOn: boolean
     toggleNotification: () => void
+    isGlobalNotificationOn: boolean
 }
 
 export function InvestmentDetailHeader({
@@ -29,7 +31,10 @@ export function InvestmentDetailHeader({
     setShowDeleteModal,
     notificationOn,
     toggleNotification,
+    isGlobalNotificationOn,
 }: InvestmentDetailHeaderProps) {
+    const isNotificationDisabled = !isGlobalNotificationOn
+
     return (
         <div className="w-full flex items-center justify-between px-6 bg-background">
             <button
@@ -51,7 +56,13 @@ export function InvestmentDetailHeader({
                     <button
                         type="button"
                         onClick={toggleNotification}
-                        className="p-2 text-foreground hover:text-foreground transition-colors"
+                        className={cn(
+                            'p-2 text-foreground hover:text-foreground transition-colors',
+                            isNotificationDisabled &&
+                                'text-foreground-subtle cursor-not-allowed hover:text-foreground-subtle'
+                        )}
+                        disabled={isNotificationDisabled}
+                        aria-disabled={isNotificationDisabled}
                         aria-label={notificationOn ? '알림 끄기' : '알림 켜기'}
                     >
                         {notificationOn ? (
@@ -89,3 +100,4 @@ export function InvestmentDetailHeader({
         </div>
     )
 }
+

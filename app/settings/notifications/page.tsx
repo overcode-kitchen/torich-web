@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useNotificationSettings } from '@/app/hooks/notification/useNotificationSettings'
 import NotificationSettingsView from '@/app/components/SettingsSections/NotificationSettingsView'
+import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 
 export default function NotificationSettingsPage() {
   const router = useRouter()
@@ -14,6 +15,10 @@ export default function NotificationSettingsPage() {
     toggleStreak,
     toggleServiceAnnouncements,
   } = useNotificationSettings()
+  const { goBack } = useFlowBack({
+    rootPath: '/settings',
+    enableHistoryFallback: false,
+  })
 
   return (
     <NotificationSettingsView
@@ -23,7 +28,7 @@ export default function NotificationSettingsPage() {
       toggleReReminder={toggleReReminder}
       toggleStreak={toggleStreak}
       toggleServiceAnnouncements={toggleServiceAnnouncements}
-      onBack={() => router.back()}
+      onBack={goBack}
     />
   )
 }

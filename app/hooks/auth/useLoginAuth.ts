@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { isCapacitorNative } from '@/lib/auth/capacitor-native'
 import sha256 from 'js-sha256'
+import { toastError } from '@/app/utils/toast'
 
 const TEST_EMAIL = 'test@test.com'
 const TEST_PASSWORD = 'password1234'
@@ -59,9 +60,8 @@ export function useLoginAuth() {
         })
         if (error) throw error
       }
-    } catch (error) {
-      console.error('Login Error:', error)
-      alert('로그인 에러가 발생했습니다. 콘솔을 확인해주세요.')
+    } catch {
+      toastError('로그인에 실패했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
       setIsLoading(false)
     }
@@ -154,9 +154,9 @@ export function useLoginAuth() {
       await new Promise(resolve => setTimeout(resolve, 500))
       window.location.href = `${window.location.origin}/`
 
-    } catch (error: any) {
-      console.error('테스트 로그인 실패:', error)
-      alert('테스트 계정 생성 실패: ' + error.message)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류'
+      toastError(`테스트 계정 로그인 실패: ${message}`)
     } finally {
       setIsLoading(false)
     }

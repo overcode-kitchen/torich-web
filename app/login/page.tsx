@@ -1,12 +1,15 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useLoginAuth } from '@/app/hooks/auth/useLoginAuth'
 import LoginView from '@/app/components/LoginSections/LoginView'
+import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 
 export default function LoginPage() {
-  const router = useRouter()
   const { isLoading, handleGoogleLogin, handleAppleLogin, handleTestLogin } = useLoginAuth()
+  const { goBack } = useFlowBack({
+    rootPath: '/',
+    enableHistoryFallback: true,
+  })
 
   return (
     <LoginView
@@ -14,7 +17,7 @@ export default function LoginPage() {
       onGoogleLogin={handleGoogleLogin}
       onAppleLogin={handleAppleLogin}
       onTestLogin={handleTestLogin}
-      onBack={() => router.back()}
+      onBack={goBack}
       showTestLogin={process.env.NODE_ENV === 'development'}
     />
   )

@@ -1,8 +1,11 @@
+'use client'
+
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { Investment, getStartDate } from '@/app/types/investment'
 import { isCompleted } from '@/app/utils/date'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
 export interface UseStatsDataReturn {
   user: { id: string; email?: string } | null
@@ -22,24 +25,31 @@ export function useStatsData(): UseStatsDataReturn {
 
   useEffect(() => {
     const init = async () => {
-      const { data: { user: u } } = await supabase.auth.getUser()
-      setUser(u)
-      if (u) {
-        const { data } = await supabase
-          .from('records')
-          .select('*')
-          .order('created_at', { ascending: false })
-        setRecords(data || [])
+      try {
+        const { data: { user: u } } = await supabase.auth.getUser()
+        setUser(u)
+        if (u) {
+          const { data, error } = await supabase
+            .from('records')
+            .select('*')
+            .order('created_at', { ascending: false })
+          if (error) throw error
+          setRecords(data || [])
+        }
+      } catch {
+        toastError(TOAST_MESSAGES.statsLoadFailed)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
     init()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        supabase.from('records').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-          setRecords(data || [])
+        supabase.from('records').select('*').order('created_at', { ascending: false }).then(({ data, error }) => {
+          if (error) toastError(TOAST_MESSAGES.statsLoadFailed)
+          else setRecords(data || [])
         })
       } else {
         setRecords([])
