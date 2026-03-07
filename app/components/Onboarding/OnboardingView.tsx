@@ -85,18 +85,18 @@ export default function OnboardingView() {
           }
         >
           {isLast ? (
-            <>
+            <div className="flex gap-3">
+              <Button variant="outline" size="lg" className="flex-1" onClick={goPrev}>
+                이전
+              </Button>
               <Button
                 size="lg"
-                className="w-full py-3.5 text-base font-semibold"
+                className="flex-1 py-3.5 text-base font-semibold"
                 onClick={() => router.push('/login')}
               >
                 시작하기
               </Button>
-              <Button variant="ghost" size="lg" className="w-full text-foreground-muted" onClick={goPrev}>
-                이전
-              </Button>
-            </>
+            </div>
           ) : (
             <div className="flex gap-3">
               {!isFirst && (

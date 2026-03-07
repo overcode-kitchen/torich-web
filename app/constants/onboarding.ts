@@ -17,14 +17,14 @@ export const ONBOARDING_STEPS = [
     imageAlt: '토리치 소개',
   },
   {
-    showLogo: false,
+    showLogo: true,
     title: '이번 달 넣을 날, 한 번에 확인',
     subtitle: '다가오는 투자일과 납입 여부를\n캘린더 한 화면에서 확인해요.',
     imageSrc: '/images/onboarding/step2.png',
     imageAlt: '핵심 기능',
   },
   {
-    showLogo: false,
+    showLogo: true,
     title: '작은 돈도 꾸준히, 흔들리지 않게',
     subtitle: '월급날·자동이체 일정에 맞춰\n내 투자 루틴을 지켜줘요.',
     imageSrc: '/images/onboarding/step3.png',
