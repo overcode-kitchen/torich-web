@@ -62,6 +62,7 @@ export function useNotificationToggle(itemId: string) {
         console.warn('Failed to cancel scheduled notifications for record:', itemId, cancelError)
       }
     }
+    // 알림 ON 시 재예약은 records UPDATE 시 Database Webhook(schedule-notification)으로 처리됨
   }
 
   return { notificationOn, toggleNotification }

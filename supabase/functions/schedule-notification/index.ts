@@ -284,11 +284,11 @@ Deno.serve(async (req) => {
     }
 
     // 기존 알림의 scheduled_at을 Set으로 저장 (중복 체크용)
+    // DB 반환 포맷과 toISOString() 포맷 차이를 없애기 위해 정규화
     const existingScheduledAts = new Set<string>()
     if (existingNotifications) {
       for (const notif of existingNotifications) {
-        // UTC 시간을 ISO 문자열로 변환하여 저장
-        existingScheduledAts.add(notif.scheduled_at)
+        existingScheduledAts.add(new Date(notif.scheduled_at).toISOString())
       }
     }
 
@@ -394,13 +394,17 @@ Deno.serve(async (req) => {
       )
     }
 
-    // 7. 모든 알림을 한 번에 INSERT
-    const { error: insertError } = await supabase
+    // 7. upsert with ON CONFLICT DO NOTHING: 동시 웹훅 호출 시 중복 INSERT로 인한 23505 방지
+    // scheduled_notifications 테이블에 (record_id, scheduled_at, token) unique 제약이 필요합니다.
+    const { error: upsertError } = await supabase
       .from('scheduled_notifications')
-      .insert(notifications)
+      .upsert(notifications, {
+        onConflict: 'record_id,scheduled_at,token',
+        ignoreDuplicates: true,
+      })
 
-    if (insertError) {
-      console.error('Error inserting scheduled notifications:', insertError)
+    if (upsertError) {
+      console.error('Error upserting scheduled notifications:', upsertError)
       return new Response(
         JSON.stringify({ error: 'Failed to insert notifications' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }

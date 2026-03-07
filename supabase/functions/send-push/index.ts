@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
     }
 
     // 1. scheduled_notifications 조회 (발송 시각이 된 pending 항목)
-    const { data: notifications, error: fetchError } = await supabase
+    const { data: rawNotifications, error: fetchError } = await supabase
       .from('scheduled_notifications')
       .select('*')
       .eq('status', 'pending')
@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    if (!notifications || notifications.length === 0) {
+    if (!rawNotifications || rawNotifications.length === 0) {
       return new Response(
         JSON.stringify({
           success: true,
@@ -149,9 +149,44 @@ Deno.serve(async (req) => {
       )
     }
 
+    // 2. notification_enabled가 false인 record에 연결된 알림은 취소(삭제) 후 제외
+    const recordIds = [...new Set((rawNotifications as ScheduledNotification[]).map((n) => n.record_id))]
+    const { data: recordsOff } = await supabase
+      .from('records')
+      .select('id')
+      .in('id', recordIds)
+      .eq('notification_enabled', false)
+
+    const disabledRecordIds = new Set((recordsOff ?? []).map((r) => r.id))
+    if (disabledRecordIds.size > 0) {
+      const { error: cancelError } = await supabase
+        .from('scheduled_notifications')
+        .delete()
+        .in('record_id', [...disabledRecordIds])
+        .eq('status', 'pending')
+      if (cancelError) {
+        console.warn('Failed to cancel notifications for disabled records:', cancelError)
+      }
+    }
+
+    const notifications = (rawNotifications as ScheduledNotification[]).filter(
+      (n) => !disabledRecordIds.has(n.record_id)
+    )
+
+    if (notifications.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          processed_count: 0,
+          message: 'No pending notifications to send (all disabled per record)',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
     console.log(`Processing ${notifications.length} notifications`)
 
-    // 2. 각 알림을 FCM으로 발송
+    // 3. 각 알림을 FCM으로 발송
     const results = {
       sent: 0,
       failed: 0,
@@ -168,7 +203,7 @@ Deno.serve(async (req) => {
         )
 
         if (success) {
-          // 3. 성공 → status = 'sent', sent_at = now()
+          // 4. 성공 → status = 'sent', sent_at = now()
           const { error: updateError } = await supabase
             .from('scheduled_notifications')
             .update({
@@ -186,7 +221,7 @@ Deno.serve(async (req) => {
             results.sent++
           }
         } else {
-          // 4. 실패 → status = 'failed'
+          // 5. 실패 → status = 'failed'
           const { error: updateError } = await supabase
             .from('scheduled_notifications')
             .update({

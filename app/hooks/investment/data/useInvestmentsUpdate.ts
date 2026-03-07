@@ -69,6 +69,19 @@ export function useInvestmentsUpdate(
 
         if (updateResult.error) throw updateResult.error
 
+        // notification_enabled가 false로 바뀐 경우 해당 record의 미발송 알림 취소
+        if (updateData.notification_enabled === false) {
+          const { error: cancelError } = await supabase
+            .from('scheduled_notifications')
+            .delete()
+            .eq('record_id', id)
+            .eq('status', 'pending')
+          if (cancelError) {
+            console.warn('Failed to cancel scheduled notifications for record:', id, cancelError)
+          }
+        }
+        // notification_enabled가 true로 바뀐 경우 재예약은 records UPDATE 시 Database Webhook(schedule-notification)으로 처리됨
+
         console.log('Update success, fetching new data...')
 
         // 2. Fetch updated data
