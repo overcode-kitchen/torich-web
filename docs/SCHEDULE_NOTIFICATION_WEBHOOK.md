@@ -7,7 +7,7 @@
 
 1. [Supabase Dashboard](https://supabase.com/dashboard) → 프로젝트 선택
 2. **Database** → **Webhooks** → **Create a new hook**
-3. 아래처럼 **세 개**의 Webhook을 만듭니다.
+3. 아래처럼 **네 개**의 Webhook을 만듭니다.
 
 ### Webhook 1: records INSERT (새 투자 시 알림 예약)
 
@@ -42,15 +42,28 @@
 | **Function** | `reschedule-notifications` |
 | **HTTP Headers** | `Authorization`: `Bearer <SUPABASE_SERVICE_ROLE_KEY>` |
 
+### Webhook 4: service_announcements INSERT (공지사항 푸시 예약)
+
+| 항목 | 값 |
+|------|-----|
+| **Name** | `send-announcement-on-insert` (임의) |
+| **Table** | `service_announcements` |
+| **Events** | **Insert** 만 체크 |
+| **Type** | Supabase Edge Functions |
+| **Function** | `send-announcement` |
+| **HTTP Headers** | `Authorization`: `Bearer <SUPABASE_SERVICE_ROLE_KEY>` |
+
 - **Service Role Key**는 Dashboard → **Settings** → **API** → **Project API keys** 에서 확인합니다.
 - Webhook 2: `records` UPDATE 시 `schedule-notification`이 호출되며, 알림 ON으로 바뀐 record에 대해 재예약됩니다.
 - Webhook 3: `user_settings`의 `notification_default_time` 또는 `notification_pre_reminder`가 변경되면 해당 유저의 모든 pending 알림을 삭제한 뒤 새 설정으로 배치 재예약합니다.
+- Webhook 4: `service_announcements`에 INSERT 시 `send-announcement`가 호출되어, `notification_service_announcement_enabled = true` 인 유저만 `scheduled_notifications`에 공지 행이 들어갑니다. (record_id는 공지 전용 sentinel UUID 사용.)
 
 ## 2. 동작 요약
 
 - **records INSERT**: 새 record 생성 시 해당 투자에 대한 납입일 알림이 `scheduled_notifications`에 등록됩니다.
 - **records UPDATE**: `records.notification_enabled`를 false에서 true로 변경하면, 해당 record에 대한 예약이 다시 생성됩니다. (알림 ON 시 재등록)
 - **user_settings UPDATE**: 기본 알림 시간(`notification_default_time`) 또는 기본 사전 알림(`notification_pre_reminder`) 변경 시, 해당 유저의 기존 pending 알림을 **배치 삭제**한 뒤 **배치 insert**로 새 설정에 맞게 재예약합니다.
+- **service_announcements INSERT**: Dashboard SQL Editor에서 `insert into service_announcements (title, body) values ('제목', '내용');` 실행 시 Webhook으로 `send-announcement`가 호출되고, 공지 푸시 ON 유저만 `scheduled_notifications`에 예약됩니다. 실제 발송은 기존 `send-push` cron이 처리합니다.
 - 알림 **OFF** 시에는 앱에서 `scheduled_notifications`의 pending 행을 삭제하며, 웹훅만으로는 처리하지 않습니다.
 
 ## 3. 웹훅을 설정하지 않았을 때
@@ -102,3 +115,35 @@ UNIQUE (record_id, scheduled_at, token);
 - 이미 같은 이름의 제약이 있거나, 컬럼 구성이 다른 unique가 있으면 에러가 납니다.  
 - 그럴 때는 **Table Editor** → `scheduled_notifications` → **Constraints**에서 기존 unique 제약 이름/컬럼을 확인한 뒤,  
   Edge Function의 `onConflict` 문자열을 해당 컬럼에 맞게 수정하거나, 위 제약을 추가할 수 있으면 추가합니다.
+
+## 5. 배포 및 테이블 생성
+
+### Edge Function 배포
+
+```bash
+supabase functions deploy send-announcement
+supabase functions deploy send-push
+```
+
+프로젝트를 지정할 때:
+
+```bash
+supabase functions deploy send-announcement --project-ref <프로젝트-ref>
+supabase functions deploy send-push --project-ref <프로젝트-ref>
+```
+
+### service_announcements 테이블 생성
+
+아직 테이블이 없다면 Supabase **SQL Editor**에서 아래를 실행하거나, 저장소의 `supabase/migrations/20250308000000_create_service_announcements.sql` 마이그레이션을 적용합니다.
+
+```sql
+create table if not exists service_announcements (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  body text,
+  created_at timestamptz not null default now()
+);
+alter table service_announcements enable row level security;
+create policy "Allow read for authenticated"
+  on service_announcements for select to authenticated using (true);
+```

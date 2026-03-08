@@ -8,7 +8,7 @@ import { getToken } from 'https://deno.land/x/google_jwt_sa@v0.2.5/mod.ts'
 interface ScheduledNotification {
   id: string
   user_id: string
-  record_id: string
+  record_id: string | null
   token: string
   title: string
   body: string
@@ -180,28 +180,38 @@ Deno.serve(async (req) => {
       )
     }
 
-    // 2. notification_enabled가 false인 record에 연결된 알림은 취소(삭제) 후 제외
-    const recordIds = [...new Set((rawNotifications as ScheduledNotification[]).map((n) => n.record_id))]
-    const { data: recordsOff } = await supabase
-      .from('records')
-      .select('id')
-      .in('id', recordIds)
-      .eq('notification_enabled', false)
-
-    const disabledRecordIds = new Set((recordsOff ?? []).map((r) => r.id))
-    if (disabledRecordIds.size > 0) {
-      const { error: cancelError } = await supabase
-        .from('scheduled_notifications')
-        .delete()
-        .in('record_id', [...disabledRecordIds])
-        .eq('status', 'pending')
-      if (cancelError) {
-        console.warn('Failed to cancel notifications for disabled records:', cancelError)
+    // 2. notification_enabled가 false인 record에 연결된 알림만 취소·제외 (record_id null/sentinel은 공지 등으로 그대로 발송)
+    const recordIds = [
+      ...new Set(
+        (rawNotifications as ScheduledNotification[])
+          .map((n) => n.record_id)
+          .filter((id): id is string => id != null && id !== '')
+      ),
+    ]
+    const disabledRecordIds = new Set<string>()
+    if (recordIds.length > 0) {
+      const { data: recordsOff } = await supabase
+        .from('records')
+        .select('id')
+        .in('id', recordIds)
+        .eq('notification_enabled', false)
+      for (const r of recordsOff ?? []) {
+        disabledRecordIds.add(r.id)
+      }
+      if (disabledRecordIds.size > 0) {
+        const { error: cancelError } = await supabase
+          .from('scheduled_notifications')
+          .delete()
+          .in('record_id', [...disabledRecordIds])
+          .eq('status', 'pending')
+        if (cancelError) {
+          console.warn('Failed to cancel notifications for disabled records:', cancelError)
+        }
       }
     }
 
     const notifications = (rawNotifications as ScheduledNotification[]).filter(
-      (n) => !disabledRecordIds.has(n.record_id)
+      (n) => n.record_id == null || n.record_id === '' || !disabledRecordIds.has(n.record_id)
     )
 
     if (notifications.length === 0) {
