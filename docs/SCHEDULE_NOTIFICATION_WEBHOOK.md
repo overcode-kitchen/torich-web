@@ -1,15 +1,15 @@
-# schedule-notification Database Webhook 설정
+# 알림 예약 Database Webhook 설정
 
-알림 예약(및 알림 ON 시 재예약)은 **Database Webhook**으로 Edge Function `schedule-notification`을 호출합니다.  
-클라이언트에서 Edge Function을 호출하면 네트워크/배포 환경에 따라 `FunctionsFetchError`가 발생할 수 있으므로, **반드시 아래 웹훅을 설정**해야 합니다.
+알림 예약 및 재예약은 **Database Webhook**으로 Edge Function을 호출합니다.  
+클라이언트에서 Edge Function을 직접 호출하면 네트워크/배포 환경에 따라 `FunctionsFetchError`가 발생할 수 있으므로, **반드시 아래 웹훅을 설정**해야 합니다.
 
 ## 1. Supabase Dashboard에서 Webhook 추가
 
 1. [Supabase Dashboard](https://supabase.com/dashboard) → 프로젝트 선택
 2. **Database** → **Webhooks** → **Create a new hook**
-3. 아래처럼 **두 개**의 Webhook을 만듭니다.
+3. 아래처럼 **세 개**의 Webhook을 만듭니다.
 
-### Webhook 1: INSERT (새 투자 시 알림 예약)
+### Webhook 1: records INSERT (새 투자 시 알림 예약)
 
 | 항목 | 값 |
 |------|-----|
@@ -20,7 +20,7 @@
 | **Function** | `schedule-notification` |
 | **HTTP Headers** | `Authorization`: `Bearer <SUPABASE_SERVICE_ROLE_KEY>` |
 
-### Webhook 2: UPDATE (알림 OFF → ON 시 재예약)
+### Webhook 2: records UPDATE (알림 OFF → ON 시 재예약)
 
 | 항목 | 값 |
 |------|-----|
@@ -31,19 +31,37 @@
 | **Function** | `schedule-notification` |
 | **HTTP Headers** | `Authorization`: `Bearer <SUPABASE_SERVICE_ROLE_KEY>` |
 
+### Webhook 3: user_settings UPDATE (기본 알림 시간/사전 알림 변경 시 재예약)
+
+| 항목 | 값 |
+|------|-----|
+| **Name** | `reschedule-notifications-on-settings-update` (임의) |
+| **Table** | `user_settings` |
+| **Events** | **Update** 만 체크 |
+| **Type** | Supabase Edge Functions |
+| **Function** | `reschedule-notifications` |
+| **HTTP Headers** | `Authorization`: `Bearer <SUPABASE_SERVICE_ROLE_KEY>` |
+
 - **Service Role Key**는 Dashboard → **Settings** → **API** → **Project API keys** 에서 확인합니다.
-- UPDATE 웹훅은 `notification_enabled`가 `false` → `true`로 바뀔 때만 재예약 로직을 수행합니다.
+- Webhook 2: `records` UPDATE 시 `schedule-notification`이 호출되며, 알림 ON으로 바뀐 record에 대해 재예약됩니다.
+- Webhook 3: `user_settings`의 `notification_default_time` 또는 `notification_pre_reminder`가 변경되면 해당 유저의 모든 pending 알림을 삭제한 뒤 새 설정으로 배치 재예약합니다.
 
 ## 2. 동작 요약
 
-- **INSERT**: 새 record 생성 시 해당 투자에 대한 납입일 알림이 `scheduled_notifications`에 등록됩니다.
-- **UPDATE**: `records.notification_enabled`를 false에서 true로 변경하면, 같은 Edge Function이 호출되어 해당 record에 대한 예약이 다시 생성됩니다. (알림 ON 시 재등록)
+- **records INSERT**: 새 record 생성 시 해당 투자에 대한 납입일 알림이 `scheduled_notifications`에 등록됩니다.
+- **records UPDATE**: `records.notification_enabled`를 false에서 true로 변경하면, 해당 record에 대한 예약이 다시 생성됩니다. (알림 ON 시 재등록)
+- **user_settings UPDATE**: 기본 알림 시간(`notification_default_time`) 또는 기본 사전 알림(`notification_pre_reminder`) 변경 시, 해당 유저의 기존 pending 알림을 **배치 삭제**한 뒤 **배치 insert**로 새 설정에 맞게 재예약합니다.
 - 알림 **OFF** 시에는 앱에서 `scheduled_notifications`의 pending 행을 삭제하며, 웹훅만으로는 처리하지 않습니다.
 
 ## 3. 웹훅을 설정하지 않았을 때
 
-- **INSERT만 설정한 경우**: 새 투자 추가 시에는 알림이 예약되지만, 알림을 OFF 했다가 다시 ON 해도 재예약이 되지 않습니다.
-- **UPDATE 웹훅까지 설정한 경우**: 알림 ON 시 재예약이 서버(웹훅)에서 처리되므로, Capacitor/네이티브 환경에서도 `FunctionsFetchError` 없이 동작합니다.
+- **records INSERT만 설정한 경우**: 새 투자 추가 시에는 알림이 예약되지만, 알림을 OFF 했다가 다시 ON 해도 재예약이 되지 않습니다.
+- **records UPDATE 웹훅까지 설정한 경우**: 알림 ON 시 재예약이 서버(웹훅)에서 처리되므로, Capacitor/네이티브 환경에서도 `FunctionsFetchError` 없이 동작합니다.
+- **user_settings UPDATE 웹훅을 설정하지 않은 경우**: 설정 화면에서 기본 알림 시간/사전 알림을 바꿔도, 이미 예약된 알림은 이전 설정 그대로 유지됩니다. 새로 추가되는 투자만 새 설정이 적용됩니다.
+
+## 3.1 공통 모듈
+
+예약 로직은 `supabase/functions/_shared/notification-schedule.ts`에 있으며, `schedule-notification`과 `reschedule-notifications` 두 Edge Function에서 재사용합니다. 배포 시 해당 경로가 함께 포함됩니다.
 
 ## 4. scheduled_notifications 테이블 – Unique 제약 (중복 INSERT 방지)
 
