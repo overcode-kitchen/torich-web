@@ -59,9 +59,19 @@
 - **records UPDATE 웹훅까지 설정한 경우**: 알림 ON 시 재예약이 서버(웹훅)에서 처리되므로, Capacitor/네이티브 환경에서도 `FunctionsFetchError` 없이 동작합니다.
 - **user_settings UPDATE 웹훅을 설정하지 않은 경우**: 설정 화면에서 기본 알림 시간/사전 알림을 바꿔도, 이미 예약된 알림은 이전 설정 그대로 유지됩니다. 새로 추가되는 투자만 새 설정이 적용됩니다.
 
-## 3.1 공통 모듈
+## 3.1 미완료 재알림 (schedule-re-reminders) – pg_cron
 
-예약 로직은 `supabase/functions/_shared/notification-schedule.ts`에 있으며, `schedule-notification`과 `reschedule-notifications` 두 Edge Function에서 재사용합니다. 배포 시 해당 경로가 함께 포함됩니다.
+**미완료 재알림**은 Webhook이 아니라 **pg_cron**으로 매일 한 번 호출됩니다.
+
+- **Edge Function**: `schedule-re-reminders`
+- **스케줄**: 매일 **KST 00:10** (UTC 15:10) → `10 15 * * *`
+- **동작**: 어제가 납입일인데 `payment_history`에 완료 기록이 없는 (record, user)에 대해, 당일 기본 알림 시간에 재알림 1회를 `scheduled_notifications`에 예약 (`notification_type: 're_reminder'`). 중복 방지는 `(record_id, scheduled_at, token)` unique + `ignoreDuplicates`로 처리.
+
+**pg_cron 등록 방법**은 저장소 내 `supabase/migrations/README_CRON.md`를 참고하세요. (Vault 시크릿 저장 후 `cron.schedule` 실행.)
+
+## 3.2 공통 모듈
+
+예약 로직은 `supabase/functions/_shared/notification-schedule.ts`에 있으며, `schedule-notification`, `reschedule-notifications`, `schedule-re-reminders`에서 재사용합니다. 배포 시 해당 경로가 함께 포함됩니다.
 
 ## 4. scheduled_notifications 테이블 – Unique 제약 (중복 INSERT 방지)
 
