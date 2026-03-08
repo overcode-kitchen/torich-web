@@ -16,6 +16,23 @@ interface ScheduledNotification {
   status: string
 }
 
+interface FCMSendResult {
+  ok: boolean
+  invalidToken?: boolean
+}
+
+/** FCM 에러 응답에서 토큰 만료/무효 여부 판단 (NOT_FOUND/UNREGISTERED, INVALID_ARGUMENT) */
+function isTokenInvalidFcmError(status: string | undefined, details: unknown): boolean {
+  if (status === 'NOT_FOUND' || status === 'UNREGISTERED') return true
+  if (status !== 'INVALID_ARGUMENT') return false
+  const arr = Array.isArray(details) ? details : []
+  for (const d of arr) {
+    const code = (d as { errorCode?: string })?.errorCode
+    if (code === 'UNREGISTERED' || code === 'INVALID_ARGUMENT') return true
+  }
+  return false
+}
+
 /**
  * Google OAuth2 access token 발급
  * google_jwt_sa 라이브러리를 사용하여 JWT 생성 및 토큰 교환
@@ -35,7 +52,8 @@ async function getGoogleAccessToken(
 }
 
 /**
- * FCM HTTP v1 API로 푸시 알림 발송
+ * FCM HTTP v1 API로 푸시 알림 발송.
+ * 실패 시 응답 본문을 파싱해 토큰 만료/무효(UNREGISTERED, INVALID_ARGUMENT) 여부를 반환.
  */
 async function sendFCMPush(
   projectId: string,
@@ -43,7 +61,7 @@ async function sendFCMPush(
   token: string,
   title: string,
   body: string
-): Promise<boolean> {
+): Promise<FCMSendResult> {
   const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`
 
   const response = await fetch(url, {
@@ -66,10 +84,23 @@ async function sendFCMPush(
   if (!response.ok) {
     const errorText = await response.text()
     console.error(`FCM send failed: ${errorText}`)
-    return false
+
+    let invalidToken = false
+    try {
+      const errJson = JSON.parse(errorText) as {
+        error?: { status?: string; details?: unknown }
+      }
+      const status = errJson?.error?.status
+      const details = errJson?.error?.details
+      invalidToken = isTokenInvalidFcmError(status, details)
+    } catch {
+      // 파싱 실패 시 토큰 삭제하지 않음
+    }
+
+    return { ok: false, invalidToken }
   }
 
-  return true
+  return { ok: true }
 }
 
 Deno.serve(async (req) => {
@@ -194,7 +225,7 @@ Deno.serve(async (req) => {
 
     for (const notification of notifications as ScheduledNotification[]) {
       try {
-        const success = await sendFCMPush(
+        const result = await sendFCMPush(
           firebaseProjectId,
           accessToken,
           notification.token,
@@ -202,7 +233,7 @@ Deno.serve(async (req) => {
           notification.body
         )
 
-        if (success) {
+        if (result.ok) {
           // 4. 성공 → status = 'sent', sent_at = now()
           const { error: updateError } = await supabase
             .from('scheduled_notifications')
@@ -221,7 +252,7 @@ Deno.serve(async (req) => {
             results.sent++
           }
         } else {
-          // 5. 실패 → status = 'failed'
+          // 5. 실패 → status = 'failed', 만료/무효 토큰이면 user_push_tokens에서 삭제
           const { error: updateError } = await supabase
             .from('scheduled_notifications')
             .update({
@@ -236,6 +267,24 @@ Deno.serve(async (req) => {
             )
           } else {
             results.failed++
+          }
+
+          if (result.invalidToken) {
+            const { error: deleteError } = await supabase
+              .from('user_push_tokens')
+              .delete()
+              .eq('token', notification.token)
+
+            if (deleteError) {
+              console.warn(
+                `Failed to remove invalid token from user_push_tokens:`,
+                deleteError
+              )
+            } else {
+              console.log(
+                `Removed invalid/expired token for user ${notification.user_id} (notification ${notification.id})`
+              )
+            }
           }
         }
       } catch (error) {
