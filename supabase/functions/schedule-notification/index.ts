@@ -128,8 +128,20 @@ function setTime(date: Date, timeStr: string): Date {
 }
 
 /**
- * 시간이 두 시간 사이에 있는지 확인 (하루를 넘어갈 수 있음)
+ * notification_pre_reminder 문자열을 사전 알림 일수로 변환.
+ * 앱 PreReminderOption('none'|'same_day'|'1d'|'2d'|'3d'|'1w') 및 숫자 문자열 호환.
  */
+function parsePreReminderToDays(preReminder: string): number {
+  const s = (preReminder || '').trim().toLowerCase()
+  if (s === 'none' || s === 'same_day' || s === '0') return 0
+  if (s === '1d' || s === '1') return 1
+  if (s === '2d' || s === '2') return 2
+  if (s === '3d' || s === '3') return 3
+  if (s === '1w' || s === '7') return 7
+  const n = parseInt(s, 10)
+  return Number.isNaN(n) ? 0 : Math.max(0, n)
+}
+
 /**
  * 알림 시각 계산 (KST 기준)
  */
@@ -138,8 +150,7 @@ function calculateScheduledAt(
   preReminder: string,
   defaultTime: string
 ): Date {
-  // pre_days 파싱
-  const preDays = parseInt(preReminder) || 0
+  const preDays = parsePreReminderToDays(preReminder)
 
   // base_date 계산 (start_date에서 pre_days 빼기)
   const baseDate = addDays(startDate, -preDays)
@@ -315,7 +326,7 @@ Deno.serve(async (req) => {
     }
 
     // 6. 각 납입일마다 알림 시각 계산 및 알림 생성
-    const preDays = parseInt(userSettings.notification_pre_reminder) || 0
+    const preDays = parsePreReminderToDays(userSettings.notification_pre_reminder)
     const notifications: Array<{
       user_id: string
       record_id: string
