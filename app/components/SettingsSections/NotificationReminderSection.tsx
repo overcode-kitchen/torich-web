@@ -20,8 +20,6 @@ interface NotificationReminderSectionProps {
   onPreReminderChange: (value: PreReminderOption) => void
   reReminderOn: boolean
   onToggleReReminder: () => void
-  streakOn: boolean
-  onToggleStreak: () => void
 }
 
 const PRE_REMINDER_LABEL: Record<PreReminderOption, string> = {
@@ -40,8 +38,6 @@ export function NotificationReminderSection({
   onPreReminderChange,
   reReminderOn,
   onToggleReReminder,
-  streakOn,
-  onToggleStreak,
 }: NotificationReminderSectionProps) {
   const preReminderLabel = PRE_REMINDER_LABEL[preReminder]
 
@@ -110,17 +106,6 @@ export function NotificationReminderSection({
           </span>
         </div>
         <Switch checked={reReminderOn} onCheckedChange={onToggleReReminder} />
-      </div>
-
-      {/* 연속 투자 알림 */}
-      <div className="px-4 py-3 flex items-center justify-between gap-4">
-        <div className="flex flex-col">
-          <span className="text-foreground font-medium">연속 투자 알림</span>
-          <span className="text-xs text-muted-foreground mt-1">
-            streak를 유지할 수 있도록 동기부여 알림을 보내드려요.
-          </span>
-        </div>
-        <Switch checked={streakOn} onCheckedChange={onToggleStreak} />
       </div>
     </>
   )

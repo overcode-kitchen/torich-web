@@ -15,14 +15,13 @@ export default function NotificationSettingsView({
     setDefaultTime,
     setPreReminder,
     toggleReReminder,
-    toggleStreak,
     toggleServiceAnnouncements,
     onBack,
 }: NotificationSettingsViewProps) {
     return (
         <main className="min-h-screen bg-surface">
             {/* 상단 헤더 */}
-            <header className="h-[52px] flex items-center px-4">
+            <header className="h-[52px] flex items-center px-2">
                 <button
                     type="button"
                     onClick={onBack}
@@ -50,8 +49,6 @@ export default function NotificationSettingsView({
                         onPreReminderChange={setPreReminder}
                         reReminderOn={settings.reReminderOn}
                         onToggleReReminder={toggleReReminder}
-                        streakOn={settings.streakOn}
-                        onToggleStreak={toggleStreak}
                     />
                 </SettingsSection>
 
