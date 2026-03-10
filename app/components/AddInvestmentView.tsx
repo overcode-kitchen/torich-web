@@ -27,7 +27,7 @@ export default function AddInvestmentView({
     return (
         <main className="min-h-screen bg-surface">
             {/* 뒤로가기 버튼 */}
-            <header className="h-[52px] flex items-center px-4">
+            <header className="h-[52px] flex items-center px-2">
                 <button
                     onClick={onBack}
                     className="p-2 text-foreground-soft hover:text-foreground transition-colors"

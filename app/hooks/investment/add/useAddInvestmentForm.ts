@@ -28,8 +28,11 @@ export function useAddInvestmentForm(): UseAddInvestmentFormReturn {
     setPeriod: ui.setPeriod,
   })
 
-  // 주식 검색 훅에 stockName 전달
-  const updatedStockSearch = useStockSearch(ui.stockName, manualInput.isManualInput)
+  // 주식 검색 훅에 stockName 전달, market은 stockSearch와 동기화(탭 선택이 반영되도록)
+  const updatedStockSearch = useStockSearch(ui.stockName, manualInput.isManualInput, {
+    market: stockSearch.market,
+    setMarket: stockSearch.setMarket,
+  })
 
   // 제출 훅 사용
   const submit = useAddInvestmentSubmit({

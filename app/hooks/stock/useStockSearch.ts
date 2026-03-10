@@ -7,9 +7,20 @@ import { useStockRate } from './useStockRate'
 import { useStockDropdown } from './useStockDropdown'
 import type { UseStockSearchReturn, SearchResult, StockDetail } from '../types/useStockSearch'
 
-export function useStockSearch(stockName: string, isManualInput: boolean): UseStockSearchReturn {
+export interface UseStockSearchOptions {
+  market: Market
+  setMarket: (market: Market) => void
+}
+
+export function useStockSearch(
+  stockName: string,
+  isManualInput: boolean,
+  options?: UseStockSearchOptions
+): UseStockSearchReturn {
   const [selectedStock, setSelectedStock] = useState<StockDetail | null>(null)
-  const [market, setMarket] = useState<Market>('KR')
+  const [internalMarket, setInternalMarket] = useState<Market>('KR')
+  const market = options?.market ?? internalMarket
+  const setMarket = options?.setMarket ?? setInternalMarket
 
   const searchQuery = useStockSearchQuery()
   const stockRate = useStockRate()
