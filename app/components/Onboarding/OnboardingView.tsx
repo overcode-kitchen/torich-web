@@ -8,6 +8,7 @@ import OnboardingStepLayout from './OnboardingStepLayout'
 import OnboardingImageStrip from './OnboardingImageStrip'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 
 const SWIPE_THRESHOLD = 50
 
@@ -15,6 +16,7 @@ export default function OnboardingView() {
   const router = useRouter()
   const { step, totalSteps, goNext, goPrev, goToStep, isFirst, isLast } = useOnboardingStep()
   const config = ONBOARDING_STEPS[step - 1]
+  const isNativeApp = useIsNativeApp()
   const touchStartX = useRef<number | null>(null)
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -43,7 +45,7 @@ export default function OnboardingView() {
       className="fixed inset-0 z-0 overflow-hidden bg-background"
       style={{
         height: '100dvh',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingTop: isNativeApp ? 'env(safe-area-inset-top, 0px)' : '0px',
       }}
     >
       <main className="h-full w-full overflow-hidden flex flex-col">

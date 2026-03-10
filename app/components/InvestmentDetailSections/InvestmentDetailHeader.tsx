@@ -36,7 +36,7 @@ export function InvestmentDetailHeader({
     const isNotificationDisabled = !isGlobalNotificationOn
 
     return (
-        <div className="w-full flex items-center justify-between px-6 bg-background">
+        <div className="w-full flex items-center justify-between px-2 bg-background">
             <button
                 onClick={onBack}
                 className="p-2 text-foreground hover:text-foreground transition-colors -ml-1"
