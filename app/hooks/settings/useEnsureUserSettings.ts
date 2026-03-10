@@ -37,7 +37,6 @@ export function useEnsureUserSettings(userId: string | undefined) {
           notification_default_time: defaultNotificationSettings.defaultTime,
           notification_pre_reminder: defaultNotificationSettings.preReminder,
           notification_re_reminder_enabled: defaultNotificationSettings.reReminderOn,
-          notification_streak_enabled: defaultNotificationSettings.streakOn,
           notification_service_announcement_enabled: defaultNotificationSettings.serviceAnnouncementsOn,
           theme: 'system',
           show_monthly_amount: true,

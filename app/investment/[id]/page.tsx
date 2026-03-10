@@ -8,10 +8,12 @@ import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
 import { calculateSimulatedValue } from '@/app/utils/finance'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 
 export default function InvestmentDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const isNativeApp = useIsNativeApp()
   const { user, isLoading: authLoading } = useAuth()
   const { records, isLoading: dataLoading, updateInvestment, deleteInvestment } = useInvestments(user?.id)
   const { goBack } = useFlowBack({
@@ -40,8 +42,8 @@ export default function InvestmentDetailPage() {
       <main
         className="min-h-dvh bg-background flex items-center justify-center"
         style={{
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingTop: isNativeApp ? 'env(safe-area-inset-top, 0px)' : '0px',
+          paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 0px)' : '0px',
         }}
       >
         <CircleNotch className="w-8 h-8 animate-spin text-brand-600" />
@@ -54,8 +56,8 @@ export default function InvestmentDetailPage() {
       <main
         className="min-h-dvh bg-background flex items-center justify-center"
         style={{
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingTop: isNativeApp ? 'env(safe-area-inset-top, 0px)' : '0px',
+          paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 0px)' : '0px',
         }}
       >
         <CircleNotch className="w-8 h-8 animate-spin text-brand-600" />

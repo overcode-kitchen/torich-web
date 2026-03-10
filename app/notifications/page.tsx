@@ -54,7 +54,7 @@ function NotificationsContent() {
 
   return (
     <main className="min-h-screen bg-surface">
-      <header className="h-[52px] flex items-center px-4">
+      <header className="h-[52px] flex items-center px-2">
         <button
           type="button"
           onClick={goBack}

@@ -4,7 +4,6 @@ export const defaultNotificationSettings: NotificationSettingsState = {
   defaultTime: '09:00',
   preReminder: '1d',
   reReminderOn: true,
-  streakOn: true,
   serviceAnnouncementsOn: true,
 }
 
@@ -16,7 +15,6 @@ export function mapDbDataToSettings(data: any): NotificationSettingsState {
     defaultTime: data.notification_default_time || defaultNotificationSettings.defaultTime,
     preReminder: (data.notification_pre_reminder as PreReminderOption) || defaultNotificationSettings.preReminder,
     reReminderOn: data.notification_re_reminder_enabled ?? defaultNotificationSettings.reReminderOn,
-    streakOn: data.notification_streak_enabled ?? defaultNotificationSettings.streakOn,
     serviceAnnouncementsOn: data.notification_service_announcement_enabled ?? defaultNotificationSettings.serviceAnnouncementsOn,
   }
 }
@@ -33,7 +31,6 @@ export function mapSettingsToDbUpdates(
   if (partial.defaultTime !== undefined) updates.notification_default_time = partial.defaultTime
   if (partial.preReminder !== undefined) updates.notification_pre_reminder = partial.preReminder
   if (partial.reReminderOn !== undefined) updates.notification_re_reminder_enabled = partial.reReminderOn
-  if (partial.streakOn !== undefined) updates.notification_streak_enabled = partial.streakOn
   if (partial.serviceAnnouncementsOn !== undefined) updates.notification_service_announcement_enabled = partial.serviceAnnouncementsOn
 
   return updates

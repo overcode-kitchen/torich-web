@@ -54,7 +54,6 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
   }, [updateSettings])
 
   const toggleReReminder = createToggle('reReminderOn')
-  const toggleStreak = createToggle('streakOn')
   const toggleServiceAnnouncements = createToggle('serviceAnnouncementsOn')
 
   return {
@@ -62,7 +61,6 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
     setDefaultTime,
     setPreReminder,
     toggleReReminder,
-    toggleStreak,
     toggleServiceAnnouncements,
   }
 }

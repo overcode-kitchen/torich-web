@@ -4,7 +4,6 @@ export interface NotificationSettingsState {
   defaultTime: string
   preReminder: PreReminderOption
   reReminderOn: boolean
-  streakOn: boolean
   serviceAnnouncementsOn: boolean
 }
 
@@ -13,6 +12,5 @@ export interface UseNotificationSettingsReturn {
   setDefaultTime: (time: string) => void
   setPreReminder: (preReminder: PreReminderOption) => void
   toggleReReminder: () => void
-  toggleStreak: () => void
   toggleServiceAnnouncements: () => void
 }

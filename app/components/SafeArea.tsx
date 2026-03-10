@@ -1,5 +1,6 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
+import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 
 interface SafeAreaProps {
   children: React.ReactNode
@@ -19,6 +20,8 @@ interface SafeAreaProps {
 }
 
 export default function SafeArea({ children, hasBottomNav, className, disableTopPadding }: SafeAreaProps) {
+  const isNativeApp = useIsNativeApp()
+
   return (
     <div
       // SafeArea 자체에 배경색을 지정하면, 상단 padding 영역까지 같은 색으로 채워져서
@@ -27,10 +30,18 @@ export default function SafeArea({ children, hasBottomNav, className, disableTop
       // 없으면 기본으로 bg-surface를 사용한다.
       className={cn('bg-surface', className)}
       style={{
-        // 상단: 기본 24px 여백 + safe area inset (필요한 화면에서만)
-        paddingTop: disableTopPadding ? undefined : 'calc(env(safe-area-inset-top, 0px) + 24px)',
-        // 하단: 하단 네비가 없는 화면에서만 기본 24px + safe area inset
-        paddingBottom: hasBottomNav ? undefined : 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+        // 웹 브라우저: 상태바 Safe Area가 없으므로 기본 여백만 적용
+        // 네이티브 앱(Capacitor WebView): Safe Area inset + 기본 여백 적용
+        paddingTop: disableTopPadding
+          ? undefined
+          : isNativeApp
+            ? 'calc(env(safe-area-inset-top, 0px) + 24px)'
+            : '24px',
+        paddingBottom: hasBottomNav
+          ? undefined
+          : isNativeApp
+            ? 'calc(env(safe-area-inset-bottom, 0px) + 24px)'
+            : '24px',
       }}
     >
       {children}

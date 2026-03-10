@@ -12,7 +12,6 @@ export default function NotificationSettingsPage() {
     setDefaultTime,
     setPreReminder,
     toggleReReminder,
-    toggleStreak,
     toggleServiceAnnouncements,
   } = useNotificationSettings()
   const { goBack } = useFlowBack({
@@ -26,7 +25,6 @@ export default function NotificationSettingsPage() {
       setDefaultTime={setDefaultTime}
       setPreReminder={setPreReminder}
       toggleReReminder={toggleReReminder}
-      toggleStreak={toggleStreak}
       toggleServiceAnnouncements={toggleServiceAnnouncements}
       onBack={goBack}
     />

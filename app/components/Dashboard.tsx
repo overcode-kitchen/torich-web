@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import type { Investment } from '@/app/types/investment'
 import { useDashboardUI } from '@/app/hooks/ui/useDashboardUI'
 import { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
+import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import Header from './DashboardSections/Header'
 import RateUpdateToast from './DashboardSections/RateUpdateToast'
 import NotificationInbox from './DashboardSections/NotificationInbox'
@@ -65,6 +66,7 @@ export default function Dashboard({
 }: DashboardProps) {
   const router = useRouter()
   const upcomingInvestmentsData = useUpcomingInvestments(activeRecords)
+  const isNativeApp = useIsNativeApp()
 
   const {
     listExpanded,
@@ -78,12 +80,17 @@ export default function Dashboard({
     sortBy,
   })
 
+  const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
+  const contentPaddingTop = isNativeApp
+    ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)'
+    : '56px'
+
   return (
     <main
       className="min-h-screen bg-surface"
       style={{
         // 앱바 실제 높이(safe area + 48px) + 여유 8px
-        paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)',
+        paddingTop: contentPaddingTop,
       }}
     >
       <RateUpdateToast showRateUpdateToast={showRateUpdateToast} />
@@ -92,7 +99,7 @@ export default function Dashboard({
       <header
         className="fixed inset-x-0 top-0 z-30 w-full bg-surface"
         style={{
-          paddingTop: 'max(env(safe-area-inset-top, 0px), 44px)',
+          paddingTop: headerSafeTop,
         }}
       >
         <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
