@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
 
     const { data: records, error: recordsError } = await supabase
       .from('records')
-      .select('id, user_id, title, start_date, period_years, investment_days, notification_enabled')
+      .select('id, user_id, title, start_date, period_years, investment_days, notification_enabled, monthly_amount')
       .eq('user_id', userId)
       .eq('notification_enabled', true)
 
@@ -123,6 +123,7 @@ Deno.serve(async (req) => {
       period_years: number
       investment_days: number[]
       notification_enabled?: boolean
+      monthly_amount?: number
     }>
 
     const validRecords = recordsList.filter(
@@ -199,6 +200,7 @@ Deno.serve(async (req) => {
         period_years: r.period_years,
         investment_days: r.investment_days,
         notification_enabled: r.notification_enabled,
+        monthly_amount: r.monthly_amount,
       }
       const rows = buildNotificationRows(
         scheduleRecord,

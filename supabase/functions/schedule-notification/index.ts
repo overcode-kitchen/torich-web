@@ -24,6 +24,7 @@ interface WebhookPayload {
     period_years: number
     investment_days: number[]
     notification_enabled?: boolean
+    monthly_amount?: number
   }
   old_record: null
 }
@@ -61,6 +62,7 @@ Deno.serve(async (req) => {
       period_years: periodYears,
       investment_days: investmentDays,
       notification_enabled: notificationEnabled = true,
+      monthly_amount: monthlyAmount,
     } = record
 
     if (notificationEnabled === false) {
@@ -166,6 +168,7 @@ Deno.serve(async (req) => {
       period_years: periodYears,
       investment_days: investmentDays,
       notification_enabled: notificationEnabled,
+      monthly_amount: monthlyAmount,
     }
 
     const now = new Date()

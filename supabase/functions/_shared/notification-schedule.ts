@@ -13,6 +13,8 @@ export interface ScheduleRecord {
   period_years: number
   investment_days: number[]
   notification_enabled?: boolean
+  /** 월 납입액 (원 단위). 푸시 본문에 사용 */
+  monthly_amount?: number
 }
 
 export interface ScheduleUserSettings {
@@ -98,6 +100,32 @@ function setTime(date: Date, timeStr: string): Date {
   return newDate
 }
 
+/** 푸시 본문용 금액 포맷 (원 → "N만원" / "N억 N만원") */
+function formatAmountForPush(amountWon: number): string {
+  if (typeof amountWon !== 'number' || Number.isNaN(amountWon) || amountWon < 0) return '0원'
+  if (amountWon >= 100000000) {
+    const eok = Math.floor(amountWon / 100000000)
+    const remainder = amountWon % 100000000
+    if (remainder >= 10000) {
+      const man = Math.floor(remainder / 10000)
+      return `${eok}억 ${man}만원`
+    }
+    return `${eok}억원`
+  }
+  if (amountWon >= 10000) {
+    const man = Math.floor(amountWon / 10000)
+    return `${man}만원`
+  }
+  return `${Math.floor(amountWon).toLocaleString()}원`
+}
+
+/** 푸시 본문용 납입일 포맷 (YYYY-MM-DD → "M월 D일") */
+function formatPaymentDateForPush(isoDateStr: string): string {
+  const [, m, d] = isoDateStr.split('-').map(Number)
+  if (!m || !d) return isoDateStr
+  return `${m}월 ${d}일`
+}
+
 /**
  * notification_pre_reminder 문자열을 사전 알림 일수로 변환
  */
@@ -136,10 +164,13 @@ export function buildNotificationRows(
   existingScheduledAts: Set<string>,
   now: Date
 ): ScheduledNotificationRow[] {
-  const { id: recordId, user_id: userId, title, start_date, period_years, investment_days } = record
+  const { id: recordId, user_id: userId, title, start_date, period_years, investment_days, monthly_amount } = record
   const paymentDates = generatePaymentDates(start_date, period_years, investment_days)
   const preDays = parsePreReminderToDays(userSettings.notification_pre_reminder)
   const rows: ScheduledNotificationRow[] = []
+
+  const pushTitle =
+    preDays === 0 ? `오늘 "${title}" 납입일이에요` : `"${title}" 납입일이 ${preDays}일 남았어요`
 
   for (const paymentDate of paymentDates) {
     const paymentDateStr = paymentDate.toISOString().split('T')[0]
@@ -154,15 +185,20 @@ export function buildNotificationRows(
     if (scheduledAtUTC <= now) continue
     if (existingScheduledAts.has(scheduledAtUTCStr)) continue
 
-    const bodyText =
-      preDays === 0 ? `${title} - 오늘 알림` : `${title} - ${preDays}일 전 알림`
+    const paymentDateFormatted = formatPaymentDateForPush(paymentDateStr)
+    const amountText = typeof monthly_amount === 'number' ? formatAmountForPush(monthly_amount) : ''
+    const bodyText = amountText
+      ? preDays === 0
+        ? `오늘 ${paymentDateFormatted}이 납입일이에요. ${amountText} 납입 잊지 마세요!`
+        : `${preDays}일 뒤인 ${paymentDateFormatted}에 ${amountText} 납입 예정이에요`
+      : `${paymentDateFormatted} 납입일을 확인해 주세요`
 
     for (const t of tokens) {
       rows.push({
         user_id: userId,
         record_id: recordId,
         token: t.token,
-        title,
+        title: pushTitle,
         body: bodyText,
         scheduled_at: scheduledAtUTCStr,
         status: 'pending',
