@@ -11,6 +11,8 @@ import type { RateSuggestion } from '@/app/components/InvestmentEditSections/Inv
 
 import { useInvestmentDetailContext } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 import { useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
+import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
+import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
 import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
 
 export function InvestmentDetailContent() {
@@ -30,6 +32,14 @@ export function InvestmentDetailContent() {
         infoRef,
         historyRef,
     } = useInvestmentTabContext()
+
+    const daysPicker = useInvestmentDaysPicker({
+        initialDays: investmentData.editInvestmentDays,
+        onApply: (days) => {
+            investmentData.setEditInvestmentDays(days)
+            ui.setIsDaysPickerOpen(false)
+        },
+    })
 
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-6 pb-12">
@@ -98,6 +108,19 @@ export function InvestmentDetailContent() {
                     handleCancel={handlers.onCancel}
                     handleSave={handlers.onSave}
                     isUpdating={ui.isUpdating}
+                />
+            )}
+
+            {isEditMode && ui.isDaysPickerOpen && (
+                <InvestmentDaysPickerSheet
+                    tempDays={daysPicker.tempDays}
+                    isDirty={daysPicker.isDirty}
+                    onToggleDay={daysPicker.toggleDay}
+                    onApply={daysPicker.applyChanges}
+                    onClose={() => {
+                        daysPicker.reset()
+                        ui.setIsDaysPickerOpen(false)
+                    }}
                 />
             )}
         </div>

@@ -14,6 +14,7 @@ interface InvestmentDetailContextType {
         showDeleteModal: boolean
         setShowDeleteModal: (show: boolean) => void
         setIsEditMode: (open: boolean) => void
+        isDaysPickerOpen: boolean
         setIsDaysPickerOpen: (open: boolean) => void
     }
     handlers: {
