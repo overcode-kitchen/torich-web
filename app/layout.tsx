@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: "토리치 - 투자 알림",
   description: "매달 꾸준히 적립 투자, 복리로 미래를 계산해보세요.",
   icons: {
-    icon: "/icon.png?v=5",
+    icon: "/icon.png?v=7",
   },
 };
 
