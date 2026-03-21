@@ -30,13 +30,12 @@ export default function SafeArea({ children, hasBottomNav, className, disableTop
       // 없으면 기본으로 bg-surface를 사용한다.
       className={cn('bg-surface', className)}
       style={{
-        // 웹 브라우저: 상태바 Safe Area가 없으므로 기본 여백만 적용
-        // 네이티브 앱(Capacitor WebView): Safe Area inset + 기본 여백 적용
+        // 웹: 세부 화면 상단 16px. 앱: env(safe-area-inset-top) + 16px
         paddingTop: disableTopPadding
           ? undefined
           : isNativeApp
-            ? 'calc(env(safe-area-inset-top, 0px) + 24px)'
-            : '24px',
+            ? 'calc(env(safe-area-inset-top, 0px) + 16px)'
+            : '16px',
         paddingBottom: hasBottomNav
           ? undefined
           : isNativeApp

@@ -57,6 +57,7 @@ function InternalInvestmentDetailView({
     setShowDeleteModal,
     isEditMode,
     setIsEditMode,
+    isDaysPickerOpen,
     setIsDaysPickerOpen,
   } = useInvestmentDetailUI()
 
@@ -114,6 +115,7 @@ function InternalInvestmentDetailView({
           showDeleteModal,
           setShowDeleteModal,
           setIsEditMode,
+          isDaysPickerOpen,
           setIsDaysPickerOpen,
         },
         handlers: {

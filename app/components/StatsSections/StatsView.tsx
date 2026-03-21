@@ -108,7 +108,7 @@ export default function StatsView({
                     paddingTop: headerSafeTop,
                 }}
             >
-                <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-2">
+                <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto pl-4 pr-2">
                     <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
                         <StatsHeader />
                     </div>
