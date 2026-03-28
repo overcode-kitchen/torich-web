@@ -35,3 +35,16 @@ export function formatCurrency(amount: number | string): string {
   // 원 단위 처리
   return `${Math.floor(num).toLocaleString()}원`
 }
+
+/**
+ * 손익 금액 표시: 양수는 "+ …", 음수는 formatCurrency의 마이너스만, 0은 "0원"
+ */
+export function formatSignedProfit(amount: number): string {
+  if (!Number.isFinite(amount) || amount === 0) {
+    return formatCurrency(0)
+  }
+  if (amount > 0) {
+    return `+ ${formatCurrency(amount)}`
+  }
+  return formatCurrency(amount)
+}

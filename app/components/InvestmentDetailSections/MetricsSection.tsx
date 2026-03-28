@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatSignedProfit } from '@/lib/utils'
 import { InvestmentField } from '@/app/components/Common/InvestmentField'
 
 interface MetricsSectionProps {
@@ -29,7 +29,7 @@ export function MetricsSection({
             {/* 예상 수익 */}
             <InvestmentField
                 label="예상 수익"
-                value={`+ ${formatCurrency(calculatedProfit)}`}
+                value={formatSignedProfit(calculatedProfit)}
                 isEditMode={false}
             />
 

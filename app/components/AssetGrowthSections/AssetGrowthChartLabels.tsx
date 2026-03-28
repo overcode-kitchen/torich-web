@@ -1,6 +1,6 @@
 'use client'
 
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatSignedProfit } from '@/lib/utils'
 import type { ChartColors } from '@/app/hooks/chart/useChartColors'
 
 interface LabelProps {
@@ -39,7 +39,7 @@ export function RenderProfitBarLabel({ x, y, width, height, payload, chartColors
           fontSize={11}
           fontWeight={600}
         >
-          +{formatCurrency(payload.profit)}
+          {formatSignedProfit(payload.profit)}
         </text>
       )}
     </g>
