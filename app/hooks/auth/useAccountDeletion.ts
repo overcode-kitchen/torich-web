@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { createClient } from '@/utils/supabase/client'
 import { toastError } from '@/app/utils/toast'
 
 type UseAccountDeletionReturn = {
@@ -30,7 +31,13 @@ export function useAccountDeletion(): UseAccountDeletionReturn {
         throw new Error('Failed to delete account')
       }
 
-      // 서버에서 세션을 정리한 뒤 클라이언트에서도 즉시 로그인 페이지로 이동
+      // 서버 signOut만으로는 브라우저 쿠키/네이티브 Preferences 등 클라이언트 저장소가 남을 수 있음
+      const supabase = createClient()
+      const { error: signOutError } = await supabase.auth.signOut()
+      if (signOutError) {
+        console.error('회원 탈퇴 후 클라이언트 로그아웃 실패:', signOutError)
+      }
+
       router.replace('/login')
       window.location.href = '/login'
     } catch {
