@@ -34,7 +34,7 @@ export default function LoginView({
 
             <div className="w-full max-w-xs">
                 {/* 타이틀 */}
-                <div className="relative h-10 w-36 mx-auto mb-12">
+                <div className="relative h-9 w-32 mx-auto mb-12">
                     <Image
                         src="/images/torich-logo.png"
                         alt="토리치 로고"
