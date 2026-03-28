@@ -163,11 +163,11 @@ export default function SettingsView({
                     />
                     <SettingsItem
                         label="이용약관"
-                        href="#"
+                        href="/settings/terms"
                     />
                     <SettingsItem
                         label="개인정보처리방침"
-                        href="#"
+                        href="/settings/privacy"
                     />
                 </SettingsSection>
             </div>
