@@ -1,6 +1,6 @@
 'use client'
 
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatSignedProfit } from '@/lib/utils'
 import type { ChartDataPoint } from '@/app/hooks/chart/useCompoundChartData'
 
 interface CompoundChartSummaryProps {
@@ -24,7 +24,7 @@ export default function CompoundChartSummary({ summary, breakEvenPoint }: Compou
                 <div>
                     <p className="text-xs text-muted-foreground mb-0.5">예상 수익</p>
                     <p className="text-sm font-semibold text-foreground">
-                        +{formatCurrency(summary.profit)}
+                        {formatSignedProfit(summary.profit)}
                     </p>
                 </div>
             </div>

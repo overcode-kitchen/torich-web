@@ -1,6 +1,6 @@
 'use client'
 
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatSignedProfit } from '@/lib/utils'
 import type { BarDataPoint } from '@/app/hooks/chart/useAssetGrowthChart'
 import type { ChartColors } from '@/app/hooks/chart/useChartColors'
 
@@ -26,7 +26,7 @@ export default function AssetGrowthChartSummary({
               원금 <strong className="text-foreground">{formatCurrency(selectedBar.principal)}</strong>
             </span>
             <span className="text-foreground-soft font-semibold">
-              수익 +{formatCurrency(selectedBar.profit)} (
+              수익 {formatSignedProfit(selectedBar.profit)} (
               {selectedBar.total > 0
                 ? ((selectedBar.profit / selectedBar.total) * 100).toFixed(1)
                 : 0}
@@ -70,7 +70,7 @@ export default function AssetGrowthChartSummary({
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">수익금</p>
               <p className="text-base font-bold text-foreground">
-                +{formatCurrency(currentData.profit)}
+                {formatSignedProfit(currentData.profit)}
               </p>
             </div>
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatSignedProfit } from '@/lib/utils'
 import type { BarDataPoint } from '@/app/hooks/chart/useAssetGrowthChart'
 
 interface AssetGrowthChartTooltipProps {
@@ -29,7 +29,7 @@ export default function AssetGrowthChartTooltip({ active, payload }: AssetGrowth
         <div className="flex justify-between gap-4">
           <span className="text-xs text-brand-600 font-medium">수익금</span>
           <span className="text-xs font-bold text-brand-600">
-            +{formatCurrency(data.profit)}
+            {formatSignedProfit(data.profit)}
           </span>
           <span className="text-xs text-muted-foreground">({profitRatio}%)</span>
         </div>
