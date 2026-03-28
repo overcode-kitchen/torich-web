@@ -1,7 +1,7 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CircleNotch } from '@phosphor-icons/react'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
@@ -10,8 +10,8 @@ import { calculateSimulatedValue } from '@/app/utils/finance'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 
-export default function InvestmentDetailPage() {
-  const params = useParams()
+function InvestmentDetail() {
+  const searchParams = useSearchParams()
   const router = useRouter()
   const isNativeApp = useIsNativeApp()
   const { user, isLoading: authLoading } = useAuth()
@@ -21,9 +21,15 @@ export default function InvestmentDetailPage() {
     enableHistoryFallback: true,
   })
 
-  const rawId = params?.id
-  const id = typeof rawId === 'string' ? rawId : null
-  const item = id !== null ? records.find((r) => r.id === id) ?? null : null
+  const rawId = searchParams.get('id')
+  const id = rawId && rawId.trim() !== '' ? rawId : null
+  const item = id !== null ? (records.find((r) => r.id === id) ?? null) : null
+
+  useEffect(() => {
+    if (id === null) {
+      router.replace('/')
+    }
+  }, [id, router])
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -37,15 +43,22 @@ export default function InvestmentDetailPage() {
     }
   }, [dataLoading, user, id, records.length, item, router])
 
+  const mainStyle = {
+    paddingTop: isNativeApp ? 'env(safe-area-inset-top, 0px)' : '0px',
+    paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 0px)' : '0px',
+  }
+
+  if (id === null) {
+    return (
+      <main className="min-h-dvh bg-background flex items-center justify-center" style={mainStyle}>
+        <CircleNotch className="w-8 h-8 animate-spin text-brand-600" />
+      </main>
+    )
+  }
+
   if (authLoading || !user) {
     return (
-      <main
-        className="min-h-dvh bg-background flex items-center justify-center"
-        style={{
-          paddingTop: isNativeApp ? 'env(safe-area-inset-top, 0px)' : '0px',
-          paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 0px)' : '0px',
-        }}
-      >
+      <main className="min-h-dvh bg-background flex items-center justify-center" style={mainStyle}>
         <CircleNotch className="w-8 h-8 animate-spin text-brand-600" />
       </main>
     )
@@ -53,13 +66,7 @@ export default function InvestmentDetailPage() {
 
   if (dataLoading || !item) {
     return (
-      <main
-        className="min-h-dvh bg-background flex items-center justify-center"
-        style={{
-          paddingTop: isNativeApp ? 'env(safe-area-inset-top, 0px)' : '0px',
-          paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 0px)' : '0px',
-        }}
-      >
+      <main className="min-h-dvh bg-background flex items-center justify-center" style={mainStyle}>
         <CircleNotch className="w-8 h-8 animate-spin text-brand-600" />
       </main>
     )
@@ -78,5 +85,19 @@ export default function InvestmentDetailPage() {
       }}
       calculateFutureValue={calculateSimulatedValue}
     />
+  )
+}
+
+export default function InvestmentPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-dvh bg-background flex items-center justify-center">
+          <CircleNotch className="w-8 h-8 animate-spin text-brand-600" />
+        </main>
+      }
+    >
+      <InvestmentDetail />
+    </Suspense>
   )
 }
