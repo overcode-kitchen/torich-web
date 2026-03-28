@@ -1,7 +1,7 @@
 'use client'
 
 import { CircleNotch } from '@phosphor-icons/react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatSignedProfit } from '@/lib/utils'
 import { calculateFinalAmount } from '@/app/utils/finance'
 
 interface InvestmentPreviewCardProps {
@@ -58,7 +58,7 @@ export default function InvestmentPreviewCard({
             <CircleNotch className="w-5 h-5 animate-spin text-muted-foreground" />
           ) : (
             <span className="text-lg font-bold text-brand-600">
-              + {formatCurrency(profit)}
+              {formatSignedProfit(profit)}
             </span>
           )}
         </div>

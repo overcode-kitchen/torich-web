@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatSignedProfit } from '@/lib/utils'
 import { useChartColors } from '@/app/hooks/chart/useChartColors'
 import AssetGrowthChartTooltip from '@/app/components/AssetGrowthSections/AssetGrowthChartTooltip'
 import AssetGrowthChartSummary from '@/app/components/AssetGrowthSections/AssetGrowthChartSummary'
@@ -51,7 +51,7 @@ export default function AssetGrowthChart({
         <div className="rounded-xl border border-border-subtle bg-muted/30 px-4 py-3 dark:border-0 dark:bg-muted-darker">
           <p className="text-sm text-muted-foreground dark:text-foreground-soft">
             🐿️ <span className="font-medium text-foreground-muted dark:text-foreground-soft">토리:</span> "복리 효과로{' '}
-            <span className="font-semibold text-foreground dark:font-bold">+{formatCurrency(currentData.profit)}</span>
+            <span className="font-semibold text-foreground dark:font-bold">{formatSignedProfit(currentData.profit)}</span>
             이 자라났어요"
           </p>
         </div>
