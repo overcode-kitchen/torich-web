@@ -27,10 +27,16 @@ export const metadata: Metadata = {
   },
 };
 
-/** Capacitor 앱에서 상태바/노치 아래로 콘텐츠가 오도록 viewport-fit=cover 필수 */
+/**
+ * Capacitor WebView: viewport-fit=cover로 상태바/노치 대응.
+ * maximumScale + userScalable로 더블탭/핀치 확대 완화(앱형 UI).
+ * (브라우저 접근성상 확대 불가 — 동일 빌드로 웹 배포 시 정책 검토)
+ */
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 };
 
