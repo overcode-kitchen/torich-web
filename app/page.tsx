@@ -16,30 +16,34 @@ export default function Home() {
   const { user, isLoading: authLoading } = useAuth()
   const supabase = createClient()
   const { records, isLoading: dataLoading, updateInvestment, deleteInvestment, refetch } = useInvestments(user?.id)
+  const userId = user?.id
   const { isUpdating: isUpdatingRates, showToast, checkAndUpdate } = useRateUpdate(user?.id)
   const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records, calculateSimulatedValue)
 
   const [showMonthlyAmount, setShowMonthlyAmount] = useState<boolean>(true)
 
-  // Load from DB
+  // Load from DB (PGRST116 = 행 없음 → 신규 사용자, 기본값 유지 / 토스트 없음)
   useEffect(() => {
-    if (!user) return
+    if (!userId) return
 
     const fetchSetting = async () => {
-      const { data, error } = await supabase
+      const client = createClient()
+      const { data, error } = await client
         .from('user_settings')
         .select('show_monthly_amount')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single()
 
-      if (!error && data) {
-        setShowMonthlyAmount(data.show_monthly_amount ?? true)
-      } else if (error) {
+      if (error && error.code !== 'PGRST116') {
         toastError(TOAST_MESSAGES.settingsLoadFailed)
+        return
+      }
+      if (data) {
+        setShowMonthlyAmount(data.show_monthly_amount ?? true)
       }
     }
     fetchSetting()
-  }, [user, supabase])
+  }, [userId])
 
   const toggleMonthlyAmount = async () => {
     const next = !showMonthlyAmount
@@ -75,7 +79,7 @@ export default function Home() {
       setSortBy={setSortBy}
       showMonthlyAmount={showMonthlyAmount}
       onToggleMonthlyAmount={toggleMonthlyAmount}
-      onItemClick={(item) => router.push(`/investment/${item.id}`)}
+      onItemClick={(item) => router.push(`/investment?id=${item.id}`)}
       isBrandStoryOpen={isBrandStoryOpen}
       setIsBrandStoryOpen={setIsBrandStoryOpen}
       showBrandStoryCard={showBrandStoryCard}

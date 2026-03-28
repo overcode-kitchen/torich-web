@@ -7,7 +7,6 @@ import type { NotificationSettingsState } from '../types/useNotificationSettings
 import { defaultNotificationSettings, mapDbDataToSettings } from '@/app/utils/notification-settings'
 
 export function useNotificationSettingsData(userId: string | undefined) {
-  const supabase = createClient()
   const [settings, setSettings] = useState<NotificationSettingsState>(defaultNotificationSettings)
   const [loading, setLoading] = useState(true)
 
@@ -18,6 +17,7 @@ export function useNotificationSettingsData(userId: string | undefined) {
     }
 
     const fetchSettings = async () => {
+      const supabase = createClient()
       try {
         const { data, error } = await supabase
           .from('user_settings')
@@ -41,7 +41,7 @@ export function useNotificationSettingsData(userId: string | undefined) {
     }
 
     fetchSettings()
-  }, [userId, supabase])
+  }, [userId])
 
   return {
     settings,
