@@ -12,7 +12,7 @@ export default function TermsOfServicePage() {
 
     return (
         <LegalDocumentView
-            title="이용약관"
+            title="서비스 이용약관"
             sections={TERMS_OF_SERVICE_SECTIONS}
             onBack={goBack}
         />
