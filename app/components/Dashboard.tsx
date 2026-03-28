@@ -10,6 +10,9 @@ import RateUpdateToast from './DashboardSections/RateUpdateToast'
 import NotificationInbox from './DashboardSections/NotificationInbox'
 import DashboardContent from './DashboardSections/DashboardContent'
 
+/** 메인 앱바 우측 알림함 아이콘. 추후 노출 시 true로 변경 */
+const SHOW_NOTIFICATION_INBOX = false
+
 type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
 type SortBy = 'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME' | 'NEXT_PAYMENT'
 
@@ -103,7 +106,9 @@ export default function Dashboard({
         }}
       >
         <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
-          <Header rightSlot={<NotificationInbox />} />
+          <Header
+            rightSlot={SHOW_NOTIFICATION_INBOX ? <NotificationInbox /> : undefined}
+          />
         </div>
       </header>
 
