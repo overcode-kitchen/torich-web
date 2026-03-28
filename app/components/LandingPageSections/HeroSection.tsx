@@ -21,7 +21,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pb-52">
       {/* 상단 브랜드 영역 */}
       <header className="mb-3">
-        <div className="relative h-10 w-36">
+        <div className="relative h-9 w-32">
           <Image
             src="/images/torich-logo.png"
             alt="토리치 로고"

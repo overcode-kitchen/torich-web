@@ -38,7 +38,7 @@ export default function OnboardingStepLayout({
       {/* 상단: 로고 */}
       {showLogo && (
         <header className="mb-4 shrink-0">
-          <div className="relative h-10 w-36">
+          <div className="relative h-9 w-32">
             <Image
               src="/images/torich-logo.png"
               alt="토리치 로고"
