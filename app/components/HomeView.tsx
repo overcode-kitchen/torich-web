@@ -43,8 +43,6 @@ interface HomeViewProps {
     onCloseBrandStoryCard: () => void
     onUndoBrandStory: () => void
 
-    // UI Actions
-    showToast: boolean
     calculateSimulatedValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
@@ -70,7 +68,6 @@ export default function HomeView({
     pendingBrandStoryUndo,
     onCloseBrandStoryCard,
     onUndoBrandStory,
-    showToast,
     calculateSimulatedValue,
 }: HomeViewProps) {
     if (isLoading) {
@@ -112,7 +109,6 @@ export default function HomeView({
             isBrandStoryOpen={isBrandStoryOpen}
             onOpenBrandStory={() => setIsBrandStoryOpen(true)}
             onCloseBrandStory={() => setIsBrandStoryOpen(false)}
-            showRateUpdateToast={showToast}
             calculateFutureValue={calculateSimulatedValue}
         />
     )

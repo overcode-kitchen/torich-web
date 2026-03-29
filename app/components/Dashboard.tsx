@@ -6,7 +6,6 @@ import { useDashboardUI } from '@/app/hooks/ui/useDashboardUI'
 import { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import Header from './DashboardSections/Header'
-import RateUpdateToast from './DashboardSections/RateUpdateToast'
 import NotificationInbox from './DashboardSections/NotificationInbox'
 import DashboardContent from './DashboardSections/DashboardContent'
 
@@ -40,8 +39,6 @@ export interface DashboardProps {
   onOpenBrandStory: () => void
   onCloseBrandStory: () => void
 
-  showRateUpdateToast: boolean
-
   calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
@@ -64,7 +61,6 @@ export default function Dashboard({
   isBrandStoryOpen,
   onOpenBrandStory,
   onCloseBrandStory,
-  showRateUpdateToast,
   calculateFutureValue,
 }: DashboardProps) {
   const router = useRouter()
@@ -96,8 +92,6 @@ export default function Dashboard({
         paddingTop: contentPaddingTop,
       }}
     >
-      <RateUpdateToast showRateUpdateToast={showRateUpdateToast} />
-
       {/* 앱바: 상태바 아래 패딩 + 정확히 48px 높이의 바 (로고·알림) */}
       <header
         className="fixed inset-x-0 top-0 z-30 w-full bg-surface"
@@ -121,7 +115,6 @@ export default function Dashboard({
           upcomingInvestments: upcomingInvestmentsData,
         }}
         ui={{
-          showRateUpdateToast,
           onAddClick: () => router.push('/add'),
         }}
         filter={{

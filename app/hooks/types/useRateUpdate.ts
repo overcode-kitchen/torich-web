@@ -14,7 +14,5 @@ export type UseRateUpdateOptions = {
 
 export type UseRateUpdateReturn = {
   isUpdating: boolean
-  showToast: boolean
   checkAndUpdate: () => Promise<boolean>
-  hideToast: () => void
 }

@@ -16,7 +16,7 @@ export default function Home() {
   const { user, isLoading: authLoading } = useAuth()
   const supabase = createClient()
   const { records, isLoading: dataLoading, updateInvestment, deleteInvestment, refetch } = useInvestments(user?.id)
-  const { isUpdating: isUpdatingRates, showToast, checkAndUpdate } = useRateUpdate(user?.id)
+  const { isUpdating: isUpdatingRates, checkAndUpdate } = useRateUpdate(user?.id)
   const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records, calculateSimulatedValue)
 
   const [showMonthlyAmount, setShowMonthlyAmount] = useState<boolean>(true)
@@ -83,7 +83,6 @@ export default function Home() {
       pendingBrandStoryUndo={pendingBrandStoryUndo}
       onCloseBrandStoryCard={dismissBrandStoryCard}
       onUndoBrandStory={undoBrandStoryDismiss}
-      showToast={showToast}
       calculateSimulatedValue={calculateSimulatedValue}
     />
   )
