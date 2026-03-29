@@ -32,6 +32,8 @@ export default function FormSection({ form, modals }: FormSectionProps) {
           market={form.market}
           isSearching={form.isSearching}
           searchResults={form.searchResults}
+          searchFetchFailed={form.searchFetchFailed}
+          onRetrySearch={form.retrySearch}
           showDropdown={form.showDropdown}
           onSelectStock={(stock: any) => {
             form.setStockName(stock.name)
