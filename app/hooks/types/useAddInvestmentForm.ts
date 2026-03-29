@@ -22,6 +22,8 @@ export interface UseAddInvestmentFormReturn {
   // 주식 검색 관련
   isSearching: boolean
   searchResults: any[]
+  searchFetchFailed: boolean
+  retrySearch: () => void
   showDropdown: boolean
   setShowDropdown: (show: boolean) => void
   selectedStock: any

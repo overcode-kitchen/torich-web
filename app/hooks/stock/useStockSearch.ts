@@ -71,6 +71,8 @@ export function useStockSearch(
   return {
     isSearching: searchQuery.isSearching,
     searchResults: searchQuery.searchResults,
+    searchFetchFailed: searchQuery.searchFetchFailed,
+    retrySearch: searchQuery.retrySearch,
     showDropdown: dropdown.showDropdown,
     setShowDropdown: dropdown.setShowDropdown,
 
