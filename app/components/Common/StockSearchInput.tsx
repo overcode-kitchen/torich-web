@@ -9,6 +9,8 @@ interface StockSearchInputProps {
   market: 'KR' | 'US'
   isSearching: boolean
   searchResults: SearchResult[]
+  searchFetchFailed: boolean
+  onRetrySearch: () => void
   showDropdown: boolean
   onSelectStock: (stock: SearchResult) => void
   onManualInputClick: () => void
@@ -21,6 +23,8 @@ export default function StockSearchInput({
   market,
   isSearching,
   searchResults,
+  searchFetchFailed,
+  onRetrySearch,
   showDropdown,
   onSelectStock,
   onManualInputClick,
@@ -69,23 +73,53 @@ export default function StockSearchInput({
         </div>
       )}
 
-      {/* 검색 결과 없음 - 직접 입력 안내 */}
-      {showDropdown && searchResults.length === 0 && !isSearching && stockName.trim().length >= 2 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle overflow-hidden z-10">
-          <div className="px-5 py-4 text-center">
-            <p className="text-sm text-muted-foreground mb-3">
-              찾으시는 종목이 없나요?
-            </p>
-            <button
-              type="button"
-              onClick={onManualInputClick}
-              className="w-full bg-primary text-primary-foreground font-medium py-2 px-4 rounded-xl hover:bg-primary/90 transition-colors"
-            >
-              직접 입력하기
-            </button>
+      {/* 검색 요청 실패 */}
+      {showDropdown &&
+        searchFetchFailed &&
+        !isSearching &&
+        stockName.trim().length >= 2 && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle overflow-hidden z-10">
+            <div className="px-5 py-4 text-center space-y-3">
+              <p className="text-base text-foreground">
+                지금 검색 결과를 불러오지 못했어요.
+              </p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onRetrySearch()
+                  }}
+                  className="w-full sm:w-auto bg-primary text-primary-foreground font-medium py-2.5 px-4 rounded-xl hover:bg-primary/90 transition-colors"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+      {/* 정상 응답 · 결과 0건 — 직접 입력 안내 */}
+      {showDropdown &&
+        !searchFetchFailed &&
+        searchResults.length === 0 &&
+        !isSearching &&
+        stockName.trim().length >= 2 && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle overflow-hidden z-10">
+            <div className="px-5 py-4 text-center">
+              <p className="text-base text-muted-foreground mb-3">
+                조건에 맞는 종목이 없어요
+              </p>
+              <button
+                type="button"
+                onClick={onManualInputClick}
+                className="w-full bg-primary text-primary-foreground font-medium py-2 px-4 rounded-xl hover:bg-primary/90 transition-colors"
+              >
+                직접 입력하기
+              </button>
+            </div>
+          </div>
+        )}
     </div>
   )
 }

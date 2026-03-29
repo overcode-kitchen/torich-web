@@ -2,12 +2,11 @@
 
 import { useCallback, useState } from 'react'
 import { apiClient } from '@/lib/api-client'
-import { useToast } from '../ui/useToast'
+import { showErrorToast, TOAST_MESSAGES } from '@/app/utils/toast'
 import type { CheckResponse, UpdateResponse, UseRateUpdateOptions, UseRateUpdateReturn } from '../types/useRateUpdate'
 
 export const useRateUpdate = (userId?: string, options?: UseRateUpdateOptions): UseRateUpdateReturn => {
   const [isUpdating, setIsUpdating] = useState<boolean>(false)
-  const toast = useToast()
 
   const checkAndUpdate = useCallback(async (): Promise<boolean> => {
     if (!userId) return false
@@ -26,25 +25,28 @@ export const useRateUpdate = (userId?: string, options?: UseRateUpdateOptions): 
         body: JSON.stringify({ userId }),
       })
 
+      if (updateData.success === false) {
+        showErrorToast(TOAST_MESSAGES.rateUpdateFailed)
+        return false
+      }
+
       const updated: boolean = Boolean(updateData.success && updateData.updated)
 
       if (updated) {
-        toast.show()
         await options?.onUpdateComplete?.()
       }
 
       return updated
-    } catch {
+    } catch (error) {
+      showErrorToast(TOAST_MESSAGES.rateUpdateFailed, error)
       return false
     } finally {
       setIsUpdating(false)
     }
-  }, [options, toast, userId])
+  }, [options, userId])
 
   return {
     isUpdating,
-    showToast: toast.showToast,
     checkAndUpdate,
-    hideToast: toast.hide,
   }
 }

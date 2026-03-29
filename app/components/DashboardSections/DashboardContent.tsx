@@ -6,7 +6,6 @@ import Link from 'next/link'
 import type { Investment } from '@/app/types/investment'
 import UpcomingInvestments from '@/app/components/UpcomingInvestments'
 import type { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
-import RateUpdateToast from './RateUpdateToast'
 import MonthlyAmountCard from './MonthlyAmountCard'
 import BrandStorySection from './BrandStorySection'
 import InvestmentListSection from './InvestmentListSection'
@@ -24,7 +23,6 @@ interface DashboardContentProps {
         upcomingInvestments: ReturnType<typeof useUpcomingInvestments>
     }
     ui: {
-        showRateUpdateToast: boolean
         onAddClick: () => void
     }
     filter: {
@@ -69,7 +67,7 @@ export default function DashboardContent({
     calculations,
 }: DashboardContentProps) {
     const { records, filteredRecords, activeRecords, totalMonthlyPayment, upcomingInvestments } = data
-    const { showRateUpdateToast, onAddClick } = ui
+    const { onAddClick } = ui
     const { filterStatus, onFilterChange, sortBy, onSortChange } = filter
     const { listExpanded, displayRecords, hasMoreList, remainingListCount, toggleListExpansion, onItemClick } = list
     const { showBrandStoryCard, onCloseBrandStoryCard, pendingBrandStoryUndo, onUndoBrandStory, isBrandStoryOpen, onOpenBrandStory, onCloseBrandStory } = brandStory
@@ -78,8 +76,6 @@ export default function DashboardContent({
 
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
-            <RateUpdateToast showRateUpdateToast={showRateUpdateToast} />
-
             {activeRecords.length > 0 && (
                 <UpcomingInvestments
                     records={activeRecords}

@@ -24,6 +24,8 @@ export type StockApiResponse = Partial<StockDetail> & {
 export type UseStockSearchReturn = {
   isSearching: boolean
   searchResults: SearchResult[]
+  searchFetchFailed: boolean
+  retrySearch: () => void
   showDropdown: boolean
   setShowDropdown: (show: boolean) => void
 

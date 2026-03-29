@@ -26,6 +26,8 @@ export const TOAST_MESSAGES = {
   dataLoadFailed: '데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
   /** 네트워크 오류 */
   networkError: '네트워크 연결을 확인한 뒤 다시 시도해 주세요.',
+  /** 시스템 수익률 자동 갱신 실패 (홈 진입·update-user-rates) */
+  rateUpdateFailed: '수익률 갱신에 실패했어요. 잠시 후 다시 시도해 주세요.',
 } as const
 
 function isNetworkError(error: unknown): boolean {
