@@ -8,6 +8,7 @@ import { useMonthlyContribution } from '@/app/hooks/investment/calculations/useM
 import StatsHeader from '@/app/components/StatsSections/StatsHeader'
 import StatsContent from '@/app/components/StatsSections/StatsContent'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
+import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 import { CashHoldItemVM } from '@/app/hooks/investment/calculations/useStatsCalculations'
 
@@ -99,6 +100,7 @@ export default function StatsView({
             style={{
                 // 앱바 실제 높이(safe area + 48px) + 여유 8px
                 paddingTop: contentPaddingTop,
+                paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM,
             }}
         >
             {/* 앱바: 배경은 화면 맨 위까지, 콘텐츠는 상태바 아래로만 (Safe Area) */}
@@ -115,7 +117,7 @@ export default function StatsView({
                 </div>
             </header>
 
-            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 pb-24">
+            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4">
                 <StatsContent
                     data={data}
                     ui={ui}
