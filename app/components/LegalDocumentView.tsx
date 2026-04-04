@@ -3,6 +3,7 @@
 import { ArrowLeft } from '@phosphor-icons/react'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import type { LegalSection } from '@/lib/legal/types'
+import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 export interface LegalDocumentViewProps {
     title: string
@@ -36,7 +37,10 @@ export default function LegalDocumentView({ title, sections, onBack }: LegalDocu
                 </div>
             </header>
 
-            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-2 pb-20">
+            <div
+                className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-2"
+                style={{ paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM }}
+            >
                 <h1 className="text-xl font-bold tracking-tight text-foreground mb-6">{title}</h1>
 
                 <article className="space-y-8 text-foreground">

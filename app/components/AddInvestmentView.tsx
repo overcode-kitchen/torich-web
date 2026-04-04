@@ -1,6 +1,7 @@
 'use client'
 
-import { ArrowLeft, CircleNotch } from '@phosphor-icons/react'
+import { CircleNotch } from '@phosphor-icons/react'
+import SubPageScaffold from '@/app/components/SubPageScaffold'
 import MarketSelectionSection from '@/app/components/AddInvestmentSections/MarketSelectionSection'
 import FormSection from '@/app/components/AddInvestmentSections/FormSection'
 import PreviewSection from '@/app/components/AddInvestmentSections/PreviewSection'
@@ -25,19 +26,8 @@ export default function AddInvestmentView({
     onBack
 }: AddInvestmentViewProps) {
     return (
-        <main className="min-h-screen bg-surface">
-            {/* 뒤로가기 버튼 */}
-            <header className="h-[52px] flex items-center px-2">
-                <button
-                    onClick={onBack}
-                    className="p-2 text-foreground-soft hover:text-foreground transition-colors"
-                    aria-label="뒤로가기"
-                >
-                    <ArrowLeft className="w-6 h-6" />
-                </button>
-            </header>
-
-            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-6">
+        <>
+            <SubPageScaffold onBack={onBack} contentClassName="py-6">
                 {/* 상단 헤더 텍스트 */}
                 <div className="mb-8">
                     <h1 className="text-xl font-bold text-foreground mb-3">
@@ -81,7 +71,7 @@ export default function AddInvestmentView({
                         '저장하기'
                     )}
                 </button>
-            </div>
+            </SubPageScaffold>
 
             {/* 매월 투자일 선택 바텀 시트 */}
             {modals.isDaysPickerOpen && (
@@ -126,6 +116,6 @@ export default function AddInvestmentView({
                 isOpen={modals.isRateHelpModalOpen}
                 onClose={() => modals.setIsRateHelpModalOpen(false)}
             />
-        </main>
+        </>
     )
 }

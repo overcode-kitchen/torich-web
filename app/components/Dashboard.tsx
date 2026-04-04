@@ -5,6 +5,7 @@ import type { Investment } from '@/app/types/investment'
 import { useDashboardUI } from '@/app/hooks/ui/useDashboardUI'
 import { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
+import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 import Header from './DashboardSections/Header'
 import NotificationInbox from './DashboardSections/NotificationInbox'
 import DashboardContent from './DashboardSections/DashboardContent'
@@ -90,6 +91,7 @@ export default function Dashboard({
       style={{
         // 앱바 실제 높이(safe area + 48px) + 여유 8px
         paddingTop: contentPaddingTop,
+        paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM,
       }}
     >
       {/* 앱바: 상태바 아래 패딩 + 정확히 48px 높이의 바 (로고·알림) */}

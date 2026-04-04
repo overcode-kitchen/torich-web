@@ -10,6 +10,7 @@ import {
   type NotificationItem,
 } from '@/app/hooks/notification/useNotificationInbox'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 function minutesAgo(mins: number): string {
   return new Date(Date.now() - mins * 60_000).toISOString()
@@ -65,7 +66,10 @@ function NotificationsContent() {
         </button>
       </header>
 
-      <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 pb-20">
+      <div
+        className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4"
+        style={{ paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM }}
+      >
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-xl font-bold text-foreground tracking-tight">
             알림

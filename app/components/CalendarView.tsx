@@ -6,6 +6,7 @@ import { SelectedDateSection } from '@/app/components/CalendarSections/SelectedD
 import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import type { PaymentEvent } from '@/app/utils/stats'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
+import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 interface CalendarViewProps {
     isLoading: boolean
@@ -58,7 +59,6 @@ export default function CalendarView({
     const contentPaddingTop = isNativeApp
         ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px)'
         : '48px'
-    const bottomPadding = isNativeApp ? 'env(safe-area-inset-bottom, 0px)' : '0px'
     if (isLoading) {
         return (
             <main className="min-h-screen bg-surface flex items-center justify-center">
@@ -74,7 +74,7 @@ export default function CalendarView({
             role="presentation"
             style={{
                 paddingTop: contentPaddingTop,
-                paddingBottom: bottomPadding,
+                paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM,
             }}
         >
             {/* 앱바: 상단 고정 (홈/통계 등과 동일) */}
@@ -106,7 +106,7 @@ export default function CalendarView({
                     />
                 </div>
 
-                <div className="flex-1 min-h-0 overflow-y-auto pb-24">
+                <div className="flex-1 min-h-0 overflow-y-auto">
                     <SelectedDateSection
                         selectedDate={selectedDate}
                         selectedEvents={selectedEvents}

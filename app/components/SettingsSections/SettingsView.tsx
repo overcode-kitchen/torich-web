@@ -8,6 +8,7 @@ import { BrandStorySheet } from '@/app/components/BrandStorySheet'
 import { SettingsItem } from './SettingsItem'
 import type { Theme } from '@/app/components/ThemeSections/ThemeProvider'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
+import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 interface SettingsViewProps {
     // Auth
@@ -71,6 +72,7 @@ export default function SettingsView({
             style={{
                 // 앱바 실제 높이(safe area + 48px) + 여유 8px
                 paddingTop: contentPaddingTop,
+                paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM,
             }}
         >
             {/* 앱바: 배경은 화면 맨 위까지, 콘텐츠는 상태바 아래로만 (Safe Area) */}
@@ -87,7 +89,7 @@ export default function SettingsView({
                 </div>
             </header>
 
-            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 pb-24 space-y-4">
+            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 space-y-4">
                 {/* 테마 설정 카드 (전용 스타일) */}
                 <section className="bg-card rounded-2xl px-4 py-4 mt-2">
                     <ThemeSelector theme={theme} setTheme={setTheme} />
