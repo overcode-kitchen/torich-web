@@ -16,7 +16,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // 앱 스타일 상단 헤더(Safe Area + 48px 앱바)를 사용하는 화면 여부
   // - 메인 탭 화면(홈/통계/캘린더/설정 등)
   // - 투자 상세 등 상단 고정 앱바를 사용하는 화면
-  const usesAppHeader = !hideNav || pathname.startsWith('/investment')
+  // /add: SubPageScaffold가 safe area + 앱바를 처리하므로 SafeArea 상단 패딩 비활성화
+  const usesAppHeader =
+    !hideNav ||
+    pathname.startsWith('/investment') ||
+    pathname === '/add' ||
+    pathname.startsWith('/add/')
 
   // 하단 탭은 웹/앱 공통으로 hideNav가 아닐 때 항상 표시
   const showBottomNav = !hideNav
