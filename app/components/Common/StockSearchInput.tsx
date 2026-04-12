@@ -1,6 +1,7 @@
 'use client'
 
 import { CircleNotch } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
 import { type SearchResult } from '@/app/hooks/stock/useStockSearch'
 
 interface StockSearchInputProps {
@@ -83,17 +84,30 @@ export default function StockSearchInput({
               <p className="text-base text-foreground">
                 지금 검색 결과를 불러오지 못했어요.
               </p>
-              <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-                <button
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-center sm:flex-wrap">
+                <Button
                   type="button"
+                  size="lg"
+                  className="w-full sm:w-auto rounded-xl"
                   onClick={(e) => {
                     e.stopPropagation()
                     onRetrySearch()
                   }}
-                  className="w-full sm:w-auto bg-primary text-primary-foreground font-medium py-2.5 px-4 rounded-xl hover:bg-primary/90 transition-colors"
                 >
                   다시 시도
-                </button>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto rounded-xl"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onManualInputClick()
+                  }}
+                >
+                  직접 입력하기
+                </Button>
               </div>
             </div>
           </div>
