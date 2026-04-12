@@ -15,6 +15,8 @@ import {
 
 /**
  * FCM 토큰 등록 훅
+ * - DB 저장은 `saveTokenToDB`에서 user+device+token 지문으로 중복 요청을 스킵합니다.
+ * - 호출은 NotificationProvider(로그인·푸시 준비 후) 한 경로로 통합했습니다.
  */
 export function useFCMToken() {
   /**

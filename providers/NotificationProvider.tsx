@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
-import { createClient } from "@/utils/supabase/client";
 import { useFCMToken } from "@/app/hooks/notification/useFCMToken";
 import { useAuth } from "@/app/hooks/auth/useAuth";
 
@@ -15,62 +14,79 @@ export default function NotificationProvider({
 }) {
     const { user } = useAuth();
     const { registerFCMToken } = useFCMToken();
+    const userRef = useRef(user);
+    userRef.current = user;
 
+    const [pushReady, setPushReady] = useState(false);
+
+    /** 네이티브: 권한 + 리스너만 1회 (user와 무관) */
     useEffect(() => {
-        const initPushNotifications = async () => {
-            try {
-                // 1. 네이티브 플랫폼 확인
-                if (!Capacitor.isNativePlatform()) {
-                    console.log("Not a native platform. Skipping push notification setup.");
-                    return;
-                }
+        let cancelled = false;
 
-                // 2. 권한 요청 (FirebaseMessaging 플러그인 사용)
+        const setupListeners = async () => {
+            if (!Capacitor.isNativePlatform()) {
+                return;
+            }
+
+            try {
                 const permission = await FirebaseMessaging.requestPermissions();
+                if (cancelled) return;
                 if (permission.receive !== "granted") {
                     console.warn("Push notification permission not granted");
                     return;
                 }
 
-                // 3. FCM 토큰 등록 (useFCMToken 훅 사용)
-                if (user) {
-                    await registerFCMToken(user);
-                }
+                await PushNotifications.removeAllListeners();
+
+                await PushNotifications.addListener(
+                    "pushNotificationReceived",
+                    (notification) => {
+                        console.log(
+                            "Push received: " + JSON.stringify(notification),
+                        );
+                    },
+                );
+
+                await PushNotifications.addListener(
+                    "pushNotificationActionPerformed",
+                    (notification) => {
+                        console.log(
+                            "Push action performed: " +
+                                JSON.stringify(notification),
+                        );
+                    },
+                );
+
+                if (!cancelled) setPushReady(true);
             } catch (error) {
-                console.error("❌ Push notification setup error:", error);
+                console.error("❌ Push listener setup error:", error);
             }
-
-            // 리스너 등록: 포그라운드 알림 수신 (유지 - PushNotifications 플러그인 사용)
-            // FirebaseMessaging 플러그인에도 리스너가 있지만, 기존 코드 유지를 위해 PushNotifications 사용
-            // 만약 중복 수신 문제가 발생하면 FirebaseMessaging.addListener로 교체 고려
-            await PushNotifications.addListener(
-                "pushNotificationReceived",
-                (notification) => {
-                    console.log("Push received: " + JSON.stringify(notification));
-                }
-            );
-
-            // 리스너 등록: 알림 탭 액션 (유지)
-            await PushNotifications.addListener(
-                "pushNotificationActionPerformed",
-                (notification) => {
-                    console.log(
-                        "Push action performed: " + JSON.stringify(notification)
-                    );
-                }
-            );
         };
 
-        initPushNotifications();
+        void setupListeners();
 
-        // 정리(cleanup)
         return () => {
+            cancelled = true;
+            setPushReady(false);
             if (Capacitor.isNativePlatform()) {
-                PushNotifications.removeAllListeners();
-                FirebaseMessaging.removeAllListeners();
+                void PushNotifications.removeAllListeners();
+                void FirebaseMessaging.removeAllListeners();
             }
         };
-    }, [user, registerFCMToken]);
+    }, []);
+
+    /** 로그인 사용자 FCM 등록 (user.id 기준, 네이티브는 push 준비 후) */
+    useEffect(() => {
+        const uid = user?.id;
+        if (!uid) return;
+
+        const u = userRef.current;
+        if (!u?.id) return;
+
+        if (Capacitor.isNativePlatform() && !pushReady) return;
+
+        void registerFCMToken(u);
+    }, [user?.id, pushReady, registerFCMToken]);
 
     return <>{children}</>;
 }
