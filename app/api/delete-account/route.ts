@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient as createServerSupabaseClient } from '@/utils/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { deleteUserPublicData } from '@/utils/supabase/delete-user-public-data'
 
 export async function POST() {
   try {
@@ -27,6 +28,15 @@ export async function POST() {
     }
 
     const adminClient = createAdminClient(supabaseUrl, serviceRoleKey)
+
+    const { error: dataCleanupError } = await deleteUserPublicData(adminClient, user.id)
+    if (dataCleanupError) {
+      console.error('Failed to delete user public data:', dataCleanupError)
+      return NextResponse.json(
+        { error: 'Failed to delete account data' },
+        { status: 500 }
+      )
+    }
 
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(user.id)
 
