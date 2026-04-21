@@ -26,34 +26,34 @@ export default function AmountInput({
         </span>
       </div>
       {/* 빠른 조절 버튼 */}
-      <div className="flex flex-wrap gap-2 justify-start mt-2">
+      <div className="flex flex-wrap gap-2 justify-end mt-2">
         <button
           type="button"
           onClick={() => onAdjust(10)}
-          className="rounded-full bg-surface-strong hover:bg-surface-strong-hover text-foreground-soft font-semibold text-sm px-4 py-2 transition-colors"
+          className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-xs px-3 py-1.5 transition-colors"
         >
-          +10
+          +10만
         </button>
         <button
           type="button"
           onClick={() => onAdjust(-10)}
-          className="rounded-full bg-surface-strong hover:bg-surface-strong-hover text-foreground-soft font-semibold text-sm px-4 py-2 transition-colors"
+          className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-xs px-3 py-1.5 transition-colors"
         >
-          -10
+          -10만
         </button>
         <button
           type="button"
           onClick={() => onAdjust(1)}
-          className="rounded-full bg-surface-strong hover:bg-surface-strong-hover text-foreground-soft font-semibold text-sm px-4 py-2 transition-colors"
+          className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-xs px-3 py-1.5 transition-colors"
         >
-          +1
+          +1만
         </button>
         <button
           type="button"
           onClick={() => onAdjust(-1)}
-          className="rounded-full bg-surface-strong hover:bg-surface-strong-hover text-foreground-soft font-semibold text-sm px-4 py-2 transition-colors"
+          className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-xs px-3 py-1.5 transition-colors"
         >
-          -1
+          -1만
         </button>
       </div>
     </div>
