@@ -81,7 +81,7 @@ export function InvestmentDetailHeader({
                                 <DotsThreeVertical className="w-6 h-6" weight="regular" />
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[140px]">
+                        <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => setIsEditMode(true)}>
                                 수정하기
                             </DropdownMenuItem>
