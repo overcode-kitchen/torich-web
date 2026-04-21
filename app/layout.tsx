@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-// import { GoogleAnalytics } from "@next/third-parties/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import AppLayout from "./components/AppLayout";
@@ -20,10 +20,41 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "토리치 - 투자 알림",
-  description: "매달 꾸준히 적립 투자, 복리로 미래를 계산해보세요.",
+  metadataBase: new URL("https://torich.app"),
+  title: "토리치 - 매달 투자, 까먹지 않게",
+  description:
+    "적립식 투자 알림과 납입 관리를 한 곳에서. 매월 투자일 알림, 완료 체크, 투자 현황을 한눈에 확인하세요.",
+  keywords: ["적립식 투자", "투자 알림", "복리 계산기", "투자 관리", "납입 관리"],
+  authors: [{ name: "토리치" }],
+  creator: "토리치",
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: "/icon.png?v=7",
+  },
+  openGraph: {
+    title: "토리치 - 매달 투자, 까먹지 않게",
+    description: "적립식 투자 알림과 납입 관리를 한 곳에서.",
+    url: "https://torich.app",
+    siteName: "토리치",
+    locale: "ko_KR",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "토리치 - 적립식 투자 관리",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "토리치 - 매달 투자, 까먹지 않게",
+    description: "적립식 투자 알림과 납입 관리를 한 곳에서.",
+    images: ["/og-image.png"],
   },
 };
 
@@ -56,7 +87,9 @@ export default function RootLayout({
             <AppLayout>{children}</AppLayout>
             <Toaster richColors position="top-center" closeButton />
           </NotificationProvider>
-          {/* <GoogleAnalytics gaId="G-C8E4VZ883Y" /> */}
+          {process.env.NEXT_PUBLIC_GA_ID && (
+            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+          )}
         </ThemeProvider>
       </body>
     </html>
