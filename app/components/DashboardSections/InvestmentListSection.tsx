@@ -24,6 +24,7 @@ export interface InvestmentListSectionProps {
   sortBy: SortBy
   onSortChange: (sort: SortBy) => void
   onItemClick: (item: Investment) => void
+  onDelete?: (id: string) => Promise<void>
   calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
   listExpanded?: boolean
   onListExpandToggle?: () => void
@@ -40,6 +41,7 @@ export default function InvestmentListSection({
   sortBy,
   onSortChange,
   onItemClick,
+  onDelete,
   calculateFutureValue,
   listExpanded,
   onListExpandToggle,
@@ -124,6 +126,7 @@ export default function InvestmentListSection({
                 key={item.id}
                 item={item}
                 onClick={() => onItemClick(item)}
+                onDelete={onDelete}
                 calculateFutureValue={calculateFutureValue}
               />
             ))}

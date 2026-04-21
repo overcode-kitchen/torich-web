@@ -33,6 +33,7 @@ interface HomeViewProps {
 
     // List item click → navigate to detail page
     onItemClick: (item: Investment) => void
+    onDeleteInvestment?: (id: string) => Promise<void>
 
     // Brand Story
     isBrandStoryOpen: boolean
@@ -61,6 +62,7 @@ export default function HomeView({
     showMonthlyAmount,
     onToggleMonthlyAmount,
     onItemClick,
+    onDeleteInvestment,
     isBrandStoryOpen,
     setIsBrandStoryOpen,
     showBrandStoryCard,
@@ -102,6 +104,7 @@ export default function HomeView({
             showMonthlyAmount={showMonthlyAmount}
             onToggleMonthlyAmount={onToggleMonthlyAmount}
             onItemClick={onItemClick}
+            onDelete={onDeleteInvestment}
             showBrandStoryCard={showBrandStoryCard}
             onCloseBrandStoryCard={onCloseBrandStoryCard}
             pendingBrandStoryUndo={pendingBrandStoryUndo}

@@ -6,6 +6,7 @@ import { useDashboardUI } from '@/app/hooks/ui/useDashboardUI'
 import { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
+import { track } from '@/app/lib/analytics'
 import Header from './DashboardSections/Header'
 import NotificationInbox from './DashboardSections/NotificationInbox'
 import DashboardContent from './DashboardSections/DashboardContent'
@@ -31,6 +32,7 @@ export interface DashboardProps {
   onToggleMonthlyAmount: () => void
 
   onItemClick: (item: Investment) => void
+  onDelete?: (id: string) => Promise<void>
 
   showBrandStoryCard: boolean
   onCloseBrandStoryCard: () => void
@@ -55,6 +57,7 @@ export default function Dashboard({
   showMonthlyAmount,
   onToggleMonthlyAmount,
   onItemClick,
+  onDelete,
   showBrandStoryCard,
   onCloseBrandStoryCard,
   pendingBrandStoryUndo,
@@ -117,7 +120,10 @@ export default function Dashboard({
           upcomingInvestments: upcomingInvestmentsData,
         }}
         ui={{
-          onAddClick: () => router.push('/add'),
+          onAddClick: () => {
+            track('investment_add_click', { entry_point: 'dashboard' })
+            router.push('/add')
+          },
         }}
         filter={{
           filterStatus,
@@ -132,6 +138,7 @@ export default function Dashboard({
           remainingListCount,
           toggleListExpansion,
           onItemClick,
+          onDelete,
         }}
         brandStory={{
           showBrandStoryCard,

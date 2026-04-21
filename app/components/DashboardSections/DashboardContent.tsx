@@ -38,6 +38,7 @@ interface DashboardContentProps {
         remainingListCount: number
         toggleListExpansion: () => void
         onItemClick: (item: Investment) => void
+        onDelete?: (id: string) => Promise<void>
     }
     brandStory: {
         showBrandStoryCard: boolean
@@ -69,7 +70,7 @@ export default function DashboardContent({
     const { records, filteredRecords, activeRecords, totalMonthlyPayment, upcomingInvestments } = data
     const { onAddClick } = ui
     const { filterStatus, onFilterChange, sortBy, onSortChange } = filter
-    const { listExpanded, displayRecords, hasMoreList, remainingListCount, toggleListExpansion, onItemClick } = list
+    const { listExpanded, displayRecords, hasMoreList, remainingListCount, toggleListExpansion, onItemClick, onDelete } = list
     const { showBrandStoryCard, onCloseBrandStoryCard, pendingBrandStoryUndo, onUndoBrandStory, isBrandStoryOpen, onOpenBrandStory, onCloseBrandStory } = brandStory
     const { showMonthlyAmount, onToggleMonthlyAmount } = settings
     const { calculateFutureValue } = calculations
@@ -119,6 +120,7 @@ export default function DashboardContent({
                     sortBy={sortBy}
                     onSortChange={onSortChange}
                     onItemClick={onItemClick}
+                    onDelete={onDelete}
                     calculateFutureValue={calculateFutureValue}
                     listExpanded={listExpanded}
                     onListExpandToggle={toggleListExpansion}
