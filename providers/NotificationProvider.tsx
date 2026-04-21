@@ -7,6 +7,7 @@ import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import { createClient } from "@/utils/supabase/client";
 import { useFCMToken } from "@/app/hooks/notification/useFCMToken";
 import { useAuth } from "@/app/hooks/auth/useAuth";
+import { track } from "@/app/lib/analytics";
 
 export default function NotificationProvider({
     children,
@@ -26,11 +27,14 @@ export default function NotificationProvider({
                 }
 
                 // 2. 권한 요청 (FirebaseMessaging 플러그인 사용)
+                track("notification_permission_prompt")
                 const permission = await FirebaseMessaging.requestPermissions();
                 if (permission.receive !== "granted") {
+                    track("notification_permission_denied")
                     console.warn("Push notification permission not granted");
                     return;
                 }
+                track("notification_permission_granted")
 
                 // 3. FCM 토큰 등록 (useFCMToken 훅 사용)
                 if (user) {
