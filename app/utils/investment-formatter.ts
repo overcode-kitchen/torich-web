@@ -12,6 +12,7 @@ interface FormatInvestmentDataParams {
   isManualInput: boolean
   originalSystemRate: number | null
   selectedStock: any
+  market?: 'KR' | 'US'
 }
 
 interface FormattedInvestmentData {
@@ -24,6 +25,7 @@ interface FormattedInvestmentData {
   start_date: string // YYYY-MM-DD 형식
   investment_days: number[] | null
   is_custom_rate: boolean
+  market: 'KR' | 'US' | null
 }
 
 /**
@@ -99,5 +101,6 @@ export async function formatInvestmentData(
     start_date: formatDateToISO(params.startDate),
     investment_days: params.investmentDays.length > 0 ? params.investmentDays : null,
     is_custom_rate: isCustomRate,
+    market: params.market ?? null,
   }
 }

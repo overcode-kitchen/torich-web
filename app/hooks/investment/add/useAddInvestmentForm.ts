@@ -45,6 +45,7 @@ export function useAddInvestmentForm(): UseAddInvestmentFormReturn {
     isManualInput: manualInput.isManualInput,
     originalSystemRate: updatedStockSearch.originalSystemRate,
     selectedStock: updatedStockSearch.selectedStock,
+    market: updatedStockSearch.market,
   })
 
   return {

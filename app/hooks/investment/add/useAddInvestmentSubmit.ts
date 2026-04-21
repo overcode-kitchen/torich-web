@@ -7,6 +7,7 @@ import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { validateInvestmentForm, validateAndHandleError } from '@/app/utils/validation'
 import { createClient } from '@/utils/supabase/client'
 import { formatInvestmentData } from '@/app/utils/investment-formatter'
+import { track, amountBucket } from '@/app/lib/analytics'
 
 export interface UseAddInvestmentSubmitProps {
   stockName: string
@@ -18,6 +19,7 @@ export interface UseAddInvestmentSubmitProps {
   isManualInput: boolean
   originalSystemRate: number | null
   selectedStock: any
+  market?: 'KR' | 'US'
 }
 
 export interface UseAddInvestmentSubmitReturn {
@@ -36,6 +38,7 @@ export function useAddInvestmentSubmit({
   isManualInput,
   originalSystemRate,
   selectedStock,
+  market,
 }: UseAddInvestmentSubmitProps): UseAddInvestmentSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
@@ -77,6 +80,7 @@ export function useAddInvestmentSubmit({
         isManualInput,
         originalSystemRate,
         selectedStock,
+        market,
       })
 
       // Supabase에 데이터 저장 (개별 알림 기본값: 켜짐)
@@ -92,6 +96,12 @@ export function useAddInvestmentSubmit({
         toastError(TOAST_MESSAGES.updateSaveFailed)
         return
       }
+
+      track('investment_create_success', {
+        amount_bucket: amountBucket(Number(monthlyAmount) || 0),
+        cycle_type: investmentDays.length > 0 ? 'custom' : 'monthly',
+        has_rate: annualRate > 0,
+      })
 
       // 성공 시 메인으로 이동
       router.refresh()
@@ -111,6 +121,7 @@ export function useAddInvestmentSubmit({
     isManualInput,
     originalSystemRate,
     selectedStock,
+    market,
     userId,
     router,
   ])

@@ -14,6 +14,7 @@ export interface Investment {
   investment_days?: number[] // 매월 투자하는 날짜들 (예: [5, 25] = 매월 5일, 25일)
   is_custom_rate?: boolean | null // 수익률 직접 입력/수정 여부
   notification_enabled?: boolean // 해당 투자에 대한 리마인더 알림 on/off (records.notification_enabled)
+  market?: 'KR' | 'US' | null // 투자 시장 구분 (한국/미국)
 }
 
 /**
