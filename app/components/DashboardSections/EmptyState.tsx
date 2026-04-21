@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Plus } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
+import { track } from '@/app/lib/analytics'
 
 export interface EmptyStateProps {
   onAddClick: () => void
@@ -17,7 +18,10 @@ export default function EmptyState({ onAddClick }: EmptyStateProps) {
       <Button
         size="lg"
         className="rounded-2xl shadow-lg"
-        onClick={onAddClick}
+        onClick={() => {
+          track('investment_add_click', { entry_point: 'empty_state' })
+          onAddClick()
+        }}
       >
         <Plus className="w-5 h-5" />
         투자 목록 추가하기

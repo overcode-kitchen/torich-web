@@ -1,5 +1,7 @@
 'use client'
 
+import { track } from '@/app/lib/analytics'
+
 interface DeleteConfirmModalProps {
   isOpen: boolean
   onClose: () => void
@@ -53,7 +55,10 @@ export default function DeleteConfirmModal({
             취소
           </button>
           <button
-            onClick={onConfirm}
+            onClick={() => {
+              track('investment_delete')
+              onConfirm()
+            }}
             disabled={isDeleting}
             className="flex-1 py-3 text-base font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
           >
