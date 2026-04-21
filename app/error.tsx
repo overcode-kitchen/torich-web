@@ -1,11 +1,13 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   FullScreenErrorSection,
   type FullScreenErrorSectionProps,
 } from '@/app/components/ErrorSections/FullScreenErrorSection'
+import { track } from '@/app/lib/analytics'
 
 interface RootErrorProps {
   error: Error & { digest?: string }
@@ -37,6 +39,13 @@ export default function RootError({ error, reset }: RootErrorProps): ReactNode {
   const router = useRouter()
 
   const type = getErrorTypeFromMessage(error?.message)
+
+  useEffect(() => {
+    track('app_error', {
+      message: type,
+      ...(error?.digest ? { digest: error.digest } : {}),
+    })
+  }, [])
 
   const debugMessage =
     process.env.NODE_ENV === 'development'

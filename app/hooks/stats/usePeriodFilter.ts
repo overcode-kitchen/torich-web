@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { subDays } from 'date-fns'
 import type { DateRange } from 'react-day-picker'
+import { track } from '@/app/lib/analytics'
 
 export type PeriodPreset = '1' | '3' | '6' | '12' | 'custom'
 
@@ -16,7 +17,12 @@ export interface UsePeriodFilterReturn {
 }
 
 export function usePeriodFilter(): UsePeriodFilterReturn {
-  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('6')
+  const [periodPreset, setPeriodPresetState] = useState<PeriodPreset>('6')
+
+  const setPeriodPreset = (preset: PeriodPreset) => {
+    track('stats_filter_change', { from: periodPreset, to: preset })
+    setPeriodPresetState(preset)
+  }
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(() => {
     const end = new Date()
     const start = subDays(end, 6)

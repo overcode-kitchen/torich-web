@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useStatsData } from '@/app/hooks/investment/data/useStatsData'
 import { usePeriodFilter } from '@/app/hooks/stats/usePeriodFilter'
 import { useStatsCalculations } from '@/app/hooks/investment/calculations/useStatsCalculations'
@@ -7,9 +8,14 @@ import { useChartData } from '@/app/hooks/chart/useChartData'
 import { useStatsPageUI } from '@/app/hooks/stats/useStatsPageUI'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import StatsView from '@/app/components/StatsSections/StatsView'
+import { track } from '@/app/lib/analytics'
 
 export default function StatsPage() {
   const { user, records, activeRecords, isLoading, router } = useStatsData()
+
+  useEffect(() => {
+    track('stats_view')
+  }, [])
   const { completedPayments, isLoading: historyLoading } = usePaymentHistory()
 
   const {

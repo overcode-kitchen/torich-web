@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { addMonths, subMonths, getDaysInMonth, startOfMonth, getDay } from 'date-fns'
+import { track } from '@/app/lib/analytics'
 
 export function useCalendar() {
   const [currentMonth, setCurrentMonth] = useState(() => new Date())
@@ -31,6 +32,7 @@ export function useCalendar() {
   }, [])
 
   const selectDate = useCallback((day: number) => {
+    track('calendar_date_select')
     setSelectedDate(new Date(year, month - 1, day))
   }, [year, month])
 

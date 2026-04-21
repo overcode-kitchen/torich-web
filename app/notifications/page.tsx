@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import {
 } from '@/app/hooks/notification/useNotificationInbox'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
+import { track } from '@/app/lib/analytics'
 
 function minutesAgo(mins: number): string {
   return new Date(Date.now() - mins * 60_000).toISOString()
@@ -49,6 +50,11 @@ function NotificationsContent() {
     rootPath: '/settings',
     enableHistoryFallback: true,
   })
+
+  useEffect(() => {
+    const source = searchParams.get('source') === 'push' ? 'push' : 'in_app'
+    track('notification_open', { source })
+  }, [])
 
   const isDemo = isDev && searchParams.get('demo') === '1'
   const displayNotifications = isDemo ? MOCK_NOTIFICATIONS : notifications

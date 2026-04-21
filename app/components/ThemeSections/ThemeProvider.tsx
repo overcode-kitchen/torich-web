@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useEnsureUserSettings } from '@/app/hooks/settings/useEnsureUserSettings'
+import { track } from '@/app/lib/analytics'
 
 export type Theme = 'light' | 'dark' | 'system'
 
@@ -91,6 +92,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   }, [theme, mounted])
 
   const setTheme = async (t: Theme) => {
+    track('theme_toggle', { mode: t })
     setThemeState(t)
 
     if (user) {
