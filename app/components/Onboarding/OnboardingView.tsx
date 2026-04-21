@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useOnboardingStep } from '@/app/hooks/onboarding/useOnboardingStep'
 import { ONBOARDING_STEPS } from '@/app/constants/onboarding'
@@ -9,6 +9,7 @@ import OnboardingImageStrip from './OnboardingImageStrip'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
+import { track } from '@/app/lib/analytics'
 
 const SWIPE_THRESHOLD = 50
 
@@ -18,6 +19,10 @@ export default function OnboardingView() {
   const config = ONBOARDING_STEPS[step - 1]
   const isNativeApp = useIsNativeApp()
   const touchStartX = useRef<number | null>(null)
+
+  useEffect(() => {
+    track('onboarding_view', { step })
+  }, [step])
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.targetTouches[0].clientX
@@ -94,7 +99,10 @@ export default function OnboardingView() {
               <Button
                 size="lg"
                 className="flex-1 py-3.5 text-base font-semibold"
-                onClick={() => router.push('/login')}
+                onClick={() => {
+                  track('onboarding_complete')
+                  router.push('/login')
+                }}
               >
                 시작하기
               </Button>
