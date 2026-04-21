@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import { track } from '@/app/lib/analytics'
 
 export function useSettingsAuth() {
   const router = useRouter()
@@ -38,6 +39,7 @@ export function useSettingsAuth() {
   }, [isLoading, user, router])
 
   const handleLogout = async () => {
+    track('logout_click')
     try {
       setIsLoggingOut(true)
       await supabase.auth.signOut()

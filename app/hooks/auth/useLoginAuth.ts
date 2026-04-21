@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { isCapacitorNative } from '@/lib/auth/capacitor-native'
 import sha256 from 'js-sha256'
 import { toastError } from '@/app/utils/toast'
+import { track } from '@/app/lib/analytics'
 
 const TEST_EMAIL = 'test@test.com'
 const TEST_PASSWORD = 'password1234'
@@ -19,6 +20,7 @@ export function useLoginAuth() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleGoogleLogin = useCallback(async () => {
+    track('login_click', { method: 'google' })
     try {
       setIsLoading(true)
       const supabase = createClient()
@@ -68,6 +70,7 @@ export function useLoginAuth() {
   }, [])
 
   const handleAppleLogin = useCallback(async () => {
+    track('login_click', { method: 'apple' })
     try {
       setIsLoading(true)
       const supabase = createClient()
@@ -104,6 +107,7 @@ export function useLoginAuth() {
 
         if (error) throw error
         if (data?.session) {
+          track('login_success', { method: 'apple' })
           window.location.href = `${window.location.origin}/`
         }
       } else {

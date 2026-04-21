@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { isCapacitorNative } from '@/lib/auth/capacitor-native'
+import { track } from '@/app/lib/analytics'
 
 /** iOS 인앱 브라우저 OAuth 복귀 URL (useLoginAuth의 NATIVE_AUTH_CALLBACK과 동일) */
 const AUTH_CALLBACK_PREFIX = 'torich://login-callback'
@@ -68,6 +69,7 @@ async function handleAuthCallbackUrl(
     return true
   }
 
+  track('login_success', { method: 'google' })
   window.location.href = next
   return true
 }
