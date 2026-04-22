@@ -5,7 +5,8 @@ import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
 interface UpdateData {
   monthly_amount: number
-  period_years: number
+  /** 적립형(목표 기간 없음)은 null */
+  period_years: number | null
   annual_rate: number
   investment_days?: number[]
 }

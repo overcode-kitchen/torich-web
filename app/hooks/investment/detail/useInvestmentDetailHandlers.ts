@@ -9,7 +9,7 @@ import { PaymentHistoryMap } from '../../payment/usePaymentHistory'
 
 interface UseInvestmentDetailHandlersProps {
   item: Investment
-  onUpdate: (data: { monthly_amount: number; period_years: number; annual_rate: number; investment_days?: number[] }) => Promise<void>
+  onUpdate: (data: { monthly_amount: number; period_years: number | null; annual_rate: number; investment_days?: number[] }) => Promise<void>
   onDelete: () => Promise<void>
   calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
   isEditMode: boolean
@@ -51,18 +51,26 @@ export function useInvestmentDetailHandlers({
   // 저장 핸들러
   const handleSave = useCallback(async () => {
     const monthlyAmountInWon = parseInt(investmentData.editMonthlyAmount.replace(/,/g, '') || '0') * 10000
-    const periodYears = parseInt(investmentData.editPeriodYears || '0')
+    const parsedPeriod = parseInt(investmentData.editPeriodYears || '0')
     const annualRate = parseFloat(investmentData.editAnnualRate || '0')
+    const isHabit = investmentData.editIsHabitMode
 
-    if (monthlyAmountInWon <= 0 || periodYears <= 0 || annualRate <= 0) {
+    // 적립형: period_years = null, 목표형: >0 정수 필수
+    const periodYearsToSave: number | null = isHabit ? null : parsedPeriod
+
+    if (monthlyAmountInWon <= 0 || annualRate <= 0) {
       alert('모든 값을 올바르게 입력해주세요.')
+      return
+    }
+    if (!isHabit && parsedPeriod <= 0) {
+      alert('목표 기간을 입력하거나 "목표 기간 없이 적립하기"를 선택해주세요.')
       return
     }
 
     try {
       await handleUpdate({
         monthly_amount: monthlyAmountInWon,
-        period_years: periodYears,
+        period_years: periodYearsToSave,
         annual_rate: annualRate,
         investment_days: investmentData.editInvestmentDays.length > 0 ? investmentData.editInvestmentDays : undefined,
       })

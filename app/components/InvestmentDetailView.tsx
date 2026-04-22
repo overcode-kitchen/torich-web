@@ -18,7 +18,7 @@ import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 interface InvestmentDetailViewProps {
   item: Investment
   onBack: () => void
-  onUpdate: (data: { monthly_amount: number; period_years: number; annual_rate: number; investment_days?: number[] }) => Promise<void>
+  onUpdate: (data: { monthly_amount: number; period_years: number | null; annual_rate: number; investment_days?: number[] }) => Promise<void>
   onDelete: () => Promise<void>
   calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
