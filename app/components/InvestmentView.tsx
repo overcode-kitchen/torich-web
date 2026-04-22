@@ -15,10 +15,10 @@ interface InvestmentViewProps {
   onDelete: () => void
   notificationOn: boolean
   toggleNotification: () => void
-  progress: number
+  progress: number | null
   completed: boolean
   startDate: Date
-  endDate: Date
+  endDate: Date | null
   nextPaymentDate: Date | null
   paymentHistory: Array<{ monthLabel: string; yearMonth: string; completed: boolean; isRetroactive: boolean }>
   retroactivePaymentHistory?: Array<{ monthLabel: string; yearMonth: string; completed: boolean; isRetroactive: boolean }>

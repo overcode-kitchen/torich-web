@@ -56,8 +56,12 @@ export function useInvestmentFilter(
       if (sortBy === 'TOTAL_VALUE') {
         const rA: number = a.annual_rate ? a.annual_rate / 100 : 0.1
         const rB: number = b.annual_rate ? b.annual_rate / 100 : 0.1
-        const valueA: number = calculateFutureValue(a.monthly_amount, a.period_years, a.period_years, rA)
-        const valueB: number = calculateFutureValue(b.monthly_amount, b.period_years, b.period_years, rB)
+        // 적립형은 만기가 없으므로 10년 기준으로 비교 가치를 계산
+        const DEFAULT_HABIT_YEARS = 10
+        const periodA = a.period_years && a.period_years > 0 ? a.period_years : DEFAULT_HABIT_YEARS
+        const periodB = b.period_years && b.period_years > 0 ? b.period_years : DEFAULT_HABIT_YEARS
+        const valueA: number = calculateFutureValue(a.monthly_amount, periodA, periodA, rA)
+        const valueB: number = calculateFutureValue(b.monthly_amount, periodB, periodB, rB)
         return valueB - valueA
       }
 

@@ -2,8 +2,8 @@
 
 import { TrashSimple } from '@phosphor-icons/react'
 import { formatCurrency } from '@/lib/utils'
-import { Investment, getStartDate, formatInvestmentDays } from '@/app/types/investment'
-import { isCompleted } from '@/app/utils/date'
+import { Investment, getStartDate, formatInvestmentDays, isHabitMode } from '@/app/types/investment'
+import { isCompleted, getElapsedMonths, formatDuration } from '@/app/utils/date'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 
@@ -35,7 +35,9 @@ export default function InvestmentItem({
   calculateFutureValue,
 }: InvestmentItemProps) {
   const startDate = getStartDate(item)
+  const habit = isHabitMode(item)
   const completed = isCompleted(startDate, item.period_years)
+  const elapsedMonths = Math.max(0, getElapsedMonths(startDate))
 
   const swipe = useSwipeToDelete({
     enabled: !!onDelete,
@@ -110,6 +112,11 @@ export default function InvestmentItem({
                     <> · {formatInvestmentDays(item.investment_days)}</>
                   )}
                 </p>
+                {habit && elapsedMonths > 0 && (
+                  <p className="text-xs text-primary font-medium mt-0.5">
+                    🔥 {formatDuration(elapsedMonths)}째 적립 중
+                  </p>
+                )}
               </div>
             </div>
           </button>
