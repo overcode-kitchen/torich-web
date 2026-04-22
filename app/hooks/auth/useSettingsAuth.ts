@@ -1,38 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 import { track } from '@/app/lib/analytics'
 
 export function useSettingsAuth() {
   const router = useRouter()
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-
-  const supabase = createClient()
+  const { user, isLoading, isLoggingOut, logout } = useAuth()
 
   useEffect(() => {
-    const init = async () => {
-      const {
-        data: { user: u },
-      } = await supabase.auth.getUser()
-      setUser(u)
-      setIsLoading(false)
-    }
-    init()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null)
-    })
-    return () => subscription.unsubscribe()
-  }, [supabase])
-
-  useEffect(() => {
-    // 렌더링 중이 아닌 시점에 리다이렉트 수행
     if (!isLoading && !user) {
       router.replace('/login')
     }
@@ -41,14 +18,11 @@ export function useSettingsAuth() {
   const handleLogout = async () => {
     track('logout_click')
     try {
-      setIsLoggingOut(true)
-      await supabase.auth.signOut()
+      await logout()
       router.replace('/login')
       window.location.href = '/login'
     } catch (e) {
       console.error(e)
-    } finally {
-      setIsLoggingOut(false)
     }
   }
 

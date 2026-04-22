@@ -7,6 +7,7 @@ import AppLayout from "./components/AppLayout";
 import ThemeProvider from "./components/ThemeSections/ThemeProvider";
 
 import NotificationProvider from "@/providers/NotificationProvider";
+import { AuthProvider } from "@/app/hooks/auth/useAuth";
 import AuthDeepLinkHandler from "./components/AuthDeepLinkHandler";
 
 const geistSans = Geist({
@@ -81,16 +82,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <NotificationProvider>
-            <AuthDeepLinkHandler />
-            <AppLayout>{children}</AppLayout>
-            <Toaster richColors position="top-center" closeButton />
-          </NotificationProvider>
-          {process.env.NEXT_PUBLIC_GA_ID && (
-            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-          )}
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <NotificationProvider>
+              <AuthDeepLinkHandler />
+              <AppLayout>{children}</AppLayout>
+              <Toaster richColors position="top-center" closeButton />
+            </NotificationProvider>
+            {process.env.NEXT_PUBLIC_GA_ID && (
+              <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+            )}
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

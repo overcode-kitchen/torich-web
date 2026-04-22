@@ -10,6 +10,13 @@ import type { User } from '@supabase/supabase-js'
 
 export type Platform = 'ios' | 'web'
 
+/** 동일 user/device/token 조합에 대한 saveTokenToDB 중복 호출 스킵 (브리지·네트워크 절약) */
+let lastSavedPushFingerprint: string | null = null
+
+function buildPushFingerprint(userId: string, deviceId: string, token: string): string {
+  return `${userId}|${deviceId}|${token}`
+}
+
 /**
  * UUID v4 생성 함수
  */
@@ -117,6 +124,11 @@ export async function saveTokenToDB(
   platform: Platform,
   deviceId: string
 ): Promise<boolean> {
+  const fingerprint = buildPushFingerprint(user.id, deviceId, token)
+  if (lastSavedPushFingerprint === fingerprint) {
+    return true
+  }
+
   try {
     const supabase = createClient()
 
@@ -137,6 +149,7 @@ export async function saveTokenToDB(
       return false
     }
 
+    lastSavedPushFingerprint = fingerprint
     console.log('✅ FCM token saved to DB')
     return true
   } catch (error) {

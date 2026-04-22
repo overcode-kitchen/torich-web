@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 
 export interface UseUserDataReturn {
   userId: string | null
@@ -10,23 +10,16 @@ export interface UseUserDataReturn {
 
 export function useUserData(): UseUserDataReturn {
   const router = useRouter()
-  const [userId, setUserId] = useState<string | null>(null)
+  const { user, isLoading } = useAuth()
 
   useEffect(() => {
-    const getUser = async (): Promise<void> => {
-      const supabase = createClient()
-      const { data } = await supabase.auth.getUser()
-      if (data.user) {
-        setUserId(data.user.id)
-      } else {
-        router.push('/login')
-      }
+    if (isLoading) return
+    if (!user) {
+      router.push('/login')
     }
-
-    void getUser()
-  }, [router])
+  }, [isLoading, user, router])
 
   return {
-    userId,
+    userId: user?.id ?? null,
   }
 }
