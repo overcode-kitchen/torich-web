@@ -3,7 +3,7 @@
 import { TrashSimple } from '@phosphor-icons/react'
 import { formatCurrency } from '@/lib/utils'
 import { Investment, getStartDate, formatInvestmentDays, isHabitMode } from '@/app/types/investment'
-import { isCompleted, getElapsedMonths, formatDuration } from '@/app/utils/date'
+import { isCompleted, getElapsedMonths } from '@/app/utils/date'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 
@@ -37,7 +37,6 @@ export default function InvestmentItem({
   const startDate = getStartDate(item)
   const habit = isHabitMode(item)
   const completed = isCompleted(startDate, item.period_years)
-  const elapsedMonths = Math.max(0, getElapsedMonths(startDate))
 
   const swipe = useSwipeToDelete({
     enabled: !!onDelete,
@@ -104,19 +103,17 @@ export default function InvestmentItem({
                 </h3>
               </div>
 
-              {/* 2줄: 월 투자금 · 투자일 */}
-              <div className="pl-2">
+              {/* 2줄: 월 투자금 · 투자일 · 모드 뱃지 */}
+              <div className="pl-2 flex items-center gap-2 flex-wrap">
                 <p className={`text-sm ${completed ? 'text-green-600 font-semibold' : 'text-muted-foreground'}`}>
                   월 {formatCurrency(item.monthly_amount)}
                   {item.investment_days && item.investment_days.length > 0 && (
                     <> · {formatInvestmentDays(item.investment_days)}</>
                   )}
                 </p>
-                {habit && elapsedMonths > 0 && (
-                  <p className="text-xs text-primary font-medium mt-0.5">
-                    🔥 {formatDuration(elapsedMonths)}째 적립 중
-                  </p>
-                )}
+                <span className="inline-flex items-center rounded-full px-1.5 py-px text-[10px] font-medium bg-surface text-foreground-subtle">
+                  {habit ? '자유 적립' : '목표 적립'}
+                </span>
               </div>
             </div>
           </button>
