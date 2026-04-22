@@ -84,15 +84,17 @@ export function useAddInvestmentSubmit({
       })
 
       // Supabase에 데이터 저장 (개별 알림 기본값: 켜짐)
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('records')
         .insert({
           user_id: userId,
           ...formattedData,
           notification_enabled: true,
         })
+        .select('id')
+        .single()
 
-      if (error) {
+      if (error || !inserted) {
         toastError(TOAST_MESSAGES.updateSaveFailed)
         return
       }
@@ -103,9 +105,18 @@ export function useAddInvestmentSubmit({
         has_rate: annualRate > 0,
       })
 
-      // 성공 시 메인으로 이동
+      // 과거 시작일이면 상세 페이지에서 소급 안내 시트를 띄운다.
+      // 기준: 시작일이 이번 달 1일보다 이전인 경우
+      const today = new Date()
+      const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+      const isPastStartDate = startDate < currentMonthStart
+
       router.refresh()
-      router.push('/')
+      if (isPastStartDate) {
+        router.push(`/investment?id=${inserted.id}&retroHint=1`)
+      } else {
+        router.push('/')
+      }
     } catch {
       toastError(TOAST_MESSAGES.updateSaveFailed)
     } finally {
