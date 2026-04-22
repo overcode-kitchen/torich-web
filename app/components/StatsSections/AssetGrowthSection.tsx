@@ -54,6 +54,7 @@ export default function AssetGrowthSection({
         <h2 className="text-sm font-semibold text-foreground-muted">예상 수익 차트</h2>
       </div>
       <AssetGrowthChart
+        selectedYear={selectedYear}
         barData={barData}
         currentData={currentData}
         selectedBar={selectedBar}

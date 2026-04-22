@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
-import { formatCurrency, formatSignedProfit } from '@/lib/utils'
+import { formatSignedProfit } from '@/lib/utils'
 import { useChartColors } from '@/app/hooks/chart/useChartColors'
 import AssetGrowthChartTooltip from '@/app/components/AssetGrowthSections/AssetGrowthChartTooltip'
 import AssetGrowthChartSummary from '@/app/components/AssetGrowthSections/AssetGrowthChartSummary'
@@ -18,6 +18,8 @@ import { RenderProfitBarLabel, RenderPrincipalLabel } from '@/app/components/Ass
 import { BarDataPoint } from '@/app/hooks/chart/useAssetGrowthChart'
 
 type AssetGrowthChartProps = {
+  /** 상단 드롭다운과 동일 — 메시지에 연도 맥락으로 사용 */
+  selectedYear: number
   barData: BarDataPoint[]
   currentData: any
   selectedBar: BarDataPoint | null
@@ -27,6 +29,7 @@ type AssetGrowthChartProps = {
 }
 
 export default function AssetGrowthChart({
+  selectedYear,
   barData,
   currentData,
   selectedBar,
@@ -46,13 +49,18 @@ export default function AssetGrowthChart({
 
   return (
     <div className="space-y-4">
-      {/* 토리 메시지 - 라이트만 주목도 낮춤, 다크는 기존 스타일 유지 */}
+      {/* 예상 수익 인사이트: N년 드롭다운과 문구 연동, 확정·과거형 회피 */}
       {currentData && currentData.profit > 0 && (
         <div className="rounded-xl border border-border-subtle bg-muted/30 px-4 py-3 dark:border-0 dark:bg-muted-darker">
-          <p className="text-sm text-muted-foreground dark:text-foreground-soft">
-            🐿️ <span className="font-medium text-foreground-muted dark:text-foreground-soft">토리:</span> "복리 효과로{' '}
-            <span className="font-semibold text-foreground dark:font-bold">{formatSignedProfit(currentData.profit)}</span>
-            이 자라났어요"
+          <p className="text-sm leading-relaxed text-muted-foreground dark:text-foreground-soft">
+            <span aria-hidden>🐿️ </span>
+            <span className="text-foreground-muted dark:text-foreground-soft">
+              {selectedYear}년 뒤를 기준으로 보면, 예상 수익은 약{' '}
+              <span className="font-semibold text-foreground dark:font-bold">
+                {formatSignedProfit(currentData.profit)}
+              </span>
+              까지 이어질 수 있어요.
+            </span>
           </p>
         </div>
       )}
