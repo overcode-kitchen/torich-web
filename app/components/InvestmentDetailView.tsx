@@ -11,6 +11,8 @@ import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSection
 import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 import { InvestmentDetailContent } from '@/app/components/InvestmentDetailSections/InvestmentDetailContent'
 import { InvestmentDetailProvider } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
+import { RetroactiveOnboardingSheet } from '@/app/components/InvestmentDetailSections/RetroactiveOnboardingSheet'
+import { useRetroactiveOnboarding } from '@/app/hooks/investment/detail/useRetroactiveOnboarding'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 
 interface InvestmentDetailViewProps {
@@ -46,7 +48,11 @@ function InternalInvestmentDetailView({
   const isNativeApp = useIsNativeApp()
 
   // Payment History Hook
-  const { completedPayments } = usePaymentHistory()
+  const {
+    completedPayments,
+    retroactivePayments,
+    toggleRetroactivePayment,
+  } = usePaymentHistory()
 
   // Global notification setting (read-only)
   const { notificationOn: isGlobalNotificationOn } = useGlobalNotification()
@@ -78,6 +84,8 @@ function InternalInvestmentDetailView({
     setIsEditMode,
     setIsDaysPickerOpen,
     completedPayments,
+    retroactivePayments,
+    onToggleRetroactive: toggleRetroactivePayment,
   })
 
   // 수정 모드 진입 시 초기화
@@ -88,6 +96,11 @@ function InternalInvestmentDetailView({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditMode, item])
+
+  // 과거 시작일 투자 추가 후 진입 시 소급 안내 시트
+  const retroOnboarding = useRetroactiveOnboarding({
+    retroactivePaymentHistory: investmentData.retroactivePaymentHistory,
+  })
 
 
   // 공통 props
@@ -176,6 +189,16 @@ function InternalInvestmentDetailView({
           />
         </div>
       </div>
+
+      {/* 소급 안내 시트 (과거 시작일로 등록 후 진입 시) */}
+      <RetroactiveOnboardingSheet
+        isOpen={retroOnboarding.isOpen}
+        rangeStart={retroOnboarding.rangeStart}
+        rangeEnd={retroOnboarding.rangeEnd}
+        monthsCount={retroOnboarding.monthsCount}
+        onRecordNow={retroOnboarding.onRecordNow}
+        onLater={retroOnboarding.onLater}
+      />
     </InvestmentDetailProvider>
   )
 }

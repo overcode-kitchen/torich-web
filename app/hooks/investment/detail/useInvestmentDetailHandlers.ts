@@ -16,6 +16,8 @@ interface UseInvestmentDetailHandlersProps {
   setIsEditMode: (value: boolean) => void
   setIsDaysPickerOpen: (value: boolean) => void
   completedPayments: PaymentHistoryMap
+  retroactivePayments?: PaymentHistoryMap
+  onToggleRetroactive?: (recordId: string, yearMonth: string, currentCompleted: boolean) => Promise<void>
 }
 
 export function useInvestmentDetailHandlers({
@@ -27,6 +29,8 @@ export function useInvestmentDetailHandlers({
   setIsEditMode,
   setIsDaysPickerOpen,
   completedPayments,
+  retroactivePayments,
+  onToggleRetroactive,
 }: UseInvestmentDetailHandlersProps) {
   // 데이터 훅
   const investmentData = useInvestmentData({
@@ -34,6 +38,8 @@ export function useInvestmentDetailHandlers({
     isEditMode,
     calculateFutureValue,
     completedPayments,
+    retroactivePayments,
+    onToggleRetroactive,
   })
 
   // API 액션 훅
