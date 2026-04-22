@@ -2,7 +2,7 @@
 
 import { formatCurrency } from '@/lib/utils'
 import { formatPaymentDateShort } from '@/app/utils/date'
-import type { Investment } from '@/app/types/investment'
+import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
 import type { DisplayItem } from '@/app/hooks/upcoming/useUpcomingInvestments'
 
 interface UpcomingInvestmentsListProps {
@@ -25,38 +25,61 @@ export default function UpcomingInvestmentsList({
 
     return (
         <>
-            <div className="space-y-2">
-                {displayItems.map((item) => (
-                    <div
-                        key={`${item.investment.id}-${item.paymentDate.getTime()}-${item.dayOfMonth}`}
-                        className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-surface"
-                    >
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">
-                                {formatPaymentDateShort(item.paymentDate)} · {item.investment.title}
-                            </p>
+            <div className="divide-y divide-border-subtle">
+                {displayItems.map((item) => {
+                    const inv = item.investment
+                    return (
+                        <div
+                            key={`${inv.id}-${item.paymentDate.getTime()}-${item.dayOfMonth}`}
+                            className="flex items-center justify-between gap-3 py-4"
+                        >
+                            <div className="min-w-0 flex-1">
+                                {/* InvestmentItem과 동일: 1줄 = 아바타+종목명, 2줄 = pl-2 보조 */}
+                                <div className="flex min-w-0 flex-col gap-1.5">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <div
+                                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                                                inv.market === 'US'
+                                                    ? 'bg-blue-100 text-blue-600'
+                                                    : 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)]'
+                                            }`}
+                                            aria-hidden
+                                        >
+                                            {getInvestmentAvatarLabel(inv.title)}
+                                        </div>
+                                        <p className="min-w-0 truncate text-base font-semibold text-foreground">
+                                            {inv.title}
+                                        </p>
+                                    </div>
+                                    <div className="pl-2">
+                                        <p className="truncate text-sm text-muted-foreground">
+                                            {formatPaymentDateShort(item.paymentDate)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-3">
+                                <span className="text-sm font-bold tabular-nums text-foreground">
+                                    {formatCurrency(inv.monthly_amount)}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => toggleComplete(inv.id, item.paymentDate, item.dayOfMonth)}
+                                    className="rounded-full border border-border-subtle bg-muted/35 px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:border-border dark:bg-muted-darker/60 dark:text-foreground-soft dark:hover:bg-muted-darker dark:hover:text-foreground"
+                                    aria-label="납입 완료 체크"
+                                >
+                                    완료하기
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                            <span className="text-sm font-bold text-foreground">
-                                {formatCurrency(item.investment.monthly_amount)}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={() => toggleComplete(item.investment.id, item.paymentDate, item.dayOfMonth)}
-                                className="px-3 py-1.5 rounded-lg border border-border text-foreground-muted text-xs font-medium hover:bg-surface-hover hover:border-surface-strong-hover transition-colors"
-                                aria-label="납입 완료 체크"
-                            >
-                                완료하기
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
             {hasMore && (
                 <button
                     type="button"
                     onClick={() => setExpanded((prev) => !prev)}
-                    className="w-full mt-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-surface-hover rounded-xl transition-colors"
+                    className="mt-3 w-full rounded-xl py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
                     aria-expanded={expanded}
                 >
                     {expanded ? '접기' : `${remainingCount}건 더 보기`}

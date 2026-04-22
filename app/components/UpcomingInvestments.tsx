@@ -1,7 +1,5 @@
 'use client'
 
-'use client'
-
 import Image from 'next/image'
 import type { Investment } from '@/app/types/investment'
 import {
