@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-export function usePaymentPagination(
-  fullPaymentHistory: Array<{ monthLabel: string; yearMonth: string; completed: boolean }>,
+export function usePaymentPagination<T extends { monthLabel: string; yearMonth: string; completed: boolean }>(
+  fullPaymentHistory: T[],
   itemId: string
 ) {
   const [visiblePaymentMonths, setVisiblePaymentMonths] = useState(6);

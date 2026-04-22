@@ -63,16 +63,29 @@ export function getPaymentHistory(
   return results
 }
 
+export interface PaymentHistoryEntry {
+  yearMonth: string
+  monthLabel: string
+  completed: boolean
+  isRetroactive: boolean
+}
+
 /**
  * 투자 시작일부터 오늘까지 전체 월별 납입 기록 (최신순)
+ *
+ * @param tracking_start_date 자동 추적 시작일 (보통 created_at). 이 날짜 이전 구간은 isRetroactive=true로 표시된다.
+ *   생략 시 start_date와 동일하게 간주 (기존 동작).
+ * @param retroactivePayments 소급 납입 완료 맵 (record_id -> Set<YYYY-MM-01>). 소급 구간 완료 판단에 사용.
  */
 export function getPaymentHistoryFromStart(
   investmentId: string,
   completedPayments: PaymentHistoryMap,
   investment_days?: number[] | null,
   start_date?: string | null,
-  period_years?: number
-): Array<{ yearMonth: string; monthLabel: string; completed: boolean }> {
+  period_years?: number,
+  tracking_start_date?: string | null,
+  retroactivePayments?: PaymentHistoryMap
+): PaymentHistoryEntry[] {
   if (!investmentId) return []
 
   const today = new Date()
@@ -82,7 +95,17 @@ export function getPaymentHistoryFromStart(
       ? new Date(startDate.getFullYear() + period_years, startDate.getMonth(), startDate.getDate())
       : today
 
-  const results: Array<{ yearMonth: string; monthLabel: string; completed: boolean }> = []
+  // 자동 추적 시작일: 미지정이면 start_date와 동일 (기존 동작 유지)
+  // start_date가 tracking_start_date보다 미래이면 tracking_start_date를 start_date로 올림 (엣지 케이스)
+  const trackingStart = tracking_start_date ? new Date(tracking_start_date) : startDate
+  const effectiveTrackingStart = trackingStart < startDate ? startDate : trackingStart
+  const trackingStartMonth = new Date(
+    effectiveTrackingStart.getFullYear(),
+    effectiveTrackingStart.getMonth(),
+    1
+  )
+
+  const results: PaymentHistoryEntry[] = []
   const days = investment_days && investment_days.length > 0 ? investment_days : []
 
   let current = new Date(startDate.getFullYear(), startDate.getMonth(), 1)
@@ -96,25 +119,34 @@ export function getPaymentHistoryFromStart(
     const yearMonth = `${year}-${String(month).padStart(2, '0')}`
     const monthLabel = `${month}월`
 
-    const daysInMonth = new Date(year, month, 0).getDate()
-    const paymentDaysInMonth = days.filter((d) => d <= daysInMonth)
-    const paymentDatesInRange = paymentDaysInMonth.filter((day) => {
-      const paymentDate = new Date(year, month - 1, day)
-      if (paymentDate < startDate) return false
-      if (endDate && paymentDate > endDate) return false
-      return true
-    })
+    const isRetroactive = current < trackingStartMonth
 
     let completed: boolean
-    if (paymentDatesInRange.length === 0) {
-      completed = true
+    if (isRetroactive) {
+      // 소급 구간: 수동 기록만 완료로 간주 (YYYY-MM-01 + is_retroactive=true로 별도 저장)
+      completed = retroactivePayments
+        ? isPaymentCompleted(retroactivePayments, investmentId, year, month, 1)
+        : false
     } else {
-      completed = paymentDatesInRange.every((day) =>
-        isPaymentCompleted(completedPayments, investmentId, year, month, day)
-      )
+      const daysInMonth = new Date(year, month, 0).getDate()
+      const paymentDaysInMonth = days.filter((d) => d <= daysInMonth)
+      const paymentDatesInRange = paymentDaysInMonth.filter((day) => {
+        const paymentDate = new Date(year, month - 1, day)
+        if (paymentDate < startDate) return false
+        if (endDate && paymentDate > endDate) return false
+        return true
+      })
+
+      if (paymentDatesInRange.length === 0) {
+        completed = true
+      } else {
+        completed = paymentDatesInRange.every((day) =>
+          isPaymentCompleted(completedPayments, investmentId, year, month, day)
+        )
+      }
     }
 
-    results.push({ yearMonth, monthLabel, completed })
+    results.push({ yearMonth, monthLabel, completed, isRetroactive })
     current.setMonth(current.getMonth() + 1)
   }
 
