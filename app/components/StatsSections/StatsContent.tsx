@@ -97,7 +97,7 @@ export default function StatsContent({
             {/* 이번 달 현황 */}
             <MonthlyStatusSection thisMonth={thisMonth} />
 
-            {/* 모드별 요약 (목표형/적립형 혼재 시) */}
+            {/* 투자 상태 요약 (목표형/적립형 혼재 시) */}
             {hasRecords && (
                 <ModeBreakdownSection goalStats={goalStats} habitStats={habitStats} />
             )}
