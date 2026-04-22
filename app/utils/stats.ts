@@ -20,7 +20,7 @@ export function getPaymentEventsForMonth(
     title: string
     monthly_amount: number
     investment_days?: number[] | null
-    period_years: number
+    period_years: number | null
     start_date?: string | null
     created_at: string
   }>,
@@ -32,8 +32,14 @@ export function getPaymentEventsForMonth(
 
   for (const inv of investments) {
     const startDate = inv.start_date ? new Date(inv.start_date) : new Date(inv.created_at)
-    const endDate = new Date(startDate)
-    endDate.setFullYear(endDate.getFullYear() + inv.period_years)
+    // 적립형(period_years null/0)은 만료 없음 → endDate = null
+    const endDate = inv.period_years && inv.period_years > 0
+      ? (() => {
+          const d = new Date(startDate)
+          d.setFullYear(d.getFullYear() + inv.period_years!)
+          return d
+        })()
+      : null
 
     const days = inv.investment_days
     if (!days || days.length === 0) continue
@@ -43,7 +49,7 @@ export function getPaymentEventsForMonth(
       if (day > daysInMonth) continue
       const paymentDate = new Date(year, month - 1, day)
       if (paymentDate < startDate) continue
-      if (paymentDate > endDate) continue
+      if (endDate && paymentDate > endDate) continue
       events.push({
         investmentId: inv.id,
         year,
@@ -67,7 +73,7 @@ export function getThisMonthStats(
     title: string
     monthly_amount: number
     investment_days?: number[] | null
-    period_years: number
+    period_years: number | null
     start_date?: string | null
     created_at: string
   }>,
@@ -103,7 +109,7 @@ export function getPeriodTotalPaid(
     title: string
     monthly_amount: number
     investment_days?: number[] | null
-    period_years: number
+    period_years: number | null
     start_date?: string | null
     created_at: string
   }>,
@@ -138,7 +144,7 @@ export function getMonthlyCompletionRates(
     title: string
     monthly_amount: number
     investment_days?: number[] | null
-    period_years: number
+    period_years: number | null
     start_date?: string | null
     created_at: string
   }>,
@@ -183,7 +189,7 @@ export function getMonthlyCompletionRatesForRange(
     title: string
     monthly_amount: number
     investment_days?: number[] | null
-    period_years: number
+    period_years: number | null
     start_date?: string | null
     created_at: string
   }>,
@@ -226,7 +232,7 @@ export function getPeriodTotalPaidForRange(
     title: string
     monthly_amount: number
     investment_days?: number[] | null
-    period_years: number
+    period_years: number | null
     start_date?: string | null
     created_at: string
   }>,

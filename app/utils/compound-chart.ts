@@ -52,11 +52,14 @@ export function generateCompoundChartData(
   const data: ChartDataPoint[] = []
   let breakEvenFound = false
 
-  // 각 투자별로 월별 누적 자산을 추적
+  // 각 투자별로 월별 누적 자산을 추적 (적립형은 전체 기간 계속 납입)
   const investmentBalances: InvestmentBalance[] = investments.map((investment) => {
     const R = investment.annual_rate ? investment.annual_rate / 100 : 0.10
     const monthlyRate = R / 12
-    const P = investment.period_years * 12 // 만기 (개월)
+    const P =
+      investment.period_years && investment.period_years > 0
+        ? investment.period_years * 12
+        : months
 
     return {
       investment,
@@ -68,15 +71,16 @@ export function generateCompoundChartData(
   })
 
   for (let month = 1; month <= months; month++) {
-    // 원금 누적: 각 투자별로 만기 전까지만 납입
+    // 원금 누적: 각 투자별로 만기 전까지만 납입 (적립형은 만기 없음)
     let principal = 0
     investments.forEach((investment) => {
-      const P = investment.period_years * 12 // 만기 (개월)
+      const P =
+        investment.period_years && investment.period_years > 0
+          ? investment.period_years * 12
+          : months
       if (month <= P) {
-        // 만기 전: 납입액 누적
         principal += investment.monthly_amount * month
       } else {
-        // 만기 후: 만기 시점의 원금만 (더 이상 납입 없음)
         principal += investment.monthly_amount * P
       }
     })

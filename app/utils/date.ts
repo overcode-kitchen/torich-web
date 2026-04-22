@@ -27,8 +27,10 @@ export function formatDuration(totalMonths: number): string {
 
 /**
  * 시작일과 목표 기간(년)을 기반으로 종료일 계산
+ * 적립형(periodYears null/0)은 종료일이 없으므로 null 반환.
  */
-export function calculateEndDate(startDate: Date, periodYears: number): Date {
+export function calculateEndDate(startDate: Date, periodYears: number | null | undefined): Date | null {
+  if (!periodYears || periodYears <= 0) return null
   return addMonths(startDate, periodYears * 12)
 }
 
@@ -52,33 +54,47 @@ export function getElapsedMonths(startDate: Date): number {
 
 /**
  * 진행률 계산 (0 ~ 100)
+ * 적립형은 "진행률" 개념이 없으므로 null 반환.
  * @param startDate 시작일
  * @param periodYears 목표 기간(년)
  */
-export function calculateProgress(startDate: Date, periodYears: number): number {
+export function calculateProgress(startDate: Date, periodYears: number | null | undefined): number | null {
+  if (!periodYears || periodYears <= 0) return null
   const totalMonths = periodYears * 12
   const elapsedMonths = getElapsedMonths(startDate)
-  
+
   if (elapsedMonths <= 0) return 0
   if (elapsedMonths >= totalMonths) return 100
-  
+
   return Math.round((elapsedMonths / totalMonths) * 100)
 }
 
 /**
  * 남은 기간 텍스트 생성
- * - 남았으면: "X년 Y개월 남음"
- * - 지났으면: "목표 달성! 🎉"
+ * - 목표형 + 남음: "X년 Y개월 남음"
+ * - 목표형 + 지남: "목표 달성! 🎉"
+ * - 적립형: null (호출측에서 elapsed 텍스트로 대체)
  */
-export function getRemainingText(startDate: Date, periodYears: number): string {
+export function getRemainingText(startDate: Date, periodYears: number | null | undefined): string | null {
   const endDate = calculateEndDate(startDate, periodYears)
+  if (!endDate) return null
+
   const remainingMonths = getRemainingMonths(endDate)
-  
+
   if (remainingMonths <= 0) {
     return '목표 달성! 🎉'
   }
-  
+
   return `${formatDuration(remainingMonths)} 남음`
+}
+
+/**
+ * 적립형: "N개월째 적립 중 🔥" 형태의 streak 텍스트
+ */
+export function getHabitStreakText(startDate: Date): string {
+  const elapsedMonths = getElapsedMonths(startDate)
+  if (elapsedMonths <= 0) return '이번 달부터 적립 시작 🔥'
+  return `${formatDuration(elapsedMonths)}째 적립 중 🔥`
 }
 
 /**
@@ -111,9 +127,11 @@ export function formatFullDate(date: Date): string {
 
 /**
  * 목표 기간이 완료되었는지 확인
+ * 적립형(periodYears 없음)은 완료 개념이 없으므로 항상 false.
  */
-export function isCompleted(startDate: Date, periodYears: number): boolean {
+export function isCompleted(startDate: Date, periodYears: number | null | undefined): boolean {
   const endDate = calculateEndDate(startDate, periodYears)
+  if (!endDate) return false
   return isAfter(new Date(), endDate)
 }
 

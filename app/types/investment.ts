@@ -6,7 +6,12 @@ export interface Investment {
   title: string
   symbol?: string | null
   monthly_amount: number
-  period_years: number
+  /**
+   * 목표 기간(년).
+   * - number (>0): 목표형(Goal Mode) - 진행률/종료일/남은 기간 계산
+   * - null | 0: 적립형(Habit Mode) - 목표 기간 없이 꾸준히 적립 (streak/누적액 기준)
+   */
+  period_years: number | null
   annual_rate: number
   expected_amount: string
   created_at: string
@@ -15,6 +20,14 @@ export interface Investment {
   is_custom_rate?: boolean | null // 수익률 직접 입력/수정 여부
   notification_enabled?: boolean // 해당 투자에 대한 리마인더 알림 on/off (records.notification_enabled)
   market?: 'KR' | 'US' | null // 투자 시장 구분 (한국/미국)
+}
+
+/**
+ * 투자 모드(Goal/Habit) 판별
+ * - period_years 가 없거나 0 이면 적립형(Habit Mode)
+ */
+export function isHabitMode(investment: Pick<Investment, 'period_years'>): boolean {
+  return !investment.period_years || investment.period_years <= 0
 }
 
 /**

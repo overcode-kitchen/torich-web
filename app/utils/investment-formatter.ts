@@ -6,6 +6,8 @@ interface FormatInvestmentDataParams {
   stockName: string
   monthlyAmount: string // 콤마가 포함된 문자열 (만원 단위)
   period: string
+  /** 적립형(목표 기간 없음) 여부 */
+  isHabitMode?: boolean
   startDate: Date
   investmentDays: number[]
   annualRate: number
@@ -19,7 +21,7 @@ interface FormattedInvestmentData {
   title: string
   symbol: string | null
   monthly_amount: number // 원 단위
-  period_years: number
+  period_years: number | null
   annual_rate: number
   final_amount: number
   start_date: string // YYYY-MM-DD 형식
@@ -77,11 +79,13 @@ export async function formatInvestmentData(
   params: FormatInvestmentDataParams
 ): Promise<FormattedInvestmentData> {
   const monthlyAmountInWon = convertMonthlyAmountToWon(params.monthlyAmount)
-  const periodYearsNum = convertPeriodToYears(params.period)
+  const periodYearsNum = params.isHabitMode ? null : convertPeriodToYears(params.period)
 
-  // 최종 금액 계산
+  // 최종 금액 계산 (적립형은 만기 금액 개념이 없으므로 0)
   const { calculateFinalAmount } = await import('@/app/utils/finance')
-  const finalAmount = calculateFinalAmount(monthlyAmountInWon, periodYearsNum, params.annualRate)
+  const finalAmount = periodYearsNum
+    ? calculateFinalAmount(monthlyAmountInWon, periodYearsNum, params.annualRate)
+    : 0
 
   const isCustomRate = determineIsCustomRate(
     params.isManualInput,

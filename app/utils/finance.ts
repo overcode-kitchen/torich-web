@@ -75,7 +75,8 @@ export function generatePortfolioGrowthData(
   investments: Array<{
     monthly_amount: number
     annual_rate: number
-    period_years: number
+    /** 적립형(목표 기간 없음)은 null — 전체 기간 동안 계속 납입 */
+    period_years: number | null
   }>,
   selectedYear: number
 ): ChartDataPoint[] {
@@ -86,7 +87,11 @@ export function generatePortfolioGrowthData(
   const investmentBalances = investments.map((investment) => {
     const R = investment.annual_rate / 100
     const monthlyRate = R / 12
-    const maturityMonths = investment.period_years * 12
+    // 적립형은 만기가 없으므로 전체 시뮬레이션 기간(selectedYear)만큼 납입
+    const maturityMonths =
+      investment.period_years && investment.period_years > 0
+        ? investment.period_years * 12
+        : totalMonths
 
     return {
       monthlyAmount: investment.monthly_amount,
@@ -157,14 +162,18 @@ export function getMilestoneChartData(
 export function calculateSimulatedValue(
   monthlyAmount: number,
   T: number,
-  P: number,
+  P: number | null,
   R: number = 0.1
 ): number {
   const monthlyRate: number = R / 12
 
+  // 적립형(P null 또는 <= 0): 만기 없음 — T년 전체 기간 납입
+  const effectiveP = P && P > 0 ? P : T
+
   // Case A: 선택 시점이 만기보다 짧거나 같음 (T <= P)
-  if (T <= P) {
+  if (T <= effectiveP) {
     const totalMonths: number = T * 12
+    if (monthlyRate === 0) return monthlyAmount * totalMonths
     const futureValue: number =
       monthlyAmount *
       ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) *
@@ -172,16 +181,14 @@ export function calculateSimulatedValue(
     return futureValue
   }
 
-  // Case B: 선택 시점이 만기보다 김 (T > P)
-  // Step 1: P년(만기)까지 복리로 불어남 (기납입액 기준)
-  const maturityMonths: number = P * 12
+  // Case B: 선택 시점이 만기보다 김 (T > P) — 만기 이후는 이자 없이 현금 보관
+  const maturityMonths: number = effectiveP * 12
+  if (monthlyRate === 0) return monthlyAmount * maturityMonths
   const maturityValue: number =
     monthlyAmount *
     ((Math.pow(1 + monthlyRate, maturityMonths) - 1) / monthlyRate) *
     (1 + monthlyRate)
 
-  // Step 2: 만기 이후는 이자 없이 현금으로 보유 (T - P년 동안)
-  // 만기 시점의 총액이 그대로 T년 시점의 자산
   return maturityValue
 }
 
