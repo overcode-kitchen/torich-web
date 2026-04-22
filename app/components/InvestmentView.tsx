@@ -20,7 +20,8 @@ interface InvestmentViewProps {
   startDate: Date
   endDate: Date
   nextPaymentDate: Date | null
-  paymentHistory: Array<{ monthLabel: string; yearMonth: string; completed: boolean }>
+  paymentHistory: Array<{ monthLabel: string; yearMonth: string; completed: boolean; isRetroactive: boolean }>
+  retroactivePaymentHistory?: Array<{ monthLabel: string; yearMonth: string; completed: boolean; isRetroactive: boolean }>
   hasMorePaymentHistory: boolean
   loadMore: () => void
   infoSectionProps: Omit<InfoSectionProps, 'isEditMode' | 'infoRef'>
@@ -44,6 +45,7 @@ export function InvestmentView({
   endDate,
   nextPaymentDate,
   paymentHistory,
+  retroactivePaymentHistory,
   hasMorePaymentHistory,
   loadMore,
   infoSectionProps,
@@ -90,10 +92,11 @@ export function InvestmentView({
             setIsDaysPickerOpen={() => { }}
           />
 
-          {paymentHistory.length > 0 && (
+          {(paymentHistory.length > 0 || (retroactivePaymentHistory?.length ?? 0) > 0) && (
             <PaymentHistorySection
               item={item}
               paymentHistory={paymentHistory}
+              retroactivePaymentHistory={retroactivePaymentHistory}
               hasMorePaymentHistory={hasMorePaymentHistory}
               loadMore={loadMore}
               historyRef={historyRef}

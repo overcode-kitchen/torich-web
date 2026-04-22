@@ -98,7 +98,8 @@ export function InvestmentDetailContent() {
 
             <div className="divide-y divide-border-subtle-lighter">
                 <InfoSection infoRef={infoRef} />
-                {investmentData.paymentHistory.length > 0 && (
+                {(investmentData.paymentHistory.length > 0 ||
+                    investmentData.retroactivePaymentHistory?.length > 0) && (
                     <PaymentHistorySection historyRef={historyRef} />
                 )}
             </div>

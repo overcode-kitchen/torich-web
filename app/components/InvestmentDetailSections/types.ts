@@ -45,6 +45,13 @@ export interface PaymentHistorySectionProps {
     monthLabel: string
     yearMonth: string
     completed: boolean
+    isRetroactive: boolean
+  }>
+  retroactivePaymentHistory?: Array<{
+    monthLabel: string
+    yearMonth: string
+    completed: boolean
+    isRetroactive: boolean
   }>
   hasMorePaymentHistory: boolean
   loadMore: () => void
