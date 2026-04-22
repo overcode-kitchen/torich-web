@@ -3,6 +3,7 @@
 import { TrashSimple } from '@phosphor-icons/react'
 import { formatCurrency } from '@/lib/utils'
 import { Investment, getStartDate, formatInvestmentDays, isHabitMode } from '@/app/types/investment'
+import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
 import { isCompleted, getElapsedMonths } from '@/app/utils/date'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
@@ -12,20 +13,6 @@ interface InvestmentItemProps {
   onClick: () => void
   onDelete?: (id: string) => Promise<void>
   calculateFutureValue?: (monthlyAmount: number, T: number, P: number, R: number) => number
-}
-
-function getAvatarLabel(title: string): string {
-  const trimmed = title.trim()
-  if (!trimmed) return '?'
-
-  const firstChar = trimmed[0]
-  const code = firstChar.charCodeAt(0)
-
-  if (code >= 0xac00 && code <= 0xd7a3) {
-    return firstChar
-  }
-
-  return firstChar.toUpperCase()
 }
 
 export default function InvestmentItem({
@@ -70,7 +57,7 @@ export default function InvestmentItem({
 
         {/* 전경: 투자 항목 카드 */}
         <div
-          className="relative bg-card py-2 select-none"
+          className="relative bg-card py-1 select-none"
           style={{
             transform: `translateX(${swipe.translateX}px)`,
             transition: swipe.isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
@@ -86,7 +73,7 @@ export default function InvestmentItem({
               onClick()
             }}
             onContextMenu={(e) => e.preventDefault()}
-            className="w-full text-left px-4 py-4 rounded-2xl transition-colors transition-transform duration-150 ease-out hover:bg-surface active:bg-surface-hover active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background will-change-transform"
+            className="w-full text-left px-2 py-2.5 rounded-2xl transition-colors transition-transform duration-150 ease-out hover:bg-surface active:bg-surface-hover active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background will-change-transform"
           >
             <div className="flex flex-col gap-1.5 min-w-0">
               {/* 1줄: 아바타 + 종목명 */}
@@ -96,9 +83,9 @@ export default function InvestmentItem({
                     ? 'bg-blue-100 text-blue-600'
                     : 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)]'
                 }`}>
-                  {getAvatarLabel(item.title)}
+                  {getInvestmentAvatarLabel(item.title)}
                 </div>
-                <h3 className="text-lg font-bold text-foreground truncate">
+                <h3 className="text-base font-semibold text-foreground truncate">
                   {item.title}
                 </h3>
               </div>
