@@ -4,7 +4,12 @@ import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSe
 import AssetGrowthSection from '@/app/components/StatsSections/AssetGrowthSection'
 import MonthlyStatusSection from '@/app/components/StatsSections/MonthlyStatusSection'
 import CompletionRateSection from '@/app/components/StatsSections/CompletionRateSection'
+import ModeBreakdownSection from '@/app/components/StatsSections/ModeBreakdownSection'
 import type { Investment } from '@/app/types/investment'
+import type {
+    GoalStats,
+    HabitStats,
+} from '@/app/hooks/investment/calculations/useStatsCalculations'
 
 interface StatsContentProps {
     data: {
@@ -27,6 +32,8 @@ interface StatsContentProps {
             progress: number
             remainingPayment: number
         }
+        goalStats: GoalStats
+        habitStats: HabitStats
     }
     filter: {
         periodPreset: string
@@ -52,7 +59,14 @@ export default function StatsContent({
 }: StatsContentProps) {
     const { records, hasRecords } = data
     const { selectedYear, setSelectedYear, handleShowCashHold, handleShowContribution } = ui
-    const { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments, thisMonth } = calculations
+    const {
+        totalExpectedAsset,
+        totalMonthlyPayment,
+        hasMaturedInvestments,
+        thisMonth,
+        goalStats,
+        habitStats,
+    } = calculations
     const { periodPreset, setPeriodPreset, periodLabel, customDateRange, setCustomDateRange, handleCustomPeriod } = filter
     const { periodCompletionRate, chartData, chartBarColor } = chart
 
@@ -82,6 +96,11 @@ export default function StatsContent({
 
             {/* 이번 달 현황 */}
             <MonthlyStatusSection thisMonth={thisMonth} />
+
+            {/* 모드별 요약 (목표형/적립형 혼재 시) */}
+            {hasRecords && (
+                <ModeBreakdownSection goalStats={goalStats} habitStats={habitStats} />
+            )}
 
             {/* 기간별 완료율 */}
             <CompletionRateSection

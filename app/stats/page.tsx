@@ -47,6 +47,8 @@ export default function StatsPage() {
     hasMaturedInvestments,
     maturedItems,
     thisMonth,
+    goalStats,
+    habitStats,
     calculateFutureValue,
   } = useStatsCalculations({ records, activeRecords, completedPayments, selectedYear })
 
@@ -94,6 +96,8 @@ export default function StatsPage() {
         hasMaturedInvestments,
         maturedItems,
         thisMonth,
+        goalStats,
+        habitStats,
         calculateFutureValue,
       }}
       chart={{

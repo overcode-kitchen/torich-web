@@ -10,7 +10,11 @@ import StatsContent from '@/app/components/StatsSections/StatsContent'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
-import { CashHoldItemVM } from '@/app/hooks/investment/calculations/useStatsCalculations'
+import {
+    CashHoldItemVM,
+    GoalStats,
+    HabitStats,
+} from '@/app/hooks/investment/calculations/useStatsCalculations'
 
 interface StatsViewProps {
     isLoading: boolean
@@ -50,6 +54,8 @@ interface StatsViewProps {
             progress: number
             remainingPayment: number
         }
+        goalStats: GoalStats
+        habitStats: HabitStats
         calculateFutureValue: (monthlyAmount: number, T: number, P: number, R?: number) => number
     }
     chart: {
