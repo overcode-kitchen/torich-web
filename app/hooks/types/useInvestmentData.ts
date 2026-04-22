@@ -25,6 +25,8 @@ export interface UseInvestmentDataReturn {
   setEditAnnualRate: (value: string) => void
   editInvestmentDays: number[]
   setEditInvestmentDays: (days: number[] | ((prev: number[]) => number[])) => void
+  editIsHabitMode: boolean
+  setEditIsHabitMode: (habit: boolean) => void
   isRateManuallyEdited: boolean
   setIsRateManuallyEdited: (edited: boolean) => void
   handleNumericInput: (value: string, setter: (v: string) => void) => void
@@ -34,14 +36,17 @@ export interface UseInvestmentDataReturn {
   // 계산된 값
   startDate: Date
   displayMonthlyAmount: number
-  displayPeriodYears: number
+  displayPeriodYears: number | null
   displayAnnualRate: number
-  endDate: Date
+  endDate: Date | null
   calculatedFutureValue: number
   totalPrincipal: number
+  totalPaidPrincipal: number
   calculatedProfit: number
-  progress: number
+  progress: number | null
   completed: boolean
+  isHabitMode: boolean
+  elapsedMonths: number
   nextPaymentDate: Date | null
 
   // 납입 기록 (자동 추적: created_at 이후)

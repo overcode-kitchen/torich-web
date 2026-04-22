@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Investment } from '@/app/types/investment'
+import { Investment, isHabitMode } from '@/app/types/investment'
 
 interface UseInvestmentDetailEditReturn {
   // 폼 값
@@ -13,6 +13,10 @@ interface UseInvestmentDetailEditReturn {
   setEditAnnualRate: (value: string) => void
   editInvestmentDays: number[]
   setEditInvestmentDays: (days: number[] | ((prev: number[]) => number[])) => void
+
+  // 적립형 모드 (목표 기간 없음)
+  editIsHabitMode: boolean
+  setEditIsHabitMode: (habit: boolean) => void
 
   // 수정 상태
   isRateManuallyEdited: boolean
@@ -31,6 +35,7 @@ export function useInvestmentDetailEdit(): UseInvestmentDetailEditReturn {
   const [editPeriodYears, setEditPeriodYears] = useState('')
   const [editAnnualRate, setEditAnnualRate] = useState('')
   const [editInvestmentDays, setEditInvestmentDays] = useState<number[]>([])
+  const [editIsHabitMode, setEditIsHabitMode] = useState(false)
   const [isRateManuallyEdited, setIsRateManuallyEdited] = useState(false)
 
   const handleNumericInput = (value: string, setter: (v: string) => void) => {
@@ -47,15 +52,16 @@ export function useInvestmentDetailEdit(): UseInvestmentDetailEditReturn {
   }
 
   const initializeFromItem = (item: Investment) => {
+    const habit = isHabitMode(item)
     setEditMonthlyAmount((item.monthly_amount / 10000).toString())
-    setEditPeriodYears(item.period_years.toString())
+    setEditPeriodYears(habit ? '' : String(item.period_years))
     setEditAnnualRate((item.annual_rate || 10).toString())
     setEditInvestmentDays(item.investment_days || [])
+    setEditIsHabitMode(habit)
     setIsRateManuallyEdited(false)
   }
 
   return {
-    // 폼 값
     editMonthlyAmount,
     setEditMonthlyAmount,
     editPeriodYears,
@@ -65,15 +71,15 @@ export function useInvestmentDetailEdit(): UseInvestmentDetailEditReturn {
     editInvestmentDays,
     setEditInvestmentDays,
 
-    // 수정 상태
+    editIsHabitMode,
+    setEditIsHabitMode,
+
     isRateManuallyEdited,
     setIsRateManuallyEdited,
 
-    // 핸들러
     handleNumericInput,
     handleRateInput,
 
-    // 초기화
     initializeFromItem,
   }
 }

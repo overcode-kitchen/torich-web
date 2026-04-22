@@ -29,6 +29,7 @@ export function useInvestmentData({
     editPeriodYears: editForm.editPeriodYears,
     editAnnualRate: editForm.editAnnualRate,
     editInvestmentDays: editForm.editInvestmentDays,
+    editIsHabitMode: editForm.editIsHabitMode,
     calculateFutureValue,
   })
 
@@ -41,7 +42,7 @@ export function useInvestmentData({
     completedPayments,
     item.investment_days ?? undefined,
     item.start_date ?? item.created_at ?? undefined,
-    item.period_years,
+    item.period_years ?? undefined,
     item.created_at ?? undefined,
     retroactivePayments
   )
