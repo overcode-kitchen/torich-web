@@ -8,6 +8,7 @@ interface PreviewSectionProps {
   period: string
   annualRate: number
   isRateLoading: boolean
+  isHabitMode?: boolean
 }
 
 export default function PreviewSection({
@@ -15,7 +16,8 @@ export default function PreviewSection({
   monthlyAmount,
   period,
   annualRate,
-  isRateLoading
+  isRateLoading,
+  isHabitMode,
 }: PreviewSectionProps) {
   return (
     <InvestmentPreviewCard
@@ -24,6 +26,7 @@ export default function PreviewSection({
       period={period}
       annualRate={annualRate}
       isRateLoading={isRateLoading}
+      isHabitMode={isHabitMode}
     />
   )
 }
