@@ -4,6 +4,7 @@ import React from 'react'
 import { Investment } from '@/app/types/investment'
 import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
 import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSection'
+import { SimulationSection } from '@/app/components/InvestmentDetailSections/SimulationSection'
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
 import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailSections/InvestmentDetailOverview'
 import { InvestmentDetailActions } from '@/app/components/InvestmentDetailSections/InvestmentDetailActions'
@@ -91,9 +92,17 @@ export function InvestmentDetailContent() {
                 </div>
             </div>
 
-            {/* 진행률 - 수정 모드에서는 숨김 */}
+            {/* 진행률 / 적립형 요약 - 수정 모드에서는 숨김 */}
             {!isEditMode && (
                 <ProgressSection />
+            )}
+
+            {/* 적립형 전용: 시뮬레이션 섹션 */}
+            {!isEditMode && investmentData.isHabitMode && (
+                <SimulationSection
+                    isEditMode={isEditMode}
+                    onConvertToGoal={() => ui.setIsEditMode(true)}
+                />
             )}
 
             <div className="divide-y divide-border-subtle-lighter">

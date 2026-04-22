@@ -7,6 +7,8 @@ import InvestmentEditSheet from '@/app/components/InvestmentEditSections/Investm
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
 import { MetricsSection } from './MetricsSection'
 import { InvestmentDaysField } from './InvestmentDaysField'
+import PeriodInput from '@/app/components/Common/PeriodInput'
+import { isHabitMode as checkIsHabitMode } from '@/app/types/investment'
 import type { InfoSectionProps as OriginalInfoSectionProps } from './types'
 
 interface InfoSectionProps extends Partial<OriginalInfoSectionProps> {
@@ -32,6 +34,8 @@ export function InfoSection(props: InfoSectionProps) {
     editPeriodYears = props.editPeriodYears,
     editAnnualRate = props.editAnnualRate,
     editInvestmentDays = props.editInvestmentDays,
+    editIsHabitMode,
+    setEditIsHabitMode,
     setEditMonthlyAmount = props.setEditMonthlyAmount,
     setEditPeriodYears = props.setEditPeriodYears,
     setEditAnnualRate = props.setEditAnnualRate,
@@ -55,6 +59,23 @@ export function InfoSection(props: InfoSectionProps) {
 
   if (!item) return null
 
+  const habit = isEditMode
+    ? !!editIsHabitMode
+    : checkIsHabitMode(item)
+
+  // 목표 기간 표시/편집 필드
+  const periodValueText = habit ? '없음 (적립 중)' : `${item.period_years}년`
+
+  const handlePeriodChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const cleaned = e.target.value.replace(/[^0-9]/g, '')
+    setEditPeriodYears?.(cleaned)
+  }
+  const adjustEditPeriod = (delta: number) => {
+    const current = parseInt(editPeriodYears || '0')
+    const next = Math.max(1, current + delta)
+    setEditPeriodYears?.(String(next))
+  }
+
   return (
     <section ref={infoRef} className="py-6">
       <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
@@ -71,15 +92,30 @@ export function InfoSection(props: InfoSectionProps) {
           onEdit={(value) => handleNumericInput(value, setEditMonthlyAmount)}
         />
 
-        <InvestmentField
-          label="목표 기간"
-          value={`${item.period_years}년`}
-          editValue={editPeriodYears}
-          editPlaceholder="10"
-          editUnit="년"
-          isEditMode={isEditMode}
-          onEdit={(value) => handleNumericInput(value, setEditPeriodYears)}
-        />
+        {/* 목표 기간: 수정 모드에서는 habit 토글 포함 PeriodInput, 뷰에서는 텍스트 표기 */}
+        {isEditMode ? (
+          <div>
+            <label className="block text-sm font-medium text-foreground-soft mb-2">목표 기간</label>
+            <PeriodInput
+              value={editPeriodYears || ''}
+              onChange={handlePeriodChange}
+              onAdjust={adjustEditPeriod}
+              isHabitMode={!!editIsHabitMode}
+              onToggleHabitMode={(habitOn) => {
+                setEditIsHabitMode?.(habitOn)
+                if (habitOn) {
+                  setEditPeriodYears?.('')
+                }
+              }}
+            />
+          </div>
+        ) : (
+          <InvestmentField
+            label="목표 기간"
+            value={periodValueText}
+            isEditMode={false}
+          />
+        )}
 
         <InvestmentField
           label="연 수익률"
@@ -116,7 +152,7 @@ export function InfoSection(props: InfoSectionProps) {
           onOpenDaysPicker={() => setIsDaysPickerOpen(true)}
         />
 
-        {!isEditMode && (
+        {!isEditMode && !habit && (
           <MetricsSection
             totalPrincipal={totalPrincipal}
             calculatedProfit={calculatedProfit}
