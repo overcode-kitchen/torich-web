@@ -53,6 +53,7 @@ export default function InvestmentStartDateField({
                         mode="single"
                         selected={startDate}
                         className="mx-auto"
+                        fixedWeeks
                         onSelect={(date: Date | undefined) => {
                             if (date) {
                                 setStartDate(date)

@@ -54,6 +54,7 @@ export default function AddInvestmentView({
                     period={form.period}
                     annualRate={form.annualRate}
                     isRateLoading={form.isRateLoading}
+                    isHabitMode={form.isHabitMode}
                 />
 
                 {/* 저장하기 버튼 */}

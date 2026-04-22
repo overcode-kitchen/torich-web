@@ -11,6 +11,8 @@ export interface UseAddInvestmentUIReturn {
   setMonthlyAmount: (amount: string) => void
   period: string
   setPeriod: (period: string) => void
+  isHabitMode: boolean
+  setIsHabitMode: (habit: boolean) => void
   startDate: Date
   setStartDate: (date: Date) => void
   investmentDays: number[]
@@ -43,6 +45,7 @@ export function useAddInvestmentUI({
   const [stockName, setStockName] = useState<string>('')
   const [monthlyAmount, setMonthlyAmount] = useState<string>('')
   const [period, setPeriod] = useState<string>('')
+  const [isHabitMode, setIsHabitMode] = useState<boolean>(false)
   const [startDate, setStartDate] = useState<Date>(() => new Date())
   const [investmentDays, setInvestmentDays] = useState<number[]>([])
 
@@ -64,6 +67,8 @@ export function useAddInvestmentUI({
     setMonthlyAmount,
     period,
     setPeriod,
+    isHabitMode,
+    setIsHabitMode,
     startDate,
     setStartDate,
     investmentDays,

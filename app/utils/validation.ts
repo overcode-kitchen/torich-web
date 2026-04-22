@@ -7,6 +7,8 @@ export interface InvestmentFormData {
   stockName: string
   monthlyAmount: string
   period: string
+  /** 적립형(목표 기간 없음) 여부 */
+  isHabitMode?: boolean
   userId: string | null
   investmentDays: number[]
 }
@@ -26,10 +28,11 @@ export function validateInvestmentForm(data: InvestmentFormData): ValidationResu
     }
   }
 
-  if (!data.period || parseInt(data.period) <= 0) {
+  // 적립형은 기간 입력을 건너뛴다
+  if (!data.isHabitMode && (!data.period || parseInt(data.period) <= 0)) {
     return {
       isValid: false,
-      errorMessage: '투자 기간을 입력해주세요.'
+      errorMessage: '투자 기간을 입력하거나 "목표 기간 없이 적립하기"를 선택해주세요.'
     }
   }
 

@@ -81,11 +81,13 @@ export default function FormSection({ form, modals }: FormSectionProps) {
         onAdjust={form.adjustAmount}
       />
 
-      {/* 투자 기간 입력 */}
+      {/* 투자 기간 입력 (적립형 전환 지원) */}
       <PeriodInput
         value={form.period}
         onChange={form.handlePeriodChange}
         onAdjust={form.adjustPeriod}
+        isHabitMode={form.isHabitMode}
+        onToggleHabitMode={form.setIsHabitMode}
       />
 
       {/* 투자 시작일 입력 */}

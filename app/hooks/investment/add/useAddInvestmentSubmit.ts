@@ -13,6 +13,8 @@ export interface UseAddInvestmentSubmitProps {
   stockName: string
   monthlyAmount: string
   period: string
+  /** 적립형(목표 기간 없음) 여부 */
+  isHabitMode?: boolean
   startDate: Date
   investmentDays: number[]
   annualRate: number
@@ -32,6 +34,7 @@ export function useAddInvestmentSubmit({
   stockName,
   monthlyAmount,
   period,
+  isHabitMode,
   startDate,
   investmentDays,
   annualRate,
@@ -52,6 +55,7 @@ export function useAddInvestmentSubmit({
       stockName,
       monthlyAmount,
       period,
+      isHabitMode,
       userId,
       investmentDays,
     })
@@ -74,6 +78,7 @@ export function useAddInvestmentSubmit({
         stockName,
         monthlyAmount,
         period,
+        isHabitMode,
         startDate,
         investmentDays,
         annualRate,
@@ -126,6 +131,7 @@ export function useAddInvestmentSubmit({
     stockName,
     monthlyAmount,
     period,
+    isHabitMode,
     startDate,
     investmentDays,
     annualRate,

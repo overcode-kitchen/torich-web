@@ -4,6 +4,8 @@ export interface UseAddInvestmentFormReturn {
   setStockName: (name: string) => void
   monthlyAmount: string
   period: string
+  isHabitMode: boolean
+  setIsHabitMode: (habit: boolean) => void
   startDate: Date
   setStartDate: (date: Date) => void
   investmentDays: number[]
