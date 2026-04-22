@@ -231,11 +231,10 @@ export async function POST(request: Request) {
         const record = records.find(r => r.id === recordId)
         if (!record) continue
 
-        const newFinalAmount = calculateFinalAmount(
-          record.monthly_amount,
-          record.period_years,
-          newRate
-        )
+        // 적립형(period_years null/0)은 만기 금액 개념이 없으므로 0으로 저장
+        const newFinalAmount = record.period_years && record.period_years > 0
+          ? calculateFinalAmount(record.monthly_amount, record.period_years, newRate)
+          : 0
 
         const { error: updateError } = await supabase
           .from('records')

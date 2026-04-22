@@ -21,7 +21,7 @@ interface WebhookPayload {
     user_id: string
     title: string
     start_date: string
-    period_years: number
+    period_years: number | null
     investment_days: number[]
     notification_enabled?: boolean
     monthly_amount?: number

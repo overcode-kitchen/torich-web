@@ -10,12 +10,23 @@ export interface ScheduleRecord {
   user_id: string
   title: string
   start_date: string
-  period_years: number
+  /**
+   * 목표 기간(년).
+   * - number > 0: 목표형(만기까지 알림 예약)
+   * - null | 0: 적립형(만기 없음 - HABIT_DEFAULT_YEARS 기준으로 롤링 예약)
+   */
+  period_years: number | null
   investment_days: number[]
   notification_enabled?: boolean
   /** 월 납입액 (원 단위). 푸시 본문에 사용 */
   monthly_amount?: number
 }
+
+/**
+ * 적립형(목표 기간 없음) 기본 알림 스케줄 기간
+ * 이 기간만큼 미리 알림을 예약해두고, reschedule 잡이 주기적으로 갱신함
+ */
+export const HABIT_DEFAULT_YEARS = 10
 
 export interface ScheduleUserSettings {
   notification_global_enabled: boolean
@@ -68,15 +79,17 @@ function isValidDate(year: number, month: number, day: number): boolean {
 
 /**
  * 납입일 목록 생성
+ * 적립형(periodYears null/0): HABIT_DEFAULT_YEARS 기간만큼 선예약
  */
 export function generatePaymentDates(
   startDate: string,
-  periodYears: number,
+  periodYears: number | null,
   investmentDays: number[]
 ): Date[] {
   const dates: Date[] = []
   const start = new Date(startDate)
-  const end = addYears(start, periodYears)
+  const effectivePeriodYears = periodYears && periodYears > 0 ? periodYears : HABIT_DEFAULT_YEARS
+  const end = addYears(start, effectivePeriodYears)
   let current = new Date(start)
 
   while (current < end) {
