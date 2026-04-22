@@ -44,7 +44,7 @@ export default function PeriodInput({
       {/* 하단 행: 체크박스(좌) + ±1년 버튼(우, Habit 시 숨김) */}
       <div className="flex items-center justify-between mt-2">
         {supportsHabitMode && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 pl-3">
             <Checkbox
               id="habit-toggle"
               checked={isHabitMode}
