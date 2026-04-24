@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils"
 
 import { NameLabel } from "./DesignSystemShared"
+import { DashboardListRowsPatternSection } from "./DashboardListRowsPatternSection"
 
 export function PatternsSection() {
     return (
@@ -84,6 +85,8 @@ export function PatternsSection() {
                     </div>
                 </div>
             </section>
+
+            <DashboardListRowsPatternSection />
 
             {/* 모달 패턴 */}
             <section className="space-y-6">

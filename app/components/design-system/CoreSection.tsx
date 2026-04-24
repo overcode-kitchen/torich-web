@@ -82,6 +82,7 @@ export function CoreSection() {
                                 { label: "Secondary", variant: "secondary" as const, token: "btn-secondary", usage: "보조 액션 (취소, 이전)" },
                                 { label: "Outline", variant: "outline" as const, token: "btn-outline", usage: "테두리 강조 (선택·필터 등)" },
                                 { label: "Ghost", variant: "ghost" as const, token: "btn-ghost", usage: "최소 강조 (토글, 보조 클릭)" },
+                                { label: "Soft", variant: "soft" as const, token: "btn-soft", usage: "리스트 인라인 보조 (다가오는 투자 완료 등)" },
                                 { label: "Link", variant: "link" as const, token: "btn-link", usage: "텍스트 링크 (더보기, 상세)" },
                                 { label: "Destructive", variant: "destructive" as const, token: "btn-destructive", usage: "위험 액션 (삭제, 취소 등)" },
                             ].map(({ label, variant, token, usage }) => (
