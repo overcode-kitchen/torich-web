@@ -18,6 +18,9 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        /** 리스트 인라인 보조 — 보더 없음, 연한 면 (다가오는 투자 완료 등) */
+        soft:
+          "border-0 bg-surface text-muted-foreground shadow-none hover:bg-surface-hover hover:text-foreground-muted dark:bg-muted/20 dark:text-foreground-soft dark:hover:bg-muted/30 dark:hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
