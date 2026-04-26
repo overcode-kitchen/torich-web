@@ -45,6 +45,7 @@ yarn-error.log*
 next-env.d.ts
 api.backup
 app/api.backup
+server-routes.backup/
 
 **/GoogleService-Info.plist
 supabase/.temp/
