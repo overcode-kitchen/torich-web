@@ -1,6 +1,7 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createBrowserClient } from '@supabase/ssr'
 import { capacitorAuthStorage } from '@/lib/auth/capacitor-auth-storage'
+import type { Database } from '@/types/database.types'
 
 /** supabase-js와 동일한 storageKey 규칙 (URL hostname 기반) - PKCE verifier 키 일치 */
 function getStorageKey(supabaseUrl: string): string {
@@ -16,7 +17,7 @@ function shouldUseNativeStorage(): boolean {
   return cap.isNativePlatform?.() === true
 }
 
-let cachedNativeClient: ReturnType<typeof createSupabaseClient> | null = null
+let cachedNativeClient: ReturnType<typeof createSupabaseClient<Database>> | null = null
 
 export function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -24,7 +25,7 @@ export function createClient() {
 
   if (typeof window !== 'undefined' && shouldUseNativeStorage()) {
     if (cachedNativeClient) return cachedNativeClient
-    cachedNativeClient = createSupabaseClient(url, key, {
+    cachedNativeClient = createSupabaseClient<Database>(url, key, {
       auth: {
         flowType: 'pkce',
         storageKey: getStorageKey(url),
@@ -37,5 +38,5 @@ export function createClient() {
     return cachedNativeClient
   }
 
-  return createBrowserClient(url, key)
+  return createBrowserClient<Database>(url, key)
 }

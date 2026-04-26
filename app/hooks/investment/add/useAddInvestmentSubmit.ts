@@ -92,7 +92,7 @@ export function useAddInvestmentSubmit({
       const { data: inserted, error } = await supabase
         .from('records')
         .insert({
-          user_id: userId,
+          user_id: userId!,
           ...formattedData,
           notification_enabled: true,
         })

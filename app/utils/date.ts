@@ -146,7 +146,7 @@ function startOfToday(): Date {
  * @param investment_days 매월 투자일 [5, 25]
  * @returns 남은 일수 (0이면 오늘이 결제일, null이면 investment_days 미설정)
  */
-export function getDaysUntilNextPayment(investment_days?: number[]): number | null {
+export function getDaysUntilNextPayment(investment_days?: number[] | null): number | null {
   if (!investment_days || investment_days.length === 0) return null
   const today = startOfToday()
   const year = today.getFullYear()
@@ -171,7 +171,7 @@ export function getDaysUntilNextPayment(investment_days?: number[]): number | nu
  * @param withinDays 1=오늘만, 7=오늘 포함 7일, 365=1년 등
  */
 export function getUpcomingPayments(
-  items: Array<{ id: string; investment_days?: number[]; monthly_amount: number }>,
+  items: Array<{ id: string; investment_days?: number[] | null; monthly_amount: number }>,
   withinDays: number = 7
 ): Array<{ id: string; paymentDate: Date; monthly_amount: number; dayOfMonth: number }> {
   const today = startOfToday()
@@ -209,7 +209,7 @@ function startOfDay(d: Date): Date {
  * @param toDate 종료일 (포함)
  */
 export function getUpcomingPaymentsInRange(
-  items: Array<{ id: string; investment_days?: number[]; monthly_amount: number }>,
+  items: Array<{ id: string; investment_days?: number[] | null; monthly_amount: number }>,
   fromDate: Date,
   toDate: Date
 ): Array<{ id: string; paymentDate: Date; monthly_amount: number; dayOfMonth: number }> {
@@ -244,7 +244,7 @@ export function getUpcomingPaymentsInRange(
  * @param investment_days 매월 투자일 [5, 25]
  * @returns 다음 결제일 Date (null이면 investment_days 미설정)
  */
-export function getNextPaymentDate(investment_days?: number[]): Date | null {
+export function getNextPaymentDate(investment_days?: number[] | null): Date | null {
   if (!investment_days || investment_days.length === 0) return null
   const today = startOfToday()
   const year = today.getFullYear()

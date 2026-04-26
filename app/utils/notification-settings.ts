@@ -1,4 +1,5 @@
 import type { PreReminderOption, NotificationSettingsState } from '@/app/hooks/types/useNotificationSettings'
+import type { TablesInsert } from '@/types/database.types'
 
 export const defaultNotificationSettings: NotificationSettingsState = {
   defaultTime: '09:00',
@@ -25,8 +26,8 @@ export function mapDbDataToSettings(data: any): NotificationSettingsState {
 export function mapSettingsToDbUpdates(
   partial: Partial<NotificationSettingsState>,
   userId: string
-): Record<string, any> {
-  const updates: Record<string, any> = { user_id: userId }
+): TablesInsert<'user_settings'> {
+  const updates: TablesInsert<'user_settings'> = { user_id: userId }
 
   if (partial.defaultTime !== undefined) updates.notification_default_time = partial.defaultTime
   if (partial.preReminder !== undefined) updates.notification_pre_reminder = partial.preReminder

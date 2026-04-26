@@ -13,12 +13,12 @@ export interface Investment {
    */
   period_years: number | null
   annual_rate: number
-  expected_amount: string
+  expected_amount?: string
   created_at: string
-  start_date?: string // 투자 시작일 (없으면 created_at 사용)
-  investment_days?: number[] // 매월 투자하는 날짜들 (예: [5, 25] = 매월 5일, 25일)
+  start_date?: string | null // 투자 시작일 (없으면 created_at 사용)
+  investment_days?: number[] | null // 매월 투자하는 날짜들 (예: [5, 25] = 매월 5일, 25일)
   is_custom_rate?: boolean | null // 수익률 직접 입력/수정 여부
-  notification_enabled?: boolean // 해당 투자에 대한 리마인더 알림 on/off (records.notification_enabled)
+  notification_enabled?: boolean | null // 해당 투자에 대한 리마인더 알림 on/off (records.notification_enabled)
   market?: 'KR' | 'US' | null // 투자 시장 구분 (한국/미국)
 }
 

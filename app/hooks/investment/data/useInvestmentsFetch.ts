@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
-import type { RecordsSelectResult } from '../../types/useInvestments'
+import type { Investment } from '@/app/types/investment'
 
 export interface UseInvestmentsFetchReturn {
   refetch: () => Promise<void>
@@ -28,14 +28,14 @@ export function useInvestmentsFetch(
     setIsLoading(true)
 
     try {
-      const result: RecordsSelectResult = await supabase
+      const { data, error } = await supabase
         .from('records')
         .select('*')
         .eq('user_id', userId)
 
-      if (result.error) throw result.error
+      if (error) throw error
 
-      setRecords(result.data ?? [])
+      setRecords((data ?? []) as Investment[])
     } catch (err) {
       toastError(TOAST_MESSAGES.investmentListLoadFailed)
     } finally {
