@@ -44,3 +44,4 @@ api.backup
 app/api.backup
 
 **/GoogleService-Info.plist
+supabase/.temp/
