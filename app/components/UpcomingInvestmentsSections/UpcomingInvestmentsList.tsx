@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import { formatPaymentDateShort } from '@/app/utils/date'
 import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
@@ -25,13 +26,13 @@ export default function UpcomingInvestmentsList({
 
     return (
         <>
-            <div className="divide-y divide-border-subtle">
+            <div>
                 {displayItems.map((item) => {
                     const inv = item.investment
                     return (
                         <div
                             key={`${inv.id}-${item.paymentDate.getTime()}-${item.dayOfMonth}`}
-                            className="flex items-center justify-between gap-3 py-4"
+                            className="flex items-center justify-between gap-3 border-b border-border-subtle px-2 py-2.5 last:border-b-0"
                         >
                             <div className="min-w-0 flex-1">
                                 {/* InvestmentItem과 동일: 1줄 = 아바타+종목명, 2줄 = pl-2 보조 */}
@@ -47,9 +48,9 @@ export default function UpcomingInvestmentsList({
                                         >
                                             {getInvestmentAvatarLabel(inv.title)}
                                         </div>
-                                        <p className="min-w-0 truncate text-base font-semibold text-foreground">
+                                        <h3 className="min-w-0 truncate text-base font-semibold text-foreground">
                                             {inv.title}
-                                        </p>
+                                        </h3>
                                     </div>
                                     <div className="pl-2">
                                         <p className="truncate text-sm text-muted-foreground">
@@ -62,14 +63,16 @@ export default function UpcomingInvestmentsList({
                                 <span className="text-sm font-bold tabular-nums text-foreground">
                                     {formatCurrency(inv.monthly_amount)}
                                 </span>
-                                <button
+                                <Button
                                     type="button"
+                                    variant="soft"
+                                    size="xs"
+                                    className="shrink-0 px-3"
                                     onClick={() => toggleComplete(inv.id, item.paymentDate, item.dayOfMonth)}
-                                    className="rounded-full border border-border-subtle bg-muted/35 px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:border-border dark:bg-muted-darker/60 dark:text-foreground-soft dark:hover:bg-muted-darker dark:hover:text-foreground"
                                     aria-label="납입 완료 체크"
                                 >
                                     완료하기
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )
