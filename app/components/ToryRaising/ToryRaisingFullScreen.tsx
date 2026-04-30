@@ -1,37 +1,27 @@
 'use client'
 
-import { useMemo, useState, useCallback } from 'react'
-import { CircleNotch, X } from '@phosphor-icons/react'
-import { Share } from '@capacitor/share'
+import { useMemo, useState } from 'react'
+import Image from 'next/image'
+import { CircleNotch } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { toastError, toastSuccess, TOAST_MESSAGES } from '@/app/utils/toast'
 import { useDailyContent } from '@/app/hooks/tory/useDailyContent'
-import RichQuoteCard from '@/app/components/RichQuoteCard'
 import type {
   ToryRaisingModalPayload,
   ToryRaisingState,
 } from '@/app/hooks/tory-raising/useToryRaisingData'
 import { useToryRaisingData } from '@/app/hooks/tory-raising/useToryRaisingData'
 import { useToryRaisingSecretUnlock, DEFAULT_TORY_RAISE_DEMO_TOKEN } from '@/app/hooks/tory-raising/useToryRaisingSecretUnlock'
-import ToryRaisingStoreSection, { type ToryShopCategory, type ToryShopItem } from './ToryRaisingStoreSection'
-import ToryRaisingCustomizeSection from './ToryRaisingCustomizeSection'
+import { type ToryShopCategory, type ToryShopItem } from './ToryRaisingStoreSection'
 import ToryRaisingModal from './ToryRaisingModal'
 import { TORY_SHOP_CATALOG } from './toryShopCatalog'
 
-function isUserCancelError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error ?? '')
-  const lower = message.toLowerCase()
-  return lower.includes('cancel') || lower.includes('abort') || lower.includes('dismiss')
-}
-
-const SHARE_FAIL_MESSAGE = '공유에 실패했어요. 잠시 후 다시 시도해 주세요.'
-
-function getBackgroundClass(backgroundId: string): string {
-  if (backgroundId === 'office_bg') return 'bg-coolgray-25'
-  if (backgroundId === 'beach_bg') return 'bg-coolgray-50'
-  if (backgroundId === 'library_bg') return 'bg-coolgray-75'
-  if (backgroundId === 'cafe_bg') return 'bg-coolgray-100'
-  return 'bg-surface'
+function getBackgroundImage(backgroundId: string): string {
+  if (backgroundId === 'office_bg') return '/images/onboarding/step1.png'
+  if (backgroundId === 'beach_bg') return '/images/onboarding/step2.png'
+  if (backgroundId === 'library_bg') return '/images/onboarding/step3.png'
+  if (backgroundId === 'cafe_bg') return '/og-image.png'
+  return '/images/onboarding/step1.png'
 }
 
 function getToriiPreviewLabel(state: ToryRaisingState, itemById: Map<string, ToryShopItem>): string {
@@ -59,14 +49,15 @@ export default function ToryRaisingFullScreen() {
     progress,
     resetDemo,
     claimAttendance,
+    claimToryTabVisit,
     buyItem,
     equipItem,
   } = useToryRaisingData()
 
   const [view, setView] = useState<'main' | 'shop' | 'customize'>('main')
-  const [isQuoteOpen, setIsQuoteOpen] = useState(false)
   const [modalPayload, setModalPayload] = useState<ToryRaisingModalPayload | null>(null)
-  const [shopCategory, setShopCategory] = useState<ToryShopCategory>('all')
+  const [shopCategory, setShopCategory] = useState<ToryShopCategory>('background')
+  const [customizeCategory, setCustomizeCategory] = useState<'hat' | 'glasses' | 'outfit' | 'background'>('background')
 
   const itemById = useMemo(() => new Map(TORY_SHOP_CATALOG.map((i) => [i.id, i])), [])
   const ownedItemIds = useMemo(
@@ -81,10 +72,10 @@ export default function ToryRaisingFullScreen() {
     [state.ownedItems],
   )
 
-  const filteredShopItems = useMemo(() => {
-    if (shopCategory === 'all') return TORY_SHOP_CATALOG
-    return TORY_SHOP_CATALOG.filter((i) => i.category === shopCategory)
-  }, [shopCategory])
+  const filteredShopItems = useMemo(
+    () => TORY_SHOP_CATALOG.filter((i) => i.category === shopCategory).slice(0, 4),
+    [shopCategory],
+  )
 
   const hatOwnedItems = useMemo(
     () => state.ownedItems.hat.map((id) => itemById.get(id)).filter(Boolean) as ToryShopItem[],
@@ -98,10 +89,7 @@ export default function ToryRaisingFullScreen() {
     () => state.ownedItems.outfit.map((id) => itemById.get(id)).filter(Boolean) as ToryShopItem[],
     [state.ownedItems.outfit, itemById],
   )
-  const backgroundOwnedItems = useMemo(
-    () => state.ownedItems.background.map((id) => itemById.get(id)).filter(Boolean) as ToryShopItem[],
-    [state.ownedItems.background, itemById],
-  )
+  const backgroundOwnedItems = useMemo(() => state.ownedItems.background.map((id) => itemById.get(id)).filter(Boolean) as ToryShopItem[], [state.ownedItems.background, itemById])
 
   const previewLabel = useMemo(() => getToriiPreviewLabel(state, itemById), [state, itemById])
 
@@ -114,19 +102,13 @@ export default function ToryRaisingFullScreen() {
     if (result.modal) setModalPayload(result.modal)
   }
 
-  const handleShareQuote = useCallback(async (): Promise<void> => {
-    if (!richQuote) return
-    try {
-      await Share.share({
-        text: `"${richQuote.text}" - ${richQuote.author}\n\n토리치에서 매일 명언 받기 👉 https://torich.app`,
-      })
-    } catch (error) {
-      if (isUserCancelError(error)) return
-      toastError(SHARE_FAIL_MESSAGE)
-    }
-  }, [richQuote])
-
-  const backgroundClass = getBackgroundClass(state.equipped.background)
+  const equippedList = useMemo(() => {
+    if (customizeCategory === 'hat') return hatOwnedItems
+    if (customizeCategory === 'glasses') return glassesOwnedItems
+    if (customizeCategory === 'outfit') return outfitOwnedItems
+    return backgroundOwnedItems
+  }, [backgroundOwnedItems, customizeCategory, glassesOwnedItems, hatOwnedItems, outfitOwnedItems])
+  const backgroundImage = getBackgroundImage(state.equipped.background)
 
   if (!toryHydrated && quoteLoading) {
     return (
@@ -139,52 +121,159 @@ export default function ToryRaisingFullScreen() {
   return (
     <main className="relative h-full flex flex-col overflow-hidden">
       {/* 배경(상점 구매 배경 반영) */}
-      <div className={`absolute inset-0 -z-10 ${backgroundClass}`} aria-hidden />
+      <div className="absolute inset-0 -z-20">
+        <Image
+          src={backgroundImage}
+          alt="토리 배경"
+          fill
+          className="object-cover"
+          priority
+        />
+      </div>
+      <div className="absolute inset-0 -z-10 bg-black/20" />
 
       {/* 상단 정보 */}
       <div className="px-4 pt-3 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-foreground-soft truncate">
+          <div className="text-sm font-semibold text-white/90 truncate">
             {progress.title.emoji} {progress.title.name}
           </div>
-          <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+          <div className="text-2xl font-bold tracking-tight text-white tabular-nums">
             Lv.{progress.level}
           </div>
         </div>
 
         <div className="text-right">
-          <div className="text-sm font-semibold text-foreground-soft">🌰 보유</div>
-          <div className="text-2xl font-bold tracking-tight text-foreground tabular-nums">{state.balance}</div>
+          <div className="text-sm font-semibold text-white/90">🌰 보유</div>
+          <div className="text-2xl font-bold tracking-tight text-white tabular-nums">{state.balance}</div>
         </div>
       </div>
 
-      {/* 경험치/진행도 */}
-      <div className="px-4 mt-3 flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-sm text-muted-foreground">경험치</div>
-          <div className="text-sm font-semibold text-foreground-soft tabular-nums">
-            {Math.round(progress.progressPercent)}%
+      {/* 상단 상시 명언 + 경험치 */}
+      <div className="px-4 mt-2">
+        <div className="rounded-2xl border border-white/30 bg-black/30 backdrop-blur-sm p-3">
+          <div className="text-xs text-white/80 mb-1">오늘의 명언</div>
+          <div className="text-sm text-white leading-snug line-clamp-2">
+            {quoteLoading
+              ? '명언을 불러오는 중...'
+              : richQuote
+                ? `"${richQuote.text}" - ${richQuote.author}`
+                : '명언을 불러오지 못했어요.'}
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <div className="text-xs text-white/80">경험치 {Math.round(progress.progressPercent)}%</div>
+            <div className="text-xs text-white/80">
+              다음 Lv까지 {progress.acornsToNext ?? 0}개
+            </div>
+          </div>
+          <div className="mt-2 h-2 rounded-full bg-white/25 overflow-hidden">
+            <div
+              className="h-full bg-white/90 transition-[width_300ms_ease]"
+              style={{ width: `${Math.min(100, Math.max(0, progress.progressPercent))}%` }}
+              aria-label={`진행도 ${Math.round(progress.progressPercent)}%`}
+            />
           </div>
         </div>
-        <div className="h-3 rounded-full bg-surface-hover overflow-hidden border border-border-subtle">
-          <div
-            className="h-full bg-surface-strong transition-[width_300ms_ease]"
-            style={{ width: `${Math.min(100, Math.max(0, progress.progressPercent))}%` }}
-            aria-label={`진행도 ${Math.round(progress.progressPercent)}%`}
-          />
-        </div>
-        <div className="text-sm text-muted-foreground">
-          다음 레벨까지 <span className="font-semibold text-foreground tabular-nums">{progress.acornsToNext ?? 0}</span>개
-        </div>
       </div>
 
-      {/* 가운데 토리 */}
-      <div className="flex-1 px-4 flex items-center justify-center">
-        <div className="w-full max-w-sm flex flex-col items-center justify-center gap-3 text-center">
-          <div className="text-5xl">🐿️</div>
-          <div className="text-sm text-muted-foreground">{previewLabel}</div>
-          <div className="text-xs text-muted-foreground">일러스트 영역(이미지)은 MVP에서 비워두었어요.</div>
-        </div>
+      {/* 중앙 영역 (스크롤 없음) */}
+      <div className="flex-1 min-h-0 px-4 pt-3 pb-2">
+        {view === 'main' && (
+          <div className="h-full flex flex-col items-center justify-center text-center rounded-3xl border border-white/30 bg-black/25 backdrop-blur-sm p-5">
+            <div className="text-6xl">🐿️</div>
+            <div className="mt-3 text-sm text-white/90">{previewLabel}</div>
+            <div className="mt-1 text-xs text-white/70">토리는 중앙 고정, 배경은 전체 이미지로 유지됩니다.</div>
+          </div>
+        )}
+
+        {view === 'shop' && (
+          <div className="h-full rounded-3xl border border-white/30 bg-black/25 backdrop-blur-sm p-4 flex flex-col gap-3 overflow-hidden">
+            <div className="text-lg font-bold tracking-tight text-white">도토리 상점</div>
+            <div className="flex flex-wrap gap-2">
+              {(['background', 'hat', 'glasses', 'outfit'] as ToryShopCategory[]).map((c) => (
+                <Button
+                  key={c}
+                  size="sm"
+                  variant={shopCategory === c ? 'secondary' : 'soft'}
+                  onClick={() => setShopCategory(c)}
+                >
+                  {c === 'background' && '배경'}
+                  {c === 'hat' && '모자'}
+                  {c === 'glasses' && '안경'}
+                  {c === 'outfit' && '의상'}
+                </Button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {filteredShopItems.map((item) => {
+                const owned = ownedItemIds.has(item.id)
+                return (
+                  <div key={item.id} className="rounded-2xl border border-white/30 bg-black/20 p-2 flex flex-col gap-2">
+                    <div className="text-xs font-semibold text-white/90 truncate">{item.emoji} {item.name}</div>
+                    <div className="text-xs text-white/80">🌰 {item.price}</div>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={owned}
+                      onClick={() => handleActionResult(buyItem({ itemId: item.id, category: item.category, price: item.price }))}
+                    >
+                      {owned ? '보유중' : '구매'}
+                    </Button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {view === 'customize' && (
+          <div className="h-full rounded-3xl border border-white/30 bg-black/25 backdrop-blur-sm p-4 flex flex-col gap-3 overflow-hidden">
+            <div className="text-lg font-bold tracking-tight text-white">토리 꾸미기</div>
+            <div className="flex flex-wrap gap-2">
+              {(['background', 'hat', 'glasses', 'outfit'] as const).map((c) => (
+                <Button
+                  key={c}
+                  size="sm"
+                  variant={customizeCategory === c ? 'secondary' : 'soft'}
+                  onClick={() => setCustomizeCategory(c)}
+                >
+                  {c === 'background' && '배경'}
+                  {c === 'hat' && '모자'}
+                  {c === 'glasses' && '안경'}
+                  {c === 'outfit' && '의상'}
+                </Button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {equippedList.slice(0, 4).map((item) => {
+                const equippedId =
+                  customizeCategory === 'hat'
+                    ? state.equipped.hat
+                    : customizeCategory === 'glasses'
+                      ? state.equipped.glasses
+                      : customizeCategory === 'outfit'
+                        ? state.equipped.outfit
+                        : state.equipped.background
+                const isEquipped = equippedId === item.id
+                return (
+                  <div key={item.id} className="rounded-2xl border border-white/30 bg-black/20 p-2 flex flex-col gap-2">
+                    <div className="text-xs font-semibold text-white/90 truncate">{item.emoji} {item.name}</div>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleActionResult(equipItem({ category: customizeCategory, itemId: isEquipped ? null : item.id }))}
+                    >
+                      {isEquipped ? '벗기' : '장착'}
+                    </Button>
+                  </div>
+                )
+              })}
+              {equippedList.length === 0 && (
+                <div className="col-span-2 text-sm text-white/80">보유한 아이템이 없어요. 상점에서 구매해보세요.</div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 하단 액션 */}
@@ -201,17 +290,25 @@ export default function ToryRaisingFullScreen() {
           <Button
             size="lg"
             variant="soft"
-            disabled={false}
-            onClick={() => setIsQuoteOpen(true)}
+            disabled={!isUnlocked}
+            onClick={() => handleActionResult(claimToryTabVisit())}
           >
-            💬 하루의 명언 보기
+            🐿️ 방문 보상
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <Button
             size="lg"
-            variant="soft"
+            variant={view === 'main' ? 'secondary' : 'soft'}
+            disabled={!isUnlocked}
+            onClick={() => setView('main')}
+          >
+            메인
+          </Button>
+          <Button
+            size="lg"
+            variant={view === 'shop' ? 'secondary' : 'soft'}
             disabled={!isUnlocked}
             onClick={() => setView('shop')}
           >
@@ -219,7 +316,7 @@ export default function ToryRaisingFullScreen() {
           </Button>
           <Button
             size="lg"
-            variant="soft"
+            variant={view === 'customize' ? 'secondary' : 'soft'}
             disabled={!isUnlocked}
             onClick={() => setView('customize')}
           >
@@ -234,83 +331,6 @@ export default function ToryRaisingFullScreen() {
           </Button>
         </div>
       </div>
-
-      {/* 상점/꾸미기 오버레이 */}
-      {isUnlocked && view !== 'main' && (
-        <div className="fixed inset-0 z-[60]">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setView('main')} role="presentation" />
-          <div className="relative z-[61] w-full h-full overflow-y-auto">
-            <div className="max-w-md mx-auto p-4">
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <div className="text-lg font-bold tracking-tight text-foreground">
-                  {view === 'shop' ? '도토리 상점' : '토리 꾸미기'}
-                </div>
-                <Button size="sm" variant="soft" onClick={() => setView('main')}>
-                  <X weight="bold" className="size-4" /> 닫기
-                </Button>
-              </div>
-
-              {view === 'shop' && (
-                <ToryRaisingStoreSection
-                  balance={state.balance}
-                  activeCategory={shopCategory}
-                  onSelectCategory={setShopCategory}
-                  items={filteredShopItems}
-                  ownedItemIds={ownedItemIds}
-                  onBuyItem={(p) => handleActionResult(buyItem(p))}
-                />
-              )}
-
-              {view === 'customize' && (
-                <ToryRaisingCustomizeSection
-                  equippedHatId={state.equipped.hat}
-                  equippedGlassesId={state.equipped.glasses}
-                  equippedOutfitId={state.equipped.outfit}
-                  equippedBackgroundId={state.equipped.background}
-                  hatOwnedItems={hatOwnedItems}
-                  glassesOwnedItems={glassesOwnedItems}
-                  outfitOwnedItems={outfitOwnedItems}
-                  backgroundOwnedItems={backgroundOwnedItems}
-                  previewLabel={previewLabel}
-                  onEquip={(p) => {
-                    handleActionResult(equipItem(p))
-                    if (p.itemId) toastSuccess('장착 완료!')
-                    else toastSuccess('해제 완료!')
-                  }}
-                  onResetDemo={resetDemo}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 명언 모달 */}
-      {isQuoteOpen && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setIsQuoteOpen(false)} role="presentation" />
-          <div className="relative z-[71] w-full max-w-md">
-            <div className="bg-card rounded-2xl border border-border-subtle p-4">
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <div className="text-lg font-bold tracking-tight text-foreground">오늘의 명언</div>
-                <Button size="sm" variant="soft" onClick={() => setIsQuoteOpen(false)}>
-                  <X weight="bold" className="size-4" /> 닫기
-                </Button>
-              </div>
-
-              {quoteLoading ? (
-                <div className="min-h-[220px] flex items-center justify-center">
-                  <CircleNotch className="w-8 h-8 animate-spin text-brand-600" />
-                </div>
-              ) : richQuote ? (
-                <RichQuoteCard text={richQuote.text} author={richQuote.author} onShare={handleShareQuote} />
-              ) : (
-                <div className="text-sm text-muted-foreground">명언을 불러오지 못했어요.</div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 레벨업 모달 */}
       <ToryRaisingModal payload={modalPayload} onClose={() => setModalPayload(null)} />
