@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { PaymentEvent } from '@/app/utils/stats'
 import { usePaymentHistory } from './usePaymentHistory'
 import { isPaymentCompleted } from '@/app/utils/payment-completion'
+import { toastSuccess } from '@/app/utils/toast'
+import { awardToryInvestmentComplete } from '@/app/utils/tory-raising/awardToryInvestmentComplete'
 
 const TOAST_DURATION_MS = 5000
 
@@ -31,6 +33,9 @@ export function usePaymentCompletion() {
 
     // Toggle to true (currently false)
     await togglePayment(e.investmentId, dateStr, false)
+
+    const reward = awardToryInvestmentComplete({ paymentDateYMD: dateStr, amount: 10 })
+    if (reward.awarded) toastSuccess(`🌰 +${reward.amount} 도토리`)
 
     setPendingUndo(e)
 
