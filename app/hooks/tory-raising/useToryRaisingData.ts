@@ -26,7 +26,16 @@ export type ToryEquippedItems = {
 }
 
 export type ToryRecentEarning = {
-  type: 'attendance' | 'investment' | 'streak' | 'shop_buy' | 'levelup' | 'title_change'
+  type:
+    | 'attendance'
+    | 'investment'
+    | 'streak'
+    | 'shop_buy'
+    | 'levelup'
+    | 'title_change'
+    | 'visit_hour'
+    | 'play'
+    | 'pet'
   amount: number
   at: string
 }
@@ -36,11 +45,32 @@ export type ToryRaisingState = {
   balance: number
   lastAttendanceDate: string // YYYY-MM-DD
   attendanceStreak: number
-  lastToryTabVisit: string // YYYY-MM-DD
+  lastToryTabVisit: string // ISO 시각 (1시간 쿨다운)
   lastInvestmentCompleteDate: string // YYYY-MM-DD
+  lastPlayAt: string // ISO 시각 (30분 쿨다운)
+  lastPetAt: string // ISO 시각 (30분 쿨다운)
   ownedItems: ToryOwnedItems
   equipped: ToryEquippedItems
   recentEarnings: ToryRecentEarning[]
+}
+
+const VISIT_COOLDOWN_MS = 60 * 60 * 1000
+const PLAY_COOLDOWN_MS = 30 * 60 * 1000
+const PET_COOLDOWN_MS = 30 * 60 * 1000
+
+function getRemainingCooldownMs(lastIso: string, cooldownMs: number): number {
+  if (!lastIso) return 0
+  const last = new Date(lastIso).getTime()
+  if (Number.isNaN(last)) return 0
+  return Math.max(0, cooldownMs - (Date.now() - last))
+}
+
+function formatRemaining(ms: number): string {
+  const total = Math.ceil(ms / 1000)
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  if (m > 0) return `${m}분 ${s}초`
+  return `${s}초`
 }
 
 export type ToryRaisingModalPayload = {
@@ -99,6 +129,8 @@ function getDefaultToryRaisingState(): ToryRaisingState {
     attendanceStreak: 0,
     lastToryTabVisit: '',
     lastInvestmentCompleteDate: '',
+    lastPlayAt: '',
+    lastPetAt: '',
     ownedItems: {
       hat: [],
       glasses: [],
@@ -207,9 +239,9 @@ export function useToryRaisingData() {
   }, [state.attendanceStreak, state.lastAttendanceDate, state.totalAcorns, state.balance])
 
   const claimToryTabVisit = useCallback((): ToryRaisingActionResult => {
-    const today = toYMD(new Date())
-    if (state.lastToryTabVisit === today) {
-      return { ok: false, errorMessage: '오늘은 이미 토리 탭 방문 보상을 받았어요.' }
+    const remaining = getRemainingCooldownMs(state.lastToryTabVisit, VISIT_COOLDOWN_MS)
+    if (remaining > 0) {
+      return { ok: false, errorMessage: `방문 보상은 ${formatRemaining(remaining)} 후에 다시 받을 수 있어요.` }
     }
 
     const beforeTotal = state.totalAcorns
@@ -220,17 +252,69 @@ export function useToryRaisingData() {
       ...prev,
       totalAcorns: prev.totalAcorns + earned,
       balance: prev.balance + earned,
-      lastToryTabVisit: today,
-      recentEarnings: appendEarning(prev.recentEarnings, { type: 'streak', amount: earned, at }),
+      lastToryTabVisit: at,
+      recentEarnings: appendEarning(prev.recentEarnings, { type: 'visit_hour', amount: earned, at }),
     }))
 
     const modal = computeModalIfLevelChanged({ beforeTotalAcorns: beforeTotal, afterTotalAcorns: beforeTotal + earned })
     return {
       ok: true,
-      successMessage: '🌰 +1 토리 탭 방문 도토리',
+      successMessage: '🌰 +1 방문 보상',
       modal: modal ?? undefined,
     }
   }, [state.lastToryTabVisit, state.totalAcorns, state.balance])
+
+  const claimPlay = useCallback((): ToryRaisingActionResult => {
+    const remaining = getRemainingCooldownMs(state.lastPlayAt, PLAY_COOLDOWN_MS)
+    if (remaining > 0) {
+      return { ok: false, errorMessage: `놀아주기는 ${formatRemaining(remaining)} 후에 다시 가능해요.` }
+    }
+
+    const beforeTotal = state.totalAcorns
+    const earned = 1
+    const at = new Date().toISOString()
+
+    setState((prev) => ({
+      ...prev,
+      totalAcorns: prev.totalAcorns + earned,
+      balance: prev.balance + earned,
+      lastPlayAt: at,
+      recentEarnings: appendEarning(prev.recentEarnings, { type: 'play', amount: earned, at }),
+    }))
+
+    const modal = computeModalIfLevelChanged({ beforeTotalAcorns: beforeTotal, afterTotalAcorns: beforeTotal + earned })
+    return {
+      ok: true,
+      successMessage: '🐿️ 놀아줬어요! +1',
+      modal: modal ?? undefined,
+    }
+  }, [state.lastPlayAt, state.totalAcorns, state.balance])
+
+  const claimPet = useCallback((): ToryRaisingActionResult => {
+    const remaining = getRemainingCooldownMs(state.lastPetAt, PET_COOLDOWN_MS)
+    if (remaining > 0) {
+      return { ok: false, errorMessage: `쓰다듬기는 ${formatRemaining(remaining)} 후에 다시 가능해요.` }
+    }
+
+    const beforeTotal = state.totalAcorns
+    const earned = 1
+    const at = new Date().toISOString()
+
+    setState((prev) => ({
+      ...prev,
+      totalAcorns: prev.totalAcorns + earned,
+      balance: prev.balance + earned,
+      lastPetAt: at,
+      recentEarnings: appendEarning(prev.recentEarnings, { type: 'pet', amount: earned, at }),
+    }))
+
+    const modal = computeModalIfLevelChanged({ beforeTotalAcorns: beforeTotal, afterTotalAcorns: beforeTotal + earned })
+    return {
+      ok: true,
+      successMessage: '🤲 쓰다듬어줬어요! +1',
+      modal: modal ?? undefined,
+    }
+  }, [state.lastPetAt, state.totalAcorns, state.balance])
 
   const claimInvestmentComplete = useCallback((): ToryRaisingActionResult => {
     const today = toYMD(new Date())
@@ -317,6 +401,8 @@ export function useToryRaisingData() {
     claimAttendance,
     claimToryTabVisit,
     claimInvestmentComplete,
+    claimPlay,
+    claimPet,
     buyItem,
     equipItem,
   }
