@@ -1,11 +1,11 @@
 {
   "name": "tickle-moa",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:app": "node scripts/verify-app-build-env.mjs && rm -rf ./server-routes.backup && mkdir -p ./server-routes.backup && ([ -d app/api ] && mv app/api ./server-routes.backup/ || true) && ([ -d app/auth ] && mv app/auth ./server-routes.backup/ || true) && BUILD_TARGET=app next build && ([ -d ./server-routes.backup/api ] && mv ./server-routes.backup/api app/ || true) && ([ -d ./server-routes.backup/auth ] && mv ./server-routes.backup/auth app/ || true) && rm -rf ./server-routes.backup",
+    "build:app": "node scripts/verify-app-build-env.mjs && ([ -d ./server-routes.backup/api ] && mv ./server-routes.backup/api app/ || true) && ([ -d ./server-routes.backup/auth ] && mv ./server-routes.backup/auth app/ || true) && rm -rf ./server-routes.backup && mkdir -p ./server-routes.backup && ([ -d app/api ] && mv app/api ./server-routes.backup/ || true) && ([ -d app/auth ] && mv app/auth ./server-routes.backup/ || true) && BUILD_TARGET=app next build && ([ -d ./server-routes.backup/api ] && mv ./server-routes.backup/api app/ || true) && ([ -d ./server-routes.backup/auth ] && mv ./server-routes.backup/auth app/ || true) && rm -rf ./server-routes.backup",
     "start": "next start",
     "lint": "eslint"
   },

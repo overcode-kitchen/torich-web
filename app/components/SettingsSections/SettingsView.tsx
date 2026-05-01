@@ -8,6 +8,7 @@ import { BrandStorySheet } from '@/app/components/BrandStorySheet'
 import { SettingsItem } from './SettingsItem'
 import type { Theme } from '@/app/components/ThemeSections/ThemeProvider'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
+import { useAppVersion } from '@/app/hooks/platform/useAppVersion'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 interface SettingsViewProps {
@@ -49,6 +50,7 @@ export default function SettingsView({
     closeBrandStory,
 }: SettingsViewProps) {
     const isNativeApp = useIsNativeApp()
+    const appVersion = useAppVersion()
 
     const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
     const contentPaddingTop = isNativeApp
@@ -155,7 +157,7 @@ export default function SettingsView({
                 <SettingsSection title="앱 정보">
                     <SettingsItem
                         label="버전"
-                        rightElement={<span className="text-muted-foreground text-sm">1.0.0</span>}
+                        rightElement={<span className="text-muted-foreground text-sm">{appVersion}</span>}
                     />
                     <SettingsItem
                         label="문의하기"

@@ -1,12 +1,17 @@
 import type { NextConfig } from "next";
+import { version as pkgVersion } from "./package.json";
 
 const isApp = process.env.BUILD_TARGET === 'app';
 
 const nextConfig: NextConfig = {
-  ...(isApp && { 
+  ...(isApp && {
     output: 'export',
   }),
-  
+
+  env: {
+    NEXT_PUBLIC_APP_VERSION: pkgVersion,
+  },
+
   experimental: {
     optimizePackageImports: ["@phosphor-icons/react"],
   },
