@@ -111,6 +111,9 @@ export default function ToryRaisingGrowthSection({
                   {e.type === 'attendance' && '출석'}
                   {e.type === 'investment' && '투자 완료'}
                   {e.type === 'streak' && '연속/방문 보상'}
+                  {e.type === 'visit_hour' && '방문 보상'}
+                  {e.type === 'play' && '놀아주기'}
+                  {e.type === 'pet' && '쓰다듬기'}
                   {e.type === 'shop_buy' && '상점 구매'}
                   {e.type === 'levelup' && '레벨업'}
                   {e.type === 'title_change' && '칭호 변경'}
