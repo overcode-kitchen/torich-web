@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /auth/
-Sitemap: https://torich.app/sitemap.xml
+Sitemap: https://torich.vercel.app/sitemap.xml

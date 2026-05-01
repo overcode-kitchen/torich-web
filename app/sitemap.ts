@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 
 export const dynamic = 'force-static'
 
-const baseUrl = 'https://torich.app'
+const baseUrl = 'https://torich.vercel.app'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
