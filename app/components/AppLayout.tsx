@@ -2,6 +2,8 @@
 
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/app/hooks/auth/useAuth'
+import { useAppUpdateCheck } from '@/app/hooks/platform/useAppUpdateCheck'
+import { AppUpdatePromptSheet } from './AppUpdatePromptSheet'
 import BottomNavigation from './BottomNavigation'
 import SafeArea from './SafeArea'
 
@@ -26,6 +28,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // 하단 탭은 웹/앱 공통으로 hideNav가 아닐 때 항상 표시
   const showBottomNav = !hideNav
 
+  const updatePrompt = useAppUpdateCheck()
+
   return (
     <>
       <SafeArea
@@ -37,6 +41,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {children}
       </SafeArea>
       {showBottomNav && <BottomNavigation />}
+      <AppUpdatePromptSheet
+        isOpen={updatePrompt.isOpen}
+        onUpdate={updatePrompt.onUpdate}
+        onDismiss={updatePrompt.onDismiss}
+      />
     </>
   )
 }

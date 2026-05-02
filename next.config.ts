@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
 
   env: {
     NEXT_PUBLIC_APP_VERSION: pkgVersion,
+    NEXT_PUBLIC_APP_STORE_ID: process.env.NEXT_PUBLIC_APP_STORE_ID ?? '',
   },
 
   experimental: {
