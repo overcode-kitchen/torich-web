@@ -30,6 +30,9 @@
 # Claude Code local state
 .claude/
 
+# Supabase CLI local cache
+supabase/.temp/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
