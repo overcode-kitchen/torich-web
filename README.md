@@ -59,8 +59,8 @@ npm run build:app   # iOS 앱용 (정적 export → Capacitor)
 | [CLAUDE.md](CLAUDE.md) | 아키텍처/디자인 시스템 규칙, Supabase 호환성 룰 (AI/개발자 공통) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 브랜치 전략, 협업 규칙, 배포 프로세스 |
 | [docs/TECH_STACK.md](docs/TECH_STACK.md) | 기술 스택 상세 |
-| [docs/apple-signin.md](docs/apple-signin.md), [native-oauth-redirect.md](docs/native-oauth-redirect.md) | OAuth (Google/Apple) 설정 가이드 |
-| [docs/webhook-setup.md](docs/webhook-setup.md), [pg-cron-setup.md](docs/pg-cron-setup.md) | 알림 웹훅, pg_cron 설정 |
+| [docs/oauth-setup.md](docs/oauth-setup.md) | OAuth (Google/Apple) 설정 및 트러블슈팅 |
+| [docs/notification-infra.md](docs/notification-infra.md) | 알림 웹훅 + pg_cron 인프라 |
 | [docs/ga4-events.md](docs/ga4-events.md) | GA4 이벤트 설계 |
 | [docs/screens.md](docs/screens.md) | 화면별 기능명세서 |
 | [docs/tori-raising/prd.md](docs/tori-raising/prd.md) | "토리 키우기" 기능 PRD |
