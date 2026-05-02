@@ -9,6 +9,7 @@ import {
   type SchedulePushToken,
   type ScheduledNotificationRow,
 } from '../_shared/notification-schedule.ts'
+import { adjustToNextBusinessDateStringKST } from '../_shared/korean-holidays.ts'
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000
 const BATCH_INSERT_SIZE = 500
@@ -32,6 +33,20 @@ function getTodayAtDefaultTimeKSTAsUTC(now: Date, defaultTime: string): Date {
   const d = kstNow.getUTCDate()
   const [h = 9, m = 0] = defaultTime.split(':').map(Number)
   const midnightKST = Date.UTC(y, mo, d, 0, 0, 0) - KST_OFFSET_MS
+  return new Date(midnightKST + (h * 60 + m) * 60 * 1000)
+}
+
+/** 오늘(KST) YYYY-MM-DD */
+function getTodayKSTString(now: Date): string {
+  const kstNow = new Date(now.getTime() + KST_OFFSET_MS)
+  return `${kstNow.getUTCFullYear()}-${pad(kstNow.getUTCMonth() + 1)}-${pad(kstNow.getUTCDate())}`
+}
+
+/** YYYY-MM-DD(KST) + HH:mm(KST) → UTC Date */
+function getKSTDateTimeAsUTC(dateStr: string, defaultTime: string): Date {
+  const [y, mo, d] = dateStr.split('-').map(Number)
+  const [h = 9, m = 0] = defaultTime.split(':').map(Number)
+  const midnightKST = Date.UTC(y, mo - 1, d, 0, 0, 0) - KST_OFFSET_MS
   return new Date(midnightKST + (h * 60 + m) * 60 * 1000)
 }
 
@@ -145,10 +160,10 @@ Deno.serve(async (req) => {
 
     const userIds = [...new Set(missedRecords.map((r) => r.user_id))]
 
-    // 5. user_settings: notification_re_reminder_enabled, notification_global_enabled, notification_default_time
+    // 5. user_settings: notification_re_reminder_enabled, notification_global_enabled, notification_default_time, notification_skip_weekend_holiday
     const { data: settingsList, error: settingsError } = await supabase
       .from('user_settings')
-      .select('user_id, notification_default_time, notification_global_enabled, notification_re_reminder_enabled')
+      .select('user_id, notification_default_time, notification_global_enabled, notification_re_reminder_enabled, notification_skip_weekend_holiday')
       .in('user_id', userIds)
 
     if (settingsError) {
@@ -161,12 +176,14 @@ Deno.serve(async (req) => {
 
     const enabledUserIds = new Set<string>()
     const userDefaultTime: Record<string, string> = {}
+    const userSkipWeekendHoliday: Record<string, boolean> = {}
     for (const s of settingsList || []) {
       const row = s as {
         user_id: string
         notification_default_time?: string
         notification_global_enabled?: boolean
         notification_re_reminder_enabled?: boolean
+        notification_skip_weekend_holiday?: boolean
       }
       if (
         row.notification_global_enabled === true &&
@@ -175,6 +192,8 @@ Deno.serve(async (req) => {
         enabledUserIds.add(row.user_id)
         userDefaultTime[row.user_id] =
           row.notification_default_time || '09:00'
+        userSkipWeekendHoliday[row.user_id] =
+          row.notification_skip_weekend_holiday === true
       }
     }
 
@@ -216,13 +235,19 @@ Deno.serve(async (req) => {
     }
 
     // 7. 재알림 행 생성: 오늘(KST) 기본 알림 시간에 발송, notification_type = 're_reminder'
+    // 사용자 설정에서 주말/공휴일 보정 ON이면 오늘이 비영업일일 때 다음 영업일로 미룬다.
+    const todayKSTStr = getTodayKSTString(now)
     const allRows: ScheduledNotificationRow[] = []
     for (const record of recordsForReminder) {
       const tokens = tokensMap.get(record.user_id)
       if (!tokens?.length) continue
 
       const defaultTime = userDefaultTime[record.user_id] || '09:00'
-      const scheduledAtUTC = getTodayAtDefaultTimeKSTAsUTC(now, defaultTime)
+      const skip = userSkipWeekendHoliday[record.user_id] === true
+      const sendDateStr = skip
+        ? adjustToNextBusinessDateStringKST(todayKSTStr)
+        : todayKSTStr
+      const scheduledAtUTC = getKSTDateTimeAsUTC(sendDateStr, defaultTime)
       const scheduledAtStr = scheduledAtUTC.toISOString()
 
       const bodyText = `${record.title} - 납입일이 지났어요. 오늘 완료해 주세요.`

@@ -80,7 +80,7 @@
 - **스케줄**: 매일 **KST 00:10** (UTC 15:10) → `10 15 * * *`
 - **동작**: 어제가 납입일인데 `payment_history`에 완료 기록이 없는 (record, user)에 대해, 당일 기본 알림 시간에 재알림 1회를 `scheduled_notifications`에 예약 (`notification_type: 're_reminder'`). 중복 방지는 `(record_id, scheduled_at, token)` unique + `ignoreDuplicates`로 처리.
 
-**pg_cron 등록 방법**은 저장소 내 `supabase/migrations/README_CRON.md`를 참고하세요. (Vault 시크릿 저장 후 `cron.schedule` 실행.)
+**pg_cron 등록 방법**은 [./pg-cron-setup.md](./pg-cron-setup.md)를 참고하세요. (Vault 시크릿 저장 후 `cron.schedule` 실행.)
 
 ## 3.2 공통 모듈
 

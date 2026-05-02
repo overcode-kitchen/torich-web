@@ -236,6 +236,7 @@ export type Database = {
           notification_pre_reminder: string | null
           notification_re_reminder_enabled: boolean | null
           notification_service_announcement_enabled: boolean | null
+          notification_skip_weekend_holiday: boolean | null
           notification_streak_enabled: boolean | null
           show_monthly_amount: boolean | null
           theme: string | null
@@ -248,6 +249,7 @@ export type Database = {
           notification_pre_reminder?: string | null
           notification_re_reminder_enabled?: boolean | null
           notification_service_announcement_enabled?: boolean | null
+          notification_skip_weekend_holiday?: boolean | null
           notification_streak_enabled?: boolean | null
           show_monthly_amount?: boolean | null
           theme?: string | null
@@ -260,6 +262,7 @@ export type Database = {
           notification_pre_reminder?: string | null
           notification_re_reminder_enabled?: boolean | null
           notification_service_announcement_enabled?: boolean | null
+          notification_skip_weekend_holiday?: boolean | null
           notification_streak_enabled?: boolean | null
           show_monthly_amount?: boolean | null
           theme?: string | null
