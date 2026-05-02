@@ -209,5 +209,5 @@ Apple은 **Client Secret**을 직접 주지 않고, **Team ID + Key ID + .p8 + C
 ## 7. 참고
 
 - **Supabase 공식**: [Login with Apple](https://supabase.com/docs/guides/auth/social-login/auth-apple)
-- **네이티브 OAuth 리다이렉트**: [NATIVE_OAUTH_REDIRECT.md](./NATIVE_OAUTH_REDIRECT.md)  
+- **네이티브 OAuth 리다이렉트**: [native-oauth-redirect.md](./native-oauth-redirect.md)  
   → Apple도 동일하게 `torich://login-callback` + `exchangeCodeForSession` 사용 가능.
