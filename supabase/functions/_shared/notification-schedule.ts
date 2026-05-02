@@ -3,6 +3,8 @@
  * schedule-notification, reschedule-notifications Edge Function에서 재사용.
  */
 
+import { adjustToNextBusinessDateStringKST } from './korean-holidays.ts'
+
 const KST_OFFSET_HOURS = 9 // KST는 UTC+9
 
 export interface ScheduleRecord {
@@ -32,6 +34,8 @@ export interface ScheduleUserSettings {
   notification_global_enabled: boolean
   notification_default_time: string
   notification_pre_reminder: string
+  /** 토/일/공휴일이면 다음 영업일로 알림 발송을 미룬다. 기본 false. */
+  notification_skip_weekend_holiday?: boolean
 }
 
 export interface SchedulePushToken {
@@ -155,14 +159,23 @@ export function parsePreReminderToDays(preReminder: string): number {
 
 /**
  * 알림 시각 계산 (KST 기준)
+ * skipWeekendHoliday=true이면 발송일이 주말/공휴일일 때 다음 영업일로 미룬다.
  */
 export function calculateScheduledAt(
   paymentDateStr: string,
   preReminder: string,
-  defaultTime: string
+  defaultTime: string,
+  skipWeekendHoliday: boolean = false
 ): Date {
   const preDays = parsePreReminderToDays(preReminder)
-  const baseDate = addDays(paymentDateStr, -preDays)
+  let baseDate = addDays(paymentDateStr, -preDays)
+  if (skipWeekendHoliday) {
+    const baseDateStr = baseDate.toISOString().split('T')[0]
+    const adjusted = adjustToNextBusinessDateStringKST(baseDateStr)
+    if (adjusted !== baseDateStr) {
+      baseDate = new Date(adjusted)
+    }
+  }
   return setTime(baseDate, defaultTime)
 }
 
@@ -190,7 +203,8 @@ export function buildNotificationRows(
     const scheduledAtKST = calculateScheduledAt(
       paymentDateStr,
       userSettings.notification_pre_reminder,
-      userSettings.notification_default_time
+      userSettings.notification_default_time,
+      userSettings.notification_skip_weekend_holiday ?? false
     )
     const scheduledAtUTC = kstToUTC(scheduledAtKST)
     const scheduledAtUTCStr = scheduledAtUTC.toISOString()
