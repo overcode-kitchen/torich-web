@@ -1,44 +1,94 @@
-# Antigravity Rules
+# 토리치 프로젝트 가이드 (CLAUDE.md)
 
 ## Language
 - Always respond in Korean (한국어로 응답)
-- Generate commit messages in Korean (커밋 메시지를 한글로 작성)
+- 커밋 메시지는 글로벌 규칙(`~/.claude/CLAUDE.md`)에 정의된 한글 prefix + 종결형 어미 형식을 따른다.
+  - 예: `feat(login): 로그인 버튼 클릭 시 로딩 상태 표시 기능을 추가함`
 
-## Commit Message Format
-커밋 메시지는 다음 형식을 따릅니다:
+---
 
-**형식:**
+# 운영 컨텍스트 (반드시 인지)
+
+이 프로젝트의 코드 변경 영향 반경을 판단하기 위해 항상 아래 전제를 인지하고 작업한다.
+
+- iOS 앱은 Capacitor **로컬 번들** 방식이다 (`webDir: 'out'`, 정적 export).
+- `main` 브랜치 배포 시 **웹/서버는 즉시 반영되지만, 출시된 iOS 앱은 즉시 반영되지 않는다.** 사용자가 앱을 업데이트해야 한다.
+- 클라이언트는 Supabase SDK로 **DB에 직접 접근**한다 → **Supabase 스키마가 곧 API**이고, 스키마 변경이 곧 Breaking Change이다.
+- 운영 중에는 항상 **`구버전 앱 + 신버전 DB/API`** 조합이 존재한다고 가정한다.
+- 머지 판단 기준: **"지금 운영 앱 사용자에게 안전한가?"**
+
+---
+
+# Supabase / API 호환성 (CRITICAL)
+
+## Supabase 스키마 — Breaking Change 금지
+
+- **금지**:
+  - 기존 컬럼 삭제 / 이름 변경 / 타입 변경 (예: `TEXT` → `INTEGER`)
+  - 기존 컬럼에 `NOT NULL` 제약 추가 (기존 행 파괴)
+  - RLS 정책 강화 (구버전 앱의 조회 범위 축소)
+- **허용**:
+  - 새 컬럼 추가 (`DEFAULT` 값 필수)
+  - 새 테이블 추가
+  - `NOT NULL` → `NULL` 허용으로 완화
+  - 인덱스 추가
+- **구조 변경이 꼭 필요하면 순서 고정**:
+  1. 새 컬럼/구조 **추가** (구 스펙 병행 유지)
+  2. 앱 업데이트 배포 완료 확인
+  3. 구 스펙 제거
+
+## Next.js API Route — Breaking Change 금지
+
+- **금지**: 기존 필드 삭제·이름변경·타입변경, 기존 엔드포인트 경로/요청 형식 변경
+- **허용**: 새 필드 추가, 새 엔드포인트 추가
+
+## 마이그레이션 파일
+
+- 파일명은 **Supabase CLI 표준 타임스탬프** 형식 사용
+  - 예: `20260426153000_add_market_to_records.sql`
+- 마이그레이션 작성 후 반드시 **TypeScript 타입 재생성**:
+  ```bash
+  supabase gen types typescript --project-id <프로젝트ID> > types/database.types.ts
+  ```
+
+---
+
+# 빌드 함정
+
+## `build:app` 실패 시 복구
+
+`npm run build:app` 은 빌드 중 `app/api`, `app/auth` 폴더를 `server-routes.backup/` 으로 임시 이동한다. 빌드가 중간에 실패하면 이 폴더가 복구되지 않은 채 남는다. 발견 즉시 수동 복구한다.
+
+```bash
+mv server-routes.backup/api app/api
+mv server-routes.backup/auth app/auth
+rm -rf server-routes.backup
 ```
-type(scope): 간단한 설명
 
-- 주요 변경 사항 1
-- 주요 변경 사항 2
-- 주요 변경 사항 3
+## `capacitor.config.ts`의 `server.url` 커밋 금지
+
+개발 시 임시로 주석 해제하는 `server.url` 이 **커밋된 채 배포되면 운영 앱이 로컬 서버를 바라본다.** PR 머지 전 반드시 diff 확인.
+
+```ts
+server: {
+  // 절대 주석 해제된 채로 커밋하지 말 것
+  // url: 'http://localhost:3000',
+}
 ```
 
-**Type:**
-- feat: 새로운 기능 추가
-- fix: 버그 수정
-- refactor: 코드 리팩토링
-- style: 코드 포맷팅, 세미콜론 누락 등
-- docs: 문서 수정
-- test: 테스트 코드 추가/수정
-- chore: 빌드 업무 수정, 패키지 매니저 설정 등
+---
 
-**예시:**
+# Edge Function 배포
+
+`supabase/functions/` 의 함수는 코드 변경 후 **별도 배포 명령으로 반영된다.** 함수 변경이 포함된 작업은 배포까지 완료해야 끝난 것이다.
+
+```bash
+supabase functions deploy <함수명>
+
+# 예시
+# supabase functions deploy schedule-notification
+# supabase functions deploy send-push
 ```
-feat(ui): 투자 정보 화면 레이아웃 개선 및 InputWithUnit size 변형 추가
-
-- InputWithUnit size 변형(sm/md/lg) 추가
-- 투자 정보 수정 화면: 상하 배치 (라벨 위, 인풋 아래)
-- 투자 정보 상세 화면: 좌우 배치 (라벨 좌측, 값 우측)
-- 연 수익률 제안 칩 우측 정렬 + 크기 축소
-- InputWithUnit 기본 너비 w-full로 변경
-```
-
-**주의:**
-- 제목과 본문을 분리하지 말고 한 번에 복사/붙여넣기 가능한 형식으로 작성
-- 본문은 불릿 포인트(`-`)로 주요 변경 사항을 간결하게 나열
 
 ---
 
