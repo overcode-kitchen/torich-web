@@ -14,6 +14,7 @@ import { InvestmentDetailProvider } from '@/app/components/InvestmentDetailSecti
 import { RetroactiveOnboardingSheet } from '@/app/components/InvestmentDetailSections/RetroactiveOnboardingSheet'
 import { useRetroactiveOnboarding } from '@/app/hooks/investment/detail/useRetroactiveOnboarding'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
+import { fetchPriceWithFallback } from '@/app/utils/stock-price-fetcher'
 
 interface InvestmentDetailViewProps {
   item: Investment
@@ -98,6 +99,13 @@ function InternalInvestmentDetailView({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditMode, item])
+
+  // 종목 상세 진입 시 시세 캐시 갱신. 매수 ✓ 시점 fallback 적중률을 높이는 보강이며, 실패해도 무해.
+  useEffect(() => {
+    if (item.symbol) {
+      void fetchPriceWithFallback(item.symbol)
+    }
+  }, [item.symbol])
 
   // 과거 시작일 투자 추가 후 진입 시 소급 안내 시트
   const retroOnboarding = useRetroactiveOnboarding({

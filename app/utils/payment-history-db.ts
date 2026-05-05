@@ -13,9 +13,21 @@ export async function writePaymentHistoryRow(
     paymentDate: string
     isRetroactive: boolean
     shouldDelete: boolean
+    /** 매수 시점 캡처 주수 (자동 추적만 채움. 소급은 NULL) */
+    capturedShares?: number | null
+    /** 매수 시점 캡처 1주 시세, 원화 (4단계 fallback 다 실패 시 NULL) */
+    capturedPrice?: number | null
   }
 ) {
-  const { userId, recordId, paymentDate, isRetroactive, shouldDelete } = params
+  const {
+    userId,
+    recordId,
+    paymentDate,
+    isRetroactive,
+    shouldDelete,
+    capturedShares,
+    capturedPrice,
+  } = params
 
   if (shouldDelete) {
     const { error } = await supabase
@@ -34,6 +46,8 @@ export async function writePaymentHistoryRow(
       record_id: recordId,
       payment_date: paymentDate,
       is_retroactive: isRetroactive,
+      captured_shares: capturedShares ?? null,
+      captured_price: capturedPrice ?? null,
     },
     { onConflict: 'record_id, payment_date', ignoreDuplicates: isRetroactive }
   )
