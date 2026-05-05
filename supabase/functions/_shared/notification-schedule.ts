@@ -22,6 +22,10 @@ export interface ScheduleRecord {
   notification_enabled?: boolean
   /** 월 납입액 (원 단위). 푸시 본문에 사용 */
   monthly_amount?: number
+  /** 매수 단위 모드 (디폴트 'amount'). 'shares'면 푸시 본문이 주수 표기로 분기 */
+  unit_type?: 'amount' | 'shares'
+  /** 주수 모드일 때 월 매수 주수 */
+  monthly_shares?: number | null
 }
 
 /**
@@ -190,13 +194,15 @@ export function buildNotificationRows(
   existingScheduledAts: Set<string>,
   now: Date
 ): ScheduledNotificationRow[] {
-  const { id: recordId, user_id: userId, title, start_date, period_years, investment_days, monthly_amount } = record
+  const { id: recordId, user_id: userId, title, start_date, period_years, investment_days, monthly_amount, unit_type, monthly_shares } = record
   const paymentDates = generatePaymentDates(start_date, period_years, investment_days)
   const preDays = parsePreReminderToDays(userSettings.notification_pre_reminder)
   const rows: ScheduledNotificationRow[] = []
 
+  const isShareMode = unit_type === 'shares' && typeof monthly_shares === 'number' && monthly_shares > 0
+
   const pushTitle =
-    preDays === 0 ? `오늘 "${title}" 납입일이에요` : `"${title}" 납입일이 ${preDays}일 남았어요`
+    preDays === 0 ? `오늘 "${title}" 매수일이에요` : `"${title}" 매수일이 ${preDays}일 남았어요`
 
   for (const paymentDate of paymentDates) {
     const paymentDateStr = paymentDate.toISOString().split('T')[0]
@@ -213,12 +219,14 @@ export function buildNotificationRows(
     if (existingScheduledAts.has(scheduledAtUTCStr)) continue
 
     const paymentDateFormatted = formatPaymentDateForPush(paymentDateStr)
-    const amountText = typeof monthly_amount === 'number' ? formatAmountForPush(monthly_amount) : ''
+    const amountText = isShareMode
+      ? `${monthly_shares}주`
+      : typeof monthly_amount === 'number' ? formatAmountForPush(monthly_amount) : ''
     const bodyText = amountText
       ? preDays === 0
-        ? `오늘 ${paymentDateFormatted}이 납입일이에요. ${amountText} 납입 잊지 마세요!`
-        : `${preDays}일 뒤인 ${paymentDateFormatted}에 ${amountText} 납입 예정이에요`
-      : `${paymentDateFormatted} 납입일을 확인해 주세요`
+        ? `오늘 ${paymentDateFormatted}이 매수일이에요. ${amountText} 매수 잊지 마세요!`
+        : `${preDays}일 뒤인 ${paymentDateFormatted}에 ${amountText} 매수 예정이에요`
+      : `${paymentDateFormatted} 매수일을 확인해 주세요`
 
     for (const t of tokens) {
       rows.push({
