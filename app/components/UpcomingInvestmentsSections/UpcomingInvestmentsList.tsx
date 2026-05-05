@@ -61,7 +61,9 @@ export default function UpcomingInvestmentsList({
                             </div>
                             <div className="flex shrink-0 items-center gap-3">
                                 <span className="text-sm font-bold tabular-nums text-foreground">
-                                    {formatCurrency(inv.monthly_amount)}
+                                    {inv.unit_type === 'shares' && inv.monthly_shares
+                                        ? `${inv.monthly_shares}주`
+                                        : formatCurrency(inv.monthly_amount)}
                                 </span>
                                 <Button
                                     type="button"

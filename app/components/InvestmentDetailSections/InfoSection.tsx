@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { formatCurrency } from '@/lib/utils'
 import { InvestmentField } from '@/app/components/Common/InvestmentField'
+import { formatContributionLabel, formatContributionValue } from '@/app/utils/investment-display'
 import InvestmentEditSheet from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
 import { MetricsSection } from './MetricsSection'
@@ -83,8 +83,8 @@ export function InfoSection(props: InfoSectionProps) {
       </h3>
       <div className="space-y-6">
         <InvestmentField
-          label="월 투자금"
-          value={formatCurrency(item.monthly_amount)}
+          label={formatContributionLabel(item)}
+          value={formatContributionValue(item)}
           editValue={editMonthlyAmount}
           editPlaceholder="100"
           editUnit="만원"
