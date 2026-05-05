@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '../auth/useAuth'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
-import { writePaymentHistoryRow } from '@/app/utils/payment-history-db'
+import { writePaymentHistoryRow, bulkUpsertRetroactiveRows } from '@/app/utils/payment-history-db'
 
 export type PaymentHistoryMap = Map<string, Set<string>> // recordId -> Set<YYYY-MM-DD>
 
@@ -113,12 +113,41 @@ export function usePaymentHistory() {
         [user, supabase, fetchHistory]
     )
 
+    /**
+     * 소급 구간의 여러 월을 한 번에 완료 처리.
+     * 이미 기록된 월은 그대로 유지된다 (DB upsert ignoreDuplicates).
+     */
+    const markAllRetroactivePaid = useCallback(
+        async (recordId: string, yearMonths: string[]) => {
+            if (!user || yearMonths.length === 0) return
+            setRetroactivePayments((prev) => {
+                const next = new Map(prev)
+                if (!next.has(recordId)) next.set(recordId, new Set())
+                const dates = next.get(recordId)!
+                yearMonths.forEach((ym) => dates.add(`${ym}-01`))
+                return next
+            })
+            try {
+                await bulkUpsertRetroactiveRows(supabase, {
+                    userId: user.id,
+                    recordId,
+                    yearMonths,
+                })
+            } catch {
+                toastError(TOAST_MESSAGES.paymentToggleFailed)
+                fetchHistory()
+            }
+        },
+        [user, supabase, fetchHistory]
+    )
+
     return {
         completedPayments,
         retroactivePayments,
         isLoading,
         togglePayment,
         toggleRetroactivePayment,
+        markAllRetroactivePaid,
         refetch: fetchHistory
     }
 }

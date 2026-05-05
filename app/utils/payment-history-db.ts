@@ -39,3 +39,28 @@ export async function writePaymentHistoryRow(
   )
   if (error) throw error
 }
+
+/**
+ * 소급(앱 등록 이전) 구간의 여러 월을 한 번의 upsert로 완료 처리한다.
+ * 이미 기록된 월은 ignoreDuplicates 로 자동 스킵된다.
+ */
+export async function bulkUpsertRetroactiveRows(
+  supabase: SupabaseClient,
+  params: {
+    userId: string
+    recordId: string
+    yearMonths: string[]
+  }
+) {
+  if (params.yearMonths.length === 0) return
+  const rows = params.yearMonths.map((ym) => ({
+    user_id: params.userId,
+    record_id: params.recordId,
+    payment_date: `${ym}-01`,
+    is_retroactive: true,
+  }))
+  const { error } = await supabase
+    .from('payment_history')
+    .upsert(rows, { onConflict: 'record_id, payment_date', ignoreDuplicates: true })
+  if (error) throw error
+}
