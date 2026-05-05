@@ -41,6 +41,8 @@ export type Database = {
     Tables: {
       payment_history: {
         Row: {
+          captured_price: number | null
+          captured_shares: number | null
           completed_at: string
           created_at: string
           id: string
@@ -50,6 +52,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          captured_price?: number | null
+          captured_shares?: number | null
           completed_at?: string
           created_at?: string
           id?: string
@@ -59,6 +63,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          captured_price?: number | null
+          captured_shares?: number | null
           completed_at?: string
           created_at?: string
           id?: string
@@ -87,12 +93,14 @@ export type Database = {
           is_custom_rate: boolean | null
           market: string | null
           monthly_amount: number
+          monthly_shares: number | null
           notification_enabled: boolean | null
           period_years: number | null
           rate_updated_at: string | null
           start_date: string | null
           symbol: string | null
           title: string
+          unit_type: string
           updated_at: string | null
           user_id: string
         }
@@ -105,12 +113,14 @@ export type Database = {
           is_custom_rate?: boolean | null
           market?: string | null
           monthly_amount: number
+          monthly_shares?: number | null
           notification_enabled?: boolean | null
           period_years?: number | null
           rate_updated_at?: string | null
           start_date?: string | null
           symbol?: string | null
           title: string
+          unit_type?: string
           updated_at?: string | null
           user_id: string
         }
@@ -123,12 +133,14 @@ export type Database = {
           is_custom_rate?: boolean | null
           market?: string | null
           monthly_amount?: number
+          monthly_shares?: number | null
           notification_enabled?: boolean | null
           period_years?: number | null
           rate_updated_at?: string | null
           start_date?: string | null
           symbol?: string | null
           title?: string
+          unit_type?: string
           updated_at?: string | null
           user_id?: string
         }
