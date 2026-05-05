@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
 
     const { data: records, error: recordsError } = await supabase
       .from('records')
-      .select('id, user_id, title, start_date, period_years, investment_days, notification_enabled, monthly_amount')
+      .select('id, user_id, title, start_date, period_years, investment_days, notification_enabled, monthly_amount, unit_type, monthly_shares')
       .eq('user_id', userId)
       .eq('notification_enabled', true)
 

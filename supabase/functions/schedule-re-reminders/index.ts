@@ -74,10 +74,10 @@ Deno.serve(async (req) => {
 
     console.log(`schedule-re-reminders: yesterday(KST)=${yesterdayStr}`)
 
-    // 1. 알림 ON인 record 전부 조회 (id, user_id, title, start_date, period_years, investment_days)
+    // 1. 알림 ON인 record 전부 조회. 재알림 메시지 분기를 위해 unit_type/monthly_shares도 같이 가져옴
     const { data: records, error: recordsError } = await supabase
       .from('records')
-      .select('id, user_id, title, start_date, period_years, investment_days')
+      .select('id, user_id, title, start_date, period_years, investment_days, unit_type, monthly_shares')
       .eq('notification_enabled', true)
 
     if (recordsError) {
@@ -95,6 +95,8 @@ Deno.serve(async (req) => {
       start_date: string
       period_years: number | null
       investment_days: number[]
+      unit_type?: 'amount' | 'shares'
+      monthly_shares?: number | null
     }>
 
     // 2. 어제가 유효 납입일인 record만 필터
@@ -250,7 +252,13 @@ Deno.serve(async (req) => {
       const scheduledAtUTC = getKSTDateTimeAsUTC(sendDateStr, defaultTime)
       const scheduledAtStr = scheduledAtUTC.toISOString()
 
-      const bodyText = `${record.title} - 납입일이 지났어요. 오늘 완료해 주세요.`
+      const isShareMode =
+        record.unit_type === 'shares' &&
+        typeof record.monthly_shares === 'number' &&
+        record.monthly_shares > 0
+      const bodyText = isShareMode
+        ? `${record.title} - 어제 ${record.monthly_shares}주 매수일을 놓치셨어요. 오늘 완료해 주세요.`
+        : `${record.title} - 매수일이 지났어요. 오늘 완료해 주세요.`
 
       for (const token of tokens) {
         allRows.push({

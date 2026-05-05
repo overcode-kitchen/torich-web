@@ -1,3 +1,5 @@
+import type { InvestmentUnitType } from '@/app/types/investment'
+
 export interface UseAddInvestmentFormReturn {
   // 기본 폼 상태
   stockName: string
@@ -10,6 +12,12 @@ export interface UseAddInvestmentFormReturn {
   setStartDate: (date: Date) => void
   investmentDays: number[]
   setInvestmentDays: (days: number[]) => void
+
+  // 매수 단위 (금액/주수)
+  unitType: InvestmentUnitType
+  setUnitType: (unit: InvestmentUnitType) => void
+  monthlyShares: string
+  handleSharesChange: (value: string) => void
 
   // 제출 상태
   isSubmitting: boolean

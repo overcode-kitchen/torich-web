@@ -8,6 +8,7 @@ import { validateInvestmentForm, validateAndHandleError } from '@/app/utils/vali
 import { createClient } from '@/utils/supabase/client'
 import { formatInvestmentData } from '@/app/utils/investment-formatter'
 import { track, amountBucket } from '@/app/lib/analytics'
+import type { InvestmentUnitType } from '@/app/types/investment'
 
 export interface UseAddInvestmentSubmitProps {
   stockName: string
@@ -22,6 +23,10 @@ export interface UseAddInvestmentSubmitProps {
   originalSystemRate: number | null
   selectedStock: any
   market?: 'KR' | 'US'
+  /** 매수 단위 모드 (디폴트 'amount') */
+  unitType?: InvestmentUnitType
+  /** 주수 모드 입력 값 */
+  monthlyShares?: string
 }
 
 export interface UseAddInvestmentSubmitReturn {
@@ -42,6 +47,8 @@ export function useAddInvestmentSubmit({
   originalSystemRate,
   selectedStock,
   market,
+  unitType,
+  monthlyShares,
 }: UseAddInvestmentSubmitProps): UseAddInvestmentSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
@@ -49,6 +56,8 @@ export function useAddInvestmentSubmit({
 
   const handleSubmit = useCallback(async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
+
+    const sharePrice = typeof selectedStock?.currentPrice === 'number' ? selectedStock.currentPrice : undefined
 
     // 유효성 검사
     const validation = validateInvestmentForm({
@@ -58,6 +67,9 @@ export function useAddInvestmentSubmit({
       isHabitMode,
       userId,
       investmentDays,
+      unitType,
+      monthlyShares,
+      sharePrice,
     })
 
     const isValid = validateAndHandleError(
@@ -86,6 +98,9 @@ export function useAddInvestmentSubmit({
         originalSystemRate,
         selectedStock,
         market,
+        unitType,
+        monthlyShares,
+        sharePrice,
       })
 
       // Supabase에 데이터 저장 (개별 알림 기본값: 켜짐)
@@ -139,6 +154,8 @@ export function useAddInvestmentSubmit({
     originalSystemRate,
     selectedStock,
     market,
+    unitType,
+    monthlyShares,
     userId,
     router,
   ])

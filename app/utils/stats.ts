@@ -9,6 +9,8 @@ export interface PaymentEvent {
   yearMonth: string
   monthlyAmount: number
   title: string
+  unitType?: 'amount' | 'shares'
+  monthlyShares?: number | null
 }
 
 /**
@@ -23,6 +25,8 @@ export function getPaymentEventsForMonth(
     period_years: number | null
     start_date?: string | null
     created_at: string
+    unit_type?: 'amount' | 'shares'
+    monthly_shares?: number | null
   }>,
   year: number,
   month: number
@@ -58,6 +62,8 @@ export function getPaymentEventsForMonth(
         yearMonth,
         monthlyAmount: inv.monthly_amount,
         title: inv.title,
+        unitType: inv.unit_type,
+        monthlyShares: inv.monthly_shares ?? null,
       })
     }
   }

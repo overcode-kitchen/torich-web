@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
 import { CircleNotch } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { toastError, toastSuccess, TOAST_MESSAGES } from '@/app/utils/toast'
@@ -258,10 +259,19 @@ export default function ToryRaisingFullScreen() {
                 type="button"
                 onClick={handleCharacterTap}
                 disabled={!isUnlocked}
-                className="flex-1 min-h-0 w-full max-w-[260px] rounded-2xl bg-torich-brown-light flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform disabled:opacity-50"
+                className="flex-1 min-h-0 w-full max-w-[260px] rounded-2xl bg-torich-brown-light flex flex-col items-center justify-center gap-2 p-4 active:scale-[0.99] transition-transform disabled:opacity-50"
                 aria-label="토리 캐릭터 (탭하면 반응)"
               >
-                <div className="text-6xl">🐿️</div>
+                <div className="relative flex-1 min-h-0 w-full">
+                  <Image
+                    src="/images/tory-character.png"
+                    alt="토리 캐릭터"
+                    fill
+                    sizes="260px"
+                    className="object-contain"
+                    priority
+                  />
+                </div>
                 <div className="text-xs text-foreground-soft px-3 text-center line-clamp-2">
                   {equippedSummary}
                 </div>

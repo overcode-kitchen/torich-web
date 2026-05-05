@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { House, ChartBar, Calendar, Gear, Sparkle } from '@phosphor-icons/react'
+import { House, ChartBar, Calendar, Gear } from '@phosphor-icons/react'
 import {
   APP_BOTTOM_NAV_BOTTOM_HEIGHT,
   APP_BOTTOM_NAV_ICON_ROW_PX,
@@ -12,7 +12,6 @@ import {
 const NAV_ITEMS = [
   { href: '/', label: '홈', icon: House },
   { href: '/calendar', label: '캘린더', icon: Calendar },
-  { href: '/tory', label: '토리', icon: Sparkle },
   { href: '/stats', label: '통계', icon: ChartBar },
   { href: '/settings', label: '설정', icon: Gear },
 ] as const

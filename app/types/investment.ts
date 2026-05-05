@@ -1,4 +1,11 @@
 /**
+ * 매수 단위 모드.
+ * - 'amount' (기본): 월 N원씩 적립
+ * - 'shares': 월 N주씩 적립 (1단계는 한국 주식 한정)
+ */
+export type InvestmentUnitType = 'amount' | 'shares'
+
+/**
  * 투자 기록 데이터 타입
  */
 export interface Investment {
@@ -20,6 +27,17 @@ export interface Investment {
   is_custom_rate?: boolean | null // 수익률 직접 입력/수정 여부
   notification_enabled?: boolean | null // 해당 투자에 대한 리마인더 알림 on/off (records.notification_enabled)
   market?: 'KR' | 'US' | null // 투자 시장 구분 (한국/미국)
+  // DB DEFAULT 'amount'라 SELECT 결과는 항상 채워짐
+  unit_type: InvestmentUnitType
+  // 주수 모드일 때만 값 보유 (정수, >0). 금액 모드는 null.
+  monthly_shares?: number | null
+}
+
+/**
+ * 주수 모드 여부 판별
+ */
+export function isShareMode(investment: Pick<Investment, 'unit_type'>): boolean {
+  return investment.unit_type === 'shares'
 }
 
 /**

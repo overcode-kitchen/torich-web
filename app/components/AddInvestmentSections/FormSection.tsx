@@ -3,6 +3,7 @@
 import StockSearchInput from '@/app/components/Common/StockSearchInput'
 import RateDisplay from '@/app/components/RateDisplay/RateDisplay'
 import AmountInput from '@/app/components/Common/AmountInput'
+import ShareInput from '@/app/components/Common/ShareInput'
 import PeriodInput from '@/app/components/Common/PeriodInput'
 import InvestmentStartDateField from './InvestmentStartDateField'
 import InvestmentDaysField from './InvestmentDaysField'
@@ -74,12 +75,28 @@ export default function FormSection({ form, modals }: FormSectionProps) {
         />
       </div>
 
-      {/* 월 투자액 입력 (만원 단위) */}
-      <AmountInput
-        value={form.monthlyAmount}
-        onChange={form.handleAmountChange}
-        onAdjust={form.adjustAmount}
-      />
+      {/* 월 투자 입력: 단위 모드(금액/주수)에 따라 분기.
+          단위 전환 버튼은 한국 + 검색 선택 종목에서만 활성화 */}
+      {(() => {
+        const canToggleUnit = form.market === 'KR' && !!form.selectedStock?.symbol && !form.isManualInput
+        if (form.unitType === 'shares') {
+          return (
+            <ShareInput
+              value={form.monthlyShares}
+              onChange={form.handleSharesChange}
+              onUnitTypeToggle={canToggleUnit ? () => form.setUnitType('amount') : undefined}
+            />
+          )
+        }
+        return (
+          <AmountInput
+            value={form.monthlyAmount}
+            onChange={form.handleAmountChange}
+            onAdjust={form.adjustAmount}
+            onUnitTypeToggle={canToggleUnit ? () => form.setUnitType('shares') : undefined}
+          />
+        )
+      })()}
 
       {/* 투자 기간 입력 (적립형 전환 지원) */}
       <PeriodInput

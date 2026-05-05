@@ -44,7 +44,7 @@ export default function AddInvestmentView({
                     onMarketChange={form.handleMarketChange}
                 />
 
-                {/* 입력 폼 */}
+                {/* 입력 폼 (단위 전환 토글은 입력 박스 안에서 노출됨) */}
                 <FormSection form={form} modals={modals} />
 
                 {/* 미리보기 섹션 */}

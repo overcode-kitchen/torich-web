@@ -18,6 +18,7 @@ interface UseInvestmentDetailHandlersProps {
   completedPayments: PaymentHistoryMap
   retroactivePayments?: PaymentHistoryMap
   onToggleRetroactive?: (recordId: string, yearMonth: string, currentCompleted: boolean) => Promise<void>
+  onMarkAllRetroactive?: (recordId: string, yearMonths: string[]) => Promise<void>
 }
 
 export function useInvestmentDetailHandlers({
@@ -31,6 +32,7 @@ export function useInvestmentDetailHandlers({
   completedPayments,
   retroactivePayments,
   onToggleRetroactive,
+  onMarkAllRetroactive,
 }: UseInvestmentDetailHandlersProps) {
   // 데이터 훅
   const investmentData = useInvestmentData({
@@ -40,6 +42,7 @@ export function useInvestmentDetailHandlers({
     completedPayments,
     retroactivePayments,
     onToggleRetroactive,
+    onMarkAllRetroactive,
   })
 
   // API 액션 훅

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import { apiClient } from '@/lib/api-client'
+import { setCachedPrice } from '@/app/utils/stock-price-cache'
 import type { SearchResult, StockDetail, StockApiResponse } from '../types/useStockSearch'
 
 export interface UseStockRateReturn {
@@ -38,11 +39,15 @@ export function useStockRate(): UseStockRateReturn {
           averageRate,
           currentPrice: typeof data.currentPrice === 'number' ? data.currentPrice : 0,
         }
-        
+
+        if (detail.symbol && detail.currentPrice > 0) {
+          setCachedPrice(detail.symbol, detail.currentPrice)
+        }
+
         setAnnualRate(detail.averageRate)
         setOriginalSystemRate(detail.averageRate)
         setRateFetchFailed(false)
-        
+
         return detail
       } else {
         setAnnualRate(10)
