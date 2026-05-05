@@ -42,7 +42,7 @@ export default function RootError({ error, reset }: RootErrorProps): ReactNode {
 
   useEffect(() => {
     track('app_error', {
-      message: type,
+      message: type ?? 'unknown',
       ...(error?.digest ? { digest: error.digest } : {}),
     })
   }, [])
