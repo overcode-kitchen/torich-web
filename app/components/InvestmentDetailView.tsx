@@ -52,6 +52,7 @@ function InternalInvestmentDetailView({
     completedPayments,
     retroactivePayments,
     toggleRetroactivePayment,
+    markAllRetroactivePaid,
   } = usePaymentHistory()
 
   // Global notification setting (read-only)
@@ -86,6 +87,7 @@ function InternalInvestmentDetailView({
     completedPayments,
     retroactivePayments,
     onToggleRetroactive: toggleRetroactivePayment,
+    onMarkAllRetroactive: markAllRetroactivePaid,
   })
 
   // 수정 모드 진입 시 초기화
