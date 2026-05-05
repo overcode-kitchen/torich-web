@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
 import type { PaymentHistorySectionProps as OriginalPaymentHistorySectionProps } from './types'
 import { PaymentHistoryTable } from './PaymentHistoryTable'
+import BulkCompleteRetroactiveModal from './BulkCompleteRetroactiveModal'
 
 interface PaymentHistorySectionProps extends Partial<OriginalPaymentHistorySectionProps> {
   historyRef: React.RefObject<HTMLElement | null>
@@ -25,9 +27,13 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
     hasMorePaymentHistory = props.hasMorePaymentHistory,
     loadMore = props.loadMore,
     onToggleRetroactive,
+    onMarkAllRetroactive,
   } = investmentData || {}
 
   const { historyRef } = props
+
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false)
+  const [isBulkPending, setIsBulkPending] = useState(false)
 
   if (!item || !paymentHistory) return null
 
@@ -35,6 +41,22 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
   const hasAuto = paymentHistory.length > 0
 
   if (!hasRetroactive && !hasAuto) return null
+
+  const unrecordedRetroMonths = hasRetroactive
+    ? retroactivePaymentHistory!.filter((r: { completed: boolean }) => !r.completed).map((r: { yearMonth: string }) => r.yearMonth)
+    : []
+  const canBulkComplete = !!onMarkAllRetroactive && unrecordedRetroMonths.length > 0
+
+  const handleBulkConfirm = async () => {
+    if (!onMarkAllRetroactive || unrecordedRetroMonths.length === 0) return
+    setIsBulkPending(true)
+    try {
+      await onMarkAllRetroactive(unrecordedRetroMonths)
+      setShowBulkConfirm(false)
+    } finally {
+      setIsBulkPending(false)
+    }
+  }
 
   return (
     <section ref={historyRef} className="py-6 space-y-6">
@@ -58,11 +80,22 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             variant="retroactive"
             onToggleRetroactive={onToggleRetroactive}
           />
-          <p className="text-xs text-foreground-subtle px-1 pt-1">
-            {onToggleRetroactive
-              ? '탭해서 당시 납입 여부를 기록할 수 있어요.'
-              : '앱 시작 전 기간은 자동 추적되지 않아요.'}
-          </p>
+          <div className="flex items-center justify-between gap-2 px-1 pt-1">
+            <p className="text-xs text-foreground-subtle">
+              {onToggleRetroactive
+                ? '탭해서 당시 납입 여부를 기록할 수 있어요.'
+                : '앱 시작 전 기간은 자동 추적되지 않아요.'}
+            </p>
+            {canBulkComplete && (
+              <button
+                type="button"
+                onClick={() => setShowBulkConfirm(true)}
+                className="shrink-0 text-xs font-medium text-foreground-soft bg-surface-hover hover:bg-secondary rounded-md px-2.5 py-1.5 transition-colors"
+              >
+                전체 완료 표시
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -94,6 +127,14 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
           )}
         </div>
       )}
+
+      <BulkCompleteRetroactiveModal
+        isOpen={showBulkConfirm}
+        count={unrecordedRetroMonths.length}
+        onClose={() => setShowBulkConfirm(false)}
+        onConfirm={handleBulkConfirm}
+        isPending={isBulkPending}
+      />
     </section>
   )
 }
