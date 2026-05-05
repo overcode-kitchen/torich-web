@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { fetchPriceWithFallback } from './stock-price-fetcher'
+import { syncSharesMonthlyAmount } from './sync-shares-monthly-amount'
 
 export interface CapturedPayment {
   capturedShares: number | null
@@ -45,6 +46,10 @@ export async function capturePriceForPayment(
     let capturedShares: number | null = null
     if (record.unit_type === 'shares') {
       capturedShares = record.monthly_shares ?? null
+      // shares 모드는 알림/카드/통계가 stale해지지 않게 monthly_amount도 같이 동기화
+      if (capturedPrice && capturedPrice > 0 && record.monthly_shares) {
+        void syncSharesMonthlyAmount(supabase, userId, recordId, record.monthly_shares, capturedPrice)
+      }
     } else if (capturedPrice && capturedPrice > 0 && record.monthly_amount > 0) {
       capturedShares = record.monthly_amount / capturedPrice
     }

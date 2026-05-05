@@ -3,6 +3,7 @@
 import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import MarketSelectionSection from '@/app/components/AddInvestmentSections/MarketSelectionSection'
+import UnitTypeToggleSection from '@/app/components/AddInvestmentSections/UnitTypeToggleSection'
 import FormSection from '@/app/components/AddInvestmentSections/FormSection'
 import PreviewSection from '@/app/components/AddInvestmentSections/PreviewSection'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
@@ -43,6 +44,14 @@ export default function AddInvestmentView({
                     market={form.market}
                     onMarketChange={form.handleMarketChange}
                 />
+
+                {/* 매수 단위 토글: 한국 + 검색 선택 종목에서만 노출 (직접 입력 불가) */}
+                {form.market === 'KR' && !!form.selectedStock?.symbol && !form.isManualInput && (
+                    <UnitTypeToggleSection
+                        unitType={form.unitType}
+                        onUnitTypeChange={form.setUnitType}
+                    />
+                )}
 
                 {/* 입력 폼 */}
                 <FormSection form={form} modals={modals} />

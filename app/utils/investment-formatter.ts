@@ -2,6 +2,8 @@
  * 투자 정보 데이터 포맷팅 및 변환 유틸리티
  */
 
+import type { InvestmentUnitType } from '@/app/types/investment'
+
 interface FormatInvestmentDataParams {
   stockName: string
   monthlyAmount: string // 콤마가 포함된 문자열 (만원 단위)
@@ -15,12 +17,18 @@ interface FormatInvestmentDataParams {
   originalSystemRate: number | null
   selectedStock: any
   market?: 'KR' | 'US'
+  /** 매수 단위 모드 (디폴트 'amount') */
+  unitType?: InvestmentUnitType
+  /** 주수 모드일 때 월 매수 주수 (정수 문자열) */
+  monthlyShares?: string
+  /** 주수 모드 환산용 1주 시세 (selectedStock.currentPrice) */
+  sharePrice?: number
 }
 
 interface FormattedInvestmentData {
   title: string
   symbol: string | null
-  monthly_amount: number // 원 단위
+  monthly_amount: number // 원 단위 (shares 모드는 monthlyShares × sharePrice 환산값)
   period_years: number | null
   annual_rate: number
   final_amount: number
@@ -28,6 +36,8 @@ interface FormattedInvestmentData {
   investment_days: number[] | null
   is_custom_rate: boolean
   market: 'KR' | 'US' | null
+  unit_type: InvestmentUnitType
+  monthly_shares: number | null
 }
 
 /**
@@ -78,7 +88,20 @@ export function determineStockSymbol(
 export async function formatInvestmentData(
   params: FormatInvestmentDataParams
 ): Promise<FormattedInvestmentData> {
-  const monthlyAmountInWon = convertMonthlyAmountToWon(params.monthlyAmount)
+  const unitType: InvestmentUnitType = params.unitType ?? 'amount'
+
+  // shares 모드는 monthlyShares × sharePrice 로 monthly_amount 환산해 NOT NULL 제약 충족
+  let monthlyAmountInWon: number
+  let monthlySharesNum: number | null = null
+  if (unitType === 'shares') {
+    const shares = parseInt(params.monthlyShares ?? '', 10)
+    monthlySharesNum = Number.isFinite(shares) && shares > 0 ? shares : null
+    const price = params.sharePrice && params.sharePrice > 0 ? params.sharePrice : 0
+    monthlyAmountInWon = monthlySharesNum ? Math.round(monthlySharesNum * price) : 0
+  } else {
+    monthlyAmountInWon = convertMonthlyAmountToWon(params.monthlyAmount)
+  }
+
   const periodYearsNum = params.isHabitMode ? null : convertPeriodToYears(params.period)
 
   // 최종 금액 계산 (적립형은 만기 금액 개념이 없으므로 0)
@@ -106,5 +129,7 @@ export async function formatInvestmentData(
     investment_days: params.investmentDays.length > 0 ? params.investmentDays : null,
     is_custom_rate: isCustomRate,
     market: params.market ?? null,
+    unit_type: unitType,
+    monthly_shares: monthlySharesNum,
   }
 }
