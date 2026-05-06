@@ -17,7 +17,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         paragraphs: [
             '【Google 로그인】 수집 방법: Google로부터 제공받음. 항목: 이메일, 이름',
             '【Apple 로그인】 수집 방법: Apple로부터 제공받음. 항목: 이메일 (Apple 임시 이메일로 대체 가능), 이름 (선택)',
-            '【자동 수집】 수집 방법: 앱 이용 과정에서 자동 생성. 항목: 기기 식별자(푸시 알림 토큰), 앱 이용 기록, OS 버전',
+            '【자동 수집】 수집 방법: 앱 이용 과정에서 자동 생성. 항목: 기기 식별자(푸시 알림 토큰), 앱 이용 기록, OS 버전, 화면 전환·기능 사용 빈도 등 익명화된 행동 통계 (Google Analytics 4를 통해 수집되며, 이름·이메일·실제 금액 등 개인 식별 정보는 수집하지 않습니다.)',
             '【직접 입력】 수집 방법: 서비스 기능 사용 시. 항목: 투자 목표명, 납입 금액, 납입 일정, 메모',
             '금융 계좌번호, 카드번호 등 실제 금융정보는 일절 수집하지 않습니다.',
         ],
@@ -51,6 +51,7 @@ export const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
             'AWS (Amazon Web Services): 서버 운영 및 데이터 저장',
             'Firebase (Google LLC): 푸시 알림 발송',
             'Google LLC: Google 소셜 로그인 인증',
+            'Google LLC (Google Analytics 4): 서비스 이용 통계 분석 — 익명화된 사용 데이터에 한함',
             'Apple Inc.: Apple 소셜 로그인 인증',
         ],
     },
