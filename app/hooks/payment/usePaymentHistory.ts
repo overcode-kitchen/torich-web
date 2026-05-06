@@ -6,6 +6,7 @@ import { useAuth } from '../auth/useAuth'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { writePaymentHistoryRow, bulkUpsertRetroactiveRows } from '@/app/utils/payment-history-db'
 import { capturePriceForPayment } from '@/app/utils/payment-capture'
+import { track, monthOffset, countBucket } from '@/app/lib/analytics'
 
 export type PaymentHistoryMap = Map<string, Set<string>> // recordId -> Set<YYYY-MM-DD>
 
@@ -92,6 +93,11 @@ export function usePaymentHistory() {
             if (captured.priceFailed) {
                 toastError(TOAST_MESSAGES.priceCaptureFailed)
             }
+            if (currentCompleted) {
+                track('payment_uncheck', { month_offset: monthOffset(date), is_retroactive: false })
+            } else {
+                track('payment_complete', { month_offset: monthOffset(date), is_retroactive: false })
+            }
         } catch {
             toastError(TOAST_MESSAGES.paymentToggleFailed)
             fetchHistory()
@@ -117,6 +123,11 @@ export function usePaymentHistory() {
                     isRetroactive: true,
                     shouldDelete: currentCompleted,
                 })
+                if (currentCompleted) {
+                    track('payment_uncheck', { month_offset: monthOffset(date), is_retroactive: true })
+                } else {
+                    track('payment_complete', { month_offset: monthOffset(date), is_retroactive: true })
+                }
             } catch {
                 toastError(TOAST_MESSAGES.paymentToggleFailed)
                 fetchHistory()
@@ -145,6 +156,7 @@ export function usePaymentHistory() {
                     recordId,
                     yearMonths,
                 })
+                track('payment_complete_bulk', { count_bucket: countBucket(yearMonths.length) })
             } catch {
                 toastError(TOAST_MESSAGES.paymentToggleFailed)
                 fetchHistory()
