@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/utils/supabase/client'
+import { setUserId } from '@/app/lib/analytics'
 
 type AuthContextValue = {
   user: User | null
@@ -79,6 +80,10 @@ export function AuthProvider({ children, onLogout }: AuthProviderProps) {
       data.subscription.unsubscribe()
     }
   }, [supabase])
+
+  useEffect(() => {
+    setUserId(user?.id)
+  }, [user?.id])
 
   const logout = useCallback(async (): Promise<void> => {
     setIsLoggingOut(true)
