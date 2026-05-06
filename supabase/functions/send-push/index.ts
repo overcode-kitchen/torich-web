@@ -4,6 +4,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getToken } from 'https://deno.land/x/google_jwt_sa@v0.2.5/mod.ts'
+import { sendGAEvent } from '../_shared/ga-mp.ts'
 
 interface ScheduledNotification {
   id: string
@@ -112,6 +113,9 @@ Deno.serve(async (req) => {
     const firebaseServiceAccountJson = Deno.env.get(
       'FIREBASE_SERVICE_ACCOUNT_JSON'
     )
+    // GA4 Measurement Protocol — 옵셔널. 둘 다 있을 때만 notification_sent 송신.
+    const gaMeasurementId = Deno.env.get('GA_MEASUREMENT_ID')
+    const gaApiSecret = Deno.env.get('GA_API_SECRET')
 
     if (
       !supabaseUrl ||
@@ -260,6 +264,28 @@ Deno.serve(async (req) => {
             )
           } else {
             results.sent++
+
+            // 6. GA4에 notification_sent 송신 (시크릿 둘 다 있을 때만, 실패해도 메인 흐름에 영향 없음)
+            if (gaMeasurementId && gaApiSecret) {
+              const notificationType =
+                notification.record_id != null && notification.record_id !== ''
+                  ? 'monthly_reminder'
+                  : 'announcement'
+              try {
+                await sendGAEvent({
+                  measurementId: gaMeasurementId,
+                  apiSecret: gaApiSecret,
+                  rawUserId: notification.user_id,
+                  eventName: 'notification_sent',
+                  params: { notification_type: notificationType },
+                })
+              } catch (gaErr) {
+                console.warn(
+                  `GA4 notification_sent failed for ${notification.id}:`,
+                  gaErr
+                )
+              }
+            }
           }
         } else {
           // 5. 실패 → status = 'failed', 만료/무효 토큰이면 user_push_tokens에서 삭제
