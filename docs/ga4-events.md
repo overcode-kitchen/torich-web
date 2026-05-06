@@ -35,7 +35,7 @@
 | 항목 | 현재 상태 | 활성화 결정 시 해야 할 일 |
 | --- | --- | --- |
 | GA 라이브러리(`@next/third-parties`) | ✅ 설치되어 있음 | 추가 설치 불필요 |
-| GA 측정 ID | 발급 완료 (`G-C8E4VZ883Y`) | 환경변수로만 주입 (코드에 박지 않음) |
+| GA 측정 ID | 발급 완료 — Dev `G-C8E4VZ883Y` / Prod `G-SC1LBTD65X` | 환경변수로만 주입 (코드에 박지 않음) |
 | 운영/배포 환경 변수 | ❌ 미주입 = 비활성 | Vercel/iOS 빌드 환경변수에 주입 |
 | `<GoogleAnalytics />` 마운트 | 코드는 준비됨 | 환경변수 주입만 하면 즉시 활성화됨 |
 | 이벤트 호출 코드 | 일부 흔적 존재 | 본 문서 §5 기준으로 검수/보강 후 활성화 |
@@ -113,13 +113,23 @@ GA4 이벤트 이름에는 대문자나 `-`를 쓸 수 없어서 `snake_case`를
 ❌ 나쁜 예: amount: 350000              ← 실제 금액 전송 금지
 ```
 
-### 규칙 4: 측정 ID는 코드에 직접 쓰지 않고 환경변수로 관리
+### 규칙 4: 측정 ID는 코드에 직접 쓰지 않고 환경변수로 관리 — Dev/Prod 분리
 
-지금 코드에는 `G-C8E4VZ883Y`가 직접 박혀 있습니다. 이게 왜 불편하냐면 나중에 GA 속성을 바꾸거나 테스트용/운영용을 분리할 때 코드 파일을 직접 수정하고 배포해야 하기 때문입니다.
+토리치는 두 개의 GA 속성을 운영합니다.
 
-환경변수란 "코드 밖에 값을 적어두고, 코드는 거기서 가져와라"고만 하는 방식입니다. `.env.local` 파일에 `NEXT_PUBLIC_GA_ID=G-C8E4VZ883Y`를 적어두면, 나중에 ID를 바꿔야 할 때 코드를 건드리지 않고 그 파일 값만 바꾸면 됩니다.
+- **Dev 속성** (`Torich Dev`, 측정 ID `G-C8E4VZ883Y`): 로컬 개발(`npm run dev`)·Vercel preview 배포 전용. 개발자/QA의 테스트 활동이 여기로 들어갑니다.
+- **Prod 속성** (`Torich Prod`, 측정 ID `G-SC1LBTD65X`): 정식 도메인(`torich.app`) 웹·앱스토어 빌드 전용. 진짜 사용자 데이터만 들어갑니다.
 
-**지금 당장 급하지는 않습니다.** 커스텀 이벤트가 다 붙고 안정되면 그때 이전해도 됩니다.
+코드에는 ID를 직접 박지 않고 모두 `NEXT_PUBLIC_GA_ID` 환경변수로 분기합니다. 환경별로 서로 다른 값을 주입하면 같은 코드가 자동으로 다른 속성에 데이터를 보냅니다.
+
+| 환경 | 사용하는 파일/위치 | GA ID |
+| --- | --- | --- |
+| 로컬 개발 | `.env.local` (gitignore) | `G-C8E4VZ883Y` |
+| Vercel Preview | Vercel 대시보드 환경변수 (Preview 환경) | `G-C8E4VZ883Y` |
+| Vercel Production | Vercel 대시보드 환경변수 (Production 환경) | `G-SC1LBTD65X` |
+| iOS 앱 빌드 | `.env.production` (gitignore — 빌드 머신에 직접 작성) | `G-SC1LBTD65X` |
+
+이 구조 덕분에 출시 후에도 개발자 테스트 행동이 진짜 사용자 KPI에 섞이지 않습니다.
 
 ### 규칙 5: 모든 이벤트에 `platform` 파라미터를 반드시 붙인다
 
@@ -388,15 +398,29 @@ Step B — 발송→탭→완료 단계 (활성화 시 가장 중요)
 
 ## 7. 실제 코드 구현 방법
 
-### 7.1 Step 1: 환경변수 설정
+### 7.1 Step 1: 환경변수 설정 (Dev/Prod 분리)
 
-`.env.local` 파일에 아래를 추가합니다. (없으면 새로 만드세요)
+토리치는 두 개의 GA 속성을 쓰므로 환경별로 다른 ID가 들어갑니다.
 
+**로컬 개발 — `.env.local`** (gitignore됨, 직접 만들기):
 ```bash
-NEXT_PUBLIC_GA_ID=G-C8E4VZ883Y
+NEXT_PUBLIC_GA_ID=G-C8E4VZ883Y   # Torich Dev
 ```
 
-배포 환경(Vercel 등)에서도 동일한 환경변수를 설정합니다.
+**iOS 앱 빌드 — `.env.production`** (`.gitignore`되어 있어 로컬/빌드 머신에만 존재):
+```bash
+NEXT_PUBLIC_GA_ID=G-SC1LBTD65X   # Torich Prod
+```
+> `npm run build:app`은 이 파일을 읽어 정적 빌드를 만듭니다. **이 파일은 git에 커밋되지 않으므로** 빌드를 수행하는 머신에 본인이 직접 작성해야 하며, 앱스토어 출시 빌드 직전엔 반드시 prod ID로 되어 있는지 확인합니다.
+
+**Vercel 대시보드** (Project Settings → Environment Variables):
+| 환경 | 값 |
+| --- | --- |
+| Production | `G-SC1LBTD65X` |
+| Preview | `G-C8E4VZ883Y` |
+| Development | (없거나 dev) |
+
+대시보드 값이 `.env.production`보다 우선하므로, Vercel에 명시 등록만 해두면 안전합니다.
 
 ### 7.2 Step 2: `app/layout.tsx` 주석 해제
 
