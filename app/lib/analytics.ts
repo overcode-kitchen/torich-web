@@ -86,3 +86,42 @@ export function countBucket(n: number): string {
   if (n <= 12) return '7_12'
   return '>=13'
 }
+
+/**
+ * 로그인 실패 사유를 GA `login_failure.reason` 파라미터용 라벨로 분류합니다.
+ * - cancelled: 사용자가 취소 (Apple 1001, Google access_denied 등)
+ * - network: 네트워크/타임아웃/fetch 실패
+ * - denied: 권한 거부/forbidden
+ * - unknown: 그 외 (분류 실패)
+ */
+export function classifyAuthFailure(
+  error: unknown
+): 'cancelled' | 'network' | 'denied' | 'unknown' {
+  const raw =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'string'
+        ? error
+        : ''
+  const msg = raw.toLowerCase()
+  if (
+    msg.includes('cancel') ||
+    msg.includes('1001') ||
+    msg.includes('access_denied') ||
+    msg.includes('user denied')
+  ) {
+    return 'cancelled'
+  }
+  if (
+    msg.includes('network') ||
+    msg.includes('failed to fetch') ||
+    msg.includes('timeout') ||
+    msg.includes('net::')
+  ) {
+    return 'network'
+  }
+  if (msg.includes('denied') || msg.includes('forbidden')) {
+    return 'denied'
+  }
+  return 'unknown'
+}

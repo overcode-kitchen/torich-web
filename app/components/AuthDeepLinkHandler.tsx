@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { isCapacitorNative } from '@/lib/auth/capacitor-native'
-import { track } from '@/app/lib/analytics'
+import { track, classifyAuthFailure } from '@/app/lib/analytics'
 
 /** iOS 인앱 브라우저 OAuth 복귀 URL (useLoginAuth의 NATIVE_AUTH_CALLBACK과 동일) */
 const AUTH_CALLBACK_PREFIX = 'torich://login-callback'
@@ -54,6 +54,10 @@ async function handleAuthCallbackUrl(
   const next = parsed.searchParams.get('next') ?? '/'
 
   if (error) {
+    track('login_failure', {
+      method: 'google',
+      reason: classifyAuthFailure(errorDescription || error),
+    })
     console.error('OAuth error:', error, errorDescription)
     window.location.href = `/login?error=${encodeURIComponent(errorDescription || error)}`
     return true
@@ -64,6 +68,7 @@ async function handleAuthCallbackUrl(
   const supabase = createClient()
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
   if (exchangeError) {
+    track('login_failure', { method: 'google', reason: classifyAuthFailure(exchangeError) })
     console.error('Exchange error:', exchangeError)
     window.location.href = `/login?error=${encodeURIComponent(exchangeError.message)}`
     return true
