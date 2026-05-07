@@ -31,6 +31,9 @@ interface SettingsViewProps {
     isBrandStoryOpen: boolean
     openBrandStory: () => void
     closeBrandStory: () => void
+
+    // App Store
+    openAppStore: () => void | Promise<void>
 }
 
 export default function SettingsView({
@@ -47,6 +50,7 @@ export default function SettingsView({
     isBrandStoryOpen,
     openBrandStory,
     closeBrandStory,
+    openAppStore,
 }: SettingsViewProps) {
     const isNativeApp = useIsNativeApp()
 
@@ -155,7 +159,18 @@ export default function SettingsView({
                 <SettingsSection title="앱 정보">
                     <SettingsItem
                         label="버전"
-                        rightElement={<span className="text-muted-foreground text-sm">1.0.0</span>}
+                        rightElement={
+                            <div className="flex items-center gap-3">
+                                <span className="text-muted-foreground text-sm">1.0.0</span>
+                                <button
+                                    type="button"
+                                    onClick={() => { void openAppStore() }}
+                                    className="text-primary text-sm font-medium hover:underline"
+                                >
+                                    업데이트
+                                </button>
+                            </div>
+                        }
                     />
                     <SettingsItem
                         label="문의하기"

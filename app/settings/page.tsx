@@ -6,6 +6,7 @@ import { useSettingsPageUI } from '@/app/hooks/ui/useSettingsPageUI'
 import { useTheme } from '@/app/components/ThemeSections/ThemeProvider'
 import SettingsView from '@/app/components/SettingsSections/SettingsView'
 import { useAccountDeletion } from '@/app/hooks/auth/useAccountDeletion'
+import { useAppStoreOpen } from '@/app/hooks/platform/useAppStoreOpen'
 
 export default function SettingsPage() {
   const { user, isLoading, isLoggingOut, handleLogout } = useSettingsAuth()
@@ -13,6 +14,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const { isBrandStoryOpen, openBrandStory, closeBrandStory } = useSettingsPageUI()
   const { isDeletingAccount, handleDeleteAccount } = useAccountDeletion()
+  const { openAppStore } = useAppStoreOpen()
 
   return (
     <SettingsView
@@ -29,6 +31,7 @@ export default function SettingsPage() {
       isBrandStoryOpen={isBrandStoryOpen}
       openBrandStory={openBrandStory}
       closeBrandStory={closeBrandStory}
+      openAppStore={openAppStore}
     />
   )
 }
