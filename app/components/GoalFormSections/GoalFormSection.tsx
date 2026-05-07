@@ -3,6 +3,7 @@
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 
 export interface GoalFormSectionProps {
   values: GoalFormValues
@@ -17,11 +18,56 @@ export interface GoalFormSectionProps {
 
 const onlyDigits = (raw: string): string => raw.replace(/[^\d]/g, '')
 
+const formatNumber = (digits: string): string => {
+  if (!digits) return ''
+  const n = Number(digits)
+  if (Number.isNaN(n)) return ''
+  return n.toLocaleString('ko-KR')
+}
+
+/** 원(won) 정수 문자열 → 만원 정수 문자열 (콤마 포함) */
+const wonToManwonDisplay = (won: string): string => {
+  if (!won) return ''
+  const manwon = Math.floor(Number(won) / 10000)
+  return manwon.toLocaleString('ko-KR')
+}
+
+/** 사용자가 만원 단위로 입력한 값 → 원(won) 문자열 */
+const manwonInputToWon = (input: string): string => {
+  const digits = onlyDigits(input)
+  if (!digits) return ''
+  return String(Number(digits) * 10000)
+}
+
+/** 현재 원(won) 값에서 만원 단위로 ±delta 적용 (음수 방지) */
+const adjustWonByManwon = (won: string, deltaManwon: number): string => {
+  const baseManwon = won ? Math.floor(Number(won) / 10000) : 0
+  const next = Math.max(0, baseManwon + deltaManwon)
+  return String(next * 10000)
+}
+
 const inputClass =
   'h-12 w-full rounded-xl border border-input bg-card px-4 text-sm text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50'
 
 const textareaClass =
   'w-full rounded-xl border border-input bg-card px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50'
+
+interface GoalPreset {
+  name: string
+  emoji: string
+}
+
+const PRESETS: GoalPreset[] = [
+  { name: '결혼 자금', emoji: '💍' },
+  { name: '주택 자금', emoji: '🏠' },
+]
+
+const TARGET_QUICK_ADJUSTS: { label: string; delta: number }[] = [
+  { label: '+1,000만', delta: 1000 },
+  { label: '-1,000만', delta: -1000 },
+  { label: '+100만', delta: 100 },
+  { label: '-100만', delta: -100 },
+]
 
 export function GoalFormSection({
   values,
@@ -29,6 +75,11 @@ export function GoalFormSection({
   disabled,
   showOptionalFields = true,
 }: GoalFormSectionProps) {
+  function applyPreset(preset: GoalPreset): void {
+    setField('name', preset.name)
+    setField('emoji', preset.emoji)
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -41,19 +92,66 @@ export function GoalFormSection({
           onChange={(e) => setField('name', e.target.value)}
           disabled={disabled}
         />
+        <div className="flex flex-wrap gap-2 pt-1">
+          {PRESETS.map((preset) => {
+            const isActive = values.name.trim() === preset.name
+            return (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => applyPreset(preset)}
+                disabled={disabled}
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50',
+                  isActive
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-border-subtle-lighter bg-card text-foreground-soft hover:bg-muted',
+                )}
+              >
+                <span>{preset.emoji}</span>
+                <span>{preset.name}</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="goal-target">목표 금액 (원)</Label>
-        <input
-          id="goal-target"
-          className={inputClass}
-          inputMode="numeric"
-          placeholder="예: 50000000"
-          value={values.target_amount}
-          onChange={(e) => setField('target_amount', onlyDigits(e.target.value))}
-          disabled={disabled}
-        />
+        <Label htmlFor="goal-target">목표 금액</Label>
+        <div className="relative">
+          <input
+            id="goal-target"
+            className={cn(inputClass, 'pr-14')}
+            inputMode="numeric"
+            placeholder="예: 5,000"
+            value={wonToManwonDisplay(values.target_amount)}
+            onChange={(e) =>
+              setField('target_amount', manwonInputToWon(e.target.value))
+            }
+            disabled={disabled}
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foreground-soft">
+            만원
+          </span>
+        </div>
+        <div className="flex flex-wrap justify-end gap-2">
+          {TARGET_QUICK_ADJUSTS.map(({ label, delta }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() =>
+                setField(
+                  'target_amount',
+                  adjustWonByManwon(values.target_amount, delta),
+                )
+              }
+              disabled={disabled}
+              className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-xs px-3 py-1.5 transition-colors disabled:opacity-50"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -107,7 +205,7 @@ export function GoalFormSection({
           id="goal-external"
           className={inputClass}
           inputMode="numeric"
-          value={values.external_amount}
+          value={formatNumber(values.external_amount)}
           onChange={(e) =>
             setField('external_amount', onlyDigits(e.target.value))
           }
