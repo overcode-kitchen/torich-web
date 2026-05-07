@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
-import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
+import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { useRateUpdate } from '@/app/hooks/stock/useRateUpdate'
 import { useInvestmentFilter } from '@/app/hooks/investment/filter/useInvestmentFilter'
 import { useHomePageUI } from '@/app/hooks/ui/useHomePageUI'
@@ -15,7 +15,7 @@ import { calculateSimulatedValue } from '@/app/utils/finance'
 export default function Home() {
   const { user, isLoading: authLoading } = useAuth()
   const supabase = createClient()
-  const { records, isLoading: dataLoading, updateInvestment, deleteInvestment, refetch } = useInvestments(user?.id)
+  const { records, isLoading: dataLoading, deleteInvestment, refetch } = useInvestmentsContext()
   const userId = user?.id
   const { isUpdating: isUpdatingRates, checkAndUpdate } = useRateUpdate(userId)
   const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records, calculateSimulatedValue)

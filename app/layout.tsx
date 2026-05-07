@@ -8,6 +8,7 @@ import ThemeProvider from "./components/ThemeSections/ThemeProvider";
 
 import NotificationProvider from "@/providers/NotificationProvider";
 import { AuthProvider } from "@/app/hooks/auth/useAuth";
+import { InvestmentsProvider } from "@/app/contexts/InvestmentsContext";
 import AuthDeepLinkHandler from "./components/AuthDeepLinkHandler";
 
 const geistSans = Geist({
@@ -85,8 +86,10 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider>
             <NotificationProvider>
-              <AuthDeepLinkHandler />
-              <AppLayout>{children}</AppLayout>
+              <InvestmentsProvider>
+                <AuthDeepLinkHandler />
+                <AppLayout>{children}</AppLayout>
+              </InvestmentsProvider>
               <Toaster richColors position="top-center" closeButton />
             </NotificationProvider>
             {process.env.NEXT_PUBLIC_GA_ID && (
