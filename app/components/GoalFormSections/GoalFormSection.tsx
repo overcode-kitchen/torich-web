@@ -11,6 +11,8 @@ export interface GoalFormSectionProps {
     value: GoalFormValues[K],
   ) => void
   disabled?: boolean
+  /** 이모지·메모·마감일 알림 같은 보조 필드 노출 여부. 신규 생성 시 false. */
+  showOptionalFields?: boolean
 }
 
 const onlyDigits = (raw: string): string => raw.replace(/[^\d]/g, '')
@@ -25,6 +27,7 @@ export function GoalFormSection({
   values,
   setField,
   disabled,
+  showOptionalFields = true,
 }: GoalFormSectionProps) {
   return (
     <div className="flex flex-col gap-6">
@@ -68,31 +71,35 @@ export function GoalFormSection({
         </p>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="goal-emoji">이모지 (선택)</Label>
-        <input
-          id="goal-emoji"
-          className={inputClass}
-          placeholder="예: 💍"
-          maxLength={4}
-          value={values.emoji}
-          onChange={(e) => setField('emoji', e.target.value)}
-          disabled={disabled}
-        />
-      </div>
+      {showOptionalFields && (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="goal-emoji">이모지 (선택)</Label>
+          <input
+            id="goal-emoji"
+            className={inputClass}
+            placeholder="예: 💍"
+            maxLength={4}
+            value={values.emoji}
+            onChange={(e) => setField('emoji', e.target.value)}
+            disabled={disabled}
+          />
+        </div>
+      )}
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="goal-memo">메모 (선택)</Label>
-        <textarea
-          id="goal-memo"
-          className={textareaClass}
-          placeholder="이 목적에 대한 메모"
-          rows={3}
-          value={values.memo}
-          onChange={(e) => setField('memo', e.target.value)}
-          disabled={disabled}
-        />
-      </div>
+      {showOptionalFields && (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="goal-memo">메모 (선택)</Label>
+          <textarea
+            id="goal-memo"
+            className={textareaClass}
+            placeholder="이 목적에 대한 메모"
+            rows={3}
+            value={values.memo}
+            onChange={(e) => setField('memo', e.target.value)}
+            disabled={disabled}
+          />
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="goal-external">이미 모아둔 외부 자산 (원, 선택)</Label>
@@ -111,20 +118,22 @@ export function GoalFormSection({
         </p>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="goal-noti">마감일 알림</Label>
-          <span className="text-xs text-foreground-subtle">
-            일주일 전·하루 전·당일에 알려드려요.
-          </span>
+      {showOptionalFields && (
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="goal-noti">마감일 알림</Label>
+            <span className="text-xs text-foreground-subtle">
+              일주일 전·하루 전·당일에 알려드려요.
+            </span>
+          </div>
+          <Switch
+            id="goal-noti"
+            checked={values.notification_enabled}
+            onCheckedChange={(checked) => setField('notification_enabled', checked)}
+            disabled={disabled}
+          />
         </div>
-        <Switch
-          id="goal-noti"
-          checked={values.notification_enabled}
-          onCheckedChange={(checked) => setField('notification_enabled', checked)}
-          disabled={disabled}
-        />
-      </div>
+      )}
     </div>
   )
 }

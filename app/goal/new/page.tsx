@@ -47,6 +47,7 @@ export default function NewGoalPage() {
         values={values}
         setField={setField}
         disabled={isCreating}
+        showOptionalFields={false}
       />
 
       <div className="flex flex-col gap-3 pt-8">
