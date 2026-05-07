@@ -12,10 +12,6 @@ import { track } from '@/app/lib/analytics'
 
 export default function StatsPage() {
   const { user, records, activeRecords, isLoading, router } = useStatsData()
-
-  useEffect(() => {
-    track('stats_view')
-  }, [])
   const { completedPayments, isLoading: historyLoading } = usePaymentHistory()
 
   const {
@@ -40,6 +36,12 @@ export default function StatsPage() {
     periodLabel,
     handleCustomPeriod,
   } = usePeriodFilter()
+
+  useEffect(() => {
+    track('stats_view', { filter: periodPreset })
+    // 진입 시 1회만 — 필터 변경은 stats_filter_change에서 별도 추적함
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const {
     totalExpectedAsset,

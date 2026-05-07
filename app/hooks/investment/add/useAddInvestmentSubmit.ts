@@ -120,7 +120,7 @@ export function useAddInvestmentSubmit({
       }
 
       track('investment_create_success', {
-        amount_bucket: amountBucket(Number(monthlyAmount) || 0),
+        amount_bucket: amountBucket(formattedData.monthly_amount),
         cycle_type: investmentDays.length > 0 ? 'custom' : 'monthly',
         has_rate: annualRate > 0,
       })
