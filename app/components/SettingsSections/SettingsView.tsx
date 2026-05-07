@@ -89,7 +89,7 @@ export default function SettingsView({
                 </div>
             </header>
 
-            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 space-y-4">
+            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 pb-12 space-y-4">
                 {/* 테마 설정 카드 (전용 스타일) */}
                 <section className="bg-card rounded-2xl px-4 py-4 mt-2">
                     <ThemeSelector theme={theme} setTheme={setTheme} />
