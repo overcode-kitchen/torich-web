@@ -34,6 +34,10 @@ interface SettingsViewProps {
 
     // App Store
     openAppStore: () => void | Promise<void>
+    /** 스토어에 신버전이 있을 때만 true. 웹·조회 실패 시에는 항상 false. */
+    hasUpdate: boolean
+    /** 설치된 앱 버전. 네이티브 앱에서만 채워지고 웹에서는 null. */
+    currentVersion: string | null
 }
 
 export default function SettingsView({
@@ -51,6 +55,8 @@ export default function SettingsView({
     openBrandStory,
     closeBrandStory,
     openAppStore,
+    hasUpdate,
+    currentVersion,
 }: SettingsViewProps) {
     const isNativeApp = useIsNativeApp()
 
@@ -161,14 +167,16 @@ export default function SettingsView({
                         label="버전"
                         rightElement={
                             <div className="flex items-center gap-3">
-                                <span className="text-muted-foreground text-sm">1.0.0</span>
-                                <button
-                                    type="button"
-                                    onClick={() => { void openAppStore() }}
-                                    className="text-primary text-sm font-medium hover:underline"
-                                >
-                                    업데이트
-                                </button>
+                                <span className="text-muted-foreground text-sm">{currentVersion ?? '1.0.0'}</span>
+                                {hasUpdate && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { void openAppStore() }}
+                                        className="text-primary text-sm font-medium hover:underline"
+                                    >
+                                        업데이트
+                                    </button>
+                                )}
                             </div>
                         }
                     />
