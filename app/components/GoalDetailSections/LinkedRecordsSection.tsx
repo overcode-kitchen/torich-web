@@ -25,26 +25,26 @@ export function LinkedRecordsSection({
 }: LinkedRecordsSectionProps) {
   if (records.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-card p-6 text-base text-muted-foreground">
+      <div className="rounded-xl border border-border-subtle-lighter bg-card p-5 text-sm text-foreground-subtle">
         아직 묶인 투자가 없어요. 아래에서 묶을 투자를 골라보세요.
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6">
-      <h2 className="text-2xl font-semibold tracking-tight">
+    <div className="flex flex-col gap-4 rounded-xl border border-border-subtle-lighter bg-card p-5">
+      <h2 className="text-base font-semibold tracking-tight text-foreground">
         묶인 투자 ({records.length})
       </h2>
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-2">
         {records.map((r) => (
           <li
             key={r.id}
             className="flex items-center justify-between gap-4 rounded-xl bg-muted/50 px-4 py-3"
           >
-            <div className="flex flex-col gap-1">
-              <span className="text-base text-foreground">{r.title}</span>
-              <span className="text-sm text-muted-foreground">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm text-foreground">{r.title}</span>
+              <span className="text-xs text-foreground-subtle">
                 월 {formatAmount(r.monthly_amount)}원 ·{' '}
                 {modeLabel(r.period_years)}
               </span>

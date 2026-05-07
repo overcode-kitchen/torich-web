@@ -31,25 +31,25 @@ export function GoalLifecycleSection({
   return (
     <div className="flex flex-col gap-4">
       {showCelebration && (
-        <div className="rounded-xl border border-primary/30 bg-primary/10 p-6">
-          <p className="text-base font-semibold text-primary">🎉 목표 달성!</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-primary/30 bg-primary/10 p-5">
+          <p className="text-sm font-semibold text-primary">🎉 목표 달성!</p>
+          <p className="mt-1 text-xs text-foreground-subtle">
             잘 모으셨어요. 계속 유지할지, 정리할지 자유롭게 선택하세요.
           </p>
         </div>
       )}
 
       {showDeadlineCard && (
-        <div className="rounded-xl border border-border bg-card p-6">
-          <p className="text-base text-foreground">마감일이 지났어요.</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-border-subtle-lighter bg-card p-5">
+          <p className="text-sm text-foreground">마감일이 지났어요.</p>
+          <p className="mt-1 text-xs text-foreground-subtle">
             달성률 {progress.progressPercent}% — 잘 모으셨어요. 정리할지, 더
             모을지 천천히 결정해보세요.
           </p>
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 pt-2">
         {onEdit && (
           <Button size="lg" variant="outline" onClick={onEdit}>
             수정하기

@@ -2,6 +2,8 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { CircleNotch } from '@phosphor-icons/react'
+import SubPageScaffold from '@/app/components/SubPageScaffold'
 import { GoalLifecycleSection } from '@/app/components/GoalDetailSections/GoalLifecycleSection'
 import { GoalProgressSection } from '@/app/components/GoalDetailSections/GoalProgressSection'
 import { LinkedRecordsSection } from '@/app/components/GoalDetailSections/LinkedRecordsSection'
@@ -10,6 +12,7 @@ import { useGoalProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLink'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
+import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
 
@@ -17,6 +20,10 @@ export default function GoalDetailPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
   const [userId, setUserId] = useState<string | undefined>(undefined)
+  const { goBack } = useFlowBack({
+    rootPath: '/',
+    enableHistoryFallback: true,
+  })
 
   useEffect(() => {
     const supabase = createClient()
@@ -66,50 +73,56 @@ export default function GoalDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-md p-6 text-base text-muted-foreground">
-        불러오는 중…
-      </div>
+      <SubPageScaffold onBack={goBack} contentClassName="py-6">
+        <div className="flex items-center justify-center py-16">
+          <CircleNotch className="w-6 h-6 animate-spin text-foreground-subtle" />
+        </div>
+      </SubPageScaffold>
     )
   }
 
   if (!goal || !progress) {
     return (
-      <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 p-6">
-        <p className="text-base text-muted-foreground">
-          목적을 찾을 수 없습니다.
-        </p>
-        <Button onClick={() => router.push('/')}>홈으로</Button>
-      </div>
+      <SubPageScaffold onBack={goBack} contentClassName="py-6">
+        <div className="flex flex-col items-center gap-4 py-16">
+          <p className="text-sm text-foreground-subtle">
+            목적을 찾을 수 없습니다.
+          </p>
+          <Button onClick={() => router.push('/')}>홈으로</Button>
+        </div>
+      </SubPageScaffold>
     )
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-6 p-6">
-      <div className="flex items-center gap-3">
-        {goal.emoji ? <span className="text-3xl">{goal.emoji}</span> : null}
-        <h1 className="text-3xl font-semibold tracking-tight">{goal.name}</h1>
+    <SubPageScaffold onBack={goBack} contentClassName="py-6">
+      <div className="mb-8 flex items-center gap-3">
+        {goal.emoji ? <span className="text-2xl">{goal.emoji}</span> : null}
+        <h1 className="text-xl font-bold text-foreground">{goal.name}</h1>
       </div>
 
-      <GoalProgressSection goal={goal} progress={progress} />
+      <div className="flex flex-col gap-6">
+        <GoalProgressSection goal={goal} progress={progress} />
 
-      <LinkedRecordsSection
-        records={records}
-        isLinking={isLinking}
-        onUnlink={(id) => void handleUnlink(id)}
-      />
+        <LinkedRecordsSection
+          records={records}
+          isLinking={isLinking}
+          onUnlink={(id) => void handleUnlink(id)}
+        />
 
-      <UnlinkedRecordsSection
-        records={unlinkedRecords}
-        isLinking={isLinking}
-        onLink={(id) => void handleLink(id)}
-      />
+        <UnlinkedRecordsSection
+          records={unlinkedRecords}
+          isLinking={isLinking}
+          onLink={(id) => void handleLink(id)}
+        />
 
-      <GoalLifecycleSection
-        goal={goal}
-        progress={progress}
-        isArchiving={isUpdating}
-        onArchive={handleArchive}
-      />
-    </div>
+        <GoalLifecycleSection
+          goal={goal}
+          progress={progress}
+          isArchiving={isUpdating}
+          onArchive={handleArchive}
+        />
+      </div>
+    </SubPageScaffold>
   )
 }
