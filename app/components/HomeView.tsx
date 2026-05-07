@@ -3,6 +3,9 @@
 import { CircleNotch } from '@phosphor-icons/react'
 import Dashboard from '@/app/components/Dashboard'
 import LandingPage from '@/app/components/LandingPage'
+import PullToRefreshIndicator from '@/app/components/PullToRefreshIndicator'
+import { usePullToRefresh } from '@/app/hooks/ui/usePullToRefresh'
+import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import type { Investment } from '@/app/types/investment'
 import type { User } from '@supabase/supabase-js'
 
@@ -35,6 +38,9 @@ interface HomeViewProps {
     onItemClick: (item: Investment) => void
     onDeleteInvestment?: (id: string) => Promise<void>
 
+    // Pull-to-refresh
+    onRefresh: () => Promise<void>
+
     // Brand Story
     isBrandStoryOpen: boolean
     setIsBrandStoryOpen: (open: boolean) => void
@@ -63,6 +69,7 @@ export default function HomeView({
     onToggleMonthlyAmount,
     onItemClick,
     onDeleteInvestment,
+    onRefresh,
     isBrandStoryOpen,
     setIsBrandStoryOpen,
     showBrandStoryCard,
@@ -72,6 +79,15 @@ export default function HomeView({
     onUndoBrandStory,
     calculateSimulatedValue,
 }: HomeViewProps) {
+    const isNativeApp = useIsNativeApp()
+    const { pullDistance, isRefreshing, threshold } = usePullToRefresh({
+        onRefresh,
+        disabled: isLoading || isUpdatingRates || !user,
+    })
+    const indicatorTopOffset = isNativeApp
+        ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px)'
+        : '56px'
+
     if (isLoading) {
         return (
             <main className="min-h-screen bg-surface flex items-center justify-center">
@@ -92,7 +108,14 @@ export default function HomeView({
     if (!user) return <LandingPage />
 
     return (
-        <Dashboard
+        <>
+            <PullToRefreshIndicator
+                pullDistance={pullDistance}
+                isRefreshing={isRefreshing}
+                threshold={threshold}
+                topOffset={indicatorTopOffset}
+            />
+            <Dashboard
             records={records}
             filteredRecords={filteredRecords}
             activeRecords={activeRecords}
@@ -114,5 +137,6 @@ export default function HomeView({
             onCloseBrandStory={() => setIsBrandStoryOpen(false)}
             calculateFutureValue={calculateSimulatedValue}
         />
+        </>
     )
 }

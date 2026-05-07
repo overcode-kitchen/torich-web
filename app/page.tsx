@@ -92,6 +92,10 @@ export default function Home() {
       onToggleMonthlyAmount={toggleMonthlyAmount}
       onItemClick={(item) => router.push(`/investment?id=${item.id}`)}
       onDeleteInvestment={deleteInvestment}
+      onRefresh={async () => {
+        await refetch()
+        if (userId) await checkAndUpdate()
+      }}
       isBrandStoryOpen={isBrandStoryOpen}
       setIsBrandStoryOpen={setIsBrandStoryOpen}
       showBrandStoryCard={showBrandStoryCard}
