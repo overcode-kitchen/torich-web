@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { CalendarBlank, CircleNotch } from '@phosphor-icons/react'
+import { CalendarBlank, CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import { GoalInfoSection } from '@/app/components/GoalDetailSections/GoalInfoSection'
 import { GoalLifecycleSection } from '@/app/components/GoalDetailSections/GoalLifecycleSection'
@@ -17,6 +17,12 @@ import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { formatFullDate } from '@/app/utils/date'
 import { createClient } from '@/utils/supabase/client'
 
@@ -69,7 +75,7 @@ export default function GoalDetailPage() {
   async function handleArchive(): Promise<void> {
     if (!goal) return
     const confirmed = window.confirm(
-      `"${goal.name}"을(를) 정리할까요? 묶였던 투자는 자유 상태로 돌아갑니다.`,
+      `"${goal.name}"을(를) 삭제할까요? 묶였던 투자는 자유 상태로 돌아갑니다.`,
     )
     if (!confirmed) return
     await archiveGoal(goal.id)
@@ -110,8 +116,39 @@ export default function GoalDetailPage() {
     )
   }
 
+  const headerActions = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label="더보기"
+          className="p-2 -mr-1 text-foreground-soft hover:text-foreground transition-colors"
+        >
+          <DotsThreeVertical className="w-6 h-6" weight="bold" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-[8rem]">
+        <DropdownMenuItem onSelect={() => router.push(`/goal/${goal.id}/edit`)}>
+          수정하기
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={() => void handleArchive()}
+          disabled={isUpdating}
+          variant="destructive"
+        >
+          삭제하기
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
   return (
-    <SubPageScaffold onBack={goBack} surfaceClassName="bg-background" contentClassName="px-6">
+    <SubPageScaffold
+      onBack={goBack}
+      surfaceClassName="bg-background"
+      contentClassName="px-6"
+      actions={headerActions}
+    >
       {/* 제목 + 마감일 알림 */}
       <section className="py-6 space-y-4">
         <div>
@@ -158,12 +195,7 @@ export default function GoalDetailPage() {
         onLink={(id) => void handleLink(id)}
       />
 
-      <GoalLifecycleSection
-        goal={goal}
-        progress={progress}
-        isArchiving={isUpdating}
-        onArchive={handleArchive}
-      />
+      <GoalLifecycleSection goal={goal} progress={progress} />
     </SubPageScaffold>
   )
 }

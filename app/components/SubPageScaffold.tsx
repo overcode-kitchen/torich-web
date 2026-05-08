@@ -13,6 +13,8 @@ export interface SubPageScaffoldProps {
   contentClassName?: string
   /** 페이지 배경 클래스. 기본 'bg-surface'. 투자 상세처럼 흰색 톤이 필요하면 'bg-background' 전달. */
   surfaceClassName?: string
+  /** 헤더 우측 액션 영역 (예: 더보기 메뉴) */
+  actions?: ReactNode
 }
 
 /**
@@ -24,6 +26,7 @@ export default function SubPageScaffold({
   children,
   contentClassName,
   surfaceClassName = 'bg-surface',
+  actions,
 }: SubPageScaffoldProps) {
   const isNativeApp = useIsNativeApp()
 
@@ -42,7 +45,7 @@ export default function SubPageScaffold({
         style={{ paddingTop: headerSafeTop }}
       >
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto pl-4 pr-2">
-          <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
+          <div className="h-12 min-h-[48px] max-h-[48px] flex items-center justify-between shrink-0">
             <button
               type="button"
               onClick={onBack}
@@ -51,6 +54,7 @@ export default function SubPageScaffold({
             >
               <ArrowLeft className="w-6 h-6" weight="regular" />
             </button>
+            {actions && <div className="flex items-center">{actions}</div>}
           </div>
         </div>
       </header>
