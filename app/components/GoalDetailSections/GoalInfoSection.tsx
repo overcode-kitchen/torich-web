@@ -32,7 +32,7 @@ export function GoalInfoSection({ goal, progress }: GoalInfoSectionProps) {
         />
 
         <InvestmentField
-          label="외부 자산"
+          label="이미 모은 돈"
           value={formatCurrency(goal.external_amount)}
           isEditMode={false}
         />

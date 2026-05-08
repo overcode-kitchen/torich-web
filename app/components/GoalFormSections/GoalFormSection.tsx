@@ -54,6 +54,9 @@ interface GoalPreset {
 const PRESETS: GoalPreset[] = [
   { name: '결혼 자금', emoji: '💍' },
   { name: '주택 자금', emoji: '🏠' },
+  { name: '여행', emoji: '✈️' },
+  { name: '차', emoji: '🚗' },
+  { name: '이사', emoji: '📦' },
 ]
 
 const TARGET_QUICK_ADJUSTS: { label: string; delta: number }[] = [
@@ -191,7 +194,7 @@ export function GoalFormSection({
       )}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="goal-external">이미 모아둔 외부 자산 (선택)</Label>
+        <Label htmlFor="goal-external">이미 모은 돈 (선택)</Label>
         <div className="relative">
           <input
             id="goal-external"
@@ -208,7 +211,7 @@ export function GoalFormSection({
           </span>
         </div>
         <p className="text-xs text-foreground-subtle">
-          청약통장·예적금 등 토리치 밖에서 모은 금액. 필요할 때 직접 갱신해요.
+          청약통장·예적금 등 토리치 밖에서 이미 모아둔 금액. 필요할 때 직접 갱신해요.
         </p>
       </div>
 
