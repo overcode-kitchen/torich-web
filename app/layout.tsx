@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://torich.app"),
+  metadataBase: new URL("https://torich.vercel.app"),
   title: "토리치 - 매달 투자, 까먹지 않게",
   description:
     "적립식 투자 알림과 납입 관리를 한 곳에서. 매월 투자일 알림, 완료 체크, 투자 현황을 한눈에 확인하세요.",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "토리치 - 매달 투자, 까먹지 않게",
     description: "적립식 투자 알림과 납입 관리를 한 곳에서.",
-    url: "https://torich.app",
+    url: "https://torich.vercel.app",
     siteName: "토리치",
     locale: "ko_KR",
     type: "website",
