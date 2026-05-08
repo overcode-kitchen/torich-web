@@ -8,7 +8,6 @@ import { BrandStorySheet } from '@/app/components/BrandStorySheet'
 import { SettingsItem } from './SettingsItem'
 import type { Theme } from '@/app/components/ThemeSections/ThemeProvider'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
-import { useAppVersion } from '@/app/hooks/platform/useAppVersion'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 interface SettingsViewProps {
@@ -32,6 +31,13 @@ interface SettingsViewProps {
     isBrandStoryOpen: boolean
     openBrandStory: () => void
     closeBrandStory: () => void
+
+    // App Store
+    openAppStore: () => void | Promise<void>
+    /** 스토어에 신버전이 있을 때만 true. 웹·조회 실패 시에는 항상 false. */
+    hasUpdate: boolean
+    /** 설치된 앱 버전. 네이티브 앱에서만 채워지고 웹에서는 null. */
+    currentVersion: string | null
 }
 
 export default function SettingsView({
@@ -48,9 +54,11 @@ export default function SettingsView({
     isBrandStoryOpen,
     openBrandStory,
     closeBrandStory,
+    openAppStore,
+    hasUpdate,
+    currentVersion,
 }: SettingsViewProps) {
     const isNativeApp = useIsNativeApp()
-    const appVersion = useAppVersion()
 
     const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
     const contentPaddingTop = isNativeApp
@@ -91,7 +99,7 @@ export default function SettingsView({
                 </div>
             </header>
 
-            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 space-y-4">
+            <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 pb-12 space-y-4">
                 {/* 테마 설정 카드 (전용 스타일) */}
                 <section className="bg-card rounded-2xl px-4 py-4 mt-2">
                     <ThemeSelector theme={theme} setTheme={setTheme} />
@@ -157,7 +165,20 @@ export default function SettingsView({
                 <SettingsSection title="앱 정보">
                     <SettingsItem
                         label="버전"
-                        rightElement={<span className="text-muted-foreground text-sm">{appVersion}</span>}
+                        rightElement={
+                            <div className="flex items-center gap-3">
+                                <span className="text-muted-foreground text-sm">{currentVersion ?? '1.0.0'}</span>
+                                {hasUpdate && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { void openAppStore() }}
+                                        className="text-primary text-sm font-medium hover:underline"
+                                    >
+                                        업데이트
+                                    </button>
+                                )}
+                            </div>
+                        }
                     />
                     <SettingsItem
                         label="문의하기"

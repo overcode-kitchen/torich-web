@@ -1,119 +1,86 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { isCapacitorNative } from '@/lib/auth/capacitor-native'
-import { useAppVersion } from './useAppVersion'
-import { compareVersions } from '@/app/lib/version/compareVersions'
-import { fetchAppStoreVersion } from '@/app/lib/version/fetchAppStoreVersion'
-import {
-  UPDATE_PROMPT_COOLDOWN_MS,
-  UPDATE_PROMPT_STORAGE_KEY,
-} from '@/app/lib/version/constants'
+import { useEffect, useState } from 'react'
+import { useIsNativeApp } from './useIsNativeApp'
 
-interface DismissRecord {
-  version: string
-  dismissedAt: number
-}
+const APP_STORE_ID = '6761295498'
+const LOOKUP_URL = `https://itunes.apple.com/lookup?id=${APP_STORE_ID}&country=kr`
 
-export interface AppUpdateCheckState {
-  isOpen: boolean
+export interface AppUpdateInfo {
+  hasUpdate: boolean
   currentVersion: string | null
   latestVersion: string | null
-  onUpdate: () => Promise<void>
-  onDismiss: () => Promise<void>
 }
 
-const APP_STORE_ID = process.env.NEXT_PUBLIC_APP_STORE_ID ?? ''
+const INITIAL_INFO: AppUpdateInfo = {
+  hasUpdate: false,
+  currentVersion: null,
+  latestVersion: null,
+}
 
 /**
- * iOS 네이티브 앱 진입 시 App Store 최신 버전과 비교하여
- * 업데이트 권고 팝업의 노출 여부를 결정.
- * - 웹/안드로이드/SSR: 항상 미노출
- * - 환경변수 미설정/네트워크 실패: 조용히 미노출 (앱 동작 무영향)
+ * 시맨틱 버전 비교: a < b → 음수, a > b → 양수, a == b → 0
+ * 누락 자리는 0으로 보정.
  */
-export function useAppUpdateCheck(): AppUpdateCheckState {
-  const currentVersion = useAppVersion()
-  const [latestVersion, setLatestVersion] = useState<string | null>(null)
-  const [isOpen, setIsOpen] = useState(false)
+function compareVersions(a: string, b: string): number {
+  const pa = a.split('.').map((x) => parseInt(x, 10) || 0)
+  const pb = b.split('.').map((x) => parseInt(x, 10) || 0)
+  const len = Math.max(pa.length, pb.length)
+  for (let i = 0; i < len; i += 1) {
+    const ai = pa[i] ?? 0
+    const bi = pb[i] ?? 0
+    if (ai !== bi) return ai - bi
+  }
+  return 0
+}
+
+/**
+ * iTunes Lookup API로 최신 스토어 버전을 가져와 설치된 버전과 비교한다.
+ * - 네이티브 앱이 아닐 때(웹 등): 항상 hasUpdate = false
+ * - 네트워크/조회 실패: 안전하게 hasUpdate = false 유지
+ *
+ * 주의: iTunes Lookup은 신버전 출시 후 수 시간 캐싱되어 즉시 반영되지 않을 수 있다.
+ */
+export function useAppUpdateCheck(): AppUpdateInfo {
+  const isNativeApp = useIsNativeApp()
+  const [info, setInfo] = useState<AppUpdateInfo>(INITIAL_INFO)
 
   useEffect(() => {
-    if (!isCapacitorNative()) return
-    if (!APP_STORE_ID) {
-      console.warn('[AppUpdateCheck] NEXT_PUBLIC_APP_STORE_ID 미설정 → 업데이트 팝업 스킵')
-      return
-    }
-    if (!currentVersion) return
+    if (!isNativeApp) return
 
     let cancelled = false
 
-    ;(async () => {
+    const run = async (): Promise<void> => {
       try {
-        const result = await fetchAppStoreVersion()
-        if (cancelled || !result) return
-        if (compareVersions(result.version, currentVersion) <= 0) return
+        const { App } = await import('@capacitor/app')
+        const appInfo = await App.getInfo()
+        const currentVersion = appInfo.version
+        if (!currentVersion) return
 
-        const dismiss = await readDismissRecord()
+        const res = await fetch(LOOKUP_URL, { cache: 'no-store' })
+        if (!res.ok) return
+
+        const data: { results?: { version?: string }[] } = await res.json()
+        const latestVersion = data.results?.[0]?.version
+        if (!latestVersion) return
+
         if (cancelled) return
-        if (dismiss && shouldSuppress(dismiss, result.version)) return
-
-        setLatestVersion(result.version)
-        setIsOpen(true)
-      } catch (err) {
-        console.warn('[AppUpdateCheck] error', err)
+        setInfo({
+          hasUpdate: compareVersions(currentVersion, latestVersion) < 0,
+          currentVersion,
+          latestVersion,
+        })
+      } catch {
+        // 조회 실패는 사용자에게 노출하지 않음 (업데이트 버튼 숨김 유지)
       }
-    })()
+    }
 
-    return () => {
+    void run()
+
+    return (): void => {
       cancelled = true
     }
-  }, [currentVersion])
+  }, [isNativeApp])
 
-  const onUpdate = useCallback(async () => {
-    setIsOpen(false)
-    try {
-      const { Browser } = await import('@capacitor/browser')
-      await Browser.open({ url: `https://apps.apple.com/app/id${APP_STORE_ID}` })
-    } catch (err) {
-      console.warn('[AppUpdateCheck] App Store 열기 실패', err)
-    }
-  }, [])
-
-  const onDismiss = useCallback(async () => {
-    setIsOpen(false)
-    if (!latestVersion) return
-    try {
-      const { Preferences } = await import('@capacitor/preferences')
-      const record: DismissRecord = { version: latestVersion, dismissedAt: Date.now() }
-      await Preferences.set({ key: UPDATE_PROMPT_STORAGE_KEY, value: JSON.stringify(record) })
-    } catch {
-      // silent
-    }
-  }, [latestVersion])
-
-  return {
-    isOpen,
-    currentVersion: currentVersion || null,
-    latestVersion,
-    onUpdate,
-    onDismiss,
-  }
-}
-
-async function readDismissRecord(): Promise<DismissRecord | null> {
-  try {
-    const { Preferences } = await import('@capacitor/preferences')
-    const { value } = await Preferences.get({ key: UPDATE_PROMPT_STORAGE_KEY })
-    if (!value) return null
-    const parsed = JSON.parse(value) as Partial<DismissRecord>
-    if (typeof parsed.version !== 'string' || typeof parsed.dismissedAt !== 'number') return null
-    return { version: parsed.version, dismissedAt: parsed.dismissedAt }
-  } catch {
-    return null
-  }
-}
-
-function shouldSuppress(dismiss: DismissRecord, latestVersion: string): boolean {
-  // 새 버전이 등장했다면 쿨다운 무시하고 다시 노출
-  if (dismiss.version !== latestVersion) return false
-  return Date.now() - dismiss.dismissedAt < UPDATE_PROMPT_COOLDOWN_MS
+  return info
 }

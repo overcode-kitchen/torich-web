@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 
 // 기존 훅 재사용
 import { useAuth } from '@/app/hooks/auth/useAuth'
-import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
+import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 
 // 새로 만든 훅
 import { useCalendar } from '@/app/hooks/calendar/useCalendar'
@@ -19,7 +19,7 @@ export default function CalendarPage() {
 
   // 기존 훅 재사용
   const { user, isLoading: authLoading } = useAuth()
-  const { records, isLoading: recordsLoading } = useInvestments(user?.id)
+  const { records, isLoading: recordsLoading } = useInvestmentsContext()
 
   // 캘린더 훅
   const {

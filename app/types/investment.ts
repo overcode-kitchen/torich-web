@@ -31,6 +31,8 @@ export interface Investment {
   unit_type: InvestmentUnitType
   // 주수 모드일 때만 값 보유 (정수, >0). 금액 모드는 null.
   monthly_shares?: number | null
+  // 묶인 목적(Goal)의 ID. 없으면 null. 구버전 앱은 컬럼을 몰라도 정상 동작.
+  goal_id?: string | null
 }
 
 /**

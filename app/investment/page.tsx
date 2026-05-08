@@ -4,7 +4,7 @@ import { Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CircleNotch } from '@phosphor-icons/react'
 import { useAuth } from '@/app/hooks/auth/useAuth'
-import { useInvestments } from '@/app/hooks/investment/data/useInvestments'
+import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
 import { calculateSimulatedValue } from '@/app/utils/finance'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
@@ -15,7 +15,7 @@ function InvestmentDetail() {
   const router = useRouter()
   const isNativeApp = useIsNativeApp()
   const { user, isLoading: authLoading } = useAuth()
-  const { records, isLoading: dataLoading, updateInvestment, deleteInvestment } = useInvestments(user?.id)
+  const { records, isLoading: dataLoading, updateInvestment, deleteInvestment } = useInvestmentsContext()
   const { goBack } = useFlowBack({
     rootPath: '/',
     enableHistoryFallback: true,
