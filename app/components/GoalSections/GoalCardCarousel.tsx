@@ -86,23 +86,13 @@ function GoalRow({ goal, progress, onSelect, onDelete }: GoalRowProps) {
           >
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 flex-col gap-1.5">
-                <div className="flex min-w-0 items-center gap-2">
-                  <div
-                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-base"
-                    aria-hidden
-                  >
-                    <span>{goal.emoji ?? '🎯'}</span>
-                  </div>
-                  <h3 className="min-w-0 truncate text-base font-semibold text-foreground">
-                    {goal.name}
-                  </h3>
-                </div>
-                <div className="pl-8">
-                  <p className="truncate text-sm text-muted-foreground">
-                    현재 {fmt(progress.currentValue)}원 ·{' '}
-                    {progress.progressPercent}%
-                  </p>
-                </div>
+                <h3 className="min-w-0 truncate text-base font-semibold text-foreground">
+                  {goal.name}
+                </h3>
+                <p className="truncate text-sm text-muted-foreground">
+                  현재 {fmt(progress.currentValue)}원 ·{' '}
+                  {progress.progressPercent}%
+                </p>
               </div>
             </div>
             {dDay && (

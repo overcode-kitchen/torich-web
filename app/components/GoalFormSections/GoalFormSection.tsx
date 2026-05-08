@@ -165,21 +165,6 @@ export function GoalFormSection({
 
       {showOptionalFields && (
         <div className="flex flex-col gap-2">
-          <Label htmlFor="goal-emoji">이모지 (선택)</Label>
-          <input
-            id="goal-emoji"
-            className={inputClass}
-            placeholder="예: 💍"
-            maxLength={4}
-            value={values.emoji}
-            onChange={(e) => setField('emoji', e.target.value)}
-            disabled={disabled}
-          />
-        </div>
-      )}
-
-      {showOptionalFields && (
-        <div className="flex flex-col gap-2">
           <Label htmlFor="goal-memo">메모 (선택)</Label>
           <textarea
             id="goal-memo"

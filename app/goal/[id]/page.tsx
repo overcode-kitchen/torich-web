@@ -116,7 +116,6 @@ export default function GoalDetailPage() {
       <section className="py-6 space-y-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
-            {goal.emoji ? `${goal.emoji} ` : ''}
             {goal.name}
           </h2>
           {progress.isCompleted && (
