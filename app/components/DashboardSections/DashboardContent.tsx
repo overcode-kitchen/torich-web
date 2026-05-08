@@ -10,6 +10,7 @@ import MonthlyAmountCard from './MonthlyAmountCard'
 import BrandStorySection from './BrandStorySection'
 import InvestmentListSection from './InvestmentListSection'
 import EmptyState from './EmptyState'
+import GoalSection from './GoalSection'
 
 type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
 type SortBy = 'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME' | 'NEXT_PAYMENT'
@@ -77,6 +78,8 @@ export default function DashboardContent({
 
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
+            <GoalSection records={records} />
+
             {activeRecords.length > 0 && (
                 <UpcomingInvestments
                     records={activeRecords}

@@ -34,7 +34,8 @@ export function useInvestmentsUpdate(
       const validColumns = [
         'title', 'symbol', 'monthly_amount', 'period_years',
         'annual_rate', 'expected_amount', 'start_date',
-        'investment_days', 'is_custom_rate', 'notification_enabled'
+        'investment_days', 'is_custom_rate', 'notification_enabled',
+        'goal_id',
       ]
 
       const updateData: any = {}

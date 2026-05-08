@@ -38,6 +38,7 @@ export function useEnsureUserSettings(userId: string | undefined) {
           notification_pre_reminder: defaultNotificationSettings.preReminder,
           notification_re_reminder_enabled: defaultNotificationSettings.reReminderOn,
           notification_service_announcement_enabled: defaultNotificationSettings.serviceAnnouncementsOn,
+          notification_skip_weekend_holiday: defaultNotificationSettings.skipWeekendHolidayOn,
           theme: 'system',
           show_monthly_amount: true,
         },

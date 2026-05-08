@@ -1,8 +1,8 @@
 'use client'
 
 import { TrashSimple } from '@phosphor-icons/react'
-import { formatCurrency } from '@/lib/utils'
 import { Investment, getStartDate, formatInvestmentDays, isHabitMode } from '@/app/types/investment'
+import { formatMonthlyContribution } from '@/app/utils/investment-display'
 import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
 import { isCompleted, getElapsedMonths } from '@/app/utils/date'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
@@ -24,6 +24,7 @@ export default function InvestmentItem({
   const startDate = getStartDate(item)
   const habit = isHabitMode(item)
   const completed = isCompleted(startDate, item.period_years)
+  const contribution = formatMonthlyContribution(item)
 
   const swipe = useSwipeToDelete({
     enabled: !!onDelete,
@@ -93,7 +94,10 @@ export default function InvestmentItem({
               {/* 2줄: 월 투자금 · 투자일 · 모드 뱃지 */}
               <div className="pl-2 flex items-center gap-2 flex-wrap">
                 <p className={`text-sm ${completed ? 'text-green-600 font-semibold' : 'text-muted-foreground'}`}>
-                  월 {formatCurrency(item.monthly_amount)}
+                  {contribution.main}
+                  {contribution.sub && (
+                    <span className="text-foreground-subtle"> ({contribution.sub})</span>
+                  )}
                   {item.investment_days && item.investment_days.length > 0 && (
                     <> · {formatInvestmentDays(item.investment_days)}</>
                   )}

@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { usePaymentHistory } from '../payment/usePaymentHistory'
+import { toastSuccess } from '@/app/utils/toast'
+import { awardToryInvestmentComplete } from '@/app/utils/tory-raising/awardToryInvestmentComplete'
 
 const TOAST_DURATION_MS = 5000
 
@@ -34,9 +36,14 @@ export function useUpcomingInvestmentsCompletion() {
   }, [])
 
   const toggleComplete = useCallback(
-    (investmentId: string, date: Date, dayOfMonth: number) => {
+    async (investmentId: string, date: Date, dayOfMonth: number) => {
       const dateStr = formatDate(date)
-      togglePayment(investmentId, dateStr, false) // Mark as completed
+      await togglePayment(investmentId, dateStr, false) // Mark as completed
+
+      const reward = awardToryInvestmentComplete({ paymentDateYMD: dateStr, amount: 10 })
+      if (reward.awarded) {
+        toastSuccess(`🌰 +${reward.amount} 도토리`)
+      }
 
       setPendingUndo({ investmentId, date, dayOfMonth })
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)

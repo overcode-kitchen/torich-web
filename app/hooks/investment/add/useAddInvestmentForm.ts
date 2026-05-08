@@ -47,6 +47,8 @@ export function useAddInvestmentForm(): UseAddInvestmentFormReturn {
     originalSystemRate: updatedStockSearch.originalSystemRate,
     selectedStock: updatedStockSearch.selectedStock,
     market: updatedStockSearch.market,
+    unitType: ui.unitType,
+    monthlyShares: ui.monthlyShares,
   })
 
   return {
@@ -61,6 +63,12 @@ export function useAddInvestmentForm(): UseAddInvestmentFormReturn {
     setStartDate: ui.setStartDate,
     investmentDays: ui.investmentDays,
     setInvestmentDays: ui.setInvestmentDays,
+
+    // 매수 단위 (금액/주수)
+    unitType: ui.unitType,
+    setUnitType: ui.setUnitType,
+    monthlyShares: ui.monthlyShares,
+    handleSharesChange: ui.handleSharesChange,
 
     // 제출 상태
     isSubmitting: submit.isSubmitting,

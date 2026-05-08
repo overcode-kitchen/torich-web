@@ -12,10 +12,85 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      goals: {
+        Row: {
+          archived_at: string | null
+          completed_at: string | null
+          created_at: string
+          emoji: string | null
+          external_amount: number
+          id: string
+          memo: string | null
+          name: string
+          notification_enabled: boolean
+          target_amount: number
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          emoji?: string | null
+          external_amount?: number
+          id?: string
+          memo?: string | null
+          name: string
+          notification_enabled?: boolean
+          target_amount: number
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          emoji?: string | null
+          external_amount?: number
+          id?: string
+          memo?: string | null
+          name?: string
+          notification_enabled?: boolean
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payment_history: {
         Row: {
+          captured_price: number | null
+          captured_shares: number | null
           completed_at: string
           created_at: string
           id: string
@@ -25,6 +100,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          captured_price?: number | null
+          captured_shares?: number | null
           completed_at?: string
           created_at?: string
           id?: string
@@ -34,6 +111,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          captured_price?: number | null
+          captured_shares?: number | null
           completed_at?: string
           created_at?: string
           id?: string
@@ -57,17 +136,20 @@ export type Database = {
           annual_rate: number
           created_at: string
           final_amount: number
+          goal_id: string | null
           id: string
           investment_days: number[] | null
           is_custom_rate: boolean | null
           market: string | null
           monthly_amount: number
+          monthly_shares: number | null
           notification_enabled: boolean | null
           period_years: number | null
           rate_updated_at: string | null
           start_date: string | null
           symbol: string | null
           title: string
+          unit_type: string
           updated_at: string | null
           user_id: string
         }
@@ -75,17 +157,20 @@ export type Database = {
           annual_rate: number
           created_at?: string
           final_amount: number
+          goal_id?: string | null
           id?: string
           investment_days?: number[] | null
           is_custom_rate?: boolean | null
           market?: string | null
           monthly_amount: number
+          monthly_shares?: number | null
           notification_enabled?: boolean | null
           period_years?: number | null
           rate_updated_at?: string | null
           start_date?: string | null
           symbol?: string | null
           title: string
+          unit_type?: string
           updated_at?: string | null
           user_id: string
         }
@@ -93,26 +178,38 @@ export type Database = {
           annual_rate?: number
           created_at?: string
           final_amount?: number
+          goal_id?: string | null
           id?: string
           investment_days?: number[] | null
           is_custom_rate?: boolean | null
           market?: string | null
           monthly_amount?: number
+          monthly_shares?: number | null
           notification_enabled?: boolean | null
           period_years?: number | null
           rate_updated_at?: string | null
           start_date?: string | null
           symbol?: string | null
           title?: string
+          unit_type?: string
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "records_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scheduled_notifications: {
         Row: {
           body: string
           created_at: string | null
+          goal_id: string | null
           id: string
           notification_type: string
           record_id: string | null
@@ -126,6 +223,7 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string | null
+          goal_id?: string | null
           id?: string
           notification_type?: string
           record_id?: string | null
@@ -139,6 +237,7 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string | null
+          goal_id?: string | null
           id?: string
           notification_type?: string
           record_id?: string | null
@@ -149,7 +248,15 @@ export type Database = {
           token?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_notifications_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_announcements: {
         Row: {
@@ -236,6 +343,7 @@ export type Database = {
           notification_pre_reminder: string | null
           notification_re_reminder_enabled: boolean | null
           notification_service_announcement_enabled: boolean | null
+          notification_skip_weekend_holiday: boolean | null
           notification_streak_enabled: boolean | null
           show_monthly_amount: boolean | null
           theme: string | null
@@ -248,6 +356,7 @@ export type Database = {
           notification_pre_reminder?: string | null
           notification_re_reminder_enabled?: boolean | null
           notification_service_announcement_enabled?: boolean | null
+          notification_skip_weekend_holiday?: boolean | null
           notification_streak_enabled?: boolean | null
           show_monthly_amount?: boolean | null
           theme?: string | null
@@ -260,6 +369,7 @@ export type Database = {
           notification_pre_reminder?: string | null
           notification_re_reminder_enabled?: boolean | null
           notification_service_announcement_enabled?: boolean | null
+          notification_skip_weekend_holiday?: boolean | null
           notification_streak_enabled?: boolean | null
           show_monthly_amount?: boolean | null
           theme?: string | null
@@ -273,6 +383,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_goal: { Args: { p_goal_id: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
@@ -403,6 +514,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

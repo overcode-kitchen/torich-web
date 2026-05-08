@@ -13,6 +13,7 @@ export default function NotificationSettingsPage() {
     setPreReminder,
     toggleReReminder,
     toggleServiceAnnouncements,
+    toggleSkipWeekendHoliday,
   } = useNotificationSettings()
   const { goBack } = useFlowBack({
     rootPath: '/settings',
@@ -26,6 +27,7 @@ export default function NotificationSettingsPage() {
       setPreReminder={setPreReminder}
       toggleReReminder={toggleReReminder}
       toggleServiceAnnouncements={toggleServiceAnnouncements}
+      toggleSkipWeekendHoliday={toggleSkipWeekendHoliday}
       onBack={goBack}
     />
   )

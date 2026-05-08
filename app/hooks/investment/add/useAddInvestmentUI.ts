@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { SearchResult } from '../../stock/useStockSearch'
+import type { InvestmentUnitType } from '@/app/types/investment'
 
 export interface UseAddInvestmentUIReturn {
   // 기본 폼 상태
@@ -17,6 +18,12 @@ export interface UseAddInvestmentUIReturn {
   setStartDate: (date: Date) => void
   investmentDays: number[]
   setInvestmentDays: (days: number[]) => void
+
+  // 매수 단위(금액/주수) 관련
+  unitType: InvestmentUnitType
+  setUnitType: (unit: InvestmentUnitType) => void
+  monthlyShares: string
+  handleSharesChange: (value: string) => void
 
   // 마켓 변경 처리
   handleMarketChange: (newMarket: 'KR' | 'US') => void
@@ -49,7 +56,17 @@ export function useAddInvestmentUI({
   const [startDate, setStartDate] = useState<Date>(() => new Date())
   const [investmentDays, setInvestmentDays] = useState<number[]>([])
 
-  // 마켓 변경 처리
+  // 매수 단위 (금액/주수)
+  const [unitType, setUnitType] = useState<InvestmentUnitType>('amount')
+  const [monthlyShares, setMonthlyShares] = useState<string>('')
+
+  // 정수만 허용 (소수점·기호 차단)
+  const handleSharesChange = (value: string): void => {
+    const digitsOnly = value.replace(/[^0-9]/g, '')
+    setMonthlyShares(digitsOnly)
+  }
+
+  // 마켓 변경 처리. 미국 마켓으로 가면 주수 모드 해제 (1단계는 한국 전용)
   const handleMarketChange = (newMarket: 'KR' | 'US'): void => {
     if (stockSearch.market !== newMarket) {
       stockSearch.setMarket(newMarket)
@@ -57,6 +74,8 @@ export function useAddInvestmentUI({
       stockSearch.resetSearch()
       manualInput.setIsManualInput(false)
       rateEditor.cancelEdit()
+      setUnitType('amount')
+      setMonthlyShares('')
     }
   }
 
@@ -73,6 +92,10 @@ export function useAddInvestmentUI({
     setStartDate,
     investmentDays,
     setInvestmentDays,
+    unitType,
+    setUnitType,
+    monthlyShares,
+    handleSharesChange,
     handleMarketChange,
   }
 }

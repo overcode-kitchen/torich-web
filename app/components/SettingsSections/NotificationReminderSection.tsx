@@ -20,6 +20,8 @@ interface NotificationReminderSectionProps {
   onPreReminderChange: (value: PreReminderOption) => void
   reReminderOn: boolean
   onToggleReReminder: () => void
+  skipWeekendHolidayOn: boolean
+  onToggleSkipWeekendHoliday: () => void
 }
 
 const PRE_REMINDER_LABEL: Record<PreReminderOption, string> = {
@@ -38,6 +40,8 @@ export function NotificationReminderSection({
   onPreReminderChange,
   reReminderOn,
   onToggleReReminder,
+  skipWeekendHolidayOn,
+  onToggleSkipWeekendHoliday,
 }: NotificationReminderSectionProps) {
   const preReminderLabel = PRE_REMINDER_LABEL[preReminder]
 
@@ -106,6 +110,20 @@ export function NotificationReminderSection({
           </span>
         </div>
         <Switch checked={reReminderOn} onCheckedChange={onToggleReReminder} />
+      </div>
+
+      {/* 주말·공휴일 보정 */}
+      <div className="px-4 py-3 flex items-center justify-between gap-4">
+        <div className="flex flex-col">
+          <span className="text-foreground font-medium">주말·공휴일은 다음 평일에</span>
+          <span className="text-xs text-muted-foreground mt-1">
+            알림 시각이 토·일·공휴일이면 다음 영업일로 미뤄요.
+          </span>
+        </div>
+        <Switch
+          checked={skipWeekendHolidayOn}
+          onCheckedChange={onToggleSkipWeekendHoliday}
+        />
       </div>
     </>
   )

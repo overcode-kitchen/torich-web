@@ -3,6 +3,13 @@ import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import type { PaymentEvent } from '@/app/utils/stats'
 
+function formatEventContribution(e: PaymentEvent): string {
+  if (e.unitType === 'shares' && e.monthlyShares && e.monthlyShares > 0) {
+    return `${e.monthlyShares}주`
+  }
+  return formatCurrency(e.monthlyAmount)
+}
+
 interface SelectedDateSectionProps {
   selectedDate: Date | null
   selectedEvents: PaymentEvent[]
@@ -39,7 +46,7 @@ export function SelectedDateSection({
               >
                 <div>
                   <p className="font-medium text-foreground">{e.title}</p>
-                  <p className="text-sm text-muted-foreground">{formatCurrency(e.monthlyAmount)}</p>
+                  <p className="text-sm text-muted-foreground">{formatEventContribution(e)}</p>
                 </div>
                 {done ? (
                   <span className="text-green-600 text-sm font-medium">✓ 완료됨</span>

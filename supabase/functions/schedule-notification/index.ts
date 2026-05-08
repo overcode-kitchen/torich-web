@@ -25,6 +25,8 @@ interface WebhookPayload {
     investment_days: number[]
     notification_enabled?: boolean
     monthly_amount?: number
+    unit_type?: 'amount' | 'shares'
+    monthly_shares?: number | null
   }
   old_record: null
 }
@@ -63,6 +65,8 @@ Deno.serve(async (req) => {
       investment_days: investmentDays,
       notification_enabled: notificationEnabled = true,
       monthly_amount: monthlyAmount,
+      unit_type: unitType,
+      monthly_shares: monthlyShares,
     } = record
 
     if (notificationEnabled === false) {
@@ -90,7 +94,7 @@ Deno.serve(async (req) => {
     }
 
     const USER_SETTINGS_COLUMNS =
-      'notification_global_enabled, notification_default_time, notification_pre_reminder'
+      'notification_global_enabled, notification_default_time, notification_pre_reminder, notification_skip_weekend_holiday'
     const { data: settings, error: settingsError } = await supabase
       .from('user_settings')
       .select(USER_SETTINGS_COLUMNS)
@@ -169,6 +173,8 @@ Deno.serve(async (req) => {
       investment_days: investmentDays,
       notification_enabled: notificationEnabled,
       monthly_amount: monthlyAmount,
+      unit_type: unitType,
+      monthly_shares: monthlyShares,
     }
 
     const now = new Date()

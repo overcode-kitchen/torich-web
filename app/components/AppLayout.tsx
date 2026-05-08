@@ -5,7 +5,7 @@ import { useAuth } from '@/app/hooks/auth/useAuth'
 import BottomNavigation from './BottomNavigation'
 import SafeArea from './SafeArea'
 
-const HIDE_NAV_PATHS = ['/login', '/add', '/auth', '/design-system', '/investment']
+const HIDE_NAV_PATHS = ['/login', '/add', '/auth', '/design-system', '/investment', '/tory']
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -21,7 +21,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     !hideNav ||
     pathname.startsWith('/investment') ||
     pathname === '/add' ||
-    pathname.startsWith('/add/')
+    pathname.startsWith('/add/') ||
+    pathname === '/tory' ||
+    pathname.startsWith('/tory/')
 
   // 하단 탭은 웹/앱 공통으로 hideNav가 아닐 때 항상 표시
   const showBottomNav = !hideNav

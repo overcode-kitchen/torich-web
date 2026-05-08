@@ -55,6 +55,7 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
 
   const toggleReReminder = createToggle('reReminderOn')
   const toggleServiceAnnouncements = createToggle('serviceAnnouncementsOn')
+  const toggleSkipWeekendHoliday = createToggle('skipWeekendHolidayOn')
 
   return {
     settings,
@@ -62,6 +63,7 @@ export function useNotificationSettings(): UseNotificationSettingsReturn {
     setPreReminder,
     toggleReReminder,
     toggleServiceAnnouncements,
+    toggleSkipWeekendHoliday,
   }
 }
 

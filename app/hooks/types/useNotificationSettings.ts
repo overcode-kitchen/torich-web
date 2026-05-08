@@ -5,6 +5,7 @@ export interface NotificationSettingsState {
   preReminder: PreReminderOption
   reReminderOn: boolean
   serviceAnnouncementsOn: boolean
+  skipWeekendHolidayOn: boolean
 }
 
 export interface UseNotificationSettingsReturn {
@@ -13,4 +14,5 @@ export interface UseNotificationSettingsReturn {
   setPreReminder: (preReminder: PreReminderOption) => void
   toggleReReminder: () => void
   toggleServiceAnnouncements: () => void
+  toggleSkipWeekendHoliday: () => void
 }

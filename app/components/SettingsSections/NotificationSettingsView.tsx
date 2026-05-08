@@ -16,6 +16,7 @@ export default function NotificationSettingsView({
     setPreReminder,
     toggleReReminder,
     toggleServiceAnnouncements,
+    toggleSkipWeekendHoliday,
     onBack,
 }: NotificationSettingsViewProps) {
     return (
@@ -36,6 +37,8 @@ export default function NotificationSettingsView({
                     onPreReminderChange={setPreReminder}
                     reReminderOn={settings.reReminderOn}
                     onToggleReReminder={toggleReReminder}
+                    skipWeekendHolidayOn={settings.skipWeekendHolidayOn}
+                    onToggleSkipWeekendHoliday={toggleSkipWeekendHoliday}
                 />
             </SettingsSection>
 

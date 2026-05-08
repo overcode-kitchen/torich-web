@@ -5,7 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { isCapacitorNative } from '@/lib/auth/capacitor-native'
 import sha256 from 'js-sha256'
 import { toastError } from '@/app/utils/toast'
-import { track } from '@/app/lib/analytics'
+import { track, classifyAuthFailure } from '@/app/lib/analytics'
 
 const TEST_EMAIL = 'test@test.com'
 const TEST_PASSWORD = 'password1234'
@@ -62,7 +62,8 @@ export function useLoginAuth() {
         })
         if (error) throw error
       }
-    } catch {
+    } catch (error) {
+      track('login_failure', { method: 'google', reason: classifyAuthFailure(error) })
       toastError('로그인에 실패했어요. 잠시 후 다시 시도해 주세요.')
     } finally {
       setIsLoading(false)
@@ -122,7 +123,11 @@ export function useLoginAuth() {
       }
     } catch (error: unknown) {
       const err = error as { message?: string }
-      if (err?.message?.includes('1001')) return
+      if (err?.message?.includes('1001')) {
+        track('login_failure', { method: 'apple', reason: 'cancelled' })
+        return
+      }
+      track('login_failure', { method: 'apple', reason: classifyAuthFailure(error) })
       console.error('Apple 로그인 실패:', error)
       alert(`로그인 실패: ${err?.message ?? (error instanceof Error ? error.message : '알 수 없음')}`)
     } finally {

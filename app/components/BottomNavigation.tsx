@@ -11,8 +11,8 @@ import {
 
 const NAV_ITEMS = [
   { href: '/', label: '홈', icon: House },
-  { href: '/stats', label: '통계', icon: ChartBar },
   { href: '/calendar', label: '캘린더', icon: Calendar },
+  { href: '/stats', label: '통계', icon: ChartBar },
   { href: '/settings', label: '설정', icon: Gear },
 ] as const
 

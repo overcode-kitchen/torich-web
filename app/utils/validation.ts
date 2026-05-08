@@ -1,3 +1,5 @@
+import type { InvestmentUnitType } from '@/app/types/investment'
+
 export interface ValidationResult {
   isValid: boolean
   errorMessage?: string
@@ -11,6 +13,12 @@ export interface InvestmentFormData {
   isHabitMode?: boolean
   userId: string | null
   investmentDays: number[]
+  /** 매수 단위 모드 (디폴트 'amount') */
+  unitType?: InvestmentUnitType
+  /** 주수 모드 입력 값 */
+  monthlyShares?: string
+  /** 주수 모드 검증용 1주 시세 */
+  sharePrice?: number
 }
 
 export function validateInvestmentForm(data: InvestmentFormData): ValidationResult {
@@ -21,7 +29,22 @@ export function validateInvestmentForm(data: InvestmentFormData): ValidationResu
     }
   }
 
-  if (!data.monthlyAmount || parseInt(data.monthlyAmount.replace(/,/g, '')) <= 0) {
+  // 매수 단위별 분기 검증
+  if (data.unitType === 'shares') {
+    const shares = parseInt(data.monthlyShares ?? '', 10)
+    if (!Number.isFinite(shares) || shares <= 0) {
+      return {
+        isValid: false,
+        errorMessage: '월 매수 주수를 1주 이상 입력해주세요.'
+      }
+    }
+    if (!data.sharePrice || data.sharePrice <= 0) {
+      return {
+        isValid: false,
+        errorMessage: '주수 모드는 시세 정보가 있는 종목에서만 가능해요.'
+      }
+    }
+  } else if (!data.monthlyAmount || parseInt(data.monthlyAmount.replace(/,/g, '')) <= 0) {
     return {
       isValid: false,
       errorMessage: '월 투자액을 입력해주세요.'

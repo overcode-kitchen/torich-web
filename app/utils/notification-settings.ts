@@ -6,6 +6,7 @@ export const defaultNotificationSettings: NotificationSettingsState = {
   preReminder: '1d',
   reReminderOn: true,
   serviceAnnouncementsOn: true,
+  skipWeekendHolidayOn: false,
 }
 
 /**
@@ -17,6 +18,7 @@ export function mapDbDataToSettings(data: any): NotificationSettingsState {
     preReminder: (data.notification_pre_reminder as PreReminderOption) || defaultNotificationSettings.preReminder,
     reReminderOn: data.notification_re_reminder_enabled ?? defaultNotificationSettings.reReminderOn,
     serviceAnnouncementsOn: data.notification_service_announcement_enabled ?? defaultNotificationSettings.serviceAnnouncementsOn,
+    skipWeekendHolidayOn: data.notification_skip_weekend_holiday ?? defaultNotificationSettings.skipWeekendHolidayOn,
   }
 }
 
@@ -33,6 +35,7 @@ export function mapSettingsToDbUpdates(
   if (partial.preReminder !== undefined) updates.notification_pre_reminder = partial.preReminder
   if (partial.reReminderOn !== undefined) updates.notification_re_reminder_enabled = partial.reReminderOn
   if (partial.serviceAnnouncementsOn !== undefined) updates.notification_service_announcement_enabled = partial.serviceAnnouncementsOn
+  if (partial.skipWeekendHolidayOn !== undefined) updates.notification_skip_weekend_holiday = partial.skipWeekendHolidayOn
 
   return updates
 }
