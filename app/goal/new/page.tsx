@@ -5,9 +5,11 @@ import { useEffect, useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import { GoalFormSection } from '@/app/components/GoalFormSections/GoalFormSection'
+import { GOAL_PRESET_NAMES } from '@/app/constants/goal'
 import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
 import { useGoalCreate } from '@/app/hooks/goal/data/useGoalCreate'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { amountBucket, track } from '@/app/lib/analytics'
 import { createClient } from '@/utils/supabase/client'
 
 export default function NewGoalPage() {
@@ -29,7 +31,17 @@ export default function NewGoalPage() {
 
   async function handleSubmit(): Promise<void> {
     const goal = await createGoal(toCreateInput())
-    if (goal) router.replace(`/goal/${goal.id}`)
+    if (!goal) return
+    const trimmedName = values.name.trim()
+    track('goal_create_success', {
+      target_amount_bucket: amountBucket(Number(values.target_amount) || 0),
+      has_deadline: !!values.target_date,
+      has_external_amount: Number(values.external_amount) > 0,
+      preset_used: GOAL_PRESET_NAMES.includes(trimmedName)
+        ? trimmedName
+        : 'custom',
+    })
+    router.replace(`/goal/${goal.id}`)
   }
 
   return (

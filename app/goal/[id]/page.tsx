@@ -15,6 +15,7 @@ import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLi
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { amountBucket, daysBetween, track } from '@/app/lib/analytics'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -64,13 +65,18 @@ export default function GoalDetailPage() {
   useEffect(() => {
     if (!goal || !progress) return
     if (goal.completed_at === null && progress.isCompleted) {
-      void updateGoal(goal.id, {
-        completed_at: new Date().toISOString(),
-      }).then((updated) => {
-        if (updated) setGoal(updated)
+      const completedAt = new Date().toISOString()
+      void updateGoal(goal.id, { completed_at: completedAt }).then((updated) => {
+        if (!updated) return
+        setGoal(updated)
+        track('goal_completed', {
+          target_amount_bucket: amountBucket(goal.target_amount),
+          days_to_complete: daysBetween(goal.created_at, completedAt),
+          linked_record_count: records.length,
+        })
       })
     }
-  }, [goal, progress, updateGoal, setGoal])
+  }, [goal, progress, updateGoal, setGoal, records.length])
 
   async function handleArchive(): Promise<void> {
     if (!goal) return
@@ -79,12 +85,19 @@ export default function GoalDetailPage() {
     )
     if (!confirmed) return
     await archiveGoal(goal.id)
+    track('goal_delete', { entry_point: 'detail_menu' })
     router.push('/')
   }
 
   async function handleLink(recordId: string): Promise<void> {
     if (!goal) return
+    const linked = unlinkedRecords.find((r) => r.id === recordId)
     await linkRecordToGoal(recordId, goal.id)
+    if (linked) {
+      track('goal_record_linked', {
+        monthly_amount_bucket: amountBucket(linked.monthly_amount),
+      })
+    }
     await refetch()
   }
 
