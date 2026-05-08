@@ -4,6 +4,7 @@ import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
+import GoalTargetDateField from './GoalTargetDateField'
 
 export interface GoalFormSectionProps {
   values: GoalFormValues
@@ -17,13 +18,6 @@ export interface GoalFormSectionProps {
 }
 
 const onlyDigits = (raw: string): string => raw.replace(/[^\d]/g, '')
-
-const formatNumber = (digits: string): string => {
-  if (!digits) return ''
-  const n = Number(digits)
-  if (Number.isNaN(n)) return ''
-  return n.toLocaleString('ko-KR')
-}
 
 /** 원(won) 정수 문자열 → 만원 정수 문자열 (콤마 포함) */
 const wonToManwonDisplay = (won: string): string => {
@@ -156,12 +150,9 @@ export function GoalFormSection({
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="goal-date">마감일 (선택)</Label>
-        <input
-          id="goal-date"
-          className={inputClass}
-          type="date"
+        <GoalTargetDateField
           value={values.target_date}
-          onChange={(e) => setField('target_date', e.target.value)}
+          onChange={(v) => setField('target_date', v)}
           disabled={disabled}
         />
         <p className="text-xs text-foreground-subtle">
@@ -200,17 +191,22 @@ export function GoalFormSection({
       )}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="goal-external">이미 모아둔 외부 자산 (원, 선택)</Label>
-        <input
-          id="goal-external"
-          className={inputClass}
-          inputMode="numeric"
-          value={formatNumber(values.external_amount)}
-          onChange={(e) =>
-            setField('external_amount', onlyDigits(e.target.value))
-          }
-          disabled={disabled}
-        />
+        <Label htmlFor="goal-external">이미 모아둔 외부 자산 (선택)</Label>
+        <div className="relative">
+          <input
+            id="goal-external"
+            className={cn(inputClass, 'pr-14')}
+            inputMode="numeric"
+            value={wonToManwonDisplay(values.external_amount)}
+            onChange={(e) =>
+              setField('external_amount', manwonInputToWon(e.target.value))
+            }
+            disabled={disabled}
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foreground-soft">
+            만원
+          </span>
+        </div>
         <p className="text-xs text-foreground-subtle">
           청약통장·예적금 등 토리치 밖에서 모은 금액. 필요할 때 직접 갱신해요.
         </p>

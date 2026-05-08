@@ -29,7 +29,7 @@ export default function NewGoalPage() {
 
   async function handleSubmit(): Promise<void> {
     const goal = await createGoal(toCreateInput())
-    if (goal) router.push(`/goal/${goal.id}`)
+    if (goal) router.replace(`/goal/${goal.id}`)
   }
 
   return (
