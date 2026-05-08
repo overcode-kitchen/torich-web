@@ -140,7 +140,7 @@ export function GoalCardCarousel({
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-1">
           <Image
-            src="/icons/3d/piggy bank.png"
+            src="/icons/3d/mountain(green).png"
             alt="목적 아이콘"
             width={24}
             height={24}
