@@ -14,6 +14,7 @@ import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLink'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { formatFullDate } from '@/app/utils/date'
@@ -44,7 +45,13 @@ export default function GoalDetailPage() {
 
   const { goal, records, unlinkedRecords, isLoading, refetch, setGoal } =
     useGoalDetail(params?.id, userId)
-  const progress = useGoalProgress(goal, records)
+  const { completedPayments, retroactivePayments } = usePaymentHistory()
+  const progress = useGoalProgress(
+    goal,
+    records,
+    completedPayments,
+    retroactivePayments,
+  )
   const { updateGoal, archiveGoal, isUpdating } = useGoalUpdate(userId)
   const { linkRecordToGoal, isLinking } = useInvestmentGoalLink(userId)
 

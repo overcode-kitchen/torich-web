@@ -7,6 +7,7 @@ import { GoalEmptyCTA } from '@/app/components/GoalSections/GoalEmptyCTA'
 import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
+import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import type { Investment } from '@/app/types/investment'
 import { createClient } from '@/utils/supabase/client'
 
@@ -35,7 +36,13 @@ export default function GoalSection({ records }: GoalSectionProps) {
 
   const { goals, isLoading, refetch } = useGoals(userId)
   const { archiveGoal } = useGoalUpdate(userId)
-  const progressMap = useGoalsProgress(goals, records)
+  const { completedPayments, retroactivePayments } = usePaymentHistory()
+  const progressMap = useGoalsProgress(
+    goals,
+    records,
+    completedPayments,
+    retroactivePayments,
+  )
 
   async function handleDelete(id: string): Promise<void> {
     await archiveGoal(id)
