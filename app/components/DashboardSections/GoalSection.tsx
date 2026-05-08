@@ -8,6 +8,7 @@ import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { track } from '@/app/lib/analytics'
 import type { Investment } from '@/app/types/investment'
 import { createClient } from '@/utils/supabase/client'
 
@@ -46,20 +47,26 @@ export default function GoalSection({ records }: GoalSectionProps) {
 
   async function handleDelete(id: string): Promise<void> {
     await archiveGoal(id)
+    track('goal_delete', { entry_point: 'swipe' })
     await refetch()
+  }
+
+  function handleCreate(entryPoint: 'dashboard_empty' | 'dashboard_carousel'): void {
+    track('goal_add_click', { entry_point: entryPoint })
+    router.push('/goal/new')
   }
 
   if (isLoading) return null
 
   if (goals.length === 0) {
-    return <GoalEmptyCTA onCreate={() => router.push('/goal/new')} />
+    return <GoalEmptyCTA onCreate={() => handleCreate('dashboard_empty')} />
   }
 
   return (
     <GoalCardCarousel
       goals={goals}
       progressMap={progressMap}
-      onCreate={() => router.push('/goal/new')}
+      onCreate={() => handleCreate('dashboard_carousel')}
       onSelect={(id) => router.push(`/goal/${id}`)}
       onDelete={handleDelete}
     />
