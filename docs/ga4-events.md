@@ -122,7 +122,7 @@ GA4 이벤트 이름에는 대문자나 `-`를 쓸 수 없어서 `snake_case`를
 토리치는 두 개의 GA 속성을 운영합니다.
 
 - **Dev 속성** (`Torich Dev`, 측정 ID `G-C8E4VZ883Y`): 로컬 개발(`npm run dev`)·Vercel preview 배포 전용. 개발자/QA의 테스트 활동이 여기로 들어갑니다.
-- **Prod 속성** (`Torich Prod`, 측정 ID `G-SC1LBTD65X`): 정식 도메인(`torich.app`) 웹·앱스토어 빌드 전용. 진짜 사용자 데이터만 들어갑니다.
+- **Prod 속성** (`Torich Prod`, 측정 ID `G-SC1LBTD65X`): 운영 도메인(`torich.vercel.app`) 웹·앱스토어 빌드 전용. 진짜 사용자 데이터만 들어갑니다.
 
 코드에는 ID를 직접 박지 않고 모두 `NEXT_PUBLIC_GA_ID` 환경변수로 분기합니다. 환경별로 서로 다른 값을 주입하면 같은 코드가 자동으로 다른 속성에 데이터를 보냅니다.
 
@@ -582,7 +582,7 @@ track("notification_permission_denied");
 
 ### 문제 1: 앱에서의 Origin이 이상하게 찍힌다
 
-웹 브라우저에서는 `https://torich.app` 처럼 정상적인 URL이 GA에 찍힙니다.
+웹 브라우저에서는 `https://torich.vercel.app` 처럼 정상적인 URL이 GA에 찍힙니다.
 Capacitor 앱에서는 내부적으로 `capacitor://localhost` 라는 가상 주소를 사용합니다.
 GA는 히트(이벤트)를 받긴 받지만, 호스트명이 `localhost`로 찍혀서 웹과 앱 트래픽이 섞여 보입니다.
 
