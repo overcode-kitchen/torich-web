@@ -6,6 +6,7 @@ import { GoalCardCarousel } from '@/app/components/GoalSections/GoalCardCarousel
 import { GoalEmptyCTA } from '@/app/components/GoalSections/GoalEmptyCTA'
 import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { useGoals } from '@/app/hooks/goal/data/useGoals'
+import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import type { Investment } from '@/app/types/investment'
 import { createClient } from '@/utils/supabase/client'
 
@@ -32,8 +33,14 @@ export default function GoalSection({ records }: GoalSectionProps) {
     })
   }, [])
 
-  const { goals, isLoading } = useGoals(userId)
+  const { goals, isLoading, refetch } = useGoals(userId)
+  const { archiveGoal } = useGoalUpdate(userId)
   const progressMap = useGoalsProgress(goals, records)
+
+  async function handleDelete(id: string): Promise<void> {
+    await archiveGoal(id)
+    await refetch()
+  }
 
   if (isLoading) return null
 
@@ -47,6 +54,7 @@ export default function GoalSection({ records }: GoalSectionProps) {
       progressMap={progressMap}
       onCreate={() => router.push('/goal/new')}
       onSelect={(id) => router.push(`/goal/${id}`)}
+      onDelete={handleDelete}
     />
   )
 }
