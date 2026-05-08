@@ -1,7 +1,7 @@
 'use client'
 
-import { Target } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
+import Image from 'next/image'
+import { Plus } from '@phosphor-icons/react'
 
 export interface GoalEmptyCTAProps {
   onCreate: () => void
@@ -9,19 +9,32 @@ export interface GoalEmptyCTAProps {
 
 export function GoalEmptyCTA({ onCreate }: GoalEmptyCTAProps) {
   return (
-    <section className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center gap-3">
-        <Target size={22} weight="bold" className="text-muted-foreground" />
-        <h2 className="text-base font-semibold tracking-tight">
-          첫 목적을 만들어보세요
-        </h2>
+    <section className="bg-card rounded-3xl p-6">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-1">
+          <Image
+            src="/icons/3d/piggy bank.png"
+            alt="목적 아이콘"
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
+          <h2 className="text-lg font-bold text-foreground">
+            모아야 할 큰돈이 있나요?
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={onCreate}
+          aria-label="목적 만들기"
+          className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full text-foreground-soft hover:bg-muted hover:text-foreground transition-colors"
+        >
+          <Plus className="w-5 h-5" weight="bold" />
+        </button>
       </div>
-      <p className="text-sm text-muted-foreground">
-        결혼자금·내 집 마련 같은 큰 목표를 모으는 단위로 만들어보세요.
+      <p className="text-sm text-muted-foreground text-center">
+        결혼·내 집 마련 같은 목표를 모아두세요.
       </p>
-      <Button size="sm" variant="outline" onClick={onCreate}>
-        + 목적 만들기
-      </Button>
     </section>
   )
 }
