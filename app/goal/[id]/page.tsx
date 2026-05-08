@@ -149,7 +149,7 @@ export default function GoalDetailPage() {
       contentClassName="px-6"
       actions={headerActions}
     >
-      {/* 제목 + 마감일 알림 */}
+      {/* 제목 + 메모 + 마감일 알림 */}
       <section className="py-6 space-y-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
@@ -161,6 +161,11 @@ export default function GoalDetailPage() {
             </p>
           )}
         </div>
+        {goal.memo?.trim() && (
+          <p className="text-sm text-foreground-subtle whitespace-pre-line break-words">
+            {goal.memo}
+          </p>
+        )}
         {goal.target_date && (
           <Alert className="mt-1 border-none bg-primary/10 text-foreground px-4 py-3 rounded-2xl">
             <CalendarBlank className="w-5 h-5 text-primary" />
