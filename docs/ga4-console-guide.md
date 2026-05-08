@@ -24,10 +24,10 @@ GA 화면에 자주 나오는 영어 단어들. 외울 필요 없고, 막힐 때
 
 토리치는 **두 개의 GA 속성**을 운영함. 개발자/QA의 테스트 행동이 진짜 사용자 데이터에 섞이지 않도록 분리해둔 것.
 
-| 속성 이름 | 측정 ID | 스트림 URL | 용도 |
+| 속성 이름 | 측정 ID | 들어가는 환경 | 용도 |
 | --- | --- | --- | --- |
-| **Torich Dev** | `G-C8E4VZ883Y` | `https://torich.vercel.app/` | 로컬 개발·Vercel preview 배포 |
-| **Torich Prod** | `G-SC1LBTD65X` | `https://torich.app/` (출시 도메인) | 정식 배포된 웹·앱스토어 빌드 |
+| **Torich Dev** | `G-C8E4VZ883Y` | `localhost:3000` (`npm run dev`) + Vercel **Preview** deployment URL (PR/branch별 `*-<branch>.vercel.app`) | 로컬 개발·내부 테스트 |
+| **Torich Prod** | `G-SC1LBTD65X` | `https://torich.vercel.app/` (운영 도메인) + iOS 앱스토어 빌드 | 정식 사용자 데이터 |
 
 GA 콘솔 주소: https://analytics.google.com/
 
@@ -70,7 +70,9 @@ GA 콘솔 주소: https://analytics.google.com/
 
 **해보는 법**:
 1. 위 확장을 아이콘 클릭으로 켬 (파란 동그라미)
-2. 새 탭에서 `https://torich.vercel.app/` 열고 로그인 → 투자 등록 → 납입 체크 한 번 해봄
+2. 검증할 속성에 맞는 환경에 접속해서 로그인 → 투자 등록 → 납입 체크 한 번 해봄
+   - **Torich Prod 검증** → `https://torich.vercel.app/` (운영)
+   - **Torich Dev 검증** → `localhost:3000` (`npm run dev`) 또는 PR preview URL
 3. 다시 GA 콘솔의 DebugView 탭으로 돌아오면 — **방금 한 행동들이 시간순으로 화면 가운데에 떠 있어야 함**
 4. 이벤트 이름(예: `payment_complete`)을 클릭하면 그 안에 들어간 정보(파라미터)가 펼쳐짐
 
@@ -315,9 +317,9 @@ GA를 실제로 켜려면 코드 외에 시스템 설정이 필요한데, 이건
 | 사용자/환경 | GA 속성 | 측정 ID |
 | --- | --- | --- |
 | 정식 출시된 iOS 앱 (앱스토어) | Torich Prod | `G-SC1LBTD65X` |
-| 정식 도메인 `https://torich.app` 웹 | Torich Prod | `G-SC1LBTD65X` |
-| Vercel preview 배포 (`*.vercel.app`) | Torich Dev | `G-C8E4VZ883Y` |
-| 로컬 개발 (`npm run dev`) | Torich Dev | `G-C8E4VZ883Y` |
+| 운영 도메인 `https://torich.vercel.app` 웹 (Vercel Production) | Torich Prod | `G-SC1LBTD65X` |
+| Vercel Preview deployment (`*-<branch>.vercel.app`) | Torich Dev | `G-C8E4VZ883Y` |
+| 로컬 개발 (`npm run dev`, `localhost:3000`) | Torich Dev | `G-C8E4VZ883Y` |
 | 푸시 발송 (Edge Function) | Torich Prod | `G-SC1LBTD65X` |
 
 > 즉 "**진짜 KPI는 Torich Prod에서만 본다**"가 원칙. 본인이 토리치를 평소 본인 폰에서 dev 빌드로 테스트한 거라면 그건 Dev에 들어가 있음.
