@@ -11,13 +11,20 @@ export interface SubPageScaffoldProps {
   children: ReactNode
   /** 스크롤 영역 내부 래퍼에 추가 class (예: py-6) */
   contentClassName?: string
+  /** 페이지 배경 클래스. 기본 'bg-surface'. 투자 상세처럼 흰색 톤이 필요하면 'bg-background' 전달. */
+  surfaceClassName?: string
 }
 
 /**
  * 설정 탭(SettingsView)과 동일한 상단 앱바 규격(safe area + 48px 바).
  * 고정 헤더 + 본문만 스크롤(긴 폼에서도 뒤로가기 유지).
  */
-export default function SubPageScaffold({ onBack, children, contentClassName }: SubPageScaffoldProps) {
+export default function SubPageScaffold({
+  onBack,
+  children,
+  contentClassName,
+  surfaceClassName = 'bg-surface',
+}: SubPageScaffoldProps) {
   const isNativeApp = useIsNativeApp()
 
   const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
@@ -26,12 +33,12 @@ export default function SubPageScaffold({ onBack, children, contentClassName }: 
     : '56px'
 
   return (
-    <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden bg-surface">
+    <div className={cn('flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden', surfaceClassName)}>
       {/* Settings와 동일한 '본문 시작' 높이 — 고정 헤더와 겹치지 않게 스페이서 */}
       <div className="shrink-0" style={{ height: contentPaddingTop }} aria-hidden />
 
       <header
-        className="fixed inset-x-0 top-0 z-30 w-full bg-surface"
+        className={cn('fixed inset-x-0 top-0 z-30 w-full', surfaceClassName)}
         style={{ paddingTop: headerSafeTop }}
       >
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto pl-4 pr-2">

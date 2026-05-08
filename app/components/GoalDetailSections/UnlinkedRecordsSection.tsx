@@ -1,16 +1,13 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { formatCurrency } from '@/lib/utils'
 import type { Investment } from '@/app/types/investment'
 
 export interface UnlinkedRecordsSectionProps {
   records: Investment[]
   isLinking: boolean
   onLink: (recordId: string) => void
-}
-
-function formatAmount(value: number): string {
-  return value.toLocaleString('ko-KR')
 }
 
 function modeLabel(periodYears: number | null | undefined): string {
@@ -26,31 +23,33 @@ export function UnlinkedRecordsSection({
   if (records.length === 0) return null
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-dashed border-border-subtle-lighter bg-card p-5">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-base font-semibold tracking-tight text-foreground">
-          이 목적에 묶을 수 있는 투자
-        </h2>
-        <p className="text-xs text-foreground-subtle">
+    <section className="py-6 border-t border-border-subtle-lighter">
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold tracking-tight text-foreground">
+          묶을 수 있는 투자
+        </h3>
+        <p className="text-xs text-foreground-subtle mt-1">
           '묶기'를 누르면 이 목적의 진척도에 합산돼요.
         </p>
       </div>
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col">
         {records.map((r) => (
           <li
             key={r.id}
-            className="flex items-center justify-between gap-4 rounded-xl bg-muted/30 px-4 py-3"
+            className="flex items-center justify-between gap-4 border-b border-border-subtle px-2 py-3 last:border-b-0"
           >
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm text-foreground">{r.title}</span>
+            <div className="min-w-0 flex flex-col gap-0.5">
+              <span className="text-sm font-semibold text-foreground truncate">
+                {r.title}
+              </span>
               <span className="text-xs text-foreground-subtle">
-                월 {formatAmount(r.monthly_amount)}원 ·{' '}
-                {modeLabel(r.period_years)}
+                월 {formatCurrency(r.monthly_amount)} · {modeLabel(r.period_years)}
               </span>
             </div>
             <Button
-              size="sm"
+              size="xs"
               variant="outline"
+              className="shrink-0 h-auto py-1 px-3"
               onClick={() => onLink(r.id)}
               disabled={isLinking}
             >
@@ -59,6 +58,6 @@ export function UnlinkedRecordsSection({
           </li>
         ))}
       </ul>
-    </div>
+    </section>
   )
 }
