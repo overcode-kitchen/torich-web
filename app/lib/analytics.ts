@@ -79,6 +79,13 @@ export function monthOffset(dateYMD: string): number {
   return (y - now.getFullYear()) * 12 + (m - 1 - now.getMonth())
 }
 
+/** 두 ISO 날짜 사이 일수(정수). created_at → completed_at 같은 기간 분포 분석용. */
+export function daysBetween(fromIso: string, toIso: string): number {
+  const ms = new Date(toIso).getTime() - new Date(fromIso).getTime()
+  if (!Number.isFinite(ms)) return 0
+  return Math.max(0, Math.floor(ms / 86_400_000))
+}
+
 /** 일괄 완료 건수를 GA 안전 구간 문자열로 변환합니다. */
 export function countBucket(n: number): string {
   if (n <= 3) return '1_3'

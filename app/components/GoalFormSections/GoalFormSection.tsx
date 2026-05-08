@@ -1,5 +1,6 @@
 'use client'
 
+import { GOAL_PRESETS, type GoalPreset } from '@/app/constants/goal'
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -46,19 +47,6 @@ const inputClass =
 const textareaClass =
   'w-full rounded-xl border border-input bg-card px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50'
 
-interface GoalPreset {
-  name: string
-  emoji: string
-}
-
-const PRESETS: GoalPreset[] = [
-  { name: '결혼 자금', emoji: '💍' },
-  { name: '주택 자금', emoji: '🏠' },
-  { name: '여행', emoji: '✈️' },
-  { name: '차', emoji: '🚗' },
-  { name: '이사', emoji: '📦' },
-]
-
 const TARGET_QUICK_ADJUSTS: { label: string; delta: number }[] = [
   { label: '+1,000만', delta: 1000 },
   { label: '-1,000만', delta: -1000 },
@@ -90,7 +78,7 @@ export function GoalFormSection({
           disabled={disabled}
         />
         <div className="flex flex-wrap gap-2 pt-1">
-          {PRESETS.map((preset) => {
+          {GOAL_PRESETS.map((preset) => {
             const isActive = values.name.trim() === preset.name
             return (
               <button

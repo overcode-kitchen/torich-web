@@ -61,6 +61,7 @@ npm run build:app   # iOS 앱용 (정적 export → Capacitor)
 | [docs/TECH_STACK.md](docs/TECH_STACK.md) | 기술 스택 상세 |
 | [docs/oauth-setup.md](docs/oauth-setup.md) | OAuth (Google/Apple) 설정 및 트러블슈팅 |
 | [docs/notification-infra.md](docs/notification-infra.md) | 알림 웹훅 + pg_cron 인프라 |
-| [docs/ga4-events.md](docs/ga4-events.md) | GA4 이벤트 설계 |
+| [docs/ga4-events.md](docs/ga4-events.md) | GA4 이벤트 설계 — "왜 이걸 측정하나" (개발자·PM) |
+| [docs/ga4-console-guide.md](docs/ga4-console-guide.md) | GA4 콘솔 사용 가이드 — "켠 다음 어디 클릭해서 보나" (운영자·비개발자) |
 | [docs/screens.md](docs/screens.md) | 화면별 기능명세서 |
 | [docs/tori-raising/prd.md](docs/tori-raising/prd.md) | "토리 키우기" 기능 PRD |
