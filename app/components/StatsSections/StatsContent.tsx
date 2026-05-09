@@ -5,6 +5,7 @@ import AssetGrowthSection from '@/app/components/StatsSections/AssetGrowthSectio
 import MonthlyStatusSection from '@/app/components/StatsSections/MonthlyStatusSection'
 import CompletionRateSection from '@/app/components/StatsSections/CompletionRateSection'
 import ModeBreakdownSection from '@/app/components/StatsSections/ModeBreakdownSection'
+import StatsGoalProgressSection from '@/app/components/StatsSections/StatsGoalProgressSection'
 import type { Investment } from '@/app/types/investment'
 import type {
     GoalStats,
@@ -72,7 +73,8 @@ export default function StatsContent({
 
     return (
         <>
-            {/* 예상 자산 */}
+            <StatsGoalProgressSection records={records} />
+
             {hasRecords && (
                 <ExpectedAssetSection
                     selectedYear={selectedYear}
@@ -85,7 +87,6 @@ export default function StatsContent({
                 />
             )}
 
-            {/* 예상 수익 차트 */}
             {hasRecords && (
                 <AssetGrowthSection
                     selectedYear={selectedYear}
@@ -94,15 +95,12 @@ export default function StatsContent({
                 />
             )}
 
-            {/* 이번 달 현황 */}
             <MonthlyStatusSection thisMonth={thisMonth} />
 
-            {/* 투자 상태 요약 (목표형/적립형 혼재 시) */}
             {hasRecords && (
                 <ModeBreakdownSection goalStats={goalStats} habitStats={habitStats} />
             )}
 
-            {/* 기간별 완료율 */}
             <CompletionRateSection
                 periodPreset={periodPreset as any}
                 setPeriodPreset={setPeriodPreset}
