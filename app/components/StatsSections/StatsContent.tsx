@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
 import AssetGrowthSection from '@/app/components/StatsSections/AssetGrowthSection'
 import MonthlyStatusSection from '@/app/components/StatsSections/MonthlyStatusSection'
@@ -11,11 +12,18 @@ import type {
     GoalStats,
     HabitStats,
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
+import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import { getMonthlyPaymentDelta } from '@/app/utils/stats'
 
 interface StatsContentProps {
     data: {
         records: Investment[]
+        activeRecords: Investment[]
         hasRecords: boolean
+    }
+    payment: {
+        completedPayments: PaymentHistoryMap
+        retroactivePayments: PaymentHistoryMap
     }
     ui: {
         selectedYear: number
@@ -53,12 +61,14 @@ interface StatsContentProps {
 
 export default function StatsContent({
     data,
+    payment,
     ui,
     calculations,
     filter,
     chart,
 }: StatsContentProps) {
-    const { records, hasRecords } = data
+    const { records, activeRecords, hasRecords } = data
+    const { completedPayments, retroactivePayments } = payment
     const { selectedYear, setSelectedYear, handleShowCashHold, handleShowContribution } = ui
     const {
         totalExpectedAsset,
@@ -70,6 +80,11 @@ export default function StatsContent({
     } = calculations
     const { periodPreset, setPeriodPreset, periodLabel, customDateRange, setCustomDateRange, handleCustomPeriod } = filter
     const { periodCompletionRate, chartData, chartBarColor } = chart
+
+    const delta = useMemo(
+        () => getMonthlyPaymentDelta(activeRecords, completedPayments, retroactivePayments),
+        [activeRecords, completedPayments, retroactivePayments]
+    )
 
     return (
         <>
@@ -95,7 +110,7 @@ export default function StatsContent({
                 />
             )}
 
-            <MonthlyStatusSection thisMonth={thisMonth} />
+            <MonthlyStatusSection thisMonth={thisMonth} delta={delta} />
 
             {hasRecords && (
                 <ModeBreakdownSection goalStats={goalStats} habitStats={habitStats} />

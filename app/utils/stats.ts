@@ -229,6 +229,92 @@ export function getMonthlyCompletionRatesForRange(
   return results
 }
 
+export interface MonthlyPaymentDelta {
+  thisMonthSum: number
+  lastMonthSum: number
+  deltaAmount: number
+  hasComparison: boolean
+}
+
+/**
+ * 이번 달 vs 지난 달 납입금 합산 차이.
+ * IMPORTANT: 호출자는 반드시 activeRecords (terminated 투자 제외)를 전달해야 한다.
+ * auto는 event-based pipeline (`getPaymentEventsForMonth + isPaymentCompleted`),
+ * retroactive는 YYYY-MM- prefix-count.
+ * 의존: usePaymentHistory.ts의 retroactive 엔트리 포맷 `${yearMonth}-01` (record-month 당 최대 1개).
+ */
+export function getMonthlyPaymentDelta(
+  activeRecords: Array<{
+    id: string
+    title: string
+    monthly_amount: number
+    investment_days?: number[] | null
+    period_years: number | null
+    start_date?: string | null
+    created_at: string
+  }>,
+  completedPayments: PaymentHistoryMap,
+  retroactivePayments: PaymentHistoryMap,
+  today: Date = new Date()
+): MonthlyPaymentDelta {
+  const thisYear = today.getFullYear()
+  const thisMonth = today.getMonth() + 1
+  const lastDate = new Date(thisYear, thisMonth - 2, 1)
+  const lastYear = lastDate.getFullYear()
+  const lastMonth = lastDate.getMonth() + 1
+
+  const sumForMonth = (year: number, month: number): number => {
+    const events = getPaymentEventsForMonth(activeRecords, year, month)
+    let auto = 0
+    for (const e of events) {
+      if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
+        auto += e.monthlyAmount
+      }
+    }
+    const prefix = `${year}-${String(month).padStart(2, '0')}-`
+    let retro = 0
+    for (const r of activeRecords) {
+      const dates = retroactivePayments.get(r.id)
+      if (!dates) continue
+      let hit = false
+      for (const d of dates) {
+        if (d.startsWith(prefix)) {
+          hit = true
+          break
+        }
+      }
+      if (hit) retro += r.monthly_amount
+    }
+    return auto + retro
+  }
+
+  const thisMonthSum = sumForMonth(thisYear, thisMonth)
+  const lastMonthSum = sumForMonth(lastYear, lastMonth)
+
+  const lastEvents = getPaymentEventsForMonth(activeRecords, lastYear, lastMonth)
+  const lastPrefix = `${lastYear}-${String(lastMonth).padStart(2, '0')}-`
+  let hasLastRetro = false
+  for (const r of activeRecords) {
+    const dates = retroactivePayments.get(r.id)
+    if (!dates) continue
+    for (const d of dates) {
+      if (d.startsWith(lastPrefix)) {
+        hasLastRetro = true
+        break
+      }
+    }
+    if (hasLastRetro) break
+  }
+  const hasComparison = lastEvents.length > 0 || hasLastRetro
+
+  return {
+    thisMonthSum,
+    lastMonthSum,
+    deltaAmount: thisMonthSum - lastMonthSum,
+    hasComparison,
+  }
+}
+
 /**
  * 날짜 범위 내 총 납입 금액 (완료된 건만)
  */
