@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
@@ -26,7 +26,7 @@ function EditForm({ goal, userId, onCancel }: EditFormProps) {
 
   async function handleSubmit(): Promise<void> {
     const updated = await updateGoal(goal.id, toCreateInput())
-    if (updated) router.replace(`/goal/${goal.id}`)
+    if (updated) router.replace(`/goal/detail?id=${goal.id}`)
   }
 
   return (
@@ -73,12 +73,13 @@ function EditForm({ goal, userId, onCancel }: EditFormProps) {
   )
 }
 
-export default function EditGoalPage() {
-  const params = useParams<{ id: string }>()
+export default function EditGoalClient() {
+  const searchParams = useSearchParams()
+  const goalId = searchParams.get('id') ?? undefined
   const router = useRouter()
   const [userId, setUserId] = useState<string | undefined>(undefined)
   const { goBack } = useFlowBack({
-    rootPath: params?.id ? `/goal/${params.id}` : '/',
+    rootPath: goalId ? `/goal/detail?id=${goalId}` : '/',
     enableHistoryFallback: true,
   })
 
@@ -89,7 +90,7 @@ export default function EditGoalPage() {
     })
   }, [])
 
-  const { goal, isLoading } = useGoalDetail(params?.id, userId)
+  const { goal, isLoading } = useGoalDetail(goalId, userId)
 
   if (isLoading) {
     return (

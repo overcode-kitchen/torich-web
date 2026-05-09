@@ -67,7 +67,7 @@ export default function GoalSection({ records }: GoalSectionProps) {
       goals={goals}
       progressMap={progressMap}
       onCreate={() => handleCreate('dashboard_carousel')}
-      onSelect={(id) => router.push(`/goal/${id}`)}
+      onSelect={(id) => router.push(`/goal/detail?id=${id}`)}
       onDelete={handleDelete}
     />
   )
