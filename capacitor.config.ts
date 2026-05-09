@@ -7,11 +7,11 @@ const config: CapacitorConfig & { launchUrl?: string } = {
   webDir: 'out',
   launchUrl: 'torich://',
   /** 브리지 로그(To Native / TO JS) 억제: 'none' | 'debug'(개발 시만) | 'production' */
-  loggingBehavior: 'debug',
+  loggingBehavior: 'production',
   server: {
     // 개발 시에만 주석 해제
     // url: 'http://localhost:3000', // 로컬 서버 연결
-    // url: 'http://172.29.80.191:3002', // Mac IP
+    // url: 'http://192.168.45.131:3000', // Mac IP
     // cleartext: true
   },
   plugins: {
