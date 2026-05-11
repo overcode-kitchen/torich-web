@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { CircleNotch } from '@phosphor-icons/react'
 import type { Investment } from '@/app/types/investment'
 import { useDashboardUI } from '@/app/hooks/ui/useDashboardUI'
 import { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
@@ -18,6 +19,7 @@ type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
 type SortBy = 'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME' | 'NEXT_PAYMENT'
 
 export interface DashboardProps {
+  isBackgroundSyncing: boolean
   records: Investment[]
   filteredRecords: Investment[]
   activeRecords: Investment[]
@@ -46,6 +48,7 @@ export interface DashboardProps {
 }
 
 export default function Dashboard({
+  isBackgroundSyncing,
   records,
   filteredRecords,
   activeRecords,
@@ -106,7 +109,19 @@ export default function Dashboard({
       >
         <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
           <Header
-            rightSlot={SHOW_NOTIFICATION_INBOX ? <NotificationInbox /> : undefined}
+            rightSlot={
+              isBackgroundSyncing || SHOW_NOTIFICATION_INBOX ? (
+                <div className="flex items-center gap-2 pr-2">
+                  {isBackgroundSyncing && (
+                    <CircleNotch
+                      className="w-4 h-4 animate-spin text-muted-foreground"
+                      aria-label="최신 데이터 갱신 중"
+                    />
+                  )}
+                  {SHOW_NOTIFICATION_INBOX && <NotificationInbox />}
+                </div>
+              ) : undefined
+            }
           />
         </div>
       </header>

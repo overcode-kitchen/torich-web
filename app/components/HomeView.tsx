@@ -16,6 +16,8 @@ type SortBy = 'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME' | 'NEXT_PAYMENT'
 interface HomeViewProps {
     isLoading: boolean
     isUpdatingRates: boolean
+    // records가 이미 있는 상태에서 도는 백그라운드 동기화. 헤더 우상단 작은 인디케이터로만 표시한다.
+    isBackgroundSyncing: boolean
     user: User | null
 
     // Data
@@ -56,6 +58,7 @@ interface HomeViewProps {
 export default function HomeView({
     isLoading,
     isUpdatingRates,
+    isBackgroundSyncing,
     user,
     records,
     filteredRecords,
@@ -120,6 +123,7 @@ export default function HomeView({
                 topOffset={indicatorTopOffset}
             />
             <Dashboard
+            isBackgroundSyncing={isBackgroundSyncing}
             records={records}
             filteredRecords={filteredRecords}
             activeRecords={activeRecords}

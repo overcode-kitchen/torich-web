@@ -18,6 +18,9 @@ export default function Home() {
   const { records, isLoading: dataLoading, deleteInvestment, refetch } = useInvestmentsContext()
   const userId = user?.id
   const { isUpdating: isUpdatingRates, checkAndUpdate } = useRateUpdate(userId)
+  // records가 이미 들어온 뒤 도는 백그라운드 동기화(자동 refetch, 시세 갱신 등)는 풀스크린 스피너 대신
+  // 헤더 우상단 작은 인디케이터로만 표시한다. 첫 진입은 풀스크린 분기가 처리.
+  const isBackgroundSyncing = (dataLoading || isUpdatingRates) && records.length > 0
   const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records, calculateSimulatedValue)
 
   const [showMonthlyAmount, setShowMonthlyAmount] = useState<boolean>(true)
@@ -79,6 +82,7 @@ export default function Home() {
     <HomeView
       isLoading={authLoading || dataLoading}
       isUpdatingRates={isUpdatingRates}
+      isBackgroundSyncing={isBackgroundSyncing}
       user={user}
       records={records}
       filteredRecords={filteredRecords}
