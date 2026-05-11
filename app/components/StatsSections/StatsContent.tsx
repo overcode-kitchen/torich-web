@@ -14,6 +14,7 @@ import type {
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
 import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
 import { getMonthlyPaymentDelta } from '@/app/utils/stats'
+import { useAssetGrowthChart } from '@/app/hooks/chart/useAssetGrowthChart'
 
 interface StatsContentProps {
     data: {
@@ -86,6 +87,9 @@ export default function StatsContent({
         [activeRecords, completedPayments, retroactivePayments]
     )
 
+    // 예상 자산 카드의 원금 대비 수익(+%)을 표시하기 위해 차트 데이터의 최종 시점을 그대로 활용한다.
+    const growthChart = useAssetGrowthChart({ investments: records, selectedYear })
+
     return (
         <>
             <StatsGoalProgressSection records={records} />
@@ -97,6 +101,8 @@ export default function StatsContent({
                     totalExpectedAsset={totalExpectedAsset}
                     hasMaturedInvestments={hasMaturedInvestments}
                     totalMonthlyPayment={totalMonthlyPayment}
+                    expectedProfit={growthChart.currentData?.profit}
+                    expectedPrincipal={growthChart.currentData?.principal}
                     onShowCashHold={handleShowCashHold}
                     onShowContribution={handleShowContribution}
                 />
