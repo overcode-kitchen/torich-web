@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { Investment } from '@/app/types/investment'
 import { useInvestmentsFetch } from './useInvestmentsFetch'
 import { useInvestmentsUpdate } from './useInvestmentsUpdate'
@@ -14,6 +14,10 @@ export const useInvestments = (userId?: string): UseInvestmentsReturn => {
   const update = useInvestmentsUpdate(userId, records, setRecords)
   const deleteOp = useInvestmentsDelete(userId, records, setRecords)
 
+  const addInvestment = useCallback((record: Investment): void => {
+    setRecords((prev) => [...prev, record])
+  }, [])
+
   useEffect((): void => {
     void fetch.refetch()
   }, [fetch.refetch])
@@ -25,6 +29,7 @@ export const useInvestments = (userId?: string): UseInvestmentsReturn => {
     isUpdating: update.isUpdating,
     isDeleting: deleteOp.isDeleting,
     refetch: fetch.refetch,
+    addInvestment,
     updateInvestment: update.updateInvestment,
     deleteInvestment: deleteOp.deleteInvestment,
   }
