@@ -51,7 +51,7 @@ export default function NewGoalPage() {
           새 목적 만들기
         </h1>
         <p className="text-sm text-foreground-subtle whitespace-pre-line">
-          결혼자금·내 집 마련 같은 큰 목표를{'\n'}한 곳에서 모아 관리해요.
+          결혼자금·내 집 마련 같은 큰 목적을{'\n'}한 곳에서 모아 관리해요.
         </p>
       </div>
 

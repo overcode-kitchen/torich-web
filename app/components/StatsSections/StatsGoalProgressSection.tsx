@@ -43,7 +43,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
 
   return (
     <section className="bg-card rounded-2xl p-5 mb-4">
-      <h2 className="text-sm font-semibold text-foreground-muted mb-3">목표 진척</h2>
+      <h2 className="text-sm font-semibold text-foreground-muted mb-3">목적 진척</h2>
       <ul className="flex flex-col">
         {activeGoals.map((goal) => {
           const progress = progressMap.get(goal.id)
