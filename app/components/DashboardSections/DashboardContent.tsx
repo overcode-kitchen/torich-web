@@ -78,8 +78,6 @@ export default function DashboardContent({
 
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
-            <GoalSection records={records} />
-
             {activeRecords.length > 0 && (
                 <UpcomingInvestments
                     records={activeRecords}
@@ -95,6 +93,9 @@ export default function DashboardContent({
                 <Plus className="w-5 h-5" />
                 투자 목록 추가하기
             </Button>
+
+            <GoalSection records={records} />
+
 
             <MonthlyAmountCard
                 records={records}
