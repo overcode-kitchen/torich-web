@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { formatCurrency, formatSignedProfit } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -6,7 +7,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { Info } from '@phosphor-icons/react'
+import { Info, Question } from '@phosphor-icons/react'
 
 interface ExpectedAssetSectionProps {
   selectedYear: number
@@ -65,7 +66,16 @@ export default function ExpectedAssetSection({
             <DropdownMenuItem onClick={() => setSelectedYear(30)}>30년 뒤</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <h2 className="text-sm font-semibold text-foreground-muted">예상 자산</h2>
+        <div className="flex items-center gap-1">
+          <h2 className="text-sm font-semibold text-foreground-muted">예상 자산</h2>
+          <Link
+            href="/faq"
+            aria-label="예상 자산 계산 근거 안내"
+            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center p-2 -m-2 text-foreground-subtle hover:text-foreground-muted transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring rounded-full"
+          >
+            <Question className="w-4 h-4" weight="regular" aria-hidden="true" />
+          </Link>
+        </div>
       </div>
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-3">
         <p className="text-2xl font-extrabold tracking-tight text-foreground">
