@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import { formatPaymentDateShort } from '@/app/utils/date'
@@ -22,7 +23,12 @@ export default function UpcomingInvestmentsList({
     toggleComplete,
     expandState,
 }: UpcomingInvestmentsListProps) {
+    const router = useRouter()
     const { expanded, setExpanded, hasMore, remainingCount } = expandState
+
+    const goToDetail = (investmentId: string) => {
+        router.push(`/investment?id=${investmentId}`)
+    }
 
     return (
         <>
@@ -32,7 +38,17 @@ export default function UpcomingInvestmentsList({
                     return (
                         <div
                             key={`${inv.id}-${item.paymentDate.getTime()}-${item.dayOfMonth}`}
-                            className="flex items-center justify-between gap-3 border-b border-border-subtle px-2 py-2.5 last:border-b-0"
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => goToDetail(inv.id)}
+                            onKeyDown={(ev) => {
+                                if (ev.key === 'Enter' || ev.key === ' ') {
+                                    ev.preventDefault()
+                                    goToDetail(inv.id)
+                                }
+                            }}
+                            aria-label={`${inv.title} 상세 보기`}
+                            className="flex cursor-pointer items-center justify-between gap-3 border-b border-border-subtle px-2 py-2.5 transition-colors last:border-b-0 hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                             <div className="min-w-0 flex-1">
                                 {/* InvestmentItem과 동일: 1줄 = 아바타+종목명, 2줄 = pl-2 보조 */}
@@ -70,7 +86,10 @@ export default function UpcomingInvestmentsList({
                                     variant="soft"
                                     size="xs"
                                     className="shrink-0 px-3"
-                                    onClick={() => toggleComplete(inv.id, item.paymentDate, item.dayOfMonth)}
+                                    onClick={(ev) => {
+                                        ev.stopPropagation()
+                                        toggleComplete(inv.id, item.paymentDate, item.dayOfMonth)
+                                    }}
                                     aria-label="납입 완료 체크"
                                 >
                                     완료하기

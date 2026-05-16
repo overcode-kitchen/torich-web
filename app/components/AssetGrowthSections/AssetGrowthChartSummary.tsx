@@ -53,7 +53,7 @@ export default function AssetGrowthChartSummary({
             className="w-3 h-3 rounded-sm" 
             style={{ backgroundColor: chartColors.profit }}
           />
-          <span className="text-foreground-muted">수익금 (The Gap)</span>
+          <span className="text-foreground-muted">수익금</span>
         </div>
       </div>
 

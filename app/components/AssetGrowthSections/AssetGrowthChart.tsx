@@ -38,6 +38,11 @@ export default function AssetGrowthChart({
   hasData,
 }: AssetGrowthChartProps) {
   const chartColors = useChartColors()
+  // 손실(음수 수익) 데이터가 섞이면 stacked bar에서 음수가 시각적으로 깨진다.
+  // 손실 케이스에는 stack을 풀어 0 기준선에서 위/아래로 분리해 표시한다.
+  const hasNegativeProfit = barData.some((d) => d.profit < 0)
+  const profitStackId = hasNegativeProfit ? undefined : 'a'
+  const principalStackId = hasNegativeProfit ? undefined : 'a'
 
   if (!hasData) {
     return (
@@ -92,22 +97,25 @@ export default function AssetGrowthChart({
             />
             <YAxis
               tickFormatter={(v) => {
-                if (v >= 100000000) return `${(v / 100000000).toFixed(1)}억`
-                if (v >= 10000) return `${Math.floor(v / 10000)}만`
+                const abs = Math.abs(v)
+                const sign = v < 0 ? '-' : ''
+                if (abs >= 100000000) return `${sign}${(abs / 100000000).toFixed(1)}억`
+                if (abs >= 10000) return `${sign}${Math.floor(abs / 10000)}만`
                 return `${v}`
               }}
               stroke={chartColors.axis}
               fontSize={11}
               tickLine={false}
               axisLine={false}
-              domain={[0, 'auto']}
+              // 손실이 있는 데이터를 위해 도메인 하단을 음수까지 확장한다.
+              domain={[(dataMin: number) => (dataMin < 0 ? dataMin * 1.1 : 0), 'auto']}
             />
             <Tooltip content={<AssetGrowthChartTooltip />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
 
             {/* 원금 (하단) - 연한 그린 틴트 */}
             <Bar
               dataKey="principal"
-              stackId="a"
+              stackId={principalStackId}
               fill={chartColors.principal}
               radius={[0, 0, 0, 0]}
               isAnimationActive
@@ -116,10 +124,10 @@ export default function AssetGrowthChart({
               label={<RenderPrincipalLabel chartColors={chartColors} />}
             />
 
-            {/* 수익 (상단, The Gap) */}
+            {/* 수익 (상단) — 손실이 있으면 stack을 풀어 0 기준선 아래로 그려진다 */}
             <Bar
               dataKey="profit"
-              stackId="a"
+              stackId={profitStackId}
               fill="url(#barProfit)"
               radius={[4, 4, 0, 0]}
               isAnimationActive

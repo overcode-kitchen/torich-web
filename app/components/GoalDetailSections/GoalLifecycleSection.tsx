@@ -24,7 +24,7 @@ export function GoalLifecycleSection({
     <section className="py-6 border-t border-border-subtle-lighter space-y-4">
       {showCelebration && (
         <div className="rounded-2xl border border-primary/30 bg-primary/10 p-5">
-          <p className="text-sm font-semibold text-primary">🎉 목표 달성!</p>
+          <p className="text-sm font-semibold text-primary">🎉 목적 달성!</p>
           <p className="mt-1 text-xs text-foreground-subtle">
             잘 모으셨어요. 계속 유지할지, 삭제할지 자유롭게 선택하세요.
           </p>

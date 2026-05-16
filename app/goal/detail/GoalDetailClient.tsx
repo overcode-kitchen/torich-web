@@ -25,14 +25,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { formatFullDate } from '@/app/utils/date'
+import { dDayLabel } from '@/app/utils/goal-format'
 import { createClient } from '@/utils/supabase/client'
-
-function dDayLabel(dDay: number | null): string {
-  if (dDay === null) return ''
-  if (dDay > 0) return `D-${dDay}`
-  if (dDay === 0) return 'D-DAY'
-  return `D+${Math.abs(dDay)}`
-}
 
 export default function GoalDetailClient() {
   const searchParams = useSearchParams()

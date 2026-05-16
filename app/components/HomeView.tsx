@@ -88,7 +88,11 @@ export default function HomeView({
         ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px)'
         : '56px'
 
-    if (isLoading) {
+    // 풀스크린 로딩은 데이터가 한 번도 들어오지 않은 '초기 로딩'에만 적용한다.
+    // 백그라운드 refetch(visibilitychange, 추가/삭제 후 갱신 등) 동안에는 기존 화면을 유지해 깜빡임을 막는다.
+    const hasNoRecords = records.length === 0
+
+    if (isLoading && hasNoRecords) {
         return (
             <main className="min-h-screen bg-surface flex items-center justify-center">
                 <CircleNotch className="w-8 h-8 animate-spin text-brand-600" />
@@ -96,7 +100,7 @@ export default function HomeView({
         )
     }
 
-    if (isUpdatingRates) {
+    if (isUpdatingRates && hasNoRecords) {
         return (
             <main className="min-h-screen bg-surface flex flex-col items-center justify-center gap-4">
                 <CircleNotch className="w-10 h-10 animate-spin text-brand-600" />

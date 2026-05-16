@@ -15,6 +15,7 @@ import {
     GoalStats,
     HabitStats,
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
+import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
 
 interface StatsViewProps {
     isLoading: boolean
@@ -23,7 +24,12 @@ interface StatsViewProps {
     // Grouped Props
     data: {
         records: Investment[]
+        activeRecords: Investment[]
         hasRecords: boolean
+    }
+    payment: {
+        completedPayments: PaymentHistoryMap
+        retroactivePayments: PaymentHistoryMap
     }
     ui: {
         selectedYear: number
@@ -69,6 +75,7 @@ export default function StatsView({
     isLoading,
     user,
     data,
+    payment,
     ui,
     filter,
     calculations,
@@ -126,6 +133,7 @@ export default function StatsView({
             <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4">
                 <StatsContent
                     data={data}
+                    payment={payment}
                     ui={ui}
                     calculations={calculations}
                     filter={filter}

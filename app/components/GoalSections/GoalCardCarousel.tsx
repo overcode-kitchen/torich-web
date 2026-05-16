@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Plus, TrashSimple } from '@phosphor-icons/react'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
+import { fmt, dDayLabel } from '@/app/utils/goal-format'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 
 export interface GoalCardCarouselProps {
@@ -12,17 +13,6 @@ export interface GoalCardCarouselProps {
   onCreate: () => void
   onSelect: (id: string) => void
   onDelete?: (id: string) => Promise<void>
-}
-
-function fmt(value: number): string {
-  return value.toLocaleString('ko-KR')
-}
-
-function dDayLabel(dDay: number | null): string {
-  if (dDay === null) return ''
-  if (dDay > 0) return `D-${dDay}`
-  if (dDay === 0) return 'D-DAY'
-  return `D+${Math.abs(dDay)}`
 }
 
 interface GoalRowProps {

@@ -1,20 +1,30 @@
 'use client'
 
+import { useMemo } from 'react'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
 import AssetGrowthSection from '@/app/components/StatsSections/AssetGrowthSection'
 import MonthlyStatusSection from '@/app/components/StatsSections/MonthlyStatusSection'
 import CompletionRateSection from '@/app/components/StatsSections/CompletionRateSection'
 import ModeBreakdownSection from '@/app/components/StatsSections/ModeBreakdownSection'
+import StatsGoalProgressSection from '@/app/components/StatsSections/StatsGoalProgressSection'
 import type { Investment } from '@/app/types/investment'
 import type {
     GoalStats,
     HabitStats,
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
+import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import { getMonthlyPaymentDelta } from '@/app/utils/stats'
+import { useAssetGrowthChart } from '@/app/hooks/chart/useAssetGrowthChart'
 
 interface StatsContentProps {
     data: {
         records: Investment[]
+        activeRecords: Investment[]
         hasRecords: boolean
+    }
+    payment: {
+        completedPayments: PaymentHistoryMap
+        retroactivePayments: PaymentHistoryMap
     }
     ui: {
         selectedYear: number
@@ -52,12 +62,14 @@ interface StatsContentProps {
 
 export default function StatsContent({
     data,
+    payment,
     ui,
     calculations,
     filter,
     chart,
 }: StatsContentProps) {
-    const { records, hasRecords } = data
+    const { records, activeRecords, hasRecords } = data
+    const { completedPayments, retroactivePayments } = payment
     const { selectedYear, setSelectedYear, handleShowCashHold, handleShowContribution } = ui
     const {
         totalExpectedAsset,
@@ -70,9 +82,18 @@ export default function StatsContent({
     const { periodPreset, setPeriodPreset, periodLabel, customDateRange, setCustomDateRange, handleCustomPeriod } = filter
     const { periodCompletionRate, chartData, chartBarColor } = chart
 
+    const delta = useMemo(
+        () => getMonthlyPaymentDelta(activeRecords, completedPayments, retroactivePayments),
+        [activeRecords, completedPayments, retroactivePayments]
+    )
+
+    // 예상 자산 카드의 원금 대비 수익(+%)을 표시하기 위해 차트 데이터의 최종 시점을 그대로 활용한다.
+    const growthChart = useAssetGrowthChart({ investments: records, selectedYear })
+
     return (
         <>
-            {/* 예상 자산 */}
+            <StatsGoalProgressSection records={records} />
+
             {hasRecords && (
                 <ExpectedAssetSection
                     selectedYear={selectedYear}
@@ -80,12 +101,13 @@ export default function StatsContent({
                     totalExpectedAsset={totalExpectedAsset}
                     hasMaturedInvestments={hasMaturedInvestments}
                     totalMonthlyPayment={totalMonthlyPayment}
+                    expectedProfit={growthChart.currentData?.profit}
+                    expectedPrincipal={growthChart.currentData?.principal}
                     onShowCashHold={handleShowCashHold}
                     onShowContribution={handleShowContribution}
                 />
             )}
 
-            {/* 예상 수익 차트 */}
             {hasRecords && (
                 <AssetGrowthSection
                     selectedYear={selectedYear}
@@ -94,15 +116,12 @@ export default function StatsContent({
                 />
             )}
 
-            {/* 이번 달 현황 */}
-            <MonthlyStatusSection thisMonth={thisMonth} />
+            <MonthlyStatusSection thisMonth={thisMonth} delta={delta} />
 
-            {/* 투자 상태 요약 (목표형/적립형 혼재 시) */}
             {hasRecords && (
                 <ModeBreakdownSection goalStats={goalStats} habitStats={habitStats} />
             )}
 
-            {/* 기간별 완료율 */}
             <CompletionRateSection
                 periodPreset={periodPreset as any}
                 setPeriodPreset={setPeriodPreset}

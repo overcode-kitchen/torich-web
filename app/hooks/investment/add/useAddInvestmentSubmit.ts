@@ -8,7 +8,9 @@ import { validateInvestmentForm, validateAndHandleError } from '@/app/utils/vali
 import { createClient } from '@/utils/supabase/client'
 import { formatInvestmentData } from '@/app/utils/investment-formatter'
 import { track, amountBucket } from '@/app/lib/analytics'
-import type { InvestmentUnitType } from '@/app/types/investment'
+import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
+import type { Investment, InvestmentUnitType } from '@/app/types/investment'
+import type { StockDetail } from '@/app/hooks/types/useStockSearch'
 
 export interface UseAddInvestmentSubmitProps {
   stockName: string
@@ -21,7 +23,7 @@ export interface UseAddInvestmentSubmitProps {
   annualRate: number
   isManualInput: boolean
   originalSystemRate: number | null
-  selectedStock: any
+  selectedStock: StockDetail | null
   market?: 'KR' | 'US'
   /** 매수 단위 모드 (디폴트 'amount') */
   unitType?: InvestmentUnitType
@@ -52,6 +54,7 @@ export function useAddInvestmentSubmit({
 }: UseAddInvestmentSubmitProps): UseAddInvestmentSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
+  const { addInvestment } = useInvestmentsContext()
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   const handleSubmit = useCallback(async (e: React.FormEvent): Promise<void> => {
@@ -111,13 +114,16 @@ export function useAddInvestmentSubmit({
           ...formattedData,
           notification_enabled: true,
         })
-        .select('id')
-        .single()
+        .select('*')
+        .single<Investment>()
 
       if (error || !inserted) {
         toastError(TOAST_MESSAGES.updateSaveFailed)
         return
       }
+
+      // 클라이언트 캐시(InvestmentsContext)에 즉시 반영 → 메인 복귀 시 stale 리스트가 그려졌다가 깜빡이는 현상 방지
+      addInvestment(inserted)
 
       track('investment_create_success', {
         amount_bucket: amountBucket(formattedData.monthly_amount),
@@ -131,7 +137,6 @@ export function useAddInvestmentSubmit({
       const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1)
       const isPastStartDate = startDate < currentMonthStart
 
-      router.refresh()
       if (isPastStartDate) {
         router.push(`/investment?id=${inserted.id}&retroHint=1`)
       } else {
@@ -158,6 +163,7 @@ export function useAddInvestmentSubmit({
     monthlyShares,
     userId,
     router,
+    addInvestment,
   ])
 
   return {

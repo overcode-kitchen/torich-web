@@ -12,7 +12,7 @@ import { track } from '@/app/lib/analytics'
 
 export default function StatsPage() {
   const { user, records, activeRecords, isLoading, router } = useStatsData()
-  const { completedPayments, isLoading: historyLoading } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, isLoading: historyLoading } = usePaymentHistory()
 
   const {
     selectedYear,
@@ -72,7 +72,12 @@ export default function StatsPage() {
       user={user}
       data={{
         records,
+        activeRecords,
         hasRecords,
+      }}
+      payment={{
+        completedPayments,
+        retroactivePayments,
       }}
       ui={{
         selectedYear,

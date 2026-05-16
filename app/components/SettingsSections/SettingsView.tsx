@@ -181,6 +181,10 @@ export default function SettingsView({
                         }
                     />
                     <SettingsItem
+                        label="자주 묻는 질문"
+                        href="/faq"
+                    />
+                    <SettingsItem
                         label="문의하기"
                         href={`mailto:suniapps919@gmail.com?subject=${encodeURIComponent('[토리치] 문의사항')}&body=${encodeURIComponent(
                             '앱: 토리치\n\n문의 유형: (버그 신고 / 기능 제안 / 기타)\n\n문의 내용:\n\n'

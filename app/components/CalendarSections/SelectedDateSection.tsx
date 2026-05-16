@@ -1,3 +1,6 @@
+'use client'
+
+import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -23,7 +26,13 @@ export function SelectedDateSection({
   isEventCompleted,
   handleComplete,
 }: SelectedDateSectionProps) {
+  const router = useRouter()
+
   if (!selectedDate) return null
+
+  const goToDetail = (investmentId: string) => {
+    router.push(`/investment?id=${investmentId}`)
+  }
 
   return (
     <div
@@ -42,7 +51,17 @@ export function SelectedDateSection({
             return (
               <div
                 key={`${e.investmentId}-${e.day}`}
-                className="flex items-center justify-between py-2 border-b border-border-subtle last:border-0"
+                role="button"
+                tabIndex={0}
+                onClick={() => goToDetail(e.investmentId)}
+                onKeyDown={(ev) => {
+                  if (ev.key === 'Enter' || ev.key === ' ') {
+                    ev.preventDefault()
+                    goToDetail(e.investmentId)
+                  }
+                }}
+                className="flex items-center justify-between py-2 -mx-2 px-2 rounded-lg border-b border-border-subtle last:border-0 cursor-pointer transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={`${e.title} 상세 보기`}
               >
                 <div>
                   <p className="font-medium text-foreground">{e.title}</p>
@@ -53,7 +72,10 @@ export function SelectedDateSection({
                 ) : (
                   <button
                     type="button"
-                    onClick={() => handleComplete(e)}
+                    onClick={(ev) => {
+                      ev.stopPropagation()
+                      handleComplete(e)
+                    }}
                     className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90"
                     aria-label="납입 완료 체크"
                   >
