@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
 import { GoalGroupCard } from './GoalGroupCard'
 import { MonthlySummaryBar } from './MonthlySummaryBar'
 import { useGoalGroups } from '@/app/hooks/goal/data/useGoalGroups'
@@ -66,17 +67,17 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
         />
       )}
 
-      <button
-        type="button"
+      <Button
+        size="lg"
+        className="w-full rounded-2xl"
         onClick={() => {
           track('goal_add_click', { entry_point: 'dashboard_group' })
           router.push('/goal/new')
         }}
-        className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-border-subtle-lighter bg-card py-3.5 text-sm font-medium text-foreground-soft transition-colors hover:bg-muted hover:text-foreground"
       >
-        <Plus className="h-4 w-4" weight="bold" />
+        <Plus className="h-5 w-5" weight="bold" />
         목적 만들기
-      </button>
+      </Button>
     </div>
   )
 }
