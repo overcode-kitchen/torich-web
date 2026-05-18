@@ -15,13 +15,8 @@ export default function StatsPage() {
   const { completedPayments, retroactivePayments, isLoading: historyLoading } = usePaymentHistory()
 
   const {
-    selectedYear,
-    showCashHoldSheet,
     showContributionSheet,
     hasRecords,
-    setSelectedYear,
-    handleShowCashHold,
-    handleCloseCashHold,
     handleShowContribution,
     handleCloseContribution,
   } = useStatsPageUI({ recordsLength: records.length })
@@ -44,15 +39,12 @@ export default function StatsPage() {
   }, [])
 
   const {
-    totalExpectedAsset,
+    totalPaidPrincipal,
     totalMonthlyPayment,
-    hasMaturedInvestments,
-    maturedItems,
     thisMonth,
     goalStats,
     habitStats,
-    calculateFutureValue,
-  } = useStatsCalculations({ records, activeRecords, completedPayments, selectedYear })
+  } = useStatsCalculations({ records, activeRecords, completedPayments })
 
   const {
     monthlyRates,
@@ -80,13 +72,8 @@ export default function StatsPage() {
         retroactivePayments,
       }}
       ui={{
-        selectedYear,
-        setSelectedYear,
-        showCashHoldSheet,
-        handleCloseCashHold,
         showContributionSheet,
         handleCloseContribution,
-        handleShowCashHold,
         handleShowContribution,
       }}
       filter={{
@@ -98,14 +85,11 @@ export default function StatsPage() {
         handleCustomPeriod,
       }}
       calculations={{
-        totalExpectedAsset,
+        totalPaidPrincipal,
         totalMonthlyPayment,
-        hasMaturedInvestments,
-        maturedItems,
         thisMonth,
         goalStats,
         habitStats,
-        calculateFutureValue,
       }}
       chart={{
         periodCompletionRate,

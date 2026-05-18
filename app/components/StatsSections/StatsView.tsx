@@ -1,7 +1,6 @@
 'use client'
 
 import { CircleNotch } from '@phosphor-icons/react'
-import CashHoldItemsSheet from './CashHoldItemsSheet'
 import MonthlyContributionSheet from './MonthlyContributionSheet'
 import type { Investment } from '@/app/types/investment'
 import { useMonthlyContribution } from '@/app/hooks/investment/calculations/useMonthlyContribution'
@@ -11,7 +10,6 @@ import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 import {
-    CashHoldItemVM,
     GoalStats,
     HabitStats,
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
@@ -32,13 +30,8 @@ interface StatsViewProps {
         retroactivePayments: PaymentHistoryMap
     }
     ui: {
-        selectedYear: number
-        setSelectedYear: (year: number) => void
-        showCashHoldSheet: boolean
-        handleCloseCashHold: () => void
         showContributionSheet: boolean
         handleCloseContribution: () => void
-        handleShowCashHold: () => void
         handleShowContribution: () => void
     }
     filter: {
@@ -50,10 +43,8 @@ interface StatsViewProps {
         handleCustomPeriod: () => void
     }
     calculations: {
-        totalExpectedAsset: number
+        totalPaidPrincipal: number
         totalMonthlyPayment: number
-        hasMaturedInvestments: boolean
-        maturedItems: CashHoldItemVM[]
         thisMonth: {
             totalPayment: number
             completedPayment: number
@@ -62,7 +53,6 @@ interface StatsViewProps {
         }
         goalStats: GoalStats
         habitStats: HabitStats
-        calculateFutureValue: (monthlyAmount: number, T: number, P: number, R?: number) => number
     }
     chart: {
         periodCompletionRate: number
@@ -99,8 +89,8 @@ export default function StatsView({
         return null
     }
 
-    const { showCashHoldSheet, showContributionSheet, handleCloseCashHold, handleCloseContribution } = ui
-    const { totalMonthlyPayment, maturedItems } = calculations
+    const { showContributionSheet, handleCloseContribution } = ui
+    const { totalMonthlyPayment } = calculations
 
     const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
     const contentPaddingTop = isNativeApp
@@ -140,13 +130,6 @@ export default function StatsView({
                     chart={chart}
                 />
             </div>
-
-            {showCashHoldSheet && (
-                <CashHoldItemsSheet
-                    maturedItems={maturedItems}
-                    onClose={handleCloseCashHold}
-                />
-            )}
 
             {showContributionSheet && (
                 <MonthlyContributionSheet
