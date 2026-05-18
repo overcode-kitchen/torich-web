@@ -29,6 +29,8 @@ export interface UseAddInvestmentSubmitProps {
   unitType?: InvestmentUnitType
   /** 주수 모드 입력 값 */
   monthlyShares?: string
+  /** 목적 만들기 흐름에서 넘어온 경우, 생성될 투자를 이 목적에 연결한다. */
+  goalId?: string
 }
 
 export interface UseAddInvestmentSubmitReturn {
@@ -51,6 +53,7 @@ export function useAddInvestmentSubmit({
   market,
   unitType,
   monthlyShares,
+  goalId,
 }: UseAddInvestmentSubmitProps): UseAddInvestmentSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
@@ -113,6 +116,7 @@ export function useAddInvestmentSubmit({
           user_id: userId,
           ...formattedData,
           notification_enabled: true,
+          ...(goalId ? { goal_id: goalId } : {}),
         })
         .select('*')
         .single<Investment>()
@@ -161,6 +165,7 @@ export function useAddInvestmentSubmit({
     market,
     unitType,
     monthlyShares,
+    goalId,
     userId,
     router,
     addInvestment,

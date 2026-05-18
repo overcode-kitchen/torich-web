@@ -7,7 +7,6 @@ import FormSection from '@/app/components/AddInvestmentSections/FormSection'
 import PreviewSection from '@/app/components/AddInvestmentSections/PreviewSection'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import ManualInputModal from '@/app/components/ManualInputModal'
-import RateHelpModal from '@/app/components/RateDisplay/RateHelpModal'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
 import type { UseModalStateReturn } from '@/app/hooks/ui/useModalState'
 import type { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
@@ -17,13 +16,16 @@ interface AddInvestmentViewProps {
     modals: UseModalStateReturn
     daysPicker: ReturnType<typeof useInvestmentDaysPicker>
     onBack: () => void
+    /** 목적 만들기 흐름일 때만 전달. "나중에 할게요"로 건너뛴다. */
+    onSkip?: () => void
 }
 
 export default function AddInvestmentView({
     form,
     modals,
     daysPicker,
-    onBack
+    onBack,
+    onSkip
 }: AddInvestmentViewProps) {
     return (
         <>
@@ -34,7 +36,7 @@ export default function AddInvestmentView({
                         람쥐씨, 어떤 꿈을 꾸고 계신가요?
                     </h1>
                     <p className="text-sm text-foreground-subtle whitespace-pre-line">
-                        매달 꾸준히 모았을 때,{'\n'}10년 뒤 얼마가 될지 바로 보여드릴게요.
+                        매달 꾸준히 모으는 항목을 추가해요.
                     </p>
                 </div>
 
@@ -52,8 +54,6 @@ export default function AddInvestmentView({
                     stockName={form.stockName}
                     monthlyAmount={form.monthlyAmount}
                     period={form.period}
-                    annualRate={form.annualRate}
-                    isRateLoading={form.isRateLoading}
                     isHabitMode={form.isHabitMode}
                 />
 
@@ -72,6 +72,18 @@ export default function AddInvestmentView({
                         '저장하기'
                     )}
                 </button>
+
+                {/* 목적 만들기 흐름: 적립 항목 추가를 건너뛰고 홈으로 */}
+                {onSkip && (
+                    <button
+                        type="button"
+                        onClick={onSkip}
+                        disabled={form.isSubmitting}
+                        className="w-full py-3 mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                    >
+                        나중에 할게요
+                    </button>
+                )}
             </SubPageScaffold>
 
             {/* 매월 투자일 선택 바텀 시트 */}
@@ -94,8 +106,6 @@ export default function AddInvestmentView({
                 onClose={form.closeAndResetManual}
                 stockName={form.manualStockName}
                 onStockNameChange={form.setManualStockName}
-                rate={form.manualRate}
-                onRateChange={form.setManualRate}
                 onConfirm={() => {
                     form.handleManualConfirm({
                         onConfirm: (name: string, rate: number) => {
@@ -109,13 +119,6 @@ export default function AddInvestmentView({
                         },
                     })
                 }}
-                onRateHelpClick={() => modals.setIsRateHelpModalOpen(true)}
-            />
-
-            {/* 수익률 도움말 모달 */}
-            <RateHelpModal
-                isOpen={modals.isRateHelpModalOpen}
-                onClose={() => modals.setIsRateHelpModalOpen(false)}
             />
         </>
     )
