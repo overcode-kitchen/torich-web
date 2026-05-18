@@ -1,31 +1,56 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Plus } from '@phosphor-icons/react'
+import { Target } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
+import { GOAL_PRESETS } from '@/app/constants/goal'
 import { track } from '@/app/lib/analytics'
 
-export interface EmptyStateProps {
-  onAddClick: () => void
-}
-
-export default function EmptyState({ onAddClick }: EmptyStateProps) {
+export default function EmptyState() {
   const router = useRouter()
 
+  function goToNewGoal(preset?: string): void {
+    track('goal_create_click', {
+      entry_point: 'empty_state',
+      preset: preset ?? 'none',
+    })
+    const query = preset ? `?preset=${encodeURIComponent(preset)}` : ''
+    router.push(`/goal/new${query}`)
+  }
+
   return (
-    <div className="bg-card rounded-3xl p-12 flex flex-col items-center justify-center text-center space-y-6">
-      <p className="text-muted-foreground text-lg">아직 등록된 투자가 없어요</p>
+    <div className="bg-card rounded-3xl p-10 flex flex-col items-center text-center gap-6">
+      <div className="space-y-2">
+        <p className="text-lg font-bold text-foreground">
+          무엇을 위해 모으고 있나요?
+        </p>
+        <p className="text-sm text-muted-foreground">
+          목적을 정하면 무엇을, 얼마나 모을지 한눈에 보여요.
+        </p>
+      </div>
+
       <Button
         size="lg"
         className="rounded-2xl shadow-lg"
-        onClick={() => {
-          track('investment_add_click', { entry_point: 'empty_state' })
-          onAddClick()
-        }}
+        onClick={() => goToNewGoal()}
       >
-        <Plus className="w-5 h-5" />
-        투자 목록 추가하기
+        <Target className="w-5 h-5" />
+        목적 만들기
       </Button>
+
+      <div className="flex flex-wrap justify-center gap-2">
+        {GOAL_PRESETS.map((preset) => (
+          <button
+            key={preset.name}
+            type="button"
+            onClick={() => goToNewGoal(preset.name)}
+            className="inline-flex items-center gap-1 rounded-full border border-border-subtle-lighter bg-card px-3 py-1.5 text-xs font-medium text-foreground-soft hover:bg-muted transition-colors"
+          >
+            <span>{preset.emoji}</span>
+            <span>{preset.name}</span>
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
