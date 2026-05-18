@@ -11,6 +11,7 @@ export interface GoalInfoSectionProps {
 }
 
 export function GoalInfoSection({ goal, progress }: GoalInfoSectionProps) {
+  const hasTarget = goal.target_amount > 0
   const remaining = Math.max(0, goal.target_amount - progress.currentValue)
 
   return (
@@ -21,7 +22,7 @@ export function GoalInfoSection({ goal, progress }: GoalInfoSectionProps) {
       <div className="space-y-6">
         <InvestmentField
           label="목표 금액"
-          value={formatCurrency(goal.target_amount)}
+          value={hasTarget ? formatCurrency(goal.target_amount) : '미설정'}
           isEditMode={false}
         />
 
@@ -54,11 +55,13 @@ export function GoalInfoSection({ goal, progress }: GoalInfoSectionProps) {
             />
           )}
 
-          <InvestmentField
-            label="남은 금액"
-            value={formatCurrency(remaining)}
-            isEditMode={false}
-          />
+          {hasTarget && (
+            <InvestmentField
+              label="남은 금액"
+              value={formatCurrency(remaining)}
+              isEditMode={false}
+            />
+          )}
         </div>
       </div>
     </section>

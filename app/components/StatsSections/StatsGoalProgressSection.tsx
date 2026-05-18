@@ -62,7 +62,9 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
                       {goal.name}
                     </h3>
                     <p className="truncate text-sm text-muted-foreground">
-                      현재 {fmt(progress.currentValue)}원 · {progress.progressPercent}%
+                      현재 {fmt(progress.currentValue)}원
+                      {progress.progressPercent !== null &&
+                        ` · ${progress.progressPercent}%`}
                     </p>
                   </div>
                 </div>

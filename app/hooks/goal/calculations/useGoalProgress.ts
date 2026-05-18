@@ -88,15 +88,18 @@ function calculateGoalProgress(
         sumFuturePrincipal(linkedRecords, today, targetDate)
       : null
 
-  const safeTarget = goal.target_amount > 0 ? goal.target_amount : 1
-  const progressPercent = Math.round((currentValue / safeTarget) * 100)
+  // 목표 금액이 없는 목적은 진행률·완료 판정을 하지 않는다.
+  const hasTarget = goal.target_amount > 0
+  const progressPercent = hasTarget
+    ? Math.round((currentValue / goal.target_amount) * 100)
+    : null
   const projectedProgressPercent =
-    projectedValue !== null
-      ? Math.round((projectedValue / safeTarget) * 100)
+    hasTarget && projectedValue !== null
+      ? Math.round((projectedValue / goal.target_amount) * 100)
       : null
 
   const dDay = targetDate ? diffDays(today, targetDate) : null
-  const isCompleted = currentValue >= goal.target_amount
+  const isCompleted = hasTarget && currentValue >= goal.target_amount
 
   return {
     goalId: goal.id,
