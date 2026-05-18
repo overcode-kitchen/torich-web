@@ -30,14 +30,27 @@ export default function AddInvestmentView({
     return (
         <>
             <SubPageScaffold onBack={onBack} contentClassName="py-6">
-                {/* 상단 헤더 텍스트 */}
+                {/* 상단 헤더 텍스트 — 목적 흐름(onSkip 존재)이면 맥락 안내를 보여준다 */}
                 <div className="mb-8">
-                    <h1 className="text-xl font-bold text-foreground mb-3">
-                        람쥐씨, 어떤 꿈을 꾸고 계신가요?
-                    </h1>
-                    <p className="text-sm text-foreground-subtle whitespace-pre-line">
-                        매달 꾸준히 모으는 항목을 추가해요.
-                    </p>
+                    {onSkip ? (
+                        <>
+                            <h1 className="text-xl font-bold text-foreground mb-3">
+                                목적을 위한 적립 항목을 추가해요
+                            </h1>
+                            <p className="text-sm text-foreground-subtle">
+                                이 목적에 매달 모을 항목을 정해보세요. 적금·적립식 투자 모두 좋아요.
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <h1 className="text-xl font-bold text-foreground mb-3">
+                                람쥐씨, 어떤 꿈을 꾸고 계신가요?
+                            </h1>
+                            <p className="text-sm text-foreground-subtle whitespace-pre-line">
+                                매달 꾸준히 모으는 항목을 추가해요.
+                            </p>
+                        </>
+                    )}
                 </div>
 
                 {/* 마켓 선택 탭 */}
