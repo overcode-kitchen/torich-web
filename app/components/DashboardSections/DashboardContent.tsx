@@ -54,9 +54,6 @@ interface DashboardContentProps {
         showMonthlyAmount: boolean
         onToggleMonthlyAmount: () => void
     }
-    calculations: {
-        calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
-    }
 }
 
 export default function DashboardContent({
@@ -66,7 +63,6 @@ export default function DashboardContent({
     list,
     brandStory,
     settings,
-    calculations,
 }: DashboardContentProps) {
     const { records, filteredRecords, activeRecords, totalMonthlyPayment, upcomingInvestments } = data
     const { onAddClick } = ui
@@ -74,7 +70,6 @@ export default function DashboardContent({
     const { listExpanded, displayRecords, hasMoreList, remainingListCount, toggleListExpansion, onItemClick, onDelete } = list
     const { showBrandStoryCard, onCloseBrandStoryCard, pendingBrandStoryUndo, onUndoBrandStory, isBrandStoryOpen, onOpenBrandStory, onCloseBrandStory } = brandStory
     const { showMonthlyAmount, onToggleMonthlyAmount } = settings
-    const { calculateFutureValue } = calculations
 
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
@@ -85,14 +80,16 @@ export default function DashboardContent({
                 />
             )}
 
-            <Button
-                size="lg"
-                className="w-full rounded-2xl"
-                onClick={onAddClick}
-            >
-                <Plus className="w-5 h-5" />
-                투자 목록 추가하기
-            </Button>
+            {records.length > 0 && (
+                <Button
+                    size="lg"
+                    className="w-full rounded-2xl"
+                    onClick={onAddClick}
+                >
+                    <Plus className="w-5 h-5" />
+                    투자 목록 추가하기
+                </Button>
+            )}
 
             <GoalSection records={records} />
 
@@ -125,14 +122,13 @@ export default function DashboardContent({
                     onSortChange={onSortChange}
                     onItemClick={onItemClick}
                     onDelete={onDelete}
-                    calculateFutureValue={calculateFutureValue}
                     listExpanded={listExpanded}
                     onListExpandToggle={toggleListExpansion}
                     hasMoreList={hasMoreList}
                     remainingListCount={remainingListCount}
                 />
             ) : (
-                <EmptyState onAddClick={onAddClick} />
+                <EmptyState />
             )}
 
             {records.length > 0 && (
@@ -140,7 +136,7 @@ export default function DashboardContent({
                     href="/stats"
                     className="block text-center pt-3 pb-4 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
                 >
-                    예상 자산 · 수익 차트 보기 →
+                    적립 현황 보기 →
                 </Link>
             )}
         </div>

@@ -1,10 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { Plus, TrashSimple } from '@phosphor-icons/react'
-import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
-import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
-import { fmt, dDayLabel } from '@/app/utils/goal-format'
+import { Plus } from '@phosphor-icons/react'
+import { GoalRow } from './GoalRow'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 
 export interface GoalCardCarouselProps {
@@ -12,100 +10,8 @@ export interface GoalCardCarouselProps {
   progressMap: Map<string, GoalProgress>
   onCreate: () => void
   onSelect: (id: string) => void
+  onAddRecord: (id: string) => void
   onDelete?: (id: string) => Promise<void>
-}
-
-interface GoalRowProps {
-  goal: Goal
-  progress: GoalProgress
-  onSelect: (id: string) => void
-  onDelete?: (id: string) => Promise<void>
-}
-
-function GoalRow({ goal, progress, onSelect, onDelete }: GoalRowProps) {
-  const dDay = dDayLabel(progress.dDay)
-  const swipe = useSwipeToDelete({
-    enabled: !!onDelete,
-    onDelete: async () => {
-      if (onDelete) await onDelete(goal.id)
-    },
-  })
-
-  return (
-    <>
-      <div
-        className="relative overflow-hidden border-b border-border-subtle last:border-b-0"
-        onTouchStart={swipe.onTouchStart}
-        onTouchMove={swipe.onTouchMove}
-        onTouchEnd={swipe.onTouchEnd}
-      >
-        {onDelete && (
-          <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-red-500">
-            <button
-              type="button"
-              onClick={swipe.onDeleteButtonClick}
-              className="flex flex-col items-center justify-center gap-1 w-full h-full"
-              aria-label="삭제"
-            >
-              <TrashSimple className="w-5 h-5 text-white" weight="bold" />
-              <span className="text-[11px] font-semibold text-white">삭제</span>
-            </button>
-          </div>
-        )}
-
-        <div
-          className="relative bg-card select-none"
-          style={{
-            transform: `translateX(${swipe.translateX}px)`,
-            transition: swipe.isDragging
-              ? 'none'
-              : 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              if (swipe.isRevealed) {
-                swipe.close()
-                return
-              }
-              onSelect(goal.id)
-            }}
-            onContextMenu={(e) => e.preventDefault()}
-            className="flex w-full items-center justify-between gap-3 px-2 py-2.5 text-left"
-          >
-            <div className="min-w-0 flex-1">
-              <div className="flex min-w-0 flex-col gap-1.5">
-                <h3 className="min-w-0 truncate text-base font-semibold text-foreground">
-                  {goal.name}
-                </h3>
-                <p className="truncate text-sm text-muted-foreground">
-                  현재 {fmt(progress.currentValue)}원 ·{' '}
-                  {progress.progressPercent}%
-                </p>
-              </div>
-            </div>
-            {dDay && (
-              <div className="flex shrink-0 items-center">
-                <span className="text-sm text-muted-foreground tabular-nums">
-                  {dDay}
-                </span>
-              </div>
-            )}
-          </button>
-        </div>
-      </div>
-
-      <DeleteConfirmModal
-        isOpen={swipe.isDeleteModalOpen}
-        onClose={swipe.onDeleteModalClose}
-        onConfirm={swipe.onDeleteConfirm}
-        isDeleting={swipe.isSubmitting}
-        title={`'${goal.name}' 정리`}
-        description="목적을 정리하면 묶였던 투자는 자유 상태로 돌아갑니다."
-      />
-    </>
-  )
 }
 
 export function GoalCardCarousel({
@@ -113,6 +19,7 @@ export function GoalCardCarousel({
   progressMap,
   onCreate,
   onSelect,
+  onAddRecord,
   onDelete,
 }: GoalCardCarouselProps) {
   return (
@@ -126,9 +33,7 @@ export function GoalCardCarousel({
             height={24}
             className="w-6 h-6"
           />
-          <h2 className="text-lg font-bold text-foreground">
-            모아야 할 큰돈이 있나요?
-          </h2>
+          <h2 className="text-lg font-bold text-foreground">내 목적</h2>
         </div>
         <button
           type="button"
@@ -150,6 +55,7 @@ export function GoalCardCarousel({
               goal={goal}
               progress={progress}
               onSelect={onSelect}
+              onAddRecord={onAddRecord}
               onDelete={onDelete}
             />
           )
