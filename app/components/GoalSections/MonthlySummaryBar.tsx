@@ -31,6 +31,11 @@ export function MonthlySummaryBar({ completed, total }: MonthlySummaryBarProps) 
           style={{ width: `${percent}%` }}
         />
       </div>
+      {completed === 0 && total > 0 && (
+        <p className="mt-2 text-xs text-foreground-subtle">
+          납입한 항목은 &lsquo;완료하기&rsquo;를 눌러 직접 체크해요
+        </p>
+      )}
     </div>
   )
 }
