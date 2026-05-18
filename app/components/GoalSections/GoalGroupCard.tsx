@@ -101,9 +101,9 @@ export function GoalGroupCard({
         <button
           type="button"
           onClick={() => onAddRecord(goal.id)}
-          className="flex w-full items-center justify-center gap-1.5 bg-muted py-3 text-sm font-medium text-foreground-soft transition-colors hover:bg-surface-strong-hover hover:text-foreground"
+          className="flex w-full items-center justify-center gap-1.5 bg-surface-hover py-2 text-xs font-medium text-foreground-subtle transition-colors hover:bg-muted hover:text-foreground-soft"
         >
-          <Plus className="h-4 w-4" weight="bold" />
+          <Plus className="h-3.5 w-3.5" weight="bold" />
           적립 항목 추가
         </button>
       )}
