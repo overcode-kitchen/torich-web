@@ -1,16 +1,12 @@
 'use client'
 
-import { Plus } from '@phosphor-icons/react'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import type { Investment } from '@/app/types/investment'
-import UpcomingInvestments from '@/app/components/UpcomingInvestments'
 import type { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
 import MonthlyAmountCard from './MonthlyAmountCard'
 import BrandStorySection from './BrandStorySection'
-import InvestmentListSection from './InvestmentListSection'
 import EmptyState from './EmptyState'
-import GoalSection from './GoalSection'
+import GoalGroupSection from '@/app/components/GoalSections/GoalGroupSection'
 
 type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
 type SortBy = 'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME' | 'NEXT_PAYMENT'
@@ -56,43 +52,30 @@ interface DashboardContentProps {
     }
 }
 
+/**
+ * 홈 메인 컨텐츠.
+ *
+ * 목적 중심 재구성: 투자를 목적 아래 묶어 보여주는 GoalGroupSection이 메인이며
+ * 이전의 UpcomingInvestments(체크리스트) / GoalSection(캐러셀) /
+ * InvestmentListSection(평면 목록) 역할을 모두 흡수했다.
+ * filter/list/upcomingInvestments props는 호환을 위해 시그니처에만 남겨둔다.
+ */
 export default function DashboardContent({
     data,
-    ui,
-    filter,
-    list,
     brandStory,
     settings,
 }: DashboardContentProps) {
-    const { records, filteredRecords, activeRecords, totalMonthlyPayment, upcomingInvestments } = data
-    const { onAddClick } = ui
-    const { filterStatus, onFilterChange, sortBy, onSortChange } = filter
-    const { listExpanded, displayRecords, hasMoreList, remainingListCount, toggleListExpansion, onItemClick, onDelete } = list
+    const { records, totalMonthlyPayment } = data
     const { showBrandStoryCard, onCloseBrandStoryCard, pendingBrandStoryUndo, onUndoBrandStory, isBrandStoryOpen, onOpenBrandStory, onCloseBrandStory } = brandStory
     const { showMonthlyAmount, onToggleMonthlyAmount } = settings
 
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
-            {activeRecords.length > 0 && (
-                <UpcomingInvestments
-                    records={activeRecords}
-                    data={upcomingInvestments}
-                />
+            {records.length > 0 ? (
+                <GoalGroupSection records={records} />
+            ) : (
+                <EmptyState />
             )}
-
-            {records.length > 0 && (
-                <Button
-                    size="lg"
-                    className="w-full rounded-2xl"
-                    onClick={onAddClick}
-                >
-                    <Plus className="w-5 h-5" />
-                    투자 목록 추가하기
-                </Button>
-            )}
-
-            <GoalSection records={records} />
-
 
             <MonthlyAmountCard
                 records={records}
@@ -110,26 +93,6 @@ export default function DashboardContent({
                 isBrandStoryOpen={isBrandStoryOpen}
                 onCloseBrandStory={onCloseBrandStory}
             />
-
-            {records.length > 0 ? (
-                <InvestmentListSection
-                    records={records}
-                    filteredRecords={filteredRecords}
-                    displayRecords={displayRecords}
-                    filterStatus={filterStatus}
-                    onFilterChange={onFilterChange}
-                    sortBy={sortBy}
-                    onSortChange={onSortChange}
-                    onItemClick={onItemClick}
-                    onDelete={onDelete}
-                    listExpanded={listExpanded}
-                    onListExpandToggle={toggleListExpansion}
-                    hasMoreList={hasMoreList}
-                    remainingListCount={remainingListCount}
-                />
-            ) : (
-                <EmptyState />
-            )}
 
             {records.length > 0 && (
                 <Link
