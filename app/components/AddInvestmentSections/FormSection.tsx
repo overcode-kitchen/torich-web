@@ -1,7 +1,6 @@
 'use client'
 
 import StockSearchInput from '@/app/components/Common/StockSearchInput'
-import RateDisplay from '@/app/components/RateDisplay/RateDisplay'
 import AmountInput from '@/app/components/Common/AmountInput'
 import ShareInput from '@/app/components/Common/ShareInput'
 import PeriodInput from '@/app/components/Common/PeriodInput'
@@ -46,32 +45,6 @@ export default function FormSection({ form, modals }: FormSectionProps) {
             form.setShowDropdown(false)
           }}
           onDropdownClose={() => form.setShowDropdown(false)}
-        />
-
-        <RateDisplay
-          isRateLoading={form.isRateLoading}
-          rateFetchFailed={form.rateFetchFailed}
-          isRateEditing={form.isRateEditing}
-          isManualInput={form.isManualInput}
-          stockName={form.stockName}
-          selectedStock={form.selectedStock}
-          annualRate={form.annualRate}
-          originalSystemRate={form.originalSystemRate}
-          editingRate={form.editingRate}
-          onStartEditing={() => form.startEditing(form.annualRate)}
-          onConfirmEdit={() => {
-            if (form.originalSystemRate !== null) {
-              form.confirmEdit((newRate: number) => {
-                form.setAnnualRate(newRate)
-                form.setRateFetchFailed(false)
-              })
-            } else {
-              form.confirmEdit((newRate: number) => form.setAnnualRate(newRate))
-            }
-          }}
-          onCancelEdit={form.cancelEdit}
-          onRateChange={form.handleRateChange}
-          onRateHelpClick={() => modals.setIsRateHelpModalOpen(true)}
         />
       </div>
 

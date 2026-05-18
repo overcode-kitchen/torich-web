@@ -6,7 +6,7 @@
  * [이미지 제안 의미]
  * step1: 홈 대시보드 (다가오는 투자·이번 달 요약 등 앱 첫 화면)
  * step2: 캘린더·납입 일정 (투자일·완료 여부를 한 화면에서 확인)
- * step3: 통계·예상 자산 (장기 복리·예상 수익 차트)
+ * step3: 통계·적립 현황 (납입 원금·완료율)
  */
 export const ONBOARDING_STEPS = [
   {
@@ -28,6 +28,6 @@ export const ONBOARDING_STEPS = [
     title: '작은 돈도 꾸준히, 흔들리지 않게',
     subtitle: '월급날·자동이체 일정에 맞춰\n내 투자 루틴을 지켜줘요.',
     imageSrc: '/images/onboarding/step3.png',
-    imageAlt: '통계·예상 자산',
+    imageAlt: '통계·적립 현황',
   },
 ] as const

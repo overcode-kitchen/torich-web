@@ -15,21 +15,6 @@ interface UseInvestmentCalculationsProps {
   editAnnualRate: string;
   editInvestmentDays: number[];
   editIsHabitMode?: boolean;
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number;
-}
-
-/**
- * 시뮬레이션(적립형)용 복리 계산
- *  - 기간/만기 구분 없이 T년 동안 매월 납입 + 월복리
- */
-function simulateHabitValue(monthlyAmount: number, years: number, R: number): number {
-  if (years <= 0 || monthlyAmount <= 0) return 0
-  const monthlyRate = R / 12
-  const totalMonths = years * 12
-  if (monthlyRate === 0) return monthlyAmount * totalMonths
-  return (
-    monthlyAmount * ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) * (1 + monthlyRate)
-  )
 }
 
 export function useInvestmentCalculations({
@@ -40,7 +25,6 @@ export function useInvestmentCalculations({
   editAnnualRate,
   editInvestmentDays,
   editIsHabitMode,
-  calculateFutureValue,
 }: UseInvestmentCalculationsProps) {
   const startDate = getStartDate(item);
 
@@ -65,34 +49,13 @@ export function useInvestmentCalculations({
   const endDate = displayPeriodYears
     ? calculateEndDate(startDate, displayPeriodYears)
     : null;
-  const R = displayAnnualRate / 100;
 
   // 납입 개월 수
   const elapsedMonths = getElapsedMonths(startDate);
 
-  // 총 납입액 (실제 경과 기간 기반) — 적립형/목표형 공통
+  // 총 납입 원금 (실제 경과 기간 기반) — 적립형/목표형 공통
   const totalPaidPrincipal = displayMonthlyAmount * Math.max(0, elapsedMonths);
 
-  // 만기 가치 (목표형) 또는 "현재 시점 예상 자산" (적립형)
-  let calculatedFutureValue: number;
-  let totalPrincipal: number;
-  if (habitMode || !displayPeriodYears) {
-    // 적립형: 오늘까지 경과 기간 기준 예상 자산
-    const elapsedYears = Math.max(0, elapsedMonths) / 12;
-    calculatedFutureValue = simulateHabitValue(displayMonthlyAmount, elapsedYears, R);
-    totalPrincipal = totalPaidPrincipal;
-  } else {
-    // 목표형: 만기 가치 & 만기 총 원금
-    calculatedFutureValue = calculateFutureValue(
-      displayMonthlyAmount,
-      displayPeriodYears,
-      displayPeriodYears,
-      R
-    );
-    totalPrincipal = displayMonthlyAmount * 12 * displayPeriodYears;
-  }
-
-  const calculatedProfit = calculatedFutureValue - totalPrincipal;
   const progress = displayPeriodYears
     ? calculateProgress(startDate, displayPeriodYears)
     : null;
@@ -110,11 +73,7 @@ export function useInvestmentCalculations({
     displayPeriodYears,
     displayAnnualRate,
     endDate,
-    R,
-    calculatedFutureValue,
-    totalPrincipal,
     totalPaidPrincipal,
-    calculatedProfit,
     progress,
     completed,
     isHabitMode: habitMode,

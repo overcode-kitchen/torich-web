@@ -104,10 +104,10 @@ export async function formatInvestmentData(
 
   const periodYearsNum = params.isHabitMode ? null : convertPeriodToYears(params.period)
 
-  // 최종 금액 계산 (적립형은 만기 금액 개념이 없으므로 0)
-  const { calculateFinalAmount } = await import('@/app/utils/finance')
+  // final_amount: 구버전 앱 호환을 위해 컬럼은 유지하되, 미래 수익 예측 대신
+  // 목표 기간 동안 넣을 누적 납입 원금으로 채운다. (적립형은 만기 개념 없음 → 0)
   const finalAmount = periodYearsNum
-    ? calculateFinalAmount(monthlyAmountInWon, periodYearsNum, params.annualRate)
+    ? monthlyAmountInWon * periodYearsNum * 12
     : 0
 
   const isCustomRate = determineIsCustomRate(

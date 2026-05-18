@@ -2,7 +2,6 @@
 
 import { createContext, useContext, ReactNode } from 'react'
 import { Investment } from '@/app/types/investment'
-import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 
 interface InvestmentDetailContextType {
     item: Investment
@@ -21,12 +20,6 @@ interface InvestmentDetailContextType {
         onSave: () => Promise<void>
         onCancel: () => void
         onDelete: () => Promise<void>
-    }
-    config: {
-        originalRate: number
-        formatRate: (rate: number) => string
-        rateSuggestions: RateSuggestion[]
-        isCustomRate: boolean
     }
 }
 

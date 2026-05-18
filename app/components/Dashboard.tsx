@@ -41,8 +41,6 @@ export interface DashboardProps {
   isBrandStoryOpen: boolean
   onOpenBrandStory: () => void
   onCloseBrandStory: () => void
-
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
 export default function Dashboard({
@@ -65,7 +63,6 @@ export default function Dashboard({
   isBrandStoryOpen,
   onOpenBrandStory,
   onCloseBrandStory,
-  calculateFutureValue,
 }: DashboardProps) {
   const router = useRouter()
   const upcomingInvestmentsData = useUpcomingInvestments(activeRecords)
@@ -152,9 +149,6 @@ export default function Dashboard({
         settings={{
           showMonthlyAmount,
           onToggleMonthlyAmount,
-        }}
-        calculations={{
-          calculateFutureValue,
         }}
       />
     </main>

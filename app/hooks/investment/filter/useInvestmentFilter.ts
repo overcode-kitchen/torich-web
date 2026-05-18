@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import type { Investment } from '@/app/types/investment'
 import { getStartDate } from '@/app/types/investment'
-import { getDaysUntilNextPayment, isCompleted } from '@/app/utils/date'
+import { getDaysUntilNextPayment, getElapsedMonths, isCompleted } from '@/app/utils/date'
 
 type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
 
@@ -21,7 +21,6 @@ type UseInvestmentFilterReturn = {
 
 export function useInvestmentFilter(
   records: Investment[],
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number,
 ): UseInvestmentFilterReturn {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('ACTIVE')
   const [sortBy, setSortBy] = useState<SortBy>('TOTAL_VALUE')
@@ -54,15 +53,10 @@ export function useInvestmentFilter(
 
     const sorted: Investment[] = [...filtered].sort((a: Investment, b: Investment): number => {
       if (sortBy === 'TOTAL_VALUE') {
-        const rA: number = a.annual_rate ? a.annual_rate / 100 : 0.1
-        const rB: number = b.annual_rate ? b.annual_rate / 100 : 0.1
-        // 적립형은 만기가 없으므로 10년 기준으로 비교 가치를 계산
-        const DEFAULT_HABIT_YEARS = 10
-        const periodA = a.period_years && a.period_years > 0 ? a.period_years : DEFAULT_HABIT_YEARS
-        const periodB = b.period_years && b.period_years > 0 ? b.period_years : DEFAULT_HABIT_YEARS
-        const valueA: number = calculateFutureValue(a.monthly_amount, periodA, periodA, rA)
-        const valueB: number = calculateFutureValue(b.monthly_amount, periodB, periodB, rB)
-        return valueB - valueA
+        // 누적 납입 원금(월 납입액 × 경과 개월) 기준 정렬
+        const paidA: number = a.monthly_amount * Math.max(0, getElapsedMonths(getStartDate(a)))
+        const paidB: number = b.monthly_amount * Math.max(0, getElapsedMonths(getStartDate(b)))
+        return paidB - paidA
       }
 
       if (sortBy === 'MONTHLY_PAYMENT') {
@@ -86,7 +80,7 @@ export function useInvestmentFilter(
     })
 
     return sorted
-  }, [records, filterStatus, sortBy, calculateFutureValue])
+  }, [records, filterStatus, sortBy])
 
   return {
     filterStatus,

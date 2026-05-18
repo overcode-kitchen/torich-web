@@ -13,7 +13,6 @@ interface ProgressSectionProps {
   isHabitMode?: boolean
   elapsedMonths?: number
   totalPaidPrincipal?: number
-  calculatedFutureValue?: number
 }
 
 export function ProgressSection(props: ProgressSectionProps) {
@@ -33,15 +32,11 @@ export function ProgressSection(props: ProgressSectionProps) {
   const habit = props.isHabitMode ?? investmentData?.isHabitMode ?? false
   const elapsedMonths = props.elapsedMonths ?? investmentData?.elapsedMonths ?? 0
   const totalPaidPrincipal = props.totalPaidPrincipal ?? investmentData?.totalPaidPrincipal ?? 0
-  const calculatedFutureValue =
-    props.calculatedFutureValue ?? investmentData?.calculatedFutureValue ?? 0
 
   if (startDate === undefined) return null
 
-  // 적립형: streak + 총 납입액 + 현재 예상 자산
+  // 적립형: streak + 총 납입액
   if (habit || !endDate) {
-    const profit = calculatedFutureValue - totalPaidPrincipal
-    const profitPct = totalPaidPrincipal > 0 ? (profit / totalPaidPrincipal) * 100 : 0
     const elapsedText = elapsedMonths > 0 ? `${formatDuration(elapsedMonths)}째 적립 중` : '이번 달부터 적립 시작'
 
     return (
@@ -59,19 +54,6 @@ export function ProgressSection(props: ProgressSectionProps) {
             <span className="text-sm text-muted-foreground">총 납입액</span>
             <span className="text-base font-semibold text-foreground">
               {formatCurrency(totalPaidPrincipal)}
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-sm text-muted-foreground">현재 예상 자산</span>
-            <span className="text-base font-semibold text-foreground">
-              {formatCurrency(Math.round(calculatedFutureValue))}
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-sm text-muted-foreground">수익률</span>
-            <span className={`text-base font-semibold ${profitPct >= 0 ? 'text-primary' : 'text-destructive'}`}>
-              {profitPct >= 0 ? '+' : ''}
-              {profitPct.toFixed(1)}%
             </span>
           </div>
         </div>

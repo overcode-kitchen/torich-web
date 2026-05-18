@@ -4,7 +4,7 @@ import { TrashSimple } from '@phosphor-icons/react'
 import { Investment, getStartDate, formatInvestmentDays, isHabitMode } from '@/app/types/investment'
 import { formatMonthlyContribution } from '@/app/utils/investment-display'
 import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
-import { isCompleted, getElapsedMonths } from '@/app/utils/date'
+import { isCompleted } from '@/app/utils/date'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 
@@ -12,14 +12,12 @@ interface InvestmentItemProps {
   item: Investment
   onClick: () => void
   onDelete?: (id: string) => Promise<void>
-  calculateFutureValue?: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
 export default function InvestmentItem({
   item,
   onClick,
   onDelete,
-  calculateFutureValue,
 }: InvestmentItemProps) {
   const startDate = getStartDate(item)
   const habit = isHabitMode(item)

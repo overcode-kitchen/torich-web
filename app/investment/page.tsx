@@ -6,7 +6,6 @@ import { CircleNotch } from '@phosphor-icons/react'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
-import { calculateSimulatedValue } from '@/app/utils/finance'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 
@@ -83,7 +82,6 @@ function InvestmentDetail() {
         await deleteInvestment(item.id)
         router.replace('/')
       }}
-      calculateFutureValue={calculateSimulatedValue}
     />
   )
 }

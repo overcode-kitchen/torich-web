@@ -10,7 +10,6 @@ import type { UseInvestmentDataProps, UseInvestmentDataReturn } from '../../type
 export function useInvestmentData({
   item,
   isEditMode,
-  calculateFutureValue,
   completedPayments,
   retroactivePayments,
   onToggleRetroactive,
@@ -31,7 +30,6 @@ export function useInvestmentData({
     editAnnualRate: editForm.editAnnualRate,
     editInvestmentDays: editForm.editInvestmentDays,
     editIsHabitMode: editForm.editIsHabitMode,
-    calculateFutureValue,
   })
 
   // 납입 기록
