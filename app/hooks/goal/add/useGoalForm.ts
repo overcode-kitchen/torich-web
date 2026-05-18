@@ -69,7 +69,8 @@ export function useGoalForm(initial?: Goal | null): UseGoalFormReturn {
 
   const reset = useCallback((): void => setValues(EMPTY), [])
 
-  const isValid = values.name.trim().length > 0 && Number(values.target_amount) > 0
+  // 이름만 필수. 목표 금액은 비워둔 채 만들 수 있고 나중에 채울 수 있다.
+  const isValid = values.name.trim().length > 0
 
   return {
     values,
