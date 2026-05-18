@@ -99,7 +99,7 @@ export function GoalGroupCard({
         <button
           type="button"
           onClick={() => onAddRecord(goal.id)}
-          className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium text-foreground-soft transition-colors hover:bg-muted hover:text-foreground"
+          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2.5 text-sm font-medium text-foreground-soft transition-colors hover:border-foreground-subtle hover:bg-muted hover:text-foreground"
         >
           <Plus className="h-4 w-4" weight="bold" />
           적립 항목 추가
