@@ -6,6 +6,14 @@
 export type InvestmentUnitType = 'amount' | 'shares'
 
 /**
+ * 적립 항목 유형.
+ * - 'investment' (기본): 투자 (종목 기반)
+ * - 'savings': 예·적금 (약정 금리·만기일 보유)
+ * - 'cash': 현금·기타 (원금만)
+ */
+export type RecordType = 'investment' | 'savings' | 'cash'
+
+/**
  * 투자 기록 데이터 타입
  */
 export interface Investment {
@@ -33,6 +41,20 @@ export interface Investment {
   monthly_shares?: number | null
   // 묶인 목적(Goal)의 ID. 없으면 null. 구버전 앱은 컬럼을 몰라도 정상 동작.
   goal_id?: string | null
+  // 적립 항목 유형. DB DEFAULT 'investment'라 SELECT 결과는 항상 채워짐.
+  record_type: RecordType
+  // 예적금 약정 연이율(%). 예적금 외 유형은 null.
+  interest_rate?: number | null
+  // 예적금 만기일 (YYYY-MM-DD). 예적금 외 유형은 null.
+  maturity_date?: string | null
+}
+
+/**
+ * 적립 항목 유형 판별 헬퍼.
+ * 구버전 데이터(record_type 미설정)는 'investment'로 간주한다.
+ */
+export function getRecordType(record: Pick<Investment, 'record_type'>): RecordType {
+  return record.record_type ?? 'investment'
 }
 
 /**

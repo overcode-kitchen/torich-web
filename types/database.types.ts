@@ -138,14 +138,17 @@ export type Database = {
           final_amount: number
           goal_id: string | null
           id: string
+          interest_rate: number | null
           investment_days: number[] | null
           is_custom_rate: boolean | null
           market: string | null
+          maturity_date: string | null
           monthly_amount: number
           monthly_shares: number | null
           notification_enabled: boolean | null
           period_years: number | null
           rate_updated_at: string | null
+          record_type: string
           start_date: string | null
           symbol: string | null
           title: string
@@ -159,14 +162,17 @@ export type Database = {
           final_amount: number
           goal_id?: string | null
           id?: string
+          interest_rate?: number | null
           investment_days?: number[] | null
           is_custom_rate?: boolean | null
           market?: string | null
+          maturity_date?: string | null
           monthly_amount: number
           monthly_shares?: number | null
           notification_enabled?: boolean | null
           period_years?: number | null
           rate_updated_at?: string | null
+          record_type?: string
           start_date?: string | null
           symbol?: string | null
           title: string
@@ -180,14 +186,17 @@ export type Database = {
           final_amount?: number
           goal_id?: string | null
           id?: string
+          interest_rate?: number | null
           investment_days?: number[] | null
           is_custom_rate?: boolean | null
           market?: string | null
+          maturity_date?: string | null
           monthly_amount?: number
           monthly_shares?: number | null
           notification_enabled?: boolean | null
           period_years?: number | null
           rate_updated_at?: string | null
+          record_type?: string
           start_date?: string | null
           symbol?: string | null
           title?: string
