@@ -6,6 +6,7 @@ import { Plus } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { GoalGroupCard } from './GoalGroupCard'
 import { MonthlySummaryBar } from './MonthlySummaryBar'
+import EmptyState from '@/app/components/DashboardSections/EmptyState'
 import { useGoalGroups } from '@/app/hooks/goal/data/useGoalGroups'
 import { useMonthlyPaymentStatus } from '@/app/hooks/payment/useMonthlyPaymentStatus'
 import { track } from '@/app/lib/analytics'
@@ -36,7 +37,11 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
   }, [records, isCompleted])
 
   if (isLoading) return null
-  if (groups.length === 0 && records.length === 0) return null
+  // 목적·투자가 모두 없는 신규 사용자에게만 빈 화면을 보여준다.
+  // (목적만 있고 투자가 없어도 목적 카드는 그려야 한다)
+  if (groups.length === 0 && records.length === 0) {
+    return <EmptyState />
+  }
 
   return (
     <div className="space-y-4">
