@@ -9,15 +9,15 @@ export interface MonthlySummaryBarProps {
 
 /**
  * 홈 최상단 "이번 달 요약" 한 줄.
- * 완료 건수 + 얇은 진행 바.
+ * 완료 건수만 슬림하게 보여준다.
+ * (진행 막대바는 목적 카드의 진행률·항목별 완료 버튼과 중복이라 제외)
  */
 export function MonthlySummaryBar({ completed, total }: MonthlySummaryBarProps) {
   if (total === 0) return null
-  const percent = Math.round((completed / total) * 100)
 
   return (
     <div className="px-2">
-      <div className="mb-1.5 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-foreground-soft">
           이번 달 적립
         </span>
@@ -25,14 +25,8 @@ export function MonthlySummaryBar({ completed, total }: MonthlySummaryBarProps) 
           {completed}/{total} 완료
         </span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-border-subtle">
-        <div
-          className="h-full rounded-full bg-foreground-soft transition-all"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
       {completed === 0 && total > 0 && (
-        <p className="mt-2 text-xs text-foreground-subtle">
+        <p className="mt-1.5 text-xs text-foreground-subtle">
           납입한 항목은 &lsquo;완료하기&rsquo;를 눌러 직접 체크해요
         </p>
       )}
