@@ -3,15 +3,20 @@
 import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import MarketSelectionSection from '@/app/components/AddInvestmentSections/MarketSelectionSection'
+import RecordTypeSelector from '@/app/components/AddInvestmentSections/RecordTypeSelector'
 import FormSection from '@/app/components/AddInvestmentSections/FormSection'
 import PreviewSection from '@/app/components/AddInvestmentSections/PreviewSection'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import ManualInputModal from '@/app/components/ManualInputModal'
+import type { RecordType } from '@/app/types/investment'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
 import type { UseModalStateReturn } from '@/app/hooks/ui/useModalState'
 import type { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
 
 interface AddInvestmentViewProps {
+    /** 현재 선택된 적립 항목 유형 (항상 'investment') */
+    recordType: RecordType
+    onRecordTypeChange: (type: RecordType) => void
     form: UseAddInvestmentFormReturn
     modals: UseModalStateReturn
     daysPicker: ReturnType<typeof useInvestmentDaysPicker>
@@ -21,6 +26,8 @@ interface AddInvestmentViewProps {
 }
 
 export default function AddInvestmentView({
+    recordType,
+    onRecordTypeChange,
     form,
     modals,
     daysPicker,
@@ -52,6 +59,12 @@ export default function AddInvestmentView({
                         </>
                     )}
                 </div>
+
+                {/* 적립 항목 유형 선택 (투자/예적금/현금) */}
+                <RecordTypeSelector
+                    recordType={recordType}
+                    onRecordTypeChange={onRecordTypeChange}
+                />
 
                 {/* 마켓 선택 탭 */}
                 <MarketSelectionSection

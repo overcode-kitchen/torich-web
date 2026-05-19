@@ -4,7 +4,7 @@ import { Check } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import { formatInvestmentDays } from '@/app/types/investment'
-import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
+import { getRecordAvatar } from '@/app/utils/recordAvatar'
 import type { Investment } from '@/app/types/investment'
 
 export interface GoalGroupItemRowProps {
@@ -34,6 +34,8 @@ export function GoalGroupItemRow({
       ? `${record.monthly_shares}주`
       : formatCurrency(record.monthly_amount)
 
+  const avatar = getRecordAvatar(record)
+
   return (
     <div
       role="button"
@@ -52,14 +54,10 @@ export function GoalGroupItemRow({
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="flex min-w-0 items-center gap-2">
             <div
-              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
-                record.market === 'US'
-                  ? 'bg-blue-100 text-blue-600'
-                  : 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)]'
-              }`}
+              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${avatar.className}`}
               aria-hidden
             >
-              {getInvestmentAvatarLabel(record.title)}
+              {avatar.label}
             </div>
             <h4 className="min-w-0 truncate text-base font-semibold text-foreground">
               {record.title}
