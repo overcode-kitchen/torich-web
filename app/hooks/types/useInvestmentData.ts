@@ -5,7 +5,6 @@ import { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
 export interface UseInvestmentDataProps {
   item: Investment
   isEditMode: boolean
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
   completedPayments: PaymentHistoryMap
   retroactivePayments?: PaymentHistoryMap
   onToggleRetroactive?: (recordId: string, yearMonth: string, currentCompleted: boolean) => Promise<void>
@@ -40,10 +39,7 @@ export interface UseInvestmentDataReturn {
   displayPeriodYears: number | null
   displayAnnualRate: number
   endDate: Date | null
-  calculatedFutureValue: number
-  totalPrincipal: number
   totalPaidPrincipal: number
-  calculatedProfit: number
   progress: number | null
   completed: boolean
   isHabitMode: boolean

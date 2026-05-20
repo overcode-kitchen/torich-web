@@ -1,8 +1,8 @@
 'use client'
 
 import { useMemo } from 'react'
+import Link from 'next/link'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
-import AssetGrowthSection from '@/app/components/StatsSections/AssetGrowthSection'
 import MonthlyStatusSection from '@/app/components/StatsSections/MonthlyStatusSection'
 import CompletionRateSection from '@/app/components/StatsSections/CompletionRateSection'
 import ModeBreakdownSection from '@/app/components/StatsSections/ModeBreakdownSection'
@@ -14,7 +14,6 @@ import type {
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
 import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
 import { getMonthlyPaymentDelta } from '@/app/utils/stats'
-import { useAssetGrowthChart } from '@/app/hooks/chart/useAssetGrowthChart'
 
 interface StatsContentProps {
     data: {
@@ -27,15 +26,11 @@ interface StatsContentProps {
         retroactivePayments: PaymentHistoryMap
     }
     ui: {
-        selectedYear: number
-        setSelectedYear: (year: number) => void
-        handleShowCashHold: () => void
         handleShowContribution: () => void
     }
     calculations: {
-        totalExpectedAsset: number
+        totalPaidPrincipal: number
         totalMonthlyPayment: number
-        hasMaturedInvestments: boolean
         thisMonth: {
             totalPayment: number
             completedPayment: number
@@ -70,11 +65,10 @@ export default function StatsContent({
 }: StatsContentProps) {
     const { records, activeRecords, hasRecords } = data
     const { completedPayments, retroactivePayments } = payment
-    const { selectedYear, setSelectedYear, handleShowCashHold, handleShowContribution } = ui
+    const { handleShowContribution } = ui
     const {
-        totalExpectedAsset,
+        totalPaidPrincipal,
         totalMonthlyPayment,
-        hasMaturedInvestments,
         thisMonth,
         goalStats,
         habitStats,
@@ -87,32 +81,15 @@ export default function StatsContent({
         [activeRecords, completedPayments, retroactivePayments]
     )
 
-    // 예상 자산 카드의 원금 대비 수익(+%)을 표시하기 위해 차트 데이터의 최종 시점을 그대로 활용한다.
-    const growthChart = useAssetGrowthChart({ investments: records, selectedYear })
-
     return (
         <>
             <StatsGoalProgressSection records={records} />
 
             {hasRecords && (
                 <ExpectedAssetSection
-                    selectedYear={selectedYear}
-                    setSelectedYear={setSelectedYear}
-                    totalExpectedAsset={totalExpectedAsset}
-                    hasMaturedInvestments={hasMaturedInvestments}
+                    totalPaidPrincipal={totalPaidPrincipal}
                     totalMonthlyPayment={totalMonthlyPayment}
-                    expectedProfit={growthChart.currentData?.profit}
-                    expectedPrincipal={growthChart.currentData?.principal}
-                    onShowCashHold={handleShowCashHold}
                     onShowContribution={handleShowContribution}
-                />
-            )}
-
-            {hasRecords && (
-                <AssetGrowthSection
-                    selectedYear={selectedYear}
-                    setSelectedYear={setSelectedYear}
-                    records={records}
                 />
             )}
 
@@ -133,6 +110,13 @@ export default function StatsContent({
                 chartData={chartData}
                 chartBarColor={chartBarColor}
             />
+
+            <Link
+                href="/faq"
+                className="block text-center pt-3 pb-4 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
+            >
+                토리치는 왜 수익률을 안 보여주나요? →
+            </Link>
         </>
     )
 }

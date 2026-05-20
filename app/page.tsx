@@ -10,7 +10,6 @@ import { useRateUpdate } from '@/app/hooks/stock/useRateUpdate'
 import { useInvestmentFilter } from '@/app/hooks/investment/filter/useInvestmentFilter'
 import { useHomePageUI } from '@/app/hooks/ui/useHomePageUI'
 import HomeView from '@/app/components/HomeView'
-import { calculateSimulatedValue } from '@/app/utils/finance'
 
 export default function Home() {
   const { user, isLoading: authLoading } = useAuth()
@@ -18,7 +17,7 @@ export default function Home() {
   const { records, isLoading: dataLoading, deleteInvestment, refetch } = useInvestmentsContext()
   const userId = user?.id
   const { isUpdating: isUpdatingRates, checkAndUpdate } = useRateUpdate(userId)
-  const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records, calculateSimulatedValue)
+  const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records)
 
   const [showMonthlyAmount, setShowMonthlyAmount] = useState<boolean>(true)
 
@@ -103,7 +102,6 @@ export default function Home() {
       pendingBrandStoryUndo={pendingBrandStoryUndo}
       onCloseBrandStoryCard={dismissBrandStoryCard}
       onUndoBrandStory={undoBrandStoryDismiss}
-      calculateSimulatedValue={calculateSimulatedValue}
     />
   )
 }

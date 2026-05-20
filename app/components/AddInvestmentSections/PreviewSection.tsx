@@ -6,8 +6,6 @@ interface PreviewSectionProps {
   stockName: string
   monthlyAmount: string
   period: string
-  annualRate: number
-  isRateLoading: boolean
   isHabitMode?: boolean
 }
 
@@ -15,8 +13,6 @@ export default function PreviewSection({
   stockName,
   monthlyAmount,
   period,
-  annualRate,
-  isRateLoading,
   isHabitMode,
 }: PreviewSectionProps) {
   return (
@@ -24,8 +20,6 @@ export default function PreviewSection({
       stockName={stockName}
       monthlyAmount={monthlyAmount}
       period={period}
-      annualRate={annualRate}
-      isRateLoading={isRateLoading}
       isHabitMode={isHabitMode}
     />
   )

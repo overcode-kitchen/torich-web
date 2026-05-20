@@ -6,42 +6,10 @@ import { isPaymentCompleted } from '@/app/utils/payment-completion'
 import { calculateEndDate, getElapsedMonths } from '@/app/utils/date'
 import type { PaymentHistoryMap } from '../../payment/usePaymentHistory'
 
-export interface CashHoldItemVM {
-  id: string
-  title: string
-  endDate: Date
-  maturityValue: number
-}
-
-/**
- * 시뮬레이션 계산 (목표형은 만기 P년 상한, 적립형은 T년 전체 구간)
- */
-const calculateSimulatedValue = (
-  monthlyAmount: number,
-  T: number,
-  P: number | null,
-  R: number = 0.10
-): number => {
-  const monthlyRate = R / 12
-  // 목표형: P년에서 납입 종료 (이후 현금 보관)
-  // 적립형(P null/0): T년 동안 계속 납입
-  const effectiveMaturity = P && P > 0 ? P : T
-  const cap = T <= effectiveMaturity ? T : effectiveMaturity
-  const totalMonths = cap * 12
-  if (totalMonths <= 0) return 0
-  if (monthlyRate === 0) return monthlyAmount * totalMonths
-  return (
-    monthlyAmount *
-    ((Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate) *
-    (1 + monthlyRate)
-  )
-}
-
 interface UseStatsCalculationsProps {
   records: Investment[]
   activeRecords: Investment[]
   completedPayments: PaymentHistoryMap
-  selectedYear: number
 }
 
 export interface GoalStats {
@@ -63,10 +31,9 @@ export interface HabitStats {
 }
 
 export interface UseStatsCalculationsReturn {
-  totalExpectedAsset: number
+  /** 지금까지 모은 누적 납입 원금 (월 납입액 × 경과 개월 합산) */
+  totalPaidPrincipal: number
   totalMonthlyPayment: number
-  hasMaturedInvestments: boolean
-  maturedItems: CashHoldItemVM[]
   thisMonth: {
     totalPayment: number
     completedPayment: number
@@ -75,52 +42,24 @@ export interface UseStatsCalculationsReturn {
   }
   goalStats: GoalStats
   habitStats: HabitStats
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R?: number) => number
 }
 
 export function useStatsCalculations({
   records,
   activeRecords,
   completedPayments,
-  selectedYear,
 }: UseStatsCalculationsProps): UseStatsCalculationsReturn {
-  const { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments, maturedItems } = useMemo(() => {
+  const { totalPaidPrincipal, totalMonthlyPayment } = useMemo(() => {
     if (records.length === 0) {
-      return { totalExpectedAsset: 0, totalMonthlyPayment: 0, hasMaturedInvestments: false, maturedItems: [] }
+      return { totalPaidPrincipal: 0, totalMonthlyPayment: 0 }
     }
-    const totalExpectedAsset = records.reduce((sum, record) => {
-      const P = record.period_years
-      const R = record.annual_rate ? record.annual_rate / 100 : 0.10
-      return sum + calculateSimulatedValue(record.monthly_amount, selectedYear, P, R)
+    const totalPaidPrincipal = records.reduce((sum, record) => {
+      const elapsedMonths = Math.max(0, getElapsedMonths(getStartDate(record)))
+      return sum + record.monthly_amount * elapsedMonths
     }, 0)
     const totalMonthlyPayment = records.reduce((sum, record) => sum + record.monthly_amount, 0)
-
-    // 만기 처리(목표형만): 적립형은 만기 개념이 없음
-    const maturedItems = records
-      .filter((item) => item.period_years !== null && item.period_years !== undefined && item.period_years > 0 && item.period_years < selectedYear)
-      .map((item): CashHoldItemVM => {
-        const startDate = getStartDate(item)
-        const endDate = calculateEndDate(startDate, item.period_years) ?? startDate
-        const R = item.annual_rate ? item.annual_rate / 100 : 0.10
-
-        const maturityValue = calculateSimulatedValue(
-          item.monthly_amount,
-          item.period_years!,
-          item.period_years!,
-          R
-        )
-
-        return {
-          id: item.id,
-          title: item.title,
-          endDate,
-          maturityValue,
-        }
-      })
-
-    const hasMaturedInvestments = maturedItems.length > 0
-    return { totalExpectedAsset, totalMonthlyPayment, hasMaturedInvestments, maturedItems }
-  }, [records, selectedYear])
+    return { totalPaidPrincipal, totalMonthlyPayment }
+  }, [records])
 
   const thisMonth = useMemo(() => getThisMonthStats(activeRecords, completedPayments), [activeRecords, completedPayments])
 
@@ -220,13 +159,10 @@ export function useStatsCalculations({
   }, [activeRecords, completedPayments])
 
   return {
-    totalExpectedAsset,
+    totalPaidPrincipal,
     totalMonthlyPayment,
-    hasMaturedInvestments,
-    maturedItems,
     thisMonth,
     goalStats,
     habitStats,
-    calculateFutureValue: (m, T, P, R = 0.10) => calculateSimulatedValue(m, T, P, R),
   }
 }

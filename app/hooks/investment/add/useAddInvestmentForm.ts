@@ -8,7 +8,14 @@ import { useAddInvestmentCalculations } from './useAddInvestmentCalculations'
 import { useAddInvestmentSubmit } from './useAddInvestmentSubmit'
 import type { UseAddInvestmentFormReturn } from '../../types/useAddInvestmentForm'
 
-export function useAddInvestmentForm(): UseAddInvestmentFormReturn {
+export interface UseAddInvestmentFormOptions {
+  /** 목적 만들기 흐름에서 넘어온 경우, 생성될 투자를 이 목적에 연결한다. */
+  goalId?: string
+}
+
+export function useAddInvestmentForm(
+  options?: UseAddInvestmentFormOptions,
+): UseAddInvestmentFormReturn {
   // 기존 훅들 사용
   const stockSearch = useStockSearch('', false)
   const manualInput = useManualInput()
@@ -49,6 +56,7 @@ export function useAddInvestmentForm(): UseAddInvestmentFormReturn {
     market: updatedStockSearch.market,
     unitType: ui.unitType,
     monthlyShares: ui.monthlyShares,
+    goalId: options?.goalId,
   })
 
   return {
@@ -88,8 +96,6 @@ export function useAddInvestmentForm(): UseAddInvestmentFormReturn {
     setIsManualModalOpen: manualInput.setIsManualModalOpen,
     manualStockName: manualInput.manualStockName,
     setManualStockName: manualInput.setManualStockName,
-    manualRate: manualInput.manualRate,
-    setManualRate: manualInput.setManualRate,
     isManualInput: manualInput.isManualInput,
     setIsManualInput: manualInput.setIsManualInput,
     handleManualConfirm: manualInput.handleManualConfirm,

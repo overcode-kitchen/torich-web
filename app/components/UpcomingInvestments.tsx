@@ -66,12 +66,12 @@ export default function UpcomingInvestments({ records, data }: UpcomingInvestmen
         <h2 className="text-lg font-bold text-foreground flex items-center gap-1">
           <Image
             src="/icons/3d/bell-yellow.png"
-            alt="다가오는 투자 알림 아이콘"
+            alt="이번 달 체크리스트 아이콘"
             width={24}
             height={24}
             className="w-6 h-6"
           />
-          <span>다가오는 투자</span>
+          <span>이번 달 체크리스트</span>
         </h2>
         <div className="flex items-center gap-2">
           <DropdownMenu>

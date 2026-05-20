@@ -55,8 +55,6 @@ export interface UseAddInvestmentFormReturn {
   setIsManualModalOpen: (open: boolean) => void
   manualStockName: string
   setManualStockName: (name: string) => void
-  manualRate: string
-  setManualRate: (rate: string) => void
   isManualInput: boolean
   setIsManualInput: (manual: boolean) => void
   handleManualConfirm: (callbacks: { onConfirm: (name: string, rate: number) => void }) => void

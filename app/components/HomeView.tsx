@@ -49,8 +49,6 @@ interface HomeViewProps {
     pendingBrandStoryUndo: boolean
     onCloseBrandStoryCard: () => void
     onUndoBrandStory: () => void
-
-    calculateSimulatedValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
 export default function HomeView({
@@ -77,7 +75,6 @@ export default function HomeView({
     pendingBrandStoryUndo,
     onCloseBrandStoryCard,
     onUndoBrandStory,
-    calculateSimulatedValue,
 }: HomeViewProps) {
     const isNativeApp = useIsNativeApp()
     const { pullDistance, isRefreshing, threshold } = usePullToRefresh({
@@ -139,7 +136,6 @@ export default function HomeView({
             isBrandStoryOpen={isBrandStoryOpen}
             onOpenBrandStory={() => setIsBrandStoryOpen(true)}
             onCloseBrandStory={() => setIsBrandStoryOpen(false)}
-            calculateFutureValue={calculateSimulatedValue}
         />
         </>
     )

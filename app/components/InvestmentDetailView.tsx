@@ -8,7 +8,6 @@ import { useInvestmentDetailUI } from '@/app/hooks/investment/detail/useInvestme
 import { useInvestmentDetailHandlers } from '@/app/hooks/investment/detail/useInvestmentDetailHandlers'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSections/InvestmentDetailHeader'
-import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
 import { InvestmentDetailContent } from '@/app/components/InvestmentDetailSections/InvestmentDetailContent'
 import { InvestmentDetailProvider } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 import { RetroactiveOnboardingSheet } from '@/app/components/InvestmentDetailSections/RetroactiveOnboardingSheet'
@@ -21,7 +20,6 @@ interface InvestmentDetailViewProps {
   onBack: () => void
   onUpdate: (data: { monthly_amount: number; period_years: number | null; annual_rate: number; investment_days?: number[] }) => Promise<void>
   onDelete: () => Promise<void>
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
@@ -32,7 +30,6 @@ function InternalInvestmentDetailView({
   onBack,
   onUpdate,
   onDelete,
-  calculateFutureValue,
 }: InvestmentDetailViewProps) {
   // Context
   const {
@@ -81,7 +78,6 @@ function InternalInvestmentDetailView({
     item,
     onUpdate,
     onDelete,
-    calculateFutureValue,
     isEditMode,
     setIsEditMode,
     setIsDaysPickerOpen,
@@ -109,14 +105,6 @@ function InternalInvestmentDetailView({
   })
 
 
-  // 공통 props
-  const originalRate = item.annual_rate || 10
-  const formatRate = (rate: number) => rate.toFixed(2).replace(/\.?0+$/, '')
-  const rateSuggestions: RateSuggestion[] = [
-    { label: '⚡️ 10년 평균 {rate}', rate: originalRate },
-  ]
-  const isCustomRate = !!item.is_custom_rate
-
   const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
   const contentPaddingTop = isNativeApp
     ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)'
@@ -141,12 +129,6 @@ function InternalInvestmentDetailView({
           onSave: handleSave,
           onCancel: handleCancel,
           onDelete: handleDelete,
-        },
-        config: {
-          originalRate,
-          formatRate,
-          rateSuggestions,
-          isCustomRate,
         },
       }}
     >

@@ -11,7 +11,6 @@ interface UseInvestmentDetailHandlersProps {
   item: Investment
   onUpdate: (data: { monthly_amount: number; period_years: number | null; annual_rate: number; investment_days?: number[] }) => Promise<void>
   onDelete: () => Promise<void>
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
   isEditMode: boolean
   setIsEditMode: (value: boolean) => void
   setIsDaysPickerOpen: (value: boolean) => void
@@ -25,7 +24,6 @@ export function useInvestmentDetailHandlers({
   item,
   onUpdate,
   onDelete,
-  calculateFutureValue,
   isEditMode,
   setIsEditMode,
   setIsDaysPickerOpen,
@@ -38,7 +36,6 @@ export function useInvestmentDetailHandlers({
   const investmentData = useInvestmentData({
     item,
     isEditMode,
-    calculateFutureValue,
     completedPayments,
     retroactivePayments,
     onToggleRetroactive,

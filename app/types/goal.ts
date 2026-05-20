@@ -33,7 +33,8 @@ export interface GoalProgress {
   goalId: string;
   currentValue: number;
   projectedValue: number | null;
-  progressPercent: number;
+  /** 목표 금액이 없는 목적은 진행률을 계산할 수 없어 null. */
+  progressPercent: number | null;
   projectedProgressPercent: number | null;
   dDay: number | null;
   isCompleted: boolean;

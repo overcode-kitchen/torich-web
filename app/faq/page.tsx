@@ -17,10 +17,10 @@ export default function FAQPage() {
     <SubPageScaffold onBack={goBack} surfaceClassName="bg-background" contentClassName="py-6">
       <header className="mb-6">
         <h1 className="text-xl font-bold tracking-tight text-foreground">
-          예상 자산은 어떻게 계산되나요?
+          토리치, 자주 묻는 질문
         </h1>
         <p className="mt-2 text-base text-muted-foreground leading-relaxed">
-          수익률·환율·공식·유의사항을 한 페이지에 모았어요.
+          목적·적립·진행률에 대해 자주 묻는 것들을 모았어요.
         </p>
       </header>
 

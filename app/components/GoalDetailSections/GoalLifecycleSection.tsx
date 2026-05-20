@@ -35,8 +35,9 @@ export function GoalLifecycleSection({
         <div className="rounded-2xl bg-surface-hover p-5">
           <p className="text-sm text-foreground">마감일이 지났어요.</p>
           <p className="mt-1 text-xs text-foreground-subtle">
-            달성률 {progress.progressPercent}% — 삭제할지, 더 모을지 천천히
-            결정해보세요.
+            {progress.progressPercent !== null &&
+              `달성률 ${progress.progressPercent}% — `}
+            삭제할지, 더 모을지 천천히 결정해보세요.
           </p>
         </div>
       )}

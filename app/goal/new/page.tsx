@@ -1,19 +1,20 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import { GoalFormSection } from '@/app/components/GoalFormSections/GoalFormSection'
-import { GOAL_PRESET_NAMES } from '@/app/constants/goal'
+import { GOAL_PRESETS, GOAL_PRESET_NAMES } from '@/app/constants/goal'
 import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
 import { useGoalCreate } from '@/app/hooks/goal/data/useGoalCreate'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { amountBucket, track } from '@/app/lib/analytics'
 import { createClient } from '@/utils/supabase/client'
 
-export default function NewGoalPage() {
+function NewGoalContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [userId, setUserId] = useState<string | undefined>(undefined)
   const { values, setField, isValid, toCreateInput } = useGoalForm()
   const { createGoal, isCreating } = useGoalCreate(userId)
@@ -29,6 +30,16 @@ export default function NewGoalPage() {
     })
   }, [])
 
+  // 빈 화면 예시 칩에서 넘어온 경우 목적 이름·이모지를 미리 채운다.
+  useEffect(() => {
+    const preset = searchParams.get('preset')
+    if (!preset) return
+    const matched = GOAL_PRESETS.find((p) => p.name === preset)
+    if (!matched) return
+    setField('name', matched.name)
+    setField('emoji', matched.emoji)
+  }, [searchParams, setField])
+
   async function handleSubmit(): Promise<void> {
     const goal = await createGoal(toCreateInput())
     if (!goal) return
@@ -41,7 +52,8 @@ export default function NewGoalPage() {
         ? trimmedName
         : 'custom',
     })
-    router.replace(`/goal/${goal.id}`)
+    // 목적을 만든 직후 적립 항목 추가로 바로 이어준다.
+    router.replace(`/add?goalId=${goal.id}`)
   }
 
   return (
@@ -79,5 +91,13 @@ export default function NewGoalPage() {
         </button>
       </div>
     </SubPageScaffold>
+  )
+}
+
+export default function NewGoalPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewGoalContent />
+    </Suspense>
   )
 }
