@@ -48,7 +48,7 @@ export function GoalGroupItemRow({
         }
       }}
       aria-label={`${record.title} 상세 보기`}
-      className="flex cursor-pointer items-center justify-between gap-3 border-b border-border-subtle px-2 py-2.5 transition-colors last:border-b-0 hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex cursor-pointer items-center justify-between gap-3 border-b border-border-subtle py-2.5 transition-colors last:border-b-0 hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 flex-col gap-1.5">
