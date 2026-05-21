@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import type { RecordType } from '@/app/types/investment'
-import type { GroupId, UseAddItemFlowReturn } from './useAddItemFlow'
+import type { UseAddItemFlowReturn } from './useAddItemFlow'
 import type { UseAddItemFormStateReturn } from './useAddItemFormState'
 
 export interface UseAddItemResetPolicyProps {

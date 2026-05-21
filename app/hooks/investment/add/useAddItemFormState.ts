@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { Investment } from '@/app/types/investment'
 
 export interface UseAddItemFormStateProps {
@@ -80,13 +80,14 @@ export function useAddItemFormState({
     setInterestRate(parts.length > 2 ? `${parts[0]}.${parts[1]}` : cleaned)
   }
 
-  const resetAll = (): void => {
+  // useEffect 의존성에서 안정적으로 참조되도록 useCallback으로 메모이즈.
+  const resetAll = useCallback((): void => {
     setTitle('')
     setMonthlyAmount('')
     setInvestmentDays([])
     setInterestRate('')
     setMaturityDate('')
-  }
+  }, [])
 
   return {
     title,
