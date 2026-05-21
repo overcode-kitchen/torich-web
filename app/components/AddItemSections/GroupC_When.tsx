@@ -1,7 +1,7 @@
 'use client'
 
-import InvestmentStartDateField from '@/app/components/AddInvestmentSections/InvestmentStartDateField'
-import InvestmentDaysField from '@/app/components/AddInvestmentSections/InvestmentDaysField'
+import { CalendarBlank } from '@phosphor-icons/react'
+import InvestmentStartDateSheet from '@/app/components/AddInvestmentSections/InvestmentStartDateSheet'
 import ProgressiveField from './ProgressiveField'
 import { formatInvestmentDays } from '@/app/types/investment'
 import type { RecordType } from '@/app/types/investment'
@@ -19,10 +19,22 @@ interface GroupC_WhenProps {
   onOpenDaysPicker: () => void
 }
 
+const formatStartDate = (d: Date): string =>
+  d.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
+const fieldButtonClass =
+  'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-sm text-foreground border border-border-subtle hover:bg-surface transition-colors'
+
 /**
  * 그룹 C: "언제 모을까요?"
- * - 투자: 시작일(default 있음) + 매월 투자일 — 둘 다 자동 노출
- * - 예적금/현금: 납입일만 자동 노출
+ * - 투자: 시작일 + 매월 투자일
+ * - 예적금/현금: 매월 납입일
+ *
+ * 각 필드는 ProgressiveField 라벨 하나 + 단순 버튼 1개로 단순화.
  */
 export default function GroupC_When({
   recordType,
@@ -35,25 +47,40 @@ export default function GroupC_When({
   const isInvestment = recordType === 'investment'
   const days = isInvestment ? investmentForm.investmentDays : formState.investmentDays
   const daysLabel = isInvestment ? '매월 언제 투자할까요?' : '매월 언제 모을까요?'
+  const daysButtonLabel =
+    days.length > 0 ? formatInvestmentDays(days) : '날짜 선택하기'
 
   return (
     <div>
       {isInvestment && (
         <ProgressiveField label="언제부터 시작했나요?" autoScroll={false}>
-          <InvestmentStartDateField
-            startDate={investmentForm.startDate}
-            setStartDate={investmentForm.setStartDate}
-            isOpen={isStartDatePickerOpen}
-            onOpenChange={onStartDatePickerOpenChange}
-          />
+          <button
+            type="button"
+            onClick={() => onStartDatePickerOpenChange(true)}
+            className={fieldButtonClass}
+          >
+            <span>{formatStartDate(investmentForm.startDate)}</span>
+            <CalendarBlank className="w-4 h-4 text-foreground-subtle" />
+          </button>
+          {isStartDatePickerOpen && (
+            <InvestmentStartDateSheet
+              selectedDate={investmentForm.startDate}
+              onSelect={investmentForm.setStartDate}
+              onClose={() => onStartDatePickerOpenChange(false)}
+            />
+          )}
         </ProgressiveField>
       )}
 
       <ProgressiveField label={daysLabel} autoScroll={isInvestment}>
-        <InvestmentDaysField
-          investmentDays={days}
-          onOpenDaysPicker={onOpenDaysPicker}
-        />
+        <button
+          type="button"
+          onClick={onOpenDaysPicker}
+          className={fieldButtonClass}
+        >
+          <span>{daysButtonLabel}</span>
+          <CalendarBlank className="w-4 h-4 text-foreground-subtle" />
+        </button>
       </ProgressiveField>
     </div>
   )

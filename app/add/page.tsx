@@ -35,7 +35,7 @@ function AddRecordContent() {
 
   return (
     <>
-      <SubPageScaffold onBack={handleBack} contentClassName="py-6">
+      <SubPageScaffold onBack={handleBack} contentClassName="py-6 pb-40">
         <AddItemHeader currentGroup={flow.currentGroup} />
 
         {flow.currentGroup === 'A' && (
@@ -66,8 +66,13 @@ function AddRecordContent() {
             onOpenDaysPicker={() => modals.setIsDaysPickerOpen(true)}
           />
         )}
+      </SubPageScaffold>
 
-        <div className="pt-8">
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface/95 backdrop-blur"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
+      >
+        <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-2xl px-4 pt-4">
           <button
             type="button"
             onClick={actions.onAction}
@@ -88,13 +93,13 @@ function AddRecordContent() {
               type="button"
               onClick={onSkip}
               disabled={isSubmitting}
-              className="w-full py-3 mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              className="w-full py-3 mt-1 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             >
               나중에 할게요
             </button>
           )}
         </div>
-      </SubPageScaffold>
+      </div>
 
       {modals.isDaysPickerOpen && (
         <InvestmentDaysPickerSheet
