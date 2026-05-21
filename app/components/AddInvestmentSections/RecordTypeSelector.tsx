@@ -5,6 +5,8 @@ import type { RecordType } from '@/app/types/investment'
 interface RecordTypeSelectorProps {
   recordType: RecordType
   onRecordTypeChange: (type: RecordType) => void
+  /** 편집 모드에서 record_type 변경을 막기 위해 true 전달 */
+  disabled?: boolean
 }
 
 const OPTIONS: { value: RecordType; label: string }[] = [
@@ -20,6 +22,7 @@ const OPTIONS: { value: RecordType; label: string }[] = [
 export default function RecordTypeSelector({
   recordType,
   onRecordTypeChange,
+  disabled = false,
 }: RecordTypeSelectorProps) {
   return (
     <div className="grid grid-cols-3 gap-1 bg-secondary p-1 rounded-lg mb-6">
@@ -28,7 +31,8 @@ export default function RecordTypeSelector({
           key={option.value}
           type="button"
           onClick={() => onRecordTypeChange(option.value)}
-          className={`py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+          disabled={disabled}
+          className={`py-2 px-4 text-sm font-medium rounded-md transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
             recordType === option.value
               ? 'bg-card dark:bg-surface-strong-hover text-foreground shadow-sm'
               : 'text-foreground-soft hover:text-foreground'

@@ -18,6 +18,8 @@ interface GroupA_WhatToSaveProps {
   flow: UseAddItemFlowReturn
   /** 투자 종목 수동 입력 모달 트리거 */
   onOpenManualInputModal: () => void
+  /** 편집 모드: record_type 변경 금지 (record_type 불일치로 인한 데이터 손상 방지) */
+  isEditMode?: boolean
 }
 
 /**
@@ -33,12 +35,14 @@ export default function GroupA_WhatToSave({
   onTitleChange,
   flow,
   onOpenManualInputModal,
+  isEditMode = false,
 }: GroupA_WhatToSaveProps) {
   return (
     <div className="space-y-6">
       <RecordTypeSelector
         recordType={recordType}
         onRecordTypeChange={onRecordTypeChange}
+        disabled={isEditMode}
       />
 
       {recordType === 'investment' ? (
