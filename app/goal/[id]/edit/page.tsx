@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
+import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
 import { GoalFormSection } from '@/app/components/GoalFormSections/GoalFormSection'
 import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
@@ -46,20 +47,13 @@ function EditForm({ goal, userId, onCancel }: EditFormProps) {
       />
 
       <div className="flex flex-col gap-3 pt-8">
-        <button
+        <PrimaryCTAButton
+          label="저장하기"
           onClick={() => void handleSubmit()}
-          disabled={!isValid || isUpdating}
-          className="w-full bg-surface-dark text-white font-medium rounded-xl py-4 hover:bg-surface-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {isUpdating ? (
-            <>
-              <CircleNotch className="w-5 h-5 animate-spin" />
-              <span>저장 중...</span>
-            </>
-          ) : (
-            '저장하기'
-          )}
-        </button>
+          disabled={!isValid}
+          loading={isUpdating}
+          loadingLabel="저장 중..."
+        />
         <button
           type="button"
           onClick={onCancel}

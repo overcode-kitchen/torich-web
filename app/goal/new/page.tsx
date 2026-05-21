@@ -2,8 +2,8 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
+import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
 import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialog'
 import GoalFlowHeader from '@/app/components/GoalFormSections/GoalFlowHeader'
 import GoalStepName from '@/app/components/GoalFormSections/GoalStepName'
@@ -112,23 +112,13 @@ function NewGoalContent() {
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
       >
         <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-2xl px-4 pt-4">
-          <button
-            type="button"
+          <PrimaryCTAButton
+            label={flow.isAtLastStep ? '목적 만들기' : '다음'}
             onClick={handleAction}
-            disabled={!canAdvance || isCreating}
-            className="w-full bg-surface-dark text-white font-medium rounded-xl py-4 hover:bg-surface-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isCreating ? (
-              <>
-                <CircleNotch className="w-5 h-5 animate-spin" />
-                <span>만드는 중...</span>
-              </>
-            ) : flow.isAtLastStep ? (
-              '목적 만들기'
-            ) : (
-              '다음'
-            )}
-          </button>
+            disabled={!canAdvance}
+            loading={isCreating}
+            loadingLabel="만드는 중..."
+          />
         </div>
       </div>
 
