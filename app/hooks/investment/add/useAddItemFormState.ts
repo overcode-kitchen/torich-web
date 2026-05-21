@@ -1,45 +1,61 @@
 'use client'
 
-import { useState } from 'react'
-import { useSavingsCashSubmit } from './useSavingsCashSubmit'
-import type { RecordType } from '@/app/types/investment'
+import { useCallback, useEffect, useState } from 'react'
+import type { Investment } from '@/app/types/investment'
 
-export interface UseSavingsCashFormOptions {
-  /** 'savings' | 'cash' */
-  recordType: Exclude<RecordType, 'investment'>
-  /** 목적 만들기 흐름에서 넘어온 경우 연결할 목적 ID */
-  goalId?: string
+export interface UseAddItemFormStateProps {
+  /** 편집 모드에서 기존 record로 초기화. undefined면 빈 상태로 시작. */
+  initData?: Investment | null
 }
 
-export interface UseSavingsCashFormReturn {
+export interface UseAddItemFormStateReturn {
   title: string
   setTitle: (value: string) => void
   monthlyAmount: string
+  setMonthlyAmountRaw: (value: string) => void
   handleAmountChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   adjustAmount: (delta: number) => void
   investmentDays: number[]
   setInvestmentDays: (days: number[]) => void
   interestRate: string
+  setInterestRateRaw: (value: string) => void
   handleInterestRateChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   maturityDate: string
   setMaturityDate: (value: string) => void
-  isSubmitting: boolean
-  handleSubmit: () => Promise<void>
+  /** 공통 필드를 모두 빈 상태로 리셋 (type 변경 시 사용) */
+  resetAll: () => void
 }
 
 /**
- * 예적금·현금 항목 추가 폼 상태 훅.
- * 공통 필드(이름·금액·납입일)와 예적금 전용 필드(금리·만기일)를 모두 보유한다.
+ * 적립 항목 공통 필드(이름·금액·납입일·금리·만기일) state 관리 hook.
+ * - 신규 추가: initData=undefined로 빈 상태 시작
+ * - 편집: initData=Investment 객체로 초기화
+ * - 투자 전용 state(stockName 등)는 useAddInvestmentForm 파사드에서 별도 관리
  */
-export function useSavingsCashForm({
-  recordType,
-  goalId,
-}: UseSavingsCashFormOptions): UseSavingsCashFormReturn {
+export function useAddItemFormState({
+  initData,
+}: UseAddItemFormStateProps): UseAddItemFormStateReturn {
   const [title, setTitle] = useState<string>('')
   const [monthlyAmount, setMonthlyAmount] = useState<string>('')
   const [investmentDays, setInvestmentDays] = useState<number[]>([])
   const [interestRate, setInterestRate] = useState<string>('')
   const [maturityDate, setMaturityDate] = useState<string>('')
+
+  // initData 변경 시 1회 초기화 (편집 모드 진입)
+  useEffect(() => {
+    if (!initData) return
+    setTitle(initData.title ?? '')
+    setMonthlyAmount(
+      initData.monthly_amount
+        ? Math.round(initData.monthly_amount / 10000).toLocaleString()
+        : '',
+    )
+    setInvestmentDays(initData.investment_days ?? [])
+    setInterestRate(
+      initData.interest_rate != null ? String(initData.interest_rate) : '',
+    )
+    setMaturityDate(initData.maturity_date ?? '')
+  }, [initData])
 
   // 금액: 숫자만 허용, 천 단위 콤마 표기 (만원 단위)
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -64,29 +80,29 @@ export function useSavingsCashForm({
     setInterestRate(parts.length > 2 ? `${parts[0]}.${parts[1]}` : cleaned)
   }
 
-  const submit = useSavingsCashSubmit({
-    recordType,
-    title,
-    monthlyAmount,
-    investmentDays,
-    interestRate,
-    maturityDate,
-    goalId,
-  })
+  // useEffect 의존성에서 안정적으로 참조되도록 useCallback으로 메모이즈.
+  const resetAll = useCallback((): void => {
+    setTitle('')
+    setMonthlyAmount('')
+    setInvestmentDays([])
+    setInterestRate('')
+    setMaturityDate('')
+  }, [])
 
   return {
     title,
     setTitle,
     monthlyAmount,
+    setMonthlyAmountRaw: setMonthlyAmount,
     handleAmountChange,
     adjustAmount,
     investmentDays,
     setInvestmentDays,
     interestRate,
+    setInterestRateRaw: setInterestRate,
     handleInterestRateChange,
     maturityDate,
     setMaturityDate,
-    isSubmitting: submit.isSubmitting,
-    handleSubmit: submit.handleSubmit,
+    resetAll,
   }
 }
