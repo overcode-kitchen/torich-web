@@ -80,13 +80,14 @@ export function GoalGroupCard({
 
         {records.length > 0 ? (
           <div>
-            {records.map((record) => (
+            {records.map((record, idx) => (
               <GoalGroupItemRow
                 key={record.id}
                 record={record}
                 isPaid={isPaid(record.id)}
                 onTogglePaid={onTogglePaid}
                 onSelect={onSelectRecord}
+                isLast={idx === records.length - 1}
               />
             ))}
           </div>
