@@ -30,9 +30,9 @@ export function getRecordAvatar(
     }
   }
 
-  // 예적금·현금: 중립 색 토큰
+  // 예적금·현금: 중립 색 (투자 아바타 톤과 무게감 맞춤)
   return {
     label,
-    className: 'bg-secondary text-foreground-soft',
+    className: 'bg-coolgray-50 text-coolgray-700',
   }
 }
