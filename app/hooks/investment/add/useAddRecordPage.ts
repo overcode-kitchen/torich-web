@@ -28,21 +28,23 @@ export function useAddRecordPage() {
   const isEditMode = !!editId
 
   const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
-  // 신규 추가 모드에서 사용자가 선택한 record_type. 편집 모드에서는 initData에서 파생되어 무시됨.
-  const [draftRecordType, setDraftRecordType] = useState<RecordType>('investment')
+  // 신규 추가 모드에서 사용자가 선택한 record_type. 미선택은 null (페이지 진입 직후).
+  const [draftRecordType, setDraftRecordType] = useState<RecordType | null>(null)
 
   const edit = useAddItemEditInit({ editId })
 
-  // 편집 모드: initData에서 record_type 파생 (useEffect + setState 우회 → cascading render 회피)
-  // 신규 모드: 사용자 선택값을 그대로 사용
-  const recordType: RecordType = edit.initData
+  // UI에 노출되는 값: 편집 모드는 initData에서 파생, 신규는 사용자 선택값 (null 가능)
+  const recordType: RecordType | null = edit.initData
     ? getRecordType(edit.initData)
     : draftRecordType
+  // 하위 hook은 항상 valid한 RecordType이 필요하므로 fallback 제공. 단,
+  // submit/canAdvance는 recordType이 null이면 발화되지 않도록 별도로 가드한다.
+  const effectiveRecordType: RecordType = recordType ?? 'investment'
   const setRecordType = useCallback((type: RecordType): void => {
     setDraftRecordType(type)
   }, [])
 
-  const flow = useAddItemFlow({ recordType, editId, initialField })
+  const flow = useAddItemFlow({ editId, initialField })
   const formState = useAddItemFormState({ initData: edit.initData })
 
   const investmentForm = useAddInvestmentForm({
@@ -52,7 +54,7 @@ export function useAddRecordPage() {
   })
 
   const savingsCashSubmit = useSavingsCashSubmit({
-    recordType: recordType === 'cash' ? 'cash' : 'savings',
+    recordType: effectiveRecordType === 'cash' ? 'cash' : 'savings',
     title: formState.title,
     monthlyAmount: formState.monthlyAmount,
     investmentDays: formState.investmentDays,
@@ -65,7 +67,7 @@ export function useAddRecordPage() {
 
   // 유형 변경 시 후속 필드/그룹 리셋 + 토스트
   useAddItemResetPolicy({
-    recordType,
+    recordType: effectiveRecordType,
     formState,
     flow,
     resetInvestmentSpecific: () => {
@@ -106,25 +108,27 @@ export function useAddRecordPage() {
     isSubmitting,
   })
 
+  const isInvestment = effectiveRecordType === 'investment'
+
   const handleBack = useCallback((): void => {
-    if (flow.isAtFirstField) {
+    if (flow.isAtFirstGroup) {
       setExitDialogOpen(true)
       return
     }
-    flow.goBack()
+    flow.goPrevGroup()
   }, [flow])
 
   const onSkip = goalId && !isEditMode
     ? () => router.replace('/')
     : undefined
 
-  const isInvestment = recordType === 'investment'
   const daysPicker = isInvestment ? investmentDaysPicker : savingsCashDaysPicker
 
   return {
     goalId,
     isEditMode,
     recordType,
+    effectiveRecordType,
     setRecordType,
     flow,
     formState,

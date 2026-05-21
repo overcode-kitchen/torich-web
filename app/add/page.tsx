@@ -16,6 +16,7 @@ function AddRecordContent() {
   const page = useAddRecordPage()
   const {
     recordType,
+    effectiveRecordType,
     setRecordType,
     isEditMode,
     flow,
@@ -44,23 +45,20 @@ function AddRecordContent() {
             investmentForm={investmentForm}
             title={formState.title}
             onTitleChange={formState.setTitle}
-            flow={flow}
             onOpenManualInputModal={() => investmentForm.setIsManualModalOpen(true)}
             isEditMode={isEditMode}
           />
         )}
         {flow.currentGroup === 'B' && (
           <GroupB_HowMuch
-            recordType={recordType}
-            flow={flow}
+            recordType={effectiveRecordType}
             investmentForm={investmentForm}
             formState={formState}
           />
         )}
         {flow.currentGroup === 'C' && (
           <GroupC_When
-            recordType={recordType}
-            flow={flow}
+            recordType={effectiveRecordType}
             investmentForm={investmentForm}
             formState={formState}
             isStartDatePickerOpen={modals.isDatePickerOpen}

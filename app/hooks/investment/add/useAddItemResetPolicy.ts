@@ -50,7 +50,7 @@ export function useAddItemResetPolicy({
     if (flow.currentGroup === 'B' || flow.currentGroup === 'C') {
       formState.resetAll()
       resetInvestmentSpecific?.()
-      flow.resetFromGroup('A')
+      flow.goToGroup('A')
       toast(RESET_TOAST_MESSAGE)
     } else {
       // 그룹 A 내부 변경: 공통 state도 깨끗하게 초기화 (이전 type의 입력값 유지하지 않음)
