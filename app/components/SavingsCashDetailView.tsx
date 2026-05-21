@@ -1,6 +1,7 @@
 'use client'
 
 import { Trash } from '@phosphor-icons/react'
+import { useRouter } from 'next/navigation'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { SavingsCashInfoSection } from '@/app/components/SavingsCashDetailSections/SavingsCashInfoSection'
@@ -16,13 +17,19 @@ interface SavingsCashDetailViewProps {
 /**
  * 예적금·현금 항목 상세 화면.
  * 투자 상세(InvestmentDetailView)와 분리되어 종목·차트 없이 핵심 정보만 보여준다.
+ * 정보 행을 탭하면 토스 스타일 편집 플로우(/add?editId=...&field=...)로 진입한다.
  */
 export default function SavingsCashDetailView({
   item,
   onBack,
   onDelete,
 }: SavingsCashDetailViewProps) {
+  const router = useRouter()
   const detail = useSavingsCashDetail(item, onDelete)
+
+  const handleFieldTap = (field: string): void => {
+    router.push(`/add?editId=${item.id}&field=${field}`)
+  }
 
   return (
     <>
@@ -42,17 +49,24 @@ export default function SavingsCashDetailView({
         }
       >
         <div className="mx-auto max-w-md md:max-w-lg lg:max-w-2xl">
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-            {item.title}
-          </h2>
-          <p className="mt-1 text-sm text-foreground-subtle">
-            {item.record_type === 'savings' ? '예·적금' : '현금·기타'}
-          </p>
+          <button
+            type="button"
+            onClick={() => handleFieldTap('title')}
+            className="w-full text-left"
+          >
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+              {item.title}
+            </h2>
+            <p className="mt-1 text-sm text-foreground-subtle">
+              {item.record_type === 'savings' ? '예·적금' : '현금·기타'}
+            </p>
+          </button>
 
           <SavingsCashInfoSection
             item={item}
             maturity={detail.maturity}
             totalPaidPrincipal={detail.totalPaidPrincipal}
+            onFieldTap={handleFieldTap}
           />
         </div>
       </SubPageScaffold>
