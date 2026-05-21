@@ -24,6 +24,10 @@ export interface UseSavingsCashSubmitProps {
   maturityDate: string
   /** 목적 만들기 흐름에서 넘어온 경우 연결할 목적 ID */
   goalId?: string
+  /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
+  mode?: 'create' | 'edit'
+  /** edit 모드에서 수정할 records.id */
+  recordId?: string
 }
 
 export interface UseSavingsCashSubmitReturn {
@@ -43,10 +47,12 @@ export function useSavingsCashSubmit({
   interestRate,
   maturityDate,
   goalId,
+  mode = 'create',
+  recordId,
 }: UseSavingsCashSubmitProps): UseSavingsCashSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
-  const { addInvestment } = useInvestmentsContext()
+  const { addInvestment, updateInvestment } = useInvestmentsContext()
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
   const handleSubmit = useCallback(async (): Promise<void> => {
@@ -73,25 +79,44 @@ export function useSavingsCashSubmit({
       return
     }
 
+    const payload = {
+      title: title.trim(),
+      symbol: null,
+      monthly_amount: amountInWon,
+      period_years: null,
+      annual_rate: 0,
+      final_amount: 0,
+      investment_days: investmentDays.length > 0 ? investmentDays : null,
+      unit_type: 'amount',
+      record_type: recordType,
+      interest_rate: recordType === 'savings' ? rate : null,
+      maturity_date: recordType === 'savings' ? maturityDate : null,
+    }
+
     try {
       setIsSubmitting(true)
-      const supabase = createClient()
 
+      // 편집 모드: updateInvestment에 위임(단일 진실 출처). 중복 .update() 방지.
+      if (mode === 'edit' && recordId) {
+        await updateInvestment(recordId, payload as Partial<Investment>)
+
+        track('investment_update_success', {
+          amount_bucket: amountBucket(amountInWon),
+          cycle_type: investmentDays.length > 0 ? 'custom' : 'monthly',
+          has_rate: recordType === 'savings',
+        })
+
+        router.push(`/investment?id=${recordId}`)
+        return
+      }
+
+      // 신규 추가
+      const supabase = createClient()
       const { data: inserted, error } = await supabase
         .from('records')
         .insert({
           user_id: userId,
-          title: title.trim(),
-          symbol: null,
-          monthly_amount: amountInWon,
-          period_years: null,
-          annual_rate: 0,
-          final_amount: 0,
-          investment_days: investmentDays.length > 0 ? investmentDays : null,
-          unit_type: 'amount',
-          record_type: recordType,
-          interest_rate: recordType === 'savings' ? rate : null,
-          maturity_date: recordType === 'savings' ? maturityDate : null,
+          ...payload,
           notification_enabled: true,
           ...(goalId ? { goal_id: goalId } : {}),
         })
@@ -124,8 +149,11 @@ export function useSavingsCashSubmit({
     maturityDate,
     recordType,
     goalId,
+    mode,
+    recordId,
     router,
     addInvestment,
+    updateInvestment,
   ])
 
   return { handleSubmit, isSubmitting }
