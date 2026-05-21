@@ -1,23 +1,36 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
-import { GoalFormSection } from '@/app/components/GoalFormSections/GoalFormSection'
+import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialog'
+import GoalFlowHeader from '@/app/components/GoalFormSections/GoalFlowHeader'
+import GoalStepName from '@/app/components/GoalFormSections/GoalStepName'
+import GoalStepAmount from '@/app/components/GoalFormSections/GoalStepAmount'
+import GoalStepDate from '@/app/components/GoalFormSections/GoalStepDate'
 import { GOAL_PRESETS, GOAL_PRESET_NAMES } from '@/app/constants/goal'
 import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
+import { useGoalFlow } from '@/app/hooks/goal/add/useGoalFlow'
 import { useGoalCreate } from '@/app/hooks/goal/data/useGoalCreate'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { amountBucket, track } from '@/app/lib/analytics'
 import { createClient } from '@/utils/supabase/client'
 
+const STEP_COMPONENTS = {
+  A: GoalStepName,
+  B: GoalStepAmount,
+  C: GoalStepDate,
+} as const
+
 function NewGoalContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [userId, setUserId] = useState<string | undefined>(undefined)
-  const { values, setField, isValid, toCreateInput } = useGoalForm()
+  const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
+  const { values, setField, toCreateInput } = useGoalForm()
   const { createGoal, isCreating } = useGoalCreate(userId)
+  const flow = useGoalFlow()
   const { goBack } = useFlowBack({
     rootPath: '/',
     enableHistoryFallback: true,
@@ -40,7 +53,13 @@ function NewGoalContent() {
     setField('emoji', matched.emoji)
   }, [searchParams, setField])
 
-  async function handleSubmit(): Promise<void> {
+  const canAdvance = useMemo<boolean>(() => {
+    if (flow.currentStep === 'A') return values.name.trim().length > 0
+    if (flow.currentStep === 'B') return Number(values.target_amount) > 0
+    return true
+  }, [flow.currentStep, values.name, values.target_amount])
+
+  const handleSubmit = useCallback(async (): Promise<void> => {
     const goal = await createGoal(toCreateInput())
     if (!goal) return
     const trimmedName = values.name.trim()
@@ -52,45 +71,76 @@ function NewGoalContent() {
         ? trimmedName
         : 'custom',
     })
-    // 목적을 만든 직후 적립 항목 추가로 바로 이어준다.
-    router.replace(`/add?goalId=${goal.id}`)
-  }
+    router.replace('/')
+  }, [createGoal, router, toCreateInput, values])
+
+  const handleAction = useCallback((): void => {
+    if (isCreating) return
+    if (flow.isAtLastStep) {
+      void handleSubmit()
+      return
+    }
+    flow.goNextStep()
+  }, [flow, handleSubmit, isCreating])
+
+  const handleBack = useCallback((): void => {
+    if (flow.isAtFirstStep) {
+      setExitDialogOpen(true)
+      return
+    }
+    flow.goPrevStep()
+  }, [flow])
 
   return (
-    <SubPageScaffold onBack={goBack} contentClassName="py-6">
-      <div className="mb-8">
-        <h1 className="text-xl font-bold text-foreground mb-3">
-          새 목적 만들기
-        </h1>
-        <p className="text-sm text-foreground-subtle whitespace-pre-line">
-          결혼자금·내 집 마련 같은 큰 목적을{'\n'}한 곳에서 모아 관리해요.
-        </p>
+    <>
+      <SubPageScaffold onBack={handleBack} contentClassName="py-6 pb-40">
+        <GoalFlowHeader currentStep={flow.currentStep} />
+        {(() => {
+          const StepComponent = STEP_COMPONENTS[flow.currentStep]
+          return (
+            <StepComponent
+              values={values}
+              setField={setField}
+              disabled={isCreating}
+            />
+          )
+        })()}
+      </SubPageScaffold>
+
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface/95 backdrop-blur"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
+      >
+        <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-2xl px-4 pt-4">
+          <button
+            type="button"
+            onClick={handleAction}
+            disabled={!canAdvance || isCreating}
+            className="w-full bg-surface-dark text-white font-medium rounded-xl py-4 hover:bg-surface-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isCreating ? (
+              <>
+                <CircleNotch className="w-5 h-5 animate-spin" />
+                <span>만드는 중...</span>
+              </>
+            ) : flow.isAtLastStep ? (
+              '목적 만들기'
+            ) : (
+              '다음'
+            )}
+          </button>
+        </div>
       </div>
 
-      <GoalFormSection
-        values={values}
-        setField={setField}
-        disabled={isCreating}
-        showOptionalFields={false}
+      <ExitConfirmDialog
+        isOpen={exitDialogOpen}
+        onClose={() => setExitDialogOpen(false)}
+        onConfirm={() => {
+          setExitDialogOpen(false)
+          goBack()
+        }}
       />
-
-      <div className="flex flex-col gap-3 pt-8">
-        <button
-          onClick={() => void handleSubmit()}
-          disabled={!isValid || isCreating}
-          className="w-full bg-surface-dark text-white font-medium rounded-xl py-4 hover:bg-surface-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {isCreating ? (
-            <>
-              <CircleNotch className="w-5 h-5 animate-spin" />
-              <span>만드는 중...</span>
-            </>
-          ) : (
-            '목적 만들기'
-          )}
-        </button>
-      </div>
-    </SubPageScaffold>
+    </>
   )
 }
 
