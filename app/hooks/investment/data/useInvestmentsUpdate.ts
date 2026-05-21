@@ -36,6 +36,8 @@ export function useInvestmentsUpdate(
         'annual_rate', 'expected_amount', 'start_date',
         'investment_days', 'is_custom_rate', 'notification_enabled',
         'goal_id',
+        'record_type', 'interest_rate', 'maturity_date',
+        'unit_type', 'monthly_shares',
       ]
 
       const updateData: any = {}
