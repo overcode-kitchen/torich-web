@@ -16,7 +16,13 @@ interface FormSectionProps {
 
 export default function FormSection({ form, modals }: FormSectionProps) {
   return (
-    <form onSubmit={form.handleSubmit} className="space-y-4 mb-8">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        void form.handleSubmit()
+      }}
+      className="space-y-4 mb-8"
+    >
       {/* 종목명 입력 (검색 기능 포함) */}
       <div>
         <StockSearchInput

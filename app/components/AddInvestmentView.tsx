@@ -85,7 +85,7 @@ export default function AddInvestmentView({
 
                 {/* 저장하기 버튼 */}
                 <button
-                    onClick={form.handleSubmit}
+                    onClick={() => void form.handleSubmit()}
                     disabled={form.isSubmitting}
                     className="w-full bg-surface-dark text-white font-medium rounded-xl py-4 hover:bg-surface-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
