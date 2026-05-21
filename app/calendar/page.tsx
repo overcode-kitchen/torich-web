@@ -26,8 +26,13 @@ export default function CalendarPage() {
     currentMonth,
     calendarDays,
     selectedDate,
+    slideDirection,
+    isPickerOpen,
     goToPrevMonth,
     goToNextMonth,
+    goToMonth,
+    openPicker,
+    closePicker,
     selectDate,
     clearSelection,
     year,
@@ -67,8 +72,13 @@ export default function CalendarPage() {
       currentMonth={currentMonth}
       calendarDays={calendarDays}
       selectedDate={selectedDate}
+      slideDirection={slideDirection}
+      isPickerOpen={isPickerOpen}
       goToPrevMonth={goToPrevMonth}
       goToNextMonth={goToNextMonth}
+      goToMonth={goToMonth}
+      openPicker={openPicker}
+      closePicker={closePicker}
       selectDate={selectDate}
       clearSelection={clearSelection}
       getDayStatus={getDayStatus}
