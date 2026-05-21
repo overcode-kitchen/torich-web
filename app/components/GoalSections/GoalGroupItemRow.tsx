@@ -141,7 +141,7 @@ export function GoalGroupItemRow({
       </div>
 
       {!isLast && (
-        <div aria-hidden className="h-px bg-border-subtle" />
+        <div aria-hidden className="h-px bg-border-subtle-lighter" />
       )}
 
       <DeleteConfirmModal
