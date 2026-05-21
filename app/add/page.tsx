@@ -1,78 +1,145 @@
 'use client'
 
 import { Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useAddInvestmentForm } from '@/app/hooks/investment/add/useAddInvestmentForm'
-import { useSavingsCashForm } from '@/app/hooks/investment/add/useSavingsCashForm'
-import { useRecordTypeSelection } from '@/app/hooks/investment/add/useRecordTypeSelection'
-import { useModalState } from '@/app/hooks/ui/useModalState'
-import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
-import AddInvestmentView from '@/app/components/AddInvestmentView'
-import SavingsCashView from '@/app/components/SavingsCashView'
-import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { CircleNotch } from '@phosphor-icons/react'
+import SubPageScaffold from '@/app/components/SubPageScaffold'
+import AddItemHeader from '@/app/components/AddItemSections/AddItemHeader'
+import GroupA_WhatToSave from '@/app/components/AddItemSections/GroupA_WhatToSave'
+import GroupB_HowMuch from '@/app/components/AddItemSections/GroupB_HowMuch'
+import GroupC_When from '@/app/components/AddItemSections/GroupC_When'
+import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialog'
+import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
+import ManualInputModal from '@/app/components/ManualInputModal'
+import { useAddRecordPage } from '@/app/hooks/investment/add/useAddRecordPage'
 
 function AddRecordContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  // 목적 만들기 흐름에서 넘어온 경우, 생성될 항목을 이 목적에 연결한다.
-  const goalId = searchParams.get('goalId') ?? undefined
-
-  const { recordType, setRecordType } = useRecordTypeSelection()
-  const isInvestment = recordType === 'investment'
-
-  // 투자 폼 (투자 유형에서만 사용, 훅 규칙상 항상 호출)
-  const investmentForm = useAddInvestmentForm({ goalId })
-  // 예적금·현금 폼 (투자 선택 시에도 호출되지만 미사용)
-  const savingsCashForm = useSavingsCashForm({
-    recordType: recordType === 'cash' ? 'cash' : 'savings',
-    goalId,
-  })
-
-  const modals = useModalState()
-  const investmentDaysPicker = useInvestmentDaysPicker({
-    initialDays: investmentForm.investmentDays,
-    onApply: (days) => {
-      investmentForm.setInvestmentDays(days)
-      modals.setIsDaysPickerOpen(false)
-    },
-  })
-  const savingsCashDaysPicker = useInvestmentDaysPicker({
-    initialDays: savingsCashForm.investmentDays,
-    onApply: (days) => {
-      savingsCashForm.setInvestmentDays(days)
-      modals.setIsDaysPickerOpen(false)
-    },
-  })
-
-  const { goBack } = useFlowBack({
-    rootPath: '/',
-    enableHistoryFallback: true,
-  })
-
-  if (isInvestment) {
-    return (
-      <AddInvestmentView
-        recordType={recordType}
-        onRecordTypeChange={setRecordType}
-        form={investmentForm}
-        modals={modals}
-        daysPicker={investmentDaysPicker}
-        onBack={goBack}
-        onSkip={goalId ? () => router.replace('/') : undefined}
-      />
-    )
-  }
+  const page = useAddRecordPage()
+  const {
+    recordType,
+    setRecordType,
+    isEditMode,
+    flow,
+    formState,
+    investmentForm,
+    modals,
+    daysPicker,
+    actions,
+    isSubmitting,
+    handleBack,
+    exitDialogOpen,
+    setExitDialogOpen,
+    goBackToRoot,
+    onSkip,
+  } = page
 
   return (
-    <SavingsCashView
-      recordType={recordType === 'cash' ? 'cash' : 'savings'}
-      onRecordTypeChange={setRecordType}
-      form={savingsCashForm}
-      modals={modals}
-      daysPicker={savingsCashDaysPicker}
-      onBack={goBack}
-      onSkip={goalId ? () => router.replace('/') : undefined}
-    />
+    <>
+      <SubPageScaffold onBack={handleBack} contentClassName="py-6">
+        <AddItemHeader currentGroup={flow.currentGroup} />
+
+        {flow.currentGroup === 'A' && (
+          <GroupA_WhatToSave
+            recordType={recordType}
+            onRecordTypeChange={setRecordType}
+            investmentForm={investmentForm}
+            title={formState.title}
+            onTitleChange={formState.setTitle}
+            flow={flow}
+            onOpenManualInputModal={() => investmentForm.setIsManualModalOpen(true)}
+            isEditMode={isEditMode}
+          />
+        )}
+        {flow.currentGroup === 'B' && (
+          <GroupB_HowMuch
+            recordType={recordType}
+            flow={flow}
+            investmentForm={investmentForm}
+            formState={formState}
+          />
+        )}
+        {flow.currentGroup === 'C' && (
+          <GroupC_When
+            recordType={recordType}
+            flow={flow}
+            investmentForm={investmentForm}
+            formState={formState}
+            isStartDatePickerOpen={modals.isDatePickerOpen}
+            onStartDatePickerOpenChange={modals.setIsDatePickerOpen}
+            onOpenDaysPicker={() => modals.setIsDaysPickerOpen(true)}
+          />
+        )}
+
+        <div className="pt-8">
+          <button
+            type="button"
+            onClick={actions.onAction}
+            disabled={!actions.canAdvance || isSubmitting}
+            className="w-full bg-surface-dark text-white font-medium rounded-xl py-4 hover:bg-surface-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <CircleNotch className="w-5 h-5 animate-spin" />
+                <span>저장 중...</span>
+              </>
+            ) : (
+              actions.label
+            )}
+          </button>
+          {onSkip && (
+            <button
+              type="button"
+              onClick={onSkip}
+              disabled={isSubmitting}
+              className="w-full py-3 mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            >
+              나중에 할게요
+            </button>
+          )}
+        </div>
+      </SubPageScaffold>
+
+      {modals.isDaysPickerOpen && (
+        <InvestmentDaysPickerSheet
+          tempDays={daysPicker.tempDays}
+          isDirty={daysPicker.isDirty}
+          onToggleDay={daysPicker.toggleDay}
+          onApply={daysPicker.applyChanges}
+          onClose={() => {
+            daysPicker.reset()
+            modals.setIsDaysPickerOpen(false)
+          }}
+        />
+      )}
+
+      <ManualInputModal
+        isOpen={investmentForm.isManualModalOpen}
+        onClose={investmentForm.closeAndResetManual}
+        stockName={investmentForm.manualStockName}
+        onStockNameChange={investmentForm.setManualStockName}
+        onConfirm={() => {
+          investmentForm.handleManualConfirm({
+            onConfirm: (name, rate) => {
+              investmentForm.setIsManualInput(true)
+              investmentForm.setStockName(name)
+              investmentForm.setAnnualRate(rate)
+              investmentForm.setSelectedStock(null)
+              investmentForm.setOriginalSystemRate(null)
+              investmentForm.setRateFetchFailed(false)
+              investmentForm.cancelEdit()
+            },
+          })
+        }}
+      />
+
+      <ExitConfirmDialog
+        isOpen={exitDialogOpen}
+        onClose={() => setExitDialogOpen(false)}
+        onConfirm={() => {
+          setExitDialogOpen(false)
+          goBackToRoot()
+        }}
+      />
+    </>
   )
 }
 
