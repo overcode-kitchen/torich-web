@@ -1,8 +1,8 @@
 'use client'
 
 import { Suspense } from 'react'
-import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
+import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
 import AddItemHeader from '@/app/components/AddItemSections/AddItemHeader'
 import GroupA_WhatToSave from '@/app/components/AddItemSections/GroupA_WhatToSave'
 import GroupB_HowMuch from '@/app/components/AddItemSections/GroupB_HowMuch'
@@ -73,21 +73,13 @@ function AddRecordContent() {
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
       >
         <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-2xl px-4 pt-4">
-          <button
-            type="button"
+          <PrimaryCTAButton
+            label={actions.label}
             onClick={actions.onAction}
-            disabled={!actions.canAdvance || isSubmitting}
-            className="w-full bg-surface-dark text-white font-medium rounded-xl py-4 hover:bg-surface-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <CircleNotch className="w-5 h-5 animate-spin" />
-                <span>저장 중...</span>
-              </>
-            ) : (
-              actions.label
-            )}
-          </button>
+            disabled={!actions.canAdvance}
+            loading={isSubmitting}
+            loadingLabel="저장 중..."
+          />
           {onSkip && (
             <button
               type="button"

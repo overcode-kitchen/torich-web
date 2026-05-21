@@ -106,6 +106,15 @@ export default function Dashboard({
             rightSlot={SHOW_NOTIFICATION_INBOX ? <NotificationInbox /> : undefined}
           />
         </div>
+        {/* 스크롤 콘텐츠가 헤더 아래로 자연스럽게 사라지도록 하단 페이드 */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-full h-6"
+          style={{
+            background:
+              'linear-gradient(to bottom, var(--surface) 0%, color-mix(in srgb, var(--surface) 60%, transparent) 50%, transparent 100%)',
+          }}
+        />
       </header>
 
       <DashboardContent

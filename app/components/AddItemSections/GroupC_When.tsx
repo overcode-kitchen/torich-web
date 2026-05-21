@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { CalendarBlank } from '@phosphor-icons/react'
 import InvestmentStartDateSheet from '@/app/components/AddInvestmentSections/InvestmentStartDateSheet'
 import ProgressiveField from './ProgressiveField'
@@ -49,6 +50,16 @@ export default function GroupC_When({
   const daysLabel = isInvestment ? '매월 언제 투자할까요?' : '매월 언제 모을까요?'
   const daysButtonLabel =
     days.length > 0 ? formatInvestmentDays(days) : '날짜 선택하기'
+
+  // 예적금/현금은 그룹 C에 필드가 하나뿐이라 진입 즉시 시트를 자동으로 띄운다.
+  // 마운트 시 1회만 발화 (사용자가 닫고 다시 열 수 있도록).
+  const autoOpenedRef = useRef<boolean>(false)
+  useEffect(() => {
+    if (!isInvestment && days.length === 0 && !autoOpenedRef.current) {
+      autoOpenedRef.current = true
+      onOpenDaysPicker()
+    }
+  }, [isInvestment, days.length, onOpenDaysPicker])
 
   return (
     <div>
