@@ -1,8 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { Plus, TrashSimple } from '@phosphor-icons/react'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
+import { resolvePurposeIcon } from '@/app/constants/goal'
 import { fmt, dDayLabel } from '@/app/utils/goal-format'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 
@@ -22,6 +24,7 @@ export function GoalRow({
   onDelete,
 }: GoalRowProps) {
   const dDay = dDayLabel(progress.dDay)
+  const icon = resolvePurposeIcon(goal.emoji)
   const swipe = useSwipeToDelete({
     enabled: !!onDelete,
     onDelete: async () => {
@@ -72,6 +75,15 @@ export function GoalRow({
             onContextMenu={(e) => e.preventDefault()}
             className="flex min-w-0 flex-1 items-center justify-between gap-3 px-2 py-2.5 text-left"
           >
+            {icon && (
+              <Image
+                src={icon.src}
+                alt=""
+                width={36}
+                height={36}
+                className="h-9 w-9 shrink-0 object-contain"
+              />
+            )}
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 flex-col gap-1.5">
                 <h3 className="min-w-0 truncate text-base font-semibold text-foreground">
