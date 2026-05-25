@@ -126,6 +126,23 @@ export function formatFullDate(date: Date): string {
 }
 
 /**
+ * 스마트 날짜 포맷
+ * - 올해: M.D (예: 5.20)
+ * - 다른 연도: YY.M.D (예: 29.5.20)
+ * 작은따옴표는 사용하지 않는다.
+ */
+export function formatSmartDate(date: Date): string {
+  const now = new Date()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  if (date.getFullYear() === now.getFullYear()) {
+    return `${month}.${day}`
+  }
+  const yy = String(date.getFullYear()).slice(-2)
+  return `${yy}.${month}.${day}`
+}
+
+/**
  * 목표 기간이 완료되었는지 확인
  * 적립형(periodYears 없음)은 완료 개념이 없으므로 항상 false.
  */
