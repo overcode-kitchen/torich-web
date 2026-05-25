@@ -1,13 +1,8 @@
 'use client'
 
-import { CalendarBlank } from '@phosphor-icons/react'
-import { formatNextPaymentDate } from '@/app/utils/date'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-
 interface InvestmentViewOverviewProps {
   title: string
   completed: boolean
-  nextPaymentDate: Date | null
   overviewRef: React.RefObject<HTMLElement>
   titleRef: React.RefObject<HTMLDivElement>
 }
@@ -15,7 +10,6 @@ interface InvestmentViewOverviewProps {
 export default function InvestmentViewOverview({
   title,
   completed,
-  nextPaymentDate,
   overviewRef,
   titleRef,
 }: InvestmentViewOverviewProps) {
@@ -55,22 +49,6 @@ export default function InvestmentViewOverview({
           </button>
         </div>
       </div>
-
-      {nextPaymentDate && (
-        <Alert className="mt-1 border-none bg-primary/10 text-foreground px-4 py-3 rounded-2xl">
-          <CalendarBlank className="w-5 h-5 text-primary" />
-          <div className="flex items-baseline justify-between gap-4 col-start-2 w-full">
-            <div>
-              <AlertTitle className="text-sm font-medium text-foreground-soft">
-                다음 투자일
-              </AlertTitle>
-              <AlertDescription className="mt-0.5 text-base font-semibold text-primary">
-                {formatNextPaymentDate(nextPaymentDate)}
-              </AlertDescription>
-            </div>
-          </div>
-        </Alert>
-      )}
     </section>
   )
 }
