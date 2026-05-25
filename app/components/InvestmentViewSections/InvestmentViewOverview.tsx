@@ -16,7 +16,7 @@ export default function InvestmentViewOverview({
   return (
     <section ref={overviewRef} className="py-6 space-y-4">
       <div ref={titleRef}>
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
+        <h2 className="text-xl font-semibold tracking-tight text-foreground mb-2">
           {title}
         </h2>
         {completed && (

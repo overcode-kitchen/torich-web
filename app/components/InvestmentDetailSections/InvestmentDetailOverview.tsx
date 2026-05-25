@@ -43,7 +43,7 @@ export function InvestmentDetailOverview({
             {avatar.label}
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-2xl font-semibold tracking-tight text-foreground">
+            <h2 className="truncate text-xl font-semibold tracking-tight text-foreground">
               {item.title}
             </h2>
             {subtitle && (
