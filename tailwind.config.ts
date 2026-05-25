@@ -8,9 +8,6 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Pretendard', 'var(--font-geist-sans)', 'system-ui', 'sans-serif'],
-      },
       /* Layer 3: Tailwind Config - Primitives 변수 참조 (globals.css) */
       colors: {
         torich: {
