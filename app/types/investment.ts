@@ -76,7 +76,7 @@ export function isHabitMode(investment: Pick<Investment, 'period_years'>): boole
  * 투자 날짜를 포맷팅하는 헬퍼 함수
  * 예: [5, 25] -> "매월 5일, 25일"
  */
-export function formatInvestmentDays(days?: number[]): string {
+export function formatInvestmentDays(days?: number[] | null): string {
   if (!days || days.length === 0) {
     return '미설정'
   }
