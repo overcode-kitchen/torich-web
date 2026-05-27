@@ -28,7 +28,8 @@
 .omc/
 
 # Claude Code local state
-.claude/
+.claude/*
+!.claude/commands/
 
 # Supabase CLI local cache
 supabase/.temp/
