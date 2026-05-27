@@ -79,7 +79,7 @@ export function CalendarGridSection({
             >
               {/* 날짜는 셀 중앙 고정, 도트는 셀 하단에서 일정 간격을 두고 absolute로 배치한다 */}
               <span
-                className={`font-medium transition-transform duration-200 ease-out ${
+                className={`font-medium -translate-y-1 transition-transform duration-200 ease-out ${
                   isSelected ? 'scale-110' : 'scale-100'
                 }`}
               >
@@ -87,7 +87,7 @@ export function CalendarGridSection({
               </span>
               {status && (
                 <span
-                  className={`absolute bottom-1.5 left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full transition-transform duration-200 ease-out ${
+                  className={`absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full transition-transform duration-200 ease-out ${
                     isSelected ? 'scale-110' : 'scale-100'
                   } ${
                     status === 'completed' ? 'bg-green-500' : status === 'missed' ? 'bg-red-500' : 'bg-surface-strong-hover'
