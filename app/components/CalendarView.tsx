@@ -5,6 +5,7 @@ import { CalendarHeaderSection } from '@/app/components/CalendarSections/Calenda
 import { CalendarGridSection } from '@/app/components/CalendarSections/CalendarGridSection'
 import MonthPickerSheet from '@/app/components/CalendarSections/MonthPickerSheet'
 import { SelectedDateSection } from '@/app/components/CalendarSections/SelectedDateSection'
+import { UpcomingEventsSection } from '@/app/components/CalendarSections/UpcomingEventsSection'
 import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import type { PaymentEvent } from '@/app/utils/stats'
 import type { CalendarSlideDirection } from '@/app/hooks/calendar/useCalendar'
@@ -37,6 +38,9 @@ interface CalendarViewProps {
     // Selected Date Events
     selectedEvents: PaymentEvent[]
 
+    // Upcoming events (when no date is selected)
+    upcomingEvents: PaymentEvent[]
+
     // Payment Actions
     isEventCompleted: (e: PaymentEvent) => boolean
     handleComplete: (e: PaymentEvent) => void
@@ -62,6 +66,7 @@ export default function CalendarView({
     clearSelection,
     getDayStatus,
     selectedEvents,
+    upcomingEvents,
     isEventCompleted,
     handleComplete,
     pendingUndo,
@@ -122,12 +127,19 @@ export default function CalendarView({
                 </div>
 
                 <div className="flex-1 min-h-0 overflow-y-auto">
-                    <SelectedDateSection
-                        selectedDate={selectedDate}
-                        selectedEvents={selectedEvents}
-                        isEventCompleted={isEventCompleted}
-                        handleComplete={handleComplete}
-                    />
+                    {selectedDate ? (
+                        <SelectedDateSection
+                            selectedDate={selectedDate}
+                            selectedEvents={selectedEvents}
+                            isEventCompleted={isEventCompleted}
+                            handleComplete={handleComplete}
+                        />
+                    ) : (
+                        <UpcomingEventsSection
+                            upcomingEvents={upcomingEvents}
+                            handleComplete={handleComplete}
+                        />
+                    )}
                 </div>
             </div>
 

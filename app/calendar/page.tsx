@@ -10,6 +10,7 @@ import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { useCalendar } from '@/app/hooks/calendar/useCalendar'
 import { usePaymentCompletion } from '@/app/hooks/payment/usePaymentCompletion'
 import { useCalendarEvents } from '@/app/hooks/calendar/useCalendarEvents'
+import { useUpcomingPayments } from '@/app/hooks/calendar/useUpcomingPayments'
 
 // View 컴포넌트
 import CalendarView from '@/app/components/CalendarView'
@@ -59,6 +60,12 @@ export default function CalendarPage() {
     isEventCompleted,
   })
 
+  // 다가오는 납입 (날짜 미선택 상태에서 노출)
+  const { upcomingEvents } = useUpcomingPayments({
+    records,
+    isEventCompleted,
+  })
+
   const isLoading = authLoading || recordsLoading
 
   if (!isLoading && !user) {
@@ -83,6 +90,7 @@ export default function CalendarPage() {
       clearSelection={clearSelection}
       getDayStatus={getDayStatus}
       selectedEvents={selectedEvents}
+      upcomingEvents={upcomingEvents}
       isEventCompleted={isEventCompleted}
       handleComplete={handleComplete}
       pendingUndo={!!pendingUndo}
