@@ -80,17 +80,18 @@ export function UpcomingEventsSection({
           {groups.map(({ date, events }) => {
             const isOverdue = date < today
             return (
-            <section key={date.toISOString()}>
+            <section key={date.toISOString()} className="mb-3 last:mb-0">
               <h4 className="sticky top-0 z-10 -mx-4 px-4 bg-card py-1.5 text-xs font-medium text-foreground-subtle">
                 {formatRelativeDate(date, today)}
                 {isOverdue && <span className="ml-1.5">· 미완료</span>}
               </h4>
-              {events.map((e) => {
+              {events.map((e, idx) => {
                 const investment = investmentMap.get(e.investmentId)
                 const contribution = investment
                   ? formatMonthlyContribution(investment).main
                   : null
                 const isUS = investment?.market === 'US'
+                const isLastInGroup = idx === events.length - 1
                 return (
                   <div
                     key={`${e.year}-${e.month}-${e.day}-${e.investmentId}`}
@@ -103,7 +104,9 @@ export function UpcomingEventsSection({
                         goToDetail(e.investmentId)
                       }
                     }}
-                    className="flex items-center justify-between gap-3 py-2.5 cursor-pointer transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className={`flex items-center justify-between gap-3 py-2.5 cursor-pointer transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                      isLastInGroup ? '' : 'border-b border-border-subtle-lighter'
+                    }`}
                     aria-label={`${e.title} 상세 보기`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
