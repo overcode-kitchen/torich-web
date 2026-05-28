@@ -108,7 +108,7 @@ export function CalendarGridSection({
                     onClick={() => selectDate(day)}
                     className={`relative aspect-square w-full rounded-lg flex items-center justify-center text-center text-sm transition-colors ${
                       isSelected
-                        ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] ring-1 ring-brand-500'
+                        ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] ring-1 ring-inset ring-brand-500'
                         : 'text-foreground-soft hover:bg-surface-hover'
                     }`}
                   >
