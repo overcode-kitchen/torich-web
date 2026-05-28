@@ -1,3 +1,4 @@
+import { CaretDown } from '@phosphor-icons/react'
 import type { SwipeHandlers } from '@/app/hooks/useSwipe'
 import type { CalendarSlideDirection } from '@/app/hooks/calendar/useCalendar'
 
@@ -12,6 +13,8 @@ interface CalendarGridSectionProps {
   slideDirection: CalendarSlideDirection | null
   /** true면 포커스된 주만 노출하고 나머지 주 행을 접는다 */
   isCollapsed: boolean
+  /** 접힘 상태에서만 카드 하단에 등장하는 펼침 토글 */
+  toggleCollapsed: () => void
 }
 
 function chunkWeeks(days: (number | null)[]): (number | null)[][] {
@@ -45,6 +48,7 @@ export function CalendarGridSection({
   swipeHandlers,
   slideDirection,
   isCollapsed,
+  toggleCollapsed,
 }: CalendarGridSectionProps) {
   const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`
   const animationClass = slideDirection
@@ -58,7 +62,7 @@ export function CalendarGridSection({
 
   return (
     <div
-      className="bg-card rounded-2xl p-4 mb-4 touch-pan-y select-none"
+      className="bg-card rounded-2xl p-4 mb-3 touch-pan-y select-none"
       onClick={(e) => e.stopPropagation()}
       {...swipeHandlers}
     >
@@ -139,19 +143,44 @@ export function CalendarGridSection({
           )
         })}
       </div>
-      <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-border-subtle">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-green-500" />
-          <span className="text-xs text-foreground-muted">완료됨</span>
+      <div
+        className={`overflow-hidden transition-[max-height,opacity,margin-top,padding-top] duration-300 ease-out motion-reduce:transition-none ${
+          isCollapsed
+            ? 'max-h-0 opacity-0 mt-0 pt-0 border-t-0'
+            : 'max-h-12 opacity-100 mt-3 pt-3 border-t border-border-subtle'
+        }`}
+        aria-hidden={isCollapsed}
+      >
+        <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+            <span className="text-xs text-foreground-muted">완료됨</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-red-500" />
+            <span className="text-xs text-foreground-muted">미완료</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-surface-strong-hover" />
+            <span className="text-xs text-foreground-muted">예정</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-red-500" />
-          <span className="text-xs text-foreground-muted">미완료</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-surface-strong-hover" />
-          <span className="text-xs text-foreground-muted">예정</span>
-        </div>
+      </div>
+      <div
+        className={`overflow-hidden transition-[max-height,opacity,margin-top] duration-300 ease-out motion-reduce:transition-none ${
+          isCollapsed ? 'max-h-6 opacity-100 mt-1' : 'max-h-0 opacity-0 mt-0'
+        }`}
+        aria-hidden={!isCollapsed}
+      >
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label="캘린더 펼치기"
+          tabIndex={isCollapsed ? 0 : -1}
+          className="w-full flex items-center justify-center text-foreground-subtle hover:text-foreground-muted"
+        >
+          <CaretDown className="w-3 h-3 scale-x-[2]" />
+        </button>
       </div>
     </div>
   )

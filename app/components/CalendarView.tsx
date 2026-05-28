@@ -120,8 +120,6 @@ export default function CalendarView({
                 goToPrevMonth={goToPrevMonth}
                 goToNextMonth={goToNextMonth}
                 openPicker={openPicker}
-                isCollapsed={isCollapsed}
-                toggleCollapsed={toggleCollapsed}
             />
 
             {/* 캘린더 그리드: 고정, 예정 투자 영역만 카드 많을 때 스크롤 */}
@@ -137,6 +135,7 @@ export default function CalendarView({
                         clearSelection={clearSelection}
                         swipeHandlers={swipeHandlers}
                         isCollapsed={isCollapsed}
+                        toggleCollapsed={toggleCollapsed}
                     />
                 </div>
 
