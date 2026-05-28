@@ -82,7 +82,14 @@ export default function CalendarView({
     })
 
     // 리스트 스크롤 시 캘린더를 주 보기로 접고, 최상단 복귀 시 월 보기로 복원
-    const { isCollapsed, onListScroll } = useCalendarCollapse({ selectedDate })
+    const {
+        isCollapsed,
+        onListScroll,
+        onTouchStart,
+        onTouchMove,
+        onTouchEnd,
+        toggleCollapsed,
+    } = useCalendarCollapse()
 
     const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
     const contentPaddingTop = isNativeApp
@@ -113,6 +120,8 @@ export default function CalendarView({
                 goToPrevMonth={goToPrevMonth}
                 goToNextMonth={goToNextMonth}
                 openPicker={openPicker}
+                isCollapsed={isCollapsed}
+                toggleCollapsed={toggleCollapsed}
             />
 
             {/* 캘린더 그리드: 고정, 예정 투자 영역만 카드 많을 때 스크롤 */}
@@ -134,6 +143,9 @@ export default function CalendarView({
                 <div
                     className="flex-1 min-h-0 overflow-y-auto"
                     onScroll={onListScroll}
+                    onTouchStart={onTouchStart}
+                    onTouchMove={onTouchMove}
+                    onTouchEnd={onTouchEnd}
                 >
                     {selectedDate ? (
                         <SelectedDateSection
