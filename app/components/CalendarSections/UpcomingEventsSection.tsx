@@ -14,6 +14,9 @@ function formatRelativeDate(date: Date, today: Date): string {
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
   if (isSameDay(date, tomorrow)) return '내일'
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (isSameDay(date, yesterday)) return '어제'
   return format(date, 'M월 d일 (E)', { locale: ko })
 }
 
@@ -69,14 +72,18 @@ export function UpcomingEventsSection({
       onClick={(e) => e.stopPropagation()}
       role="presentation"
     >
+      <h3 className="text-sm font-semibold text-foreground-soft mb-2">납입 일정</h3>
       {upcomingEvents.length === 0 ? (
-        <p className="text-sm text-muted-foreground">예정된 납입이 없어요</p>
+        <p className="text-sm text-muted-foreground">납입 일정이 없어요</p>
       ) : (
         <div>
-          {groups.map(({ date, events }) => (
+          {groups.map(({ date, events }) => {
+            const isOverdue = date < today
+            return (
             <section key={date.toISOString()}>
               <h4 className="sticky top-0 z-10 -mx-4 px-4 bg-card py-1.5 text-xs font-medium text-foreground-subtle">
                 {formatRelativeDate(date, today)}
+                {isOverdue && <span className="ml-1.5">· 미완료</span>}
               </h4>
               {events.map((e) => {
                 const investment = investmentMap.get(e.investmentId)
@@ -135,7 +142,8 @@ export function UpcomingEventsSection({
                 )
               })}
             </section>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

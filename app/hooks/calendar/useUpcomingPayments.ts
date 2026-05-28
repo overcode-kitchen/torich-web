@@ -6,8 +6,9 @@ import {
   type PaymentEvent,
 } from '@/app/utils/stats'
 
-const UPCOMING_WINDOW_DAYS = 60
-const UPCOMING_MAX_ITEMS = 10
+const PAST_WINDOW_DAYS = 30
+const FUTURE_WINDOW_DAYS = 60
+const FUTURE_MAX_ITEMS = 10
 
 interface UseUpcomingPaymentsProps {
   records: Investment[]
@@ -29,11 +30,13 @@ export function useUpcomingPayments({
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
+    const windowStart = new Date(today)
+    windowStart.setDate(windowStart.getDate() - PAST_WINDOW_DAYS)
     const windowEnd = new Date(today)
-    windowEnd.setDate(windowEnd.getDate() + UPCOMING_WINDOW_DAYS)
+    windowEnd.setDate(windowEnd.getDate() + FUTURE_WINDOW_DAYS)
 
     const months: Array<{ year: number; month: number }> = []
-    const cursor = new Date(today.getFullYear(), today.getMonth(), 1)
+    const cursor = new Date(windowStart.getFullYear(), windowStart.getMonth(), 1)
     while (cursor <= windowEnd) {
       months.push({ year: cursor.getFullYear(), month: cursor.getMonth() + 1 })
       cursor.setMonth(cursor.getMonth() + 1)
@@ -44,10 +47,10 @@ export function useUpcomingPayments({
       all.push(...getPaymentEventsForMonth(activeRecords, year, month))
     }
 
-    return all
+    const filtered = all
       .filter((e) => {
         const eventDate = new Date(e.year, e.month - 1, e.day)
-        if (eventDate < today) return false
+        if (eventDate < windowStart) return false
         if (eventDate > windowEnd) return false
         return !isEventCompleted(e)
       })
@@ -56,7 +59,13 @@ export function useUpcomingPayments({
         const db = new Date(b.year, b.month - 1, b.day).getTime()
         return da - db
       })
-      .slice(0, UPCOMING_MAX_ITEMS)
+
+    // 과거 미완료는 전부 노출, 미래 일정은 최대치로 제한
+    const past = filtered.filter((e) => new Date(e.year, e.month - 1, e.day) < today)
+    const future = filtered
+      .filter((e) => new Date(e.year, e.month - 1, e.day) >= today)
+      .slice(0, FUTURE_MAX_ITEMS)
+    return [...past, ...future]
   }, [activeRecords, isEventCompleted])
 
   return { upcomingEvents }
