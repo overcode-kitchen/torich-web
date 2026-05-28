@@ -82,7 +82,7 @@ export default function CalendarView({
     })
 
     // 리스트 스크롤 시 캘린더를 주 보기로 접고, 최상단 복귀 시 월 보기로 복원
-    const { isCollapsed, onListScroll } = useCalendarCollapse()
+    const { isCollapsed, onListScroll } = useCalendarCollapse({ selectedDate })
 
     const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
     const contentPaddingTop = isNativeApp
