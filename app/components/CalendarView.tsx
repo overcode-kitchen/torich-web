@@ -8,6 +8,7 @@ import { SelectedDateSection } from '@/app/components/CalendarSections/SelectedD
 import { UpcomingEventsSection } from '@/app/components/CalendarSections/UpcomingEventsSection'
 import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import type { PaymentEvent } from '@/app/utils/stats'
+import type { Investment } from '@/app/types/investment'
 import type { CalendarSlideDirection } from '@/app/hooks/calendar/useCalendar'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import { useSwipe } from '@/app/hooks/useSwipe'
@@ -42,6 +43,9 @@ interface CalendarViewProps {
     // Upcoming events (when no date is selected)
     upcomingEvents: PaymentEvent[]
 
+    // 다가오는 납입 아이템 렌더링용 (아바타·금액 표시에 필요)
+    records: Investment[]
+
     // Payment Actions
     isEventCompleted: (e: PaymentEvent) => boolean
     handleComplete: (e: PaymentEvent) => void
@@ -68,6 +72,7 @@ export default function CalendarView({
     getDayStatus,
     selectedEvents,
     upcomingEvents,
+    records,
     isEventCompleted,
     handleComplete,
     pendingUndo,
@@ -156,6 +161,7 @@ export default function CalendarView({
                     ) : (
                         <UpcomingEventsSection
                             upcomingEvents={upcomingEvents}
+                            records={records}
                             handleComplete={handleComplete}
                         />
                     )}

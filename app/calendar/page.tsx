@@ -91,6 +91,7 @@ export default function CalendarPage() {
       getDayStatus={getDayStatus}
       selectedEvents={selectedEvents}
       upcomingEvents={upcomingEvents}
+      records={records}
       isEventCompleted={isEventCompleted}
       handleComplete={handleComplete}
       pendingUndo={!!pendingUndo}
