@@ -11,6 +11,7 @@ import type { PaymentEvent } from '@/app/utils/stats'
 import type { CalendarSlideDirection } from '@/app/hooks/calendar/useCalendar'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import { useSwipe } from '@/app/hooks/useSwipe'
+import { useCalendarCollapse } from '@/app/hooks/calendar/useCalendarCollapse'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 interface CalendarViewProps {
@@ -80,6 +81,9 @@ export default function CalendarView({
         onSwipeRight: goToPrevMonth,
     })
 
+    // 리스트 스크롤 시 캘린더를 주 보기로 접고, 최상단 복귀 시 월 보기로 복원
+    const { isCollapsed, onListScroll } = useCalendarCollapse()
+
     const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
     const contentPaddingTop = isNativeApp
         ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px)'
@@ -123,10 +127,14 @@ export default function CalendarView({
                         selectDate={selectDate}
                         clearSelection={clearSelection}
                         swipeHandlers={swipeHandlers}
+                        isCollapsed={isCollapsed}
                     />
                 </div>
 
-                <div className="flex-1 min-h-0 overflow-y-auto">
+                <div
+                    className="flex-1 min-h-0 overflow-y-auto"
+                    onScroll={onListScroll}
+                >
                     {selectedDate ? (
                         <SelectedDateSection
                             selectedDate={selectedDate}
