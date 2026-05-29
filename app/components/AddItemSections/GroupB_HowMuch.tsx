@@ -131,13 +131,32 @@ function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) 
 }
 
 function CashFields({ formState }: { formState: UseAddItemFormStateReturn }) {
+  const amountFilled = parseAmount(formState.monthlyAmount) > 0
+  const isHabitMode = formState.periodYears === ''
+
   return (
-    <ProgressiveField label="매달 얼마를 모을까요?" autoScroll={false}>
-      <AmountInput
-        value={formState.monthlyAmount}
-        onChange={formState.handleAmountChange}
-        onAdjust={formState.adjustAmount}
-      />
-    </ProgressiveField>
+    <div>
+      <ProgressiveField label="매달 얼마를 모을까요?" autoScroll={false}>
+        <AmountInput
+          value={formState.monthlyAmount}
+          onChange={formState.handleAmountChange}
+          onAdjust={formState.adjustAmount}
+        />
+      </ProgressiveField>
+
+      {amountFilled && (
+        <ProgressiveField label="얼마나 오래 모을까요?">
+          <PeriodInput
+            value={formState.periodYears}
+            onChange={formState.handlePeriodYearsChange}
+            onAdjust={formState.adjustPeriodYears}
+            isHabitMode={isHabitMode}
+            onToggleHabitMode={(habit) => {
+              if (habit) formState.setPeriodYearsRaw('')
+            }}
+          />
+        </ProgressiveField>
+      )}
+    </div>
   )
 }

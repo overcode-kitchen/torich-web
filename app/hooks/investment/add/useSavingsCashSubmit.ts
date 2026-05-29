@@ -22,6 +22,8 @@ export interface UseSavingsCashSubmitProps {
   interestRate: string
   /** 만기일 (YYYY-MM-DD) — 예적금만 사용 */
   maturityDate: string
+  /** 목표 기간(년) — 현금에서만 사용. 빈 문자열이면 habit(무기한 적립) */
+  periodYears?: string
   /** 목적 만들기 흐름에서 넘어온 경우 연결할 목적 ID */
   goalId?: string
   /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
@@ -46,6 +48,7 @@ export function useSavingsCashSubmit({
   investmentDays,
   interestRate,
   maturityDate,
+  periodYears,
   goalId,
   mode = 'create',
   recordId,
@@ -79,11 +82,17 @@ export function useSavingsCashSubmit({
       return
     }
 
+    // 현금만 목표 기간 입력 (예적금은 maturity_date로 종료 시점 관리)
+    const periodYearsNum =
+      recordType === 'cash' ? parseInt(periodYears ?? '', 10) : NaN
+    const periodYearsValue =
+      Number.isFinite(periodYearsNum) && periodYearsNum > 0 ? periodYearsNum : null
+
     const payload = {
       title: title.trim(),
       symbol: null,
       monthly_amount: amountInWon,
-      period_years: null,
+      period_years: periodYearsValue,
       annual_rate: 0,
       final_amount: 0,
       investment_days: investmentDays.length > 0 ? investmentDays : null,
@@ -147,6 +156,7 @@ export function useSavingsCashSubmit({
     investmentDays,
     interestRate,
     maturityDate,
+    periodYears,
     recordType,
     goalId,
     mode,
