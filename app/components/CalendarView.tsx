@@ -4,8 +4,8 @@ import { CircleNotch } from '@phosphor-icons/react'
 import { CalendarHeaderSection } from '@/app/components/CalendarSections/CalendarHeaderSection'
 import { CalendarGridSection } from '@/app/components/CalendarSections/CalendarGridSection'
 import MonthPickerSheet from '@/app/components/CalendarSections/MonthPickerSheet'
-import { SelectedDateSection } from '@/app/components/CalendarSections/SelectedDateSection'
 import { UpcomingEventsSection } from '@/app/components/CalendarSections/UpcomingEventsSection'
+import { FilteredDaySection } from '@/app/components/CalendarSections/FilteredDaySection'
 import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import type { PaymentEvent } from '@/app/utils/stats'
 import type { Investment } from '@/app/types/investment'
@@ -159,11 +159,13 @@ export default function CalendarView({
                     onTouchEnd={onTouchEnd}
                 >
                     {selectedDate ? (
-                        <SelectedDateSection
-                            selectedDate={selectedDate}
-                            selectedEvents={selectedEvents}
+                        <FilteredDaySection
+                            filterDate={selectedDate}
+                            filterEvents={selectedEvents}
+                            records={records}
                             isEventCompleted={isEventCompleted}
                             handleComplete={handleComplete}
+                            onClearFilter={clearSelection}
                         />
                     ) : (
                         <UpcomingEventsSection
