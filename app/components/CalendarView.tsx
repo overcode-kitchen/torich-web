@@ -94,7 +94,7 @@ export default function CalendarView({
         onTouchMove,
         onTouchEnd,
         toggleCollapsed,
-    } = useCalendarCollapse()
+    } = useCalendarCollapse({ selectedDate })
 
     const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
     const contentPaddingTop = isNativeApp
