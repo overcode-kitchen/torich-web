@@ -50,7 +50,7 @@ function NewGoalContent() {
     const matched = GOAL_PRESETS.find((p) => p.name === preset)
     if (!matched) return
     setField('name', matched.name)
-    setField('emoji', matched.emoji)
+    setField('emoji', matched.iconKey)
   }, [searchParams, setField])
 
   const canAdvance = useMemo<boolean>(() => {

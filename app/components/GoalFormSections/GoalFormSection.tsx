@@ -1,11 +1,19 @@
 'use client'
 
-import { GOAL_PRESETS, type GoalPreset } from '@/app/constants/goal'
+import Image from 'next/image'
+import {
+  GOAL_PRESETS,
+  resolvePurposeIcon,
+  type GoalPreset,
+} from '@/app/constants/goal'
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import GoalTargetDateField from './GoalTargetDateField'
+import PurposeIconSlot from './PurposeIconSlot'
 
 export interface GoalFormSectionProps {
   values: GoalFormValues
@@ -41,12 +49,6 @@ const adjustWonByManwon = (won: string, deltaManwon: number): string => {
   return String(next * 10000)
 }
 
-const inputClass =
-  'h-12 w-full rounded-xl border border-input bg-card px-4 text-sm text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50'
-
-const textareaClass =
-  'w-full rounded-xl border border-input bg-card px-4 py-3 text-sm text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50'
-
 const TARGET_QUICK_ADJUSTS: { label: string; delta: number }[] = [
   { label: '+1,000만', delta: 1000 },
   { label: '-1,000만', delta: -1000 },
@@ -62,16 +64,20 @@ export function GoalFormSection({
 }: GoalFormSectionProps) {
   function applyPreset(preset: GoalPreset): void {
     setField('name', preset.name)
-    setField('emoji', preset.emoji)
+    setField('emoji', preset.iconKey)
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <Label htmlFor="goal-name">목적 이름</Label>
-        <input
+        <PurposeIconSlot
+          value={values.emoji}
+          onChange={(iconKey) => setField('emoji', iconKey)}
+          disabled={disabled}
+        />
+        <Input
           id="goal-name"
-          className={inputClass}
           placeholder="예: 결혼자금"
           value={values.name}
           onChange={(e) => setField('name', e.target.value)}
@@ -80,6 +86,7 @@ export function GoalFormSection({
         <div className="flex flex-wrap gap-2 pt-1">
           {GOAL_PRESETS.map((preset) => {
             const isActive = values.name.trim() === preset.name
+            const icon = resolvePurposeIcon(preset.iconKey)
             return (
               <button
                 key={preset.name}
@@ -87,13 +94,21 @@ export function GoalFormSection({
                 onClick={() => applyPreset(preset)}
                 disabled={disabled}
                 className={cn(
-                  'inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50',
+                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50',
                   isActive
                     ? 'border-foreground bg-foreground text-background'
                     : 'border-border-subtle-lighter bg-card text-foreground-soft hover:bg-muted',
                 )}
               >
-                <span>{preset.emoji}</span>
+                {icon && (
+                  <Image
+                    src={icon.src}
+                    alt=""
+                    width={16}
+                    height={16}
+                    className="h-4 w-4 object-contain"
+                  />
+                )}
                 <span>{preset.name}</span>
               </button>
             )
@@ -104,9 +119,9 @@ export function GoalFormSection({
       <div className="flex flex-col gap-2">
         <Label htmlFor="goal-target">목표 금액</Label>
         <div className="relative">
-          <input
+          <Input
             id="goal-target"
-            className={cn(inputClass, 'pr-14')}
+            className="pr-14"
             inputMode="numeric"
             placeholder="예: 5,000"
             value={wonToManwonDisplay(values.target_amount)}
@@ -154,9 +169,8 @@ export function GoalFormSection({
       {showOptionalFields && (
         <div className="flex flex-col gap-2">
           <Label htmlFor="goal-memo">메모 (선택)</Label>
-          <textarea
+          <Textarea
             id="goal-memo"
-            className={textareaClass}
             placeholder="이 목적에 대한 메모"
             rows={3}
             value={values.memo}
@@ -170,9 +184,9 @@ export function GoalFormSection({
         <div className="flex flex-col gap-2">
           <Label htmlFor="goal-external">이미 모은 돈 (선택)</Label>
           <div className="relative">
-            <input
+            <Input
               id="goal-external"
-              className={cn(inputClass, 'pr-14')}
+              className="pr-14"
               inputMode="numeric"
               value={wonToManwonDisplay(values.external_amount)}
               onChange={(e) =>

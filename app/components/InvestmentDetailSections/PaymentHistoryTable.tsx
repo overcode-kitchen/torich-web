@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { formatSmartDate } from '@/app/utils/date'
 import type { Investment } from '@/app/types/investment'
 
 export interface PaymentHistoryRow {
@@ -38,10 +39,22 @@ export function PaymentHistoryTable({
     if (isRetro) return <span className="text-foreground-subtle">-</span>
     if (!item.investment_days || item.investment_days.length === 0) return '-'
     const [y, m] = yearMonth.split('-')
+    const year = parseInt(y, 10)
+    const month = parseInt(m, 10)
     return [...item.investment_days]
       .sort((a, b) => a - b)
-      .map((d) => `${y}.${m}.${String(d).padStart(2, '0')}`)
+      .map((d) => formatSmartDate(new Date(year, month - 1, d)))
       .join(', ')
+  }
+
+  const renderMonthLabel = (yearMonth: string) => {
+    const [y, m] = yearMonth.split('-')
+    const month = parseInt(m, 10)
+    const thisYear = new Date().getFullYear()
+    if (parseInt(y, 10) === thisYear) {
+      return `${month}월`
+    }
+    return `${y.slice(-2)}.${month}월`
   }
 
   return (
@@ -80,7 +93,7 @@ export function PaymentHistoryTable({
                   isRetro ? 'text-foreground-muted' : 'text-foreground'
                 )}
               >
-                {yearMonth.replace('-', '.')}
+                {renderMonthLabel(yearMonth)}
                 {isRetro && (
                   <span className="ml-1 text-[11px] text-foreground-subtle">(소급)</span>
                 )}

@@ -60,6 +60,7 @@ export function useAddRecordPage() {
     investmentDays: formState.investmentDays,
     interestRate: formState.interestRate,
     maturityDate: formState.maturityDate,
+    periodYears: formState.periodYears,
     goalId,
     mode: isEditMode ? 'edit' : 'create',
     recordId: isEditMode ? editId ?? undefined : undefined,

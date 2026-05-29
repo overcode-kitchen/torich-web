@@ -97,7 +97,7 @@ export function GoalGroupItemRow({
             <div className="flex min-w-0 flex-col gap-1.5">
               <div className="flex min-w-0 items-center gap-2">
                 <div
-                  className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${avatar.className}`}
+                  className={`flex shrink-0 items-center justify-center rounded-full font-semibold ${avatar.sizeClassName} ${avatar.className}`}
                   aria-hidden
                 >
                   {avatar.label}

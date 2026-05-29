@@ -1,7 +1,7 @@
 'use client'
 
 import { formatCurrency } from '@/lib/utils'
-import { formatFullDate, formatYearMonth, formatDuration } from '@/app/utils/date'
+import { formatSmartDate, formatYearMonth, formatDuration } from '@/app/utils/date'
 
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
 
@@ -40,7 +40,7 @@ export function ProgressSection(props: ProgressSectionProps) {
     const elapsedText = elapsedMonths > 0 ? `${formatDuration(elapsedMonths)}째 적립 중` : '이번 달부터 적립 시작'
 
     return (
-      <section className="py-6 border-b border-border-subtle-lighter">
+      <section className="py-8 border-b border-border-subtle-lighter">
         <div className="mb-4">
           <p className="text-lg font-semibold text-foreground">
             🔥 {elapsedText}
@@ -65,10 +65,10 @@ export function ProgressSection(props: ProgressSectionProps) {
   if (progress === null || progress === undefined) return null
 
   return (
-    <section className="py-6 border-b border-border-subtle-lighter">
-      <div className="flex justify-between text-base text-muted-foreground mb-3">
-        <span className="font-medium">진행률</span>
-        <span className="font-bold text-foreground">{progress}%</span>
+    <section className="py-8 border-b border-border-subtle-lighter">
+      <div className="flex items-baseline justify-between mb-3">
+        <span className="text-lg font-semibold tracking-tight text-foreground">진행률</span>
+        <span className="text-lg font-semibold tracking-tight text-foreground">{progress}%</span>
       </div>
       <div className="w-full h-2 bg-surface-hover rounded-full overflow-hidden">
         <div
@@ -78,8 +78,8 @@ export function ProgressSection(props: ProgressSectionProps) {
         />
       </div>
       <div className="flex justify-between text-sm text-foreground-subtle mt-3">
-        <span>시작: {formatFullDate(startDate)}</span>
-        <span>종료: {formatFullDate(endDate)}</span>
+        <span>{formatSmartDate(startDate)}</span>
+        <span>{formatSmartDate(endDate)}</span>
       </div>
     </section>
   )

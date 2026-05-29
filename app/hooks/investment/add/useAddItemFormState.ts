@@ -22,6 +22,11 @@ export interface UseAddItemFormStateReturn {
   handleInterestRateChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   maturityDate: string
   setMaturityDate: (value: string) => void
+  /** 현금 목표 기간(년). 빈 문자열이면 habit(무기한 적립) */
+  periodYears: string
+  setPeriodYearsRaw: (value: string) => void
+  handlePeriodYearsChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  adjustPeriodYears: (delta: number) => void
   /** 공통 필드를 모두 빈 상태로 리셋 (type 변경 시 사용) */
   resetAll: () => void
 }
@@ -40,6 +45,7 @@ export function useAddItemFormState({
   const [investmentDays, setInvestmentDays] = useState<number[]>([])
   const [interestRate, setInterestRate] = useState<string>('')
   const [maturityDate, setMaturityDate] = useState<string>('')
+  const [periodYears, setPeriodYears] = useState<string>('')
 
   // initData 변경 시 1회 초기화 (편집 모드 진입)
   useEffect(() => {
@@ -55,6 +61,11 @@ export function useAddItemFormState({
       initData.interest_rate != null ? String(initData.interest_rate) : '',
     )
     setMaturityDate(initData.maturity_date ?? '')
+    setPeriodYears(
+      initData.period_years != null && initData.period_years > 0
+        ? String(initData.period_years)
+        : '',
+    )
   }, [initData])
 
   // 금액: 숫자만 허용, 천 단위 콤마 표기 (만원 단위)
@@ -80,6 +91,17 @@ export function useAddItemFormState({
     setInterestRate(parts.length > 2 ? `${parts[0]}.${parts[1]}` : cleaned)
   }
 
+  // 목표 기간(년): 정수만 허용. 빈 문자열 허용 (habit 모드 의미).
+  const handlePeriodYearsChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setPeriodYears(e.target.value.replace(/[^0-9]/g, ''))
+  }
+
+  const adjustPeriodYears = (delta: number): void => {
+    const current = parseInt(periodYears || '0', 10)
+    const next = Math.max(0, current + delta)
+    setPeriodYears(next === 0 ? '' : String(next))
+  }
+
   // useEffect 의존성에서 안정적으로 참조되도록 useCallback으로 메모이즈.
   const resetAll = useCallback((): void => {
     setTitle('')
@@ -87,6 +109,7 @@ export function useAddItemFormState({
     setInvestmentDays([])
     setInterestRate('')
     setMaturityDate('')
+    setPeriodYears('')
   }, [])
 
   return {
@@ -103,6 +126,10 @@ export function useAddItemFormState({
     handleInterestRateChange,
     maturityDate,
     setMaturityDate,
+    periodYears,
+    setPeriodYearsRaw: setPeriodYears,
+    handlePeriodYearsChange,
+    adjustPeriodYears,
     resetAll,
   }
 }

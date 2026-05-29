@@ -19,7 +19,7 @@ export default function GoalFlowHeader({ currentStep }: GoalFlowHeaderProps) {
 
   return (
     <div
-      className="flex items-center gap-2 mb-8"
+      className="flex items-center gap-1.5 mb-8 w-32 mx-auto"
       role="progressbar"
       aria-label="진행 단계"
     >
@@ -28,7 +28,7 @@ export default function GoalFlowHeader({ currentStep }: GoalFlowHeaderProps) {
           key={s}
           className={
             'h-1 flex-1 rounded-full transition-colors ' +
-            (isFilled(s) ? 'bg-foreground' : 'bg-muted')
+            (isFilled(s) ? 'bg-muted-foreground' : 'bg-muted')
           }
         />
       ))}
