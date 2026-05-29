@@ -151,10 +151,10 @@ export default function CalendarView({
                     />
                 </div>
 
-                {/* 라운드 셰이프를 스크롤 컨테이너 자체에 둬서 스크롤해도 상단 라운드가 보이도록 함 */}
+                {/* 라운드 셰이프를 스크롤 컨테이너 자체에 둬서 스크롤해도 상단 라운드가 보이도록 함. 카드는 내용 높이에 맞춰 자라되 가용 공간을 넘으면 내부 스크롤. */}
                 <div className="flex-1 min-h-0 flex flex-col pb-4">
                     <div
-                        className="flex-1 min-h-0 overflow-y-auto bg-card rounded-2xl"
+                        className="max-h-full overflow-y-auto bg-card rounded-2xl"
                         onScroll={onListScroll}
                         onTouchStart={onTouchStart}
                         onTouchMove={onTouchMove}
