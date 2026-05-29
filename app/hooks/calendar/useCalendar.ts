@@ -9,10 +9,15 @@ export type CalendarSlideDirection = 'next' | 'prev'
 
 export function useCalendar() {
   const [currentMonth, setCurrentMonth] = useState(() => new Date())
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  // 진입 직후엔 오늘로 스크롤되도록 today를 기본 anchor로 설정
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => new Date())
   // null: 최초 로드 시점 — 애니메이션 없음
   const [slideDirection, setSlideDirection] = useState<CalendarSlideDirection | null>(null)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
+  // 리스트 스크롤 의도 트리거. 사용자 탭/월 이동 시 증가 → 리스트가 anchor로 smooth scroll.
+  // 리스트 스크롤이 거꾸로 selectedDate를 갱신할 땐 tick 증가시키지 않아 feedback loop를 방지.
+  const [scrollTick, setScrollTick] = useState(0)
+  const bumpTick = useCallback(() => setScrollTick((t) => t + 1), [])
 
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth() + 1
@@ -37,13 +42,15 @@ export function useCalendar() {
     setSlideDirection('prev')
     setCurrentMonth((m) => subMonths(m, 1))
     setSelectedDate(null)
-  }, [])
+    bumpTick()
+  }, [bumpTick])
 
   const goToNextMonth = useCallback(() => {
     setSlideDirection('next')
     setCurrentMonth((m) => addMonths(m, 1))
     setSelectedDate(null)
-  }, [])
+    bumpTick()
+  }, [bumpTick])
 
   const openPicker = useCallback(() => setIsPickerOpen(true), [])
   const closePicker = useCallback(() => setIsPickerOpen(false), [])
@@ -57,13 +64,14 @@ export function useCalendar() {
       setSlideDirection(targetIndex < currentIndex ? 'prev' : 'next')
       setCurrentMonth(new Date(targetYear, targetMonth - 1, 1))
       setSelectedDate(null)
+      bumpTick()
     },
-    [currentMonth],
+    [currentMonth, bumpTick],
   )
 
   const selectDate = useCallback((day: number) => {
     setSelectedDate((prev) => {
-      // 같은 날짜 재탭 → 해제 (토글). iOS 캘린더·Google Calendar 컨벤션
+      // 같은 날 재탭 → anchor 해제. 리스트는 월 전체 top으로 복귀
       if (
         prev &&
         prev.getFullYear() === year &&
@@ -76,10 +84,17 @@ export function useCalendar() {
       track('calendar_date_select')
       return new Date(year, month - 1, day)
     })
-  }, [year, month])
+    bumpTick()
+  }, [year, month, bumpTick])
 
   const clearSelection = useCallback(() => {
     setSelectedDate(null)
+    bumpTick()
+  }, [bumpTick])
+
+  // 리스트 스크롤에 의해 selectedDate가 갱신될 때 호출. tick을 증가시키지 않아 리스트 재스크롤을 유발하지 않는다.
+  const syncSelectedFromScroll = useCallback((date: Date | null) => {
+    setSelectedDate(date)
   }, [])
 
   const goToToday = useCallback(() => {
@@ -93,7 +108,8 @@ export function useCalendar() {
       return new Date(today.getFullYear(), today.getMonth(), 1)
     })
     setSelectedDate(null)
-  }, [])
+    bumpTick()
+  }, [bumpTick])
 
   return {
     currentMonth,
@@ -112,5 +128,7 @@ export function useCalendar() {
     closePicker,
     selectDate,
     clearSelection,
+    scrollTick,
+    syncSelectedFromScroll,
   }
 }

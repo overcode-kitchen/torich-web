@@ -4,8 +4,7 @@ import { CircleNotch } from '@phosphor-icons/react'
 import { CalendarHeaderSection } from '@/app/components/CalendarSections/CalendarHeaderSection'
 import { CalendarGridSection } from '@/app/components/CalendarSections/CalendarGridSection'
 import MonthPickerSheet from '@/app/components/CalendarSections/MonthPickerSheet'
-import { UpcomingEventsSection } from '@/app/components/CalendarSections/UpcomingEventsSection'
-import { FilteredDaySection } from '@/app/components/CalendarSections/FilteredDaySection'
+import { MonthAgendaSection } from '@/app/components/CalendarSections/MonthAgendaSection'
 import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import type { PaymentEvent } from '@/app/utils/stats'
 import type { Investment } from '@/app/types/investment'
@@ -20,6 +19,8 @@ interface CalendarViewProps {
 
     // Calendar State
     currentMonth: Date
+    year: number
+    month: number
     calendarDays: (number | null)[]
     selectedDate: Date | null
     slideDirection: CalendarSlideDirection | null
@@ -36,15 +37,14 @@ interface CalendarViewProps {
     closePicker: () => void
     selectDate: (day: number) => void
     clearSelection: () => void
+    scrollTick: number
+    syncSelectedFromScroll: (date: Date | null) => void
 
     // Event Status
     getDayStatus: (day: number) => 'completed' | 'missed' | 'scheduled' | null
 
-    // Selected Date Events
-    selectedEvents: PaymentEvent[]
-
-    // Upcoming events (when no date is selected)
-    upcomingEvents: PaymentEvent[]
+    // 현재 표시 중인 달의 모든 이벤트 (날짜별 그룹 렌더링용)
+    eventsForMonth: PaymentEvent[]
 
     // 다가오는 납입 아이템 렌더링용 (아바타·금액 표시에 필요)
     records: Investment[]
@@ -61,6 +61,8 @@ interface CalendarViewProps {
 export default function CalendarView({
     isLoading,
     currentMonth,
+    year,
+    month,
     calendarDays,
     selectedDate,
     slideDirection,
@@ -74,9 +76,10 @@ export default function CalendarView({
     closePicker,
     selectDate,
     clearSelection,
+    scrollTick,
+    syncSelectedFromScroll,
     getDayStatus,
-    selectedEvents,
-    upcomingEvents,
+    eventsForMonth,
     records,
     isEventCompleted,
     handleComplete,
@@ -154,6 +157,7 @@ export default function CalendarView({
                 {/* 라운드 셰이프를 스크롤 컨테이너 자체에 둬서 스크롤해도 상단 라운드가 보이도록 함. 카드는 내용 높이에 맞춰 자라되 가용 공간을 넘으면 내부 스크롤. */}
                 <div className="flex-1 min-h-0 flex flex-col pb-4">
                     <div
+                        data-calendar-scroll
                         className="max-h-full overflow-y-auto bg-card rounded-2xl"
                         onScroll={onListScroll}
                         onTouchStart={onTouchStart}
@@ -162,23 +166,18 @@ export default function CalendarView({
                         onClick={(e) => e.stopPropagation()}
                         role="presentation"
                     >
-                        <div className="p-4">
-                            {selectedDate ? (
-                                <FilteredDaySection
-                                    filterDate={selectedDate}
-                                    filterEvents={selectedEvents}
-                                    records={records}
-                                    isEventCompleted={isEventCompleted}
-                                    handleComplete={handleComplete}
-                                    onClearFilter={clearSelection}
-                                />
-                            ) : (
-                                <UpcomingEventsSection
-                                    upcomingEvents={upcomingEvents}
-                                    records={records}
-                                    handleComplete={handleComplete}
-                                />
-                            )}
+                        <div className="px-4 pb-4">
+                            <MonthAgendaSection
+                                year={year}
+                                month={month}
+                                eventsForMonth={eventsForMonth}
+                                records={records}
+                                selectedDate={selectedDate}
+                                scrollTick={scrollTick}
+                                onVisibleDayChange={syncSelectedFromScroll}
+                                isEventCompleted={isEventCompleted}
+                                handleComplete={handleComplete}
+                            />
                         </div>
                     </div>
                 </div>

@@ -10,7 +10,6 @@ import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { useCalendar } from '@/app/hooks/calendar/useCalendar'
 import { usePaymentCompletion } from '@/app/hooks/payment/usePaymentCompletion'
 import { useCalendarEvents } from '@/app/hooks/calendar/useCalendarEvents'
-import { useUpcomingPayments } from '@/app/hooks/calendar/useUpcomingPayments'
 
 // View 컴포넌트
 import CalendarView from '@/app/components/CalendarView'
@@ -38,6 +37,8 @@ export default function CalendarPage() {
     closePicker,
     selectDate,
     clearSelection,
+    scrollTick,
+    syncSelectedFromScroll,
     year,
     month,
   } = useCalendar()
@@ -50,21 +51,14 @@ export default function CalendarPage() {
     pendingUndo,
   } = usePaymentCompletion()
 
-  // 캘린더 이벤트 훅
+  // 캘린더 이벤트 훅 — 월 전체 이벤트와 일자별 상태
   const {
-    selectedEvents,
+    eventsForMonth,
     getDayStatus,
   } = useCalendarEvents({
     records,
     year,
     month,
-    selectedDate,
-    isEventCompleted,
-  })
-
-  // 다가오는 납입 (날짜 미선택 상태에서 노출)
-  const { upcomingEvents } = useUpcomingPayments({
-    records,
     isEventCompleted,
   })
 
@@ -79,6 +73,8 @@ export default function CalendarPage() {
     <CalendarView
       isLoading={isLoading}
       currentMonth={currentMonth}
+      year={year}
+      month={month}
       calendarDays={calendarDays}
       selectedDate={selectedDate}
       slideDirection={slideDirection}
@@ -92,9 +88,10 @@ export default function CalendarPage() {
       closePicker={closePicker}
       selectDate={selectDate}
       clearSelection={clearSelection}
+      scrollTick={scrollTick}
+      syncSelectedFromScroll={syncSelectedFromScroll}
       getDayStatus={getDayStatus}
-      selectedEvents={selectedEvents}
-      upcomingEvents={upcomingEvents}
+      eventsForMonth={eventsForMonth}
       records={records}
       isEventCompleted={isEventCompleted}
       handleComplete={handleComplete}

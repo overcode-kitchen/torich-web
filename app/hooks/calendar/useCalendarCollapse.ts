@@ -12,9 +12,10 @@ const FAST_VELOCITY = 0.5
 const STALE_DT_MS = 100
 // 토글 직후 잠시 스크롤/터치 이벤트를 무시. 클램프 피드백 루프 방지.
 const TOGGLE_LOCK_MS = 250
-// 선택된 날짜가 바뀌면 하단 콘텐츠가 스왑되며 scrollTop이 0으로 클램프된다.
-// 이 클램프를 사용자 의도(상단 복귀)로 오인하지 않도록 별도 길이의 락을 건다.
-const SELECTION_LOCK_MS = 350
+// 날짜 선택 시 (a) 콘텐츠 스왑으로 scrollTop이 0으로 클램프되거나 (b) 해당 그룹으로 smooth scroll이 진행된다.
+// 두 경우 모두 "사용자 의도의 스크롤"이 아니므로 collapse/expand 판정에서 무시해야 한다.
+// smooth scrollTo 의 브라우저 표준 duration이 명세돼 있지 않아 대체로 400~700ms 이므로 여유 있게 잡는다.
+const SELECTION_LOCK_MS = 1000
 
 interface UseCalendarCollapseProps {
   selectedDate: Date | null
