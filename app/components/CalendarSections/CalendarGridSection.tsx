@@ -60,6 +60,12 @@ export function CalendarGridSection({
   const weeks = chunkWeeks(calendarDays)
   const focusedWeekIndex = getFocusedWeekIndex(weeks, currentMonth, selectedDate)
 
+  const today = new Date()
+  const isCurrentMonthToday =
+    today.getFullYear() === currentMonth.getFullYear() &&
+    today.getMonth() === currentMonth.getMonth()
+  const todayDate = isCurrentMonthToday ? today.getDate() : null
+
   return (
     <div
       className="bg-card rounded-2xl p-4 mb-3 touch-pan-y select-none"
@@ -104,22 +110,26 @@ export function CalendarGridSection({
                 const isSelected =
                   selectedDate?.getDate() === day &&
                   selectedDate?.getMonth() === currentMonth.getMonth()
+                const isToday = todayDate === day
                 return (
                   <button
                     key={day}
                     type="button"
                     tabIndex={isHidden ? -1 : 0}
                     onClick={() => selectDate(day)}
+                    aria-current={isToday ? 'date' : undefined}
                     className={`relative aspect-square w-full rounded-lg flex items-center justify-center text-center text-sm transition-colors ${
                       isSelected
                         ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] ring-1 ring-inset ring-brand-500'
-                        : 'text-foreground-soft hover:bg-surface-hover'
+                        : isToday
+                          ? 'text-foreground hover:bg-surface-hover'
+                          : 'text-foreground-soft hover:bg-surface-hover'
                     }`}
                   >
                     <span
-                      className={`font-medium -translate-y-1 transition-transform duration-200 ease-out ${
-                        isSelected ? 'scale-110' : 'scale-100'
-                      }`}
+                      className={`-translate-y-1 transition-transform duration-200 ease-out ${
+                        isToday && !isSelected ? 'font-bold' : 'font-medium'
+                      } ${isSelected ? 'scale-110' : 'scale-100'}`}
                     >
                       {day}
                     </span>
