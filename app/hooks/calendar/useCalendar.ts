@@ -62,8 +62,20 @@ export function useCalendar() {
   )
 
   const selectDate = useCallback((day: number) => {
-    track('calendar_date_select')
-    setSelectedDate(new Date(year, month - 1, day))
+    setSelectedDate((prev) => {
+      // 같은 날짜 재탭 → 해제 (토글). iOS 캘린더·Google Calendar 컨벤션
+      if (
+        prev &&
+        prev.getFullYear() === year &&
+        prev.getMonth() === month - 1 &&
+        prev.getDate() === day
+      ) {
+        track('calendar_date_deselect')
+        return null
+      }
+      track('calendar_date_select')
+      return new Date(year, month - 1, day)
+    })
   }, [year, month])
 
   const clearSelection = useCallback(() => {
