@@ -4,6 +4,7 @@ import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import { useMonthPicker } from '@/app/hooks/calendar/useMonthPicker'
 import { useDismissibleSheet } from '@/app/hooks/useDismissibleSheet'
 import { useSwipe } from '@/app/hooks/useSwipe'
+import { APP_BOTTOM_NAV_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
 
 interface MonthPickerSheetProps {
   /** 현재 캘린더가 보고 있는 월 (강조 표시용) */
@@ -43,7 +44,10 @@ export default function MonthPickerSheet({
     : ''
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ paddingBottom: APP_BOTTOM_NAV_TOTAL_HEIGHT }}
+    >
       {/* 오버레이 */}
       <div
         className={`fixed inset-0 bg-black/50 duration-300 ${
