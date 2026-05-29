@@ -32,6 +32,8 @@ export default function CalendarPage() {
     goToPrevMonth,
     goToNextMonth,
     goToMonth,
+    goToToday,
+    isCurrentMonth,
     openPicker,
     closePicker,
     selectDate,
@@ -84,6 +86,8 @@ export default function CalendarPage() {
       goToPrevMonth={goToPrevMonth}
       goToNextMonth={goToNextMonth}
       goToMonth={goToMonth}
+      goToToday={goToToday}
+      isCurrentMonth={isCurrentMonth}
       openPicker={openPicker}
       closePicker={closePicker}
       selectDate={selectDate}

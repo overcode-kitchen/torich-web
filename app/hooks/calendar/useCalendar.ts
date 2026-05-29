@@ -17,6 +17,12 @@ export function useCalendar() {
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth() + 1
 
+  // 자정 경과 후에도 "오늘"이 그날의 실제 today를 가리키도록 매 렌더 평가
+  const now = new Date()
+  const isCurrentMonth =
+    currentMonth.getFullYear() === now.getFullYear() &&
+    currentMonth.getMonth() === now.getMonth()
+
   const calendarDays = useMemo(() => {
     const daysInMonth = getDaysInMonth(currentMonth)
     const first = startOfMonth(currentMonth)
@@ -64,6 +70,19 @@ export function useCalendar() {
     setSelectedDate(null)
   }, [])
 
+  const goToToday = useCallback(() => {
+    track('calendar_go_today')
+    const today = new Date()
+    setCurrentMonth((prev) => {
+      const prevIndex = prev.getFullYear() * 12 + prev.getMonth()
+      const nextIndex = today.getFullYear() * 12 + today.getMonth()
+      if (prevIndex === nextIndex) return prev
+      setSlideDirection(nextIndex < prevIndex ? 'prev' : 'next')
+      return new Date(today.getFullYear(), today.getMonth(), 1)
+    })
+    setSelectedDate(null)
+  }, [])
+
   return {
     currentMonth,
     year,
@@ -75,6 +94,8 @@ export function useCalendar() {
     goToPrevMonth,
     goToNextMonth,
     goToMonth,
+    goToToday,
+    isCurrentMonth,
     openPicker,
     closePicker,
     selectDate,

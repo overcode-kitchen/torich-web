@@ -1,4 +1,4 @@
-import { CaretDown } from '@phosphor-icons/react'
+import { ArrowUUpLeft, CaretDown } from '@phosphor-icons/react'
 import type { SwipeHandlers } from '@/app/hooks/useSwipe'
 import type { CalendarSlideDirection } from '@/app/hooks/calendar/useCalendar'
 
@@ -15,6 +15,9 @@ interface CalendarGridSectionProps {
   isCollapsed: boolean
   /** 접힘 상태에서만 카드 하단에 등장하는 펼침 토글 */
   toggleCollapsed: () => void
+  /** '오늘로' 단축 — 다른 달일 때만 범례 우측에 노출 */
+  goToToday: () => void
+  isCurrentMonth: boolean
 }
 
 function chunkWeeks(days: (number | null)[]): (number | null)[][] {
@@ -49,6 +52,8 @@ export function CalendarGridSection({
   slideDirection,
   isCollapsed,
   toggleCollapsed,
+  goToToday,
+  isCurrentMonth,
 }: CalendarGridSectionProps) {
   const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`
   const animationClass = slideDirection
@@ -161,7 +166,7 @@ export function CalendarGridSection({
         }`}
         aria-hidden={isCollapsed}
       >
-        <div className="flex items-center justify-center gap-4">
+        <div className="relative flex items-center justify-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-500" />
             <span className="text-xs text-foreground-muted">완료됨</span>
@@ -174,6 +179,20 @@ export function CalendarGridSection({
             <span className="w-2 h-2 rounded-full bg-surface-strong-hover" />
             <span className="text-xs text-foreground-muted">예정</span>
           </div>
+          {!isCurrentMonth && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                goToToday()
+              }}
+              aria-label="이번 달로 이동"
+              className="absolute right-0 inline-flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground"
+            >
+              <ArrowUUpLeft className="w-3 h-3" />
+              오늘
+            </button>
+          )}
         </div>
       </div>
       <div

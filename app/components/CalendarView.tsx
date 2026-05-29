@@ -29,6 +29,9 @@ interface CalendarViewProps {
     goToPrevMonth: () => void
     goToNextMonth: () => void
     goToMonth: (year: number, month: number) => void
+    goToToday: () => void
+    /** 표시 중인 달이 오늘이 속한 달인지 — '오늘' 단축 버튼 노출 제어 */
+    isCurrentMonth: boolean
     openPicker: () => void
     closePicker: () => void
     selectDate: (day: number) => void
@@ -65,6 +68,8 @@ export default function CalendarView({
     goToPrevMonth,
     goToNextMonth,
     goToMonth,
+    goToToday,
+    isCurrentMonth,
     openPicker,
     closePicker,
     selectDate,
@@ -141,6 +146,8 @@ export default function CalendarView({
                         swipeHandlers={swipeHandlers}
                         isCollapsed={isCollapsed}
                         toggleCollapsed={toggleCollapsed}
+                        goToToday={goToToday}
+                        isCurrentMonth={isCurrentMonth}
                     />
                 </div>
 
