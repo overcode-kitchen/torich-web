@@ -42,7 +42,13 @@ export function CalendarHeaderSection({
               aria-label="연도·월 선택"
               className="text-base font-semibold text-foreground"
             >
-              {format(currentMonth, 'yyyy년 M월', { locale: ko })}
+              {format(
+                currentMonth,
+                currentMonth.getFullYear() === new Date().getFullYear()
+                  ? 'M월'
+                  : 'yyyy년 M월',
+                { locale: ko }
+              )}
             </button>
           </h1>
           <button
