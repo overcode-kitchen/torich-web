@@ -1,7 +1,9 @@
-# 알림 예약 Database Webhook 설정
+# 알림 인프라 셋업 가이드
 
-알림 예약 및 재예약은 **Database Webhook**으로 Edge Function을 호출합니다.  
+알림 시스템(예약/재예약/공지/미완료 재알림)이 의존하는 **Supabase Database Webhook** 과 **pg_cron** 설정을 정리한 문서입니다.  
 클라이언트에서 Edge Function을 직접 호출하면 네트워크/배포 환경에 따라 `FunctionsFetchError`가 발생할 수 있으므로, **반드시 아래 웹훅을 설정**해야 합니다.
+
+---
 
 ## 1. Supabase Dashboard에서 Webhook 추가
 
@@ -72,7 +74,7 @@
 - **records UPDATE 웹훅까지 설정한 경우**: 알림 ON 시 재예약이 서버(웹훅)에서 처리되므로, Capacitor/네이티브 환경에서도 `FunctionsFetchError` 없이 동작합니다.
 - **user_settings UPDATE 웹훅을 설정하지 않은 경우**: 설정 화면에서 기본 알림 시간/사전 알림을 바꿔도, 이미 예약된 알림은 이전 설정 그대로 유지됩니다. 새로 추가되는 투자만 새 설정이 적용됩니다.
 
-## 3.1 미완료 재알림 (schedule-re-reminders) – pg_cron
+### 미완료 재알림 (schedule-re-reminders) – pg_cron
 
 **미완료 재알림**은 Webhook이 아니라 **pg_cron**으로 매일 한 번 호출됩니다.
 
@@ -80,9 +82,9 @@
 - **스케줄**: 매일 **KST 00:10** (UTC 15:10) → `10 15 * * *`
 - **동작**: 어제가 납입일인데 `payment_history`에 완료 기록이 없는 (record, user)에 대해, 당일 기본 알림 시간에 재알림 1회를 `scheduled_notifications`에 예약 (`notification_type: 're_reminder'`). 중복 방지는 `(record_id, scheduled_at, token)` unique + `ignoreDuplicates`로 처리.
 
-**pg_cron 등록 방법**은 [./pg-cron-setup.md](./pg-cron-setup.md)를 참고하세요. (Vault 시크릿 저장 후 `cron.schedule` 실행.)
+**pg_cron 등록 방법**은 아래 [6. pg_cron 등록](#6-pg_cron-등록-미완료-재알림) 섹션을 참고하세요. (Vault 시크릿 저장 후 `cron.schedule` 실행.)
 
-## 3.2 공통 모듈
+### 공통 모듈
 
 예약 로직은 `supabase/functions/_shared/notification-schedule.ts`에 있으며, `schedule-notification`, `reschedule-notifications`, `schedule-re-reminders`에서 재사용합니다. 배포 시 해당 경로가 함께 포함됩니다.
 
@@ -134,7 +136,7 @@ supabase functions deploy send-push --project-ref <프로젝트-ref>
 
 ### service_announcements 테이블 생성
 
-아직 테이블이 없다면 Supabase **SQL Editor**에서 아래를 실행하거나, 저장소의 `supabase/migrations/20250308000000_create_service_announcements.sql` 마이그레이션을 적용합니다.
+아직 테이블이 없다면 Supabase **SQL Editor**에서 아래를 실행합니다.
 
 ```sql
 create table if not exists service_announcements (
@@ -146,4 +148,63 @@ create table if not exists service_announcements (
 alter table service_announcements enable row level security;
 create policy "Allow read for authenticated"
   on service_announcements for select to authenticated using (true);
+```
+
+## 6. pg_cron 등록 (미완료 재알림)
+
+`schedule-re-reminders`는 **pg_cron**으로 매일 호출됩니다.  
+Supabase에서는 **pg_cron** + **pg_net**으로 HTTP 요청을 보내 Edge Function을 호출합니다.
+
+### 6.1 사전 준비
+
+1. **Dashboard** → **Project Settings** → **API**에서 확인:
+   - Project URL (예: `https://xxxx.supabase.co`)
+   - Service Role Key (비공개, cron용으로 사용)
+
+2. **Vault에 시크릿 저장** (SQL Editor에서 1회 실행):
+
+```sql
+-- 프로젝트 URL (따옴표 안을 본인 프로젝트 URL로 변경)
+select vault.create_secret('https://YOUR_PROJECT_REF.supabase.co', 'schedule_re_reminders_project_url');
+
+-- Service Role Key (따옴표 안을 본인 Service Role Key로 변경)
+select vault.create_secret('YOUR_SERVICE_ROLE_KEY', 'schedule_re_reminders_service_role_key');
+```
+
+3. **확장 활성화** (아직 안 했다면):
+
+```sql
+create extension if not exists pg_cron with schema pg_catalog;
+create extension if not exists pg_net with schema extensions;
+```
+
+### 6.2 미완료 재알림 cron 등록 (매일 KST 00:10 = UTC 15:10)
+
+아래 SQL을 **SQL Editor**에서 실행합니다.  
+(이미 시크릿 이름을 다르게 저장했다면 `decrypted_secrets`의 `name` 값을 맞춰 주세요.)
+
+```sql
+select cron.schedule(
+  'schedule-re-reminders-daily',
+  '10 15 * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'schedule_re_reminders_project_url') || '/functions/v1/schedule-re-reminders',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'schedule_re_reminders_service_role_key')
+    ),
+    body := '{}'::jsonb
+  ) as request_id;
+  $$
+);
+```
+
+- **스케줄**: `10 15 * * *` = 매일 **UTC 15:10** = **KST 00:10** (다음날).
+- 등록 후 **Dashboard** → **Database** → **Cron Jobs**에서 확인할 수 있습니다.
+
+### 6.3 cron 작업 제거
+
+```sql
+select cron.unschedule('schedule-re-reminders-daily');
 ```

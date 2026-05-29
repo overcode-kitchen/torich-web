@@ -26,10 +26,19 @@ export default function CalendarPage() {
     currentMonth,
     calendarDays,
     selectedDate,
+    slideDirection,
+    isPickerOpen,
     goToPrevMonth,
     goToNextMonth,
+    goToMonth,
+    goToToday,
+    isCurrentMonth,
+    openPicker,
+    closePicker,
     selectDate,
     clearSelection,
+    scrollTick,
+    syncSelectedFromScroll,
     year,
     month,
   } = useCalendar()
@@ -42,15 +51,14 @@ export default function CalendarPage() {
     pendingUndo,
   } = usePaymentCompletion()
 
-  // 캘린더 이벤트 훅
+  // 캘린더 이벤트 훅 — 월 전체 이벤트와 일자별 상태
   const {
-    selectedEvents,
+    eventsForMonth,
     getDayStatus,
   } = useCalendarEvents({
     records,
     year,
     month,
-    selectedDate,
     isEventCompleted,
   })
 
@@ -65,14 +73,26 @@ export default function CalendarPage() {
     <CalendarView
       isLoading={isLoading}
       currentMonth={currentMonth}
+      year={year}
+      month={month}
       calendarDays={calendarDays}
       selectedDate={selectedDate}
+      slideDirection={slideDirection}
+      isPickerOpen={isPickerOpen}
       goToPrevMonth={goToPrevMonth}
       goToNextMonth={goToNextMonth}
+      goToMonth={goToMonth}
+      goToToday={goToToday}
+      isCurrentMonth={isCurrentMonth}
+      openPicker={openPicker}
+      closePicker={closePicker}
       selectDate={selectDate}
       clearSelection={clearSelection}
+      scrollTick={scrollTick}
+      syncSelectedFromScroll={syncSelectedFromScroll}
       getDayStatus={getDayStatus}
-      selectedEvents={selectedEvents}
+      eventsForMonth={eventsForMonth}
+      records={records}
       isEventCompleted={isEventCompleted}
       handleComplete={handleComplete}
       pendingUndo={!!pendingUndo}

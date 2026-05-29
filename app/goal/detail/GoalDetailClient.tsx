@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { CalendarBlank, CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
@@ -28,8 +28,9 @@ import { formatFullDate } from '@/app/utils/date'
 import { dDayLabel } from '@/app/utils/goal-format'
 import { createClient } from '@/utils/supabase/client'
 
-export default function GoalDetailPage() {
-  const params = useParams<{ id: string }>()
+export default function GoalDetailClient() {
+  const searchParams = useSearchParams()
+  const goalId = searchParams.get('id') ?? undefined
   const router = useRouter()
   const [userId, setUserId] = useState<string | undefined>(undefined)
   const { goBack } = useFlowBack({
@@ -45,7 +46,7 @@ export default function GoalDetailPage() {
   }, [])
 
   const { goal, records, unlinkedRecords, isLoading, refetch, setGoal } =
-    useGoalDetail(params?.id, userId)
+    useGoalDetail(goalId, userId)
   const { completedPayments, retroactivePayments } = usePaymentHistory()
   const progress = useGoalProgress(
     goal,
@@ -135,7 +136,7 @@ export default function GoalDetailPage() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[8rem]">
-        <DropdownMenuItem onSelect={() => router.push(`/goal/${goal.id}/edit`)}>
+        <DropdownMenuItem onSelect={() => router.push(`/goal/detail/edit?id=${goal.id}`)}>
           수정하기
         </DropdownMenuItem>
         <DropdownMenuItem

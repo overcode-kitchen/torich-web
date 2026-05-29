@@ -28,7 +28,8 @@
 .omc/
 
 # Claude Code local state
-.claude/
+.claude/*
+!.claude/commands/
 
 # Supabase CLI local cache
 supabase/.temp/
@@ -42,6 +43,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -51,5 +53,7 @@ yarn-error.log*
 next-env.d.ts
 api.backup
 app/api.backup
+server-routes.backup/
 
 **/GoogleService-Info.plist
+supabase/.temp/
