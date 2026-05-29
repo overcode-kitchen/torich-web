@@ -151,29 +151,36 @@ export default function CalendarView({
                     />
                 </div>
 
-                <div
-                    className="flex-1 min-h-0 overflow-y-auto"
-                    onScroll={onListScroll}
-                    onTouchStart={onTouchStart}
-                    onTouchMove={onTouchMove}
-                    onTouchEnd={onTouchEnd}
-                >
-                    {selectedDate ? (
-                        <FilteredDaySection
-                            filterDate={selectedDate}
-                            filterEvents={selectedEvents}
-                            records={records}
-                            isEventCompleted={isEventCompleted}
-                            handleComplete={handleComplete}
-                            onClearFilter={clearSelection}
-                        />
-                    ) : (
-                        <UpcomingEventsSection
-                            upcomingEvents={upcomingEvents}
-                            records={records}
-                            handleComplete={handleComplete}
-                        />
-                    )}
+                {/* 라운드 셰이프를 스크롤 컨테이너 자체에 둬서 스크롤해도 상단 라운드가 보이도록 함 */}
+                <div className="flex-1 min-h-0 flex flex-col pb-4">
+                    <div
+                        className="flex-1 min-h-0 overflow-y-auto bg-card rounded-2xl"
+                        onScroll={onListScroll}
+                        onTouchStart={onTouchStart}
+                        onTouchMove={onTouchMove}
+                        onTouchEnd={onTouchEnd}
+                        onClick={(e) => e.stopPropagation()}
+                        role="presentation"
+                    >
+                        <div className="p-4">
+                            {selectedDate ? (
+                                <FilteredDaySection
+                                    filterDate={selectedDate}
+                                    filterEvents={selectedEvents}
+                                    records={records}
+                                    isEventCompleted={isEventCompleted}
+                                    handleComplete={handleComplete}
+                                    onClearFilter={clearSelection}
+                                />
+                            ) : (
+                                <UpcomingEventsSection
+                                    upcomingEvents={upcomingEvents}
+                                    records={records}
+                                    handleComplete={handleComplete}
+                                />
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
 

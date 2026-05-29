@@ -66,11 +66,7 @@ export function UpcomingEventsSection({
   }
 
   return (
-    <div
-      className="bg-card rounded-2xl p-4"
-      onClick={(e) => e.stopPropagation()}
-      role="presentation"
-    >
+    <div>
       <h3 className="text-sm font-semibold text-foreground-soft mb-2">처리할 납입</h3>
       {upcomingEvents.length === 0 ? (
         <p className="text-sm text-muted-foreground">처리할 납입이 없어요</p>
@@ -80,7 +76,7 @@ export function UpcomingEventsSection({
             const isOverdue = date < today
             return (
               <section key={date.toISOString()} className="mb-3 last:mb-0">
-                <h4 className="sticky top-0 z-10 -mx-4 px-4 bg-card py-1.5 text-xs font-medium text-foreground-subtle">
+                <h4 className="sticky top-0 z-10 -mx-4 px-4 bg-card py-3 text-xs font-medium text-foreground-subtle">
                   {formatRelativeDate(date, today)}
                   {isOverdue && <span className="ml-1.5">· 미완료</span>}
                 </h4>

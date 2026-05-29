@@ -46,12 +46,8 @@ export function FilteredDaySection({
   }
 
   return (
-    <div
-      className="bg-card rounded-2xl p-4"
-      onClick={(e) => e.stopPropagation()}
-      role="presentation"
-    >
-      <div className="flex items-center justify-between gap-2 mb-3">
+    <div>
+      <div className="sticky top-0 z-10 -mx-4 px-4 bg-card py-3 flex items-center justify-between gap-2 mb-1">
         <h3 className="text-sm font-semibold text-foreground-soft truncate">
           {format(filterDate, 'M월 d일 (E)', { locale: ko })}
           <span className="ml-2 text-xs font-normal text-muted-foreground">
