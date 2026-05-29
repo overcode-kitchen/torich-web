@@ -80,7 +80,7 @@ export function CalendarGridSection({
             <div
               key={wi}
               aria-hidden={isHidden}
-              className={`grid grid-cols-7 gap-x-1 overflow-hidden transition-[max-height,opacity,margin-top] duration-300 ease-out motion-reduce:transition-none ${
+              className={`grid grid-cols-7 gap-x-1 overflow-hidden transition-[max-height,opacity,margin-top] duration-[320ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
                 isHidden
                   ? 'max-h-0 opacity-0 mt-0 pointer-events-none'
                   : 'max-h-20 opacity-100 mt-1.5'
@@ -144,7 +144,7 @@ export function CalendarGridSection({
         })}
       </div>
       <div
-        className={`overflow-hidden transition-[max-height,opacity,margin-top,padding-top] duration-300 ease-out motion-reduce:transition-none ${
+        className={`overflow-hidden transition-[max-height,opacity,margin-top,padding-top] duration-[320ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
           isCollapsed
             ? 'max-h-0 opacity-0 mt-0 pt-0 border-t-0'
             : 'max-h-12 opacity-100 mt-3 pt-3 border-t border-border-subtle'
@@ -167,7 +167,7 @@ export function CalendarGridSection({
         </div>
       </div>
       <div
-        className={`overflow-hidden transition-[max-height,opacity,margin-top] duration-300 ease-out motion-reduce:transition-none ${
+        className={`overflow-hidden transition-[max-height,opacity,margin-top] duration-[320ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
           isCollapsed ? 'max-h-6 opacity-100 mt-1' : 'max-h-0 opacity-0 mt-0'
         }`}
         aria-hidden={!isCollapsed}

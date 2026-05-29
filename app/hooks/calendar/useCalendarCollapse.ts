@@ -1,65 +1,109 @@
 import { useCallback, useRef, useState } from 'react'
 
-// 떨림 방지를 위한 히스테리시스 임계값.
-// 접힘 진입은 둔감(40px), 펼침 복귀는 민감(8px).
-const COLLAPSE_THRESHOLD = 40
-const EXPAND_THRESHOLD = 8
-// 접힌 상태에서 콘텐츠가 짧아 스크롤이 없을 때, 손가락을 아래로 당겨
-// 펼침을 트리거하기 위한 임계값.
-const PULL_EXPAND_THRESHOLD = 40
-// 토글 직후 잠시 스크롤/터치 이벤트를 무시한다. 캘린더 높이 변화로 인한
-// scrollTop 자동 클램프가 즉시 반대 토글을 일으키는 피드백 루프 방지.
-const TOGGLE_LOCK_MS = 400
+// 손가락 의도(빠른 슬쩍 vs 천천히 드래그)를 반영해 토글을 결정한다.
+// 임계값은 평소 거리, 속도 부스트는 짧은 거리에서도 빠른 제스처를 잡기 위함.
+const COLLAPSE_THRESHOLD = 24
+const EXPAND_THRESHOLD = 6
+const PULL_EXPAND_THRESHOLD = 30
+const PULL_EXPAND_FAST_DIST = 10
+// px/ms. 0.5 ≈ 손가락을 빠르게 슬쩍 움직이는 수준.
+const FAST_VELOCITY = 0.5
+// 직전 이벤트가 너무 오래되었으면 속도 계산을 무효화(스테일 가드).
+const STALE_DT_MS = 100
+// 토글 직후 잠시 스크롤/터치 이벤트를 무시. 클램프 피드백 루프 방지.
+const TOGGLE_LOCK_MS = 250
 
 export function useCalendarCollapse() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const lockUntilRef = useRef(0)
   const touchStartYRef = useRef<number | null>(null)
+  const lastTouchYRef = useRef<number | null>(null)
+  const lastTouchTimeRef = useRef(0)
+  const lastScrollTopRef = useRef(0)
+  const lastScrollTimeRef = useRef(0)
 
   const lockToggle = () => {
     lockUntilRef.current = Date.now() + TOGGLE_LOCK_MS
   }
   const isLocked = () => Date.now() < lockUntilRef.current
 
+  const computeVelocity = (delta: number, dt: number): number => {
+    if (dt <= 0 || dt > STALE_DT_MS) return 0
+    return delta / dt
+  }
+
   const onListScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     if (isLocked()) return
     const top = e.currentTarget.scrollTop
+    const now = Date.now()
+    const velocity = computeVelocity(top - lastScrollTopRef.current, now - lastScrollTimeRef.current)
+    lastScrollTopRef.current = top
+    lastScrollTimeRef.current = now
+
     setIsCollapsed((prev) => {
-      if (!prev && top > COLLAPSE_THRESHOLD) {
-        lockToggle()
-        return true
-      }
-      if (prev && top < EXPAND_THRESHOLD) {
-        lockToggle()
-        return false
+      if (!prev) {
+        if (velocity > FAST_VELOCITY && top > 6) {
+          lockToggle()
+          return true
+        }
+        if (top > COLLAPSE_THRESHOLD) {
+          lockToggle()
+          return true
+        }
+      } else {
+        if (velocity < -FAST_VELOCITY && top < 30) {
+          lockToggle()
+          return false
+        }
+        if (top < EXPAND_THRESHOLD) {
+          lockToggle()
+          return false
+        }
       }
       return prev
     })
   }, [])
 
   const onTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartYRef.current = e.touches[0]?.clientY ?? null
+    const y = e.touches[0]?.clientY ?? null
+    touchStartYRef.current = y
+    lastTouchYRef.current = y
+    lastTouchTimeRef.current = Date.now()
   }, [])
 
   const onTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     if (isLocked()) return
     const startY = touchStartYRef.current
-    if (startY === null) return
+    const lastY = lastTouchYRef.current
+    if (startY === null || lastY === null) return
     const currentY = e.touches[0]?.clientY
     if (currentY === undefined) return
-    const atTop = e.currentTarget.scrollTop <= 0
+    const now = Date.now()
     const dy = currentY - startY
-    if (!atTop || dy <= PULL_EXPAND_THRESHOLD) return
+    const velocity = computeVelocity(currentY - lastY, now - lastTouchTimeRef.current)
+    lastTouchYRef.current = currentY
+    lastTouchTimeRef.current = now
+
+    if (e.currentTarget.scrollTop > 0) return
     setIsCollapsed((prev) => {
       if (!prev) return prev
-      lockToggle()
-      return false
+      if (velocity > FAST_VELOCITY && dy > PULL_EXPAND_FAST_DIST) {
+        lockToggle()
+        touchStartYRef.current = null
+        return false
+      }
+      if (dy > PULL_EXPAND_THRESHOLD) {
+        lockToggle()
+        touchStartYRef.current = null
+        return false
+      }
+      return prev
     })
-    touchStartYRef.current = null
   }, [])
 
   const onTouchEnd = useCallback(() => {
     touchStartYRef.current = null
+    lastTouchYRef.current = null
   }, [])
 
   const toggleCollapsed = useCallback(() => {
