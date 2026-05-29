@@ -1,5 +1,6 @@
 'use client'
 
+import { InvestmentField } from '@/app/components/Common/InvestmentField'
 import { formatCurrency } from '@/lib/utils'
 import { formatFullDate } from '@/app/utils/date'
 import { formatInvestmentDays } from '@/app/types/investment'
@@ -14,43 +15,34 @@ interface SavingsCashInfoSectionProps {
   totalPaidPrincipal: number
   /** 정보 행을 탭하면 호출. 미지정 시 행은 정적 표시. */
   onFieldTap?: (field: string) => void
+  /** 탭 스크롤용 ref */
+  infoRef?: React.RefObject<HTMLElement | null>
 }
 
-interface InfoRowProps {
+interface TappableFieldProps {
   label: string
   value: string
   onTap?: () => void
 }
 
-function InfoRow({ label, value, onTap }: InfoRowProps) {
-  const content = (
-    <>
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-base font-semibold text-foreground tabular-nums">
-        {value}
-      </span>
-    </>
+function TappableField({ label, value, onTap }: TappableFieldProps) {
+  const field = <InvestmentField label={label} value={value} isEditMode={false} />
+  if (!onTap) return field
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="block w-full text-left rounded-lg -mx-2 px-2 py-1 hover:bg-muted/30 transition-colors"
+    >
+      {field}
+    </button>
   )
-  const rowClass =
-    'flex items-baseline justify-between gap-4 py-3 border-b border-border-subtle-lighter last:border-b-0'
-  if (onTap) {
-    return (
-      <button
-        type="button"
-        onClick={onTap}
-        className={`${rowClass} w-full text-left hover:bg-muted/30 transition-colors`}
-      >
-        {content}
-      </button>
-    )
-  }
-  return <div className={rowClass}>{content}</div>
 }
 
 /**
- * 예적금·현금 상세 정보 섹션.
- * - 예적금: 매달 금액·납입일·약정금리·만기일 + 만기 예상 수령액
- * - 현금: 매달 금액·납입일 + 누적 납입 원금
+ * 예적금·현금 상세 정보 섹션. 주식 상세의 InfoSection과 동일한 마크업 규약(InvestmentField + space-y-6)을 따른다.
+ * - 예적금: 매달 금액·납입일·약정 연이율·만기일 + 만기 예상 수령액 카드
+ * - 현금: 매달 금액·납입일 + 넣은 원금 카드
  * - onFieldTap 제공 시 각 행이 탭 가능 (편집 진입)
  */
 export function SavingsCashInfoSection({
@@ -58,37 +50,37 @@ export function SavingsCashInfoSection({
   maturity,
   totalPaidPrincipal,
   onFieldTap,
+  infoRef,
 }: SavingsCashInfoSectionProps) {
   const isSavings = item.record_type === 'savings'
   const tap = (field: string): (() => void) | undefined =>
     onFieldTap ? () => onFieldTap(field) : undefined
 
   return (
-    <section className="py-6">
-      <h3 className="text-lg font-semibold tracking-tight text-foreground mb-2">
-        {isSavings ? '예·적금 정보' : '현금 정보'}
+    <section ref={infoRef} className="py-8">
+      <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
+        투자 정보
       </h3>
-      <div>
-        <InfoRow
+      <div className="space-y-6">
+        <TappableField
           label="매달 금액"
           value={formatCurrency(item.monthly_amount)}
           onTap={tap('monthlyAmount')}
         />
-        <InfoRow
+        <TappableField
           label="납입일"
           value={formatInvestmentDays(item.investment_days)}
           onTap={tap('investmentDays')}
         />
-
         {isSavings && item.interest_rate != null && (
-          <InfoRow
+          <TappableField
             label="약정 연이율"
             value={`${item.interest_rate}%`}
             onTap={tap('interestRate')}
           />
         )}
         {isSavings && item.maturity_date && (
-          <InfoRow
+          <TappableField
             label="만기일"
             value={formatFullDate(new Date(item.maturity_date))}
             onTap={tap('maturityDate')}
@@ -119,18 +111,6 @@ export function SavingsCashInfoSection({
         </div>
       )}
 
-      {/* 현금: 넣은 원금 (누적 납입액) */}
-      {!isSavings && (
-        <div className="mt-6 rounded-2xl bg-secondary p-5">
-          <p className="text-sm text-muted-foreground mb-1">넣은 원금</p>
-          <p className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
-            {formatCurrency(totalPaidPrincipal)}
-          </p>
-          <p className="mt-2 text-xs text-foreground-subtle">
-            납입 기록을 완료할 때마다 넣은 원금이 쌓여요.
-          </p>
-        </div>
-      )}
     </section>
   )
 }

@@ -1,7 +1,9 @@
 'use client'
 
+import Image from 'next/image'
 import { Plus } from '@phosphor-icons/react'
 import { GoalGroupItemRow } from './GoalGroupItemRow'
+import { resolvePurposeIcon } from '@/app/constants/goal'
 import { dDayLabel } from '@/app/utils/goal-format'
 import type { Investment } from '@/app/types/investment'
 import type { Goal, GoalProgress } from '@/app/types/goal'
@@ -43,9 +45,19 @@ export function GoalGroupCard({
   const name = goal?.name ?? fallbackName ?? '목적 미지정'
   const dDay = dDayLabel(progress?.dDay ?? null)
   const percent = progress?.progressPercent ?? null
+  const icon = resolvePurposeIcon(goal?.emoji)
 
   const HeaderInner = (
     <>
+      {icon && (
+        <Image
+          src={icon.src}
+          alt=""
+          width={28}
+          height={28}
+          className="h-7 w-7 shrink-0 object-contain"
+        />
+      )}
       <h3 className="min-w-0 flex-1 truncate text-base font-bold text-foreground">
         {name}
       </h3>
@@ -69,13 +81,13 @@ export function GoalGroupCard({
           <button
             type="button"
             onClick={() => onSelectGoal(goal.id)}
-            className="mb-2 flex w-full items-center gap-3 text-left"
+            className="mb-2 flex w-full items-center gap-1 text-left"
             aria-label={`${name} 목적 상세 보기`}
           >
             {HeaderInner}
           </button>
         ) : (
-          <div className="mb-2 flex w-full items-center gap-3">{HeaderInner}</div>
+          <div className="mb-2 flex w-full items-center gap-1">{HeaderInner}</div>
         )}
 
         {records.length > 0 ? (

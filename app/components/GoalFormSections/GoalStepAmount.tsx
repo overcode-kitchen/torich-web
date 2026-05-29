@@ -1,7 +1,7 @@
 'use client'
 
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
-import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
 
 interface GoalStepAmountProps {
   values: GoalFormValues
@@ -32,9 +32,6 @@ const adjustWonByManwon = (won: string, deltaManwon: number): string => {
   return String(next * 10000)
 }
 
-const inputClass =
-  'h-12 w-full rounded-xl border border-input bg-card px-4 text-sm text-foreground placeholder:text-foreground-subtle focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50'
-
 const TARGET_QUICK_ADJUSTS: { label: string; delta: number }[] = [
   { label: '+1,000만', delta: 1000 },
   { label: '-1,000만', delta: -1000 },
@@ -57,9 +54,9 @@ export default function GoalStepAmount({
         얼마를 모으려고 하나요?
       </h2>
       <div className="relative">
-        <input
+        <Input
           id="goal-target"
-          className={cn(inputClass, 'pr-14')}
+          className="pr-14"
           inputMode="numeric"
           placeholder="예: 5,000"
           value={wonToManwonDisplay(values.target_amount)}

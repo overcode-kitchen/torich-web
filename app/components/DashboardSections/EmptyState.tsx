@@ -1,9 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Target } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
-import { GOAL_PRESETS } from '@/app/constants/goal'
+import { GOAL_PRESETS, resolvePurposeIcon } from '@/app/constants/goal'
 import { track } from '@/app/lib/analytics'
 
 export default function EmptyState() {
@@ -39,17 +40,28 @@ export default function EmptyState() {
       </Button>
 
       <div className="flex flex-wrap justify-center gap-2">
-        {GOAL_PRESETS.map((preset) => (
-          <button
-            key={preset.name}
-            type="button"
-            onClick={() => goToNewGoal(preset.name)}
-            className="inline-flex items-center gap-1 rounded-full border border-border-subtle-lighter bg-card px-3 py-1.5 text-xs font-medium text-foreground-soft hover:bg-muted transition-colors"
-          >
-            <span>{preset.emoji}</span>
-            <span>{preset.name}</span>
-          </button>
-        ))}
+        {GOAL_PRESETS.map((preset) => {
+          const icon = resolvePurposeIcon(preset.iconKey)
+          return (
+            <button
+              key={preset.name}
+              type="button"
+              onClick={() => goToNewGoal(preset.name)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle-lighter bg-card px-3 py-1.5 text-xs font-medium text-foreground-soft hover:bg-muted transition-colors"
+            >
+              {icon && (
+                <Image
+                  src={icon.src}
+                  alt=""
+                  width={16}
+                  height={16}
+                  className="h-4 w-4 object-contain"
+                />
+              )}
+              <span>{preset.name}</span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )

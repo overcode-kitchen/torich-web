@@ -19,7 +19,6 @@ interface InvestmentViewProps {
   completed: boolean
   startDate: Date
   endDate: Date | null
-  nextPaymentDate: Date | null
   paymentHistory: Array<{ monthLabel: string; yearMonth: string; completed: boolean; isRetroactive: boolean }>
   retroactivePaymentHistory?: Array<{ monthLabel: string; yearMonth: string; completed: boolean; isRetroactive: boolean }>
   hasMorePaymentHistory: boolean
@@ -43,7 +42,6 @@ export function InvestmentView({
   completed,
   startDate,
   endDate,
-  nextPaymentDate,
   paymentHistory,
   retroactivePaymentHistory,
   hasMorePaymentHistory,
@@ -71,7 +69,6 @@ export function InvestmentView({
         <InvestmentViewOverview
           title={item.title}
           completed={completed}
-          nextPaymentDate={nextPaymentDate}
           overviewRef={overviewRef}
           titleRef={titleRef}
         />
