@@ -12,10 +12,10 @@ const FAST_VELOCITY = 0.5
 const STALE_DT_MS = 100
 // 토글 직후 잠시 스크롤/터치 이벤트를 무시. 클램프 피드백 루프 방지.
 const TOGGLE_LOCK_MS = 250
-// 날짜 선택 시 (a) 콘텐츠 스왑으로 scrollTop이 0으로 클램프되거나 (b) 해당 그룹으로 smooth scroll이 진행된다.
-// 두 경우 모두 "사용자 의도의 스크롤"이 아니므로 collapse/expand 판정에서 무시해야 한다.
+// 날짜 선택으로 인한 자동 smooth scroll은 사용자 의도의 스크롤이 아니므로 그 동안 collapse 판정을 무시한다.
+// 그렇지 않으면 "날짜만 골랐는데 캘린더가 멋대로 접힘"이 발생해 사용자 입장에서 부조화가 생긴다.
 // smooth scrollTo 의 브라우저 표준 duration이 명세돼 있지 않아 대체로 400~700ms 이므로 여유 있게 잡는다.
-const SELECTION_LOCK_MS = 1000
+const AUTO_SCROLL_LOCK_MS = 800
 
 interface UseCalendarCollapseProps {
   selectedDate: Date | null
@@ -119,9 +119,16 @@ export function useCalendarCollapse({ selectedDate }: UseCalendarCollapseProps) 
     setIsCollapsed((prev) => !prev)
   }, [])
 
-  // 날짜 선택이 바뀔 때 콘텐츠 스왑으로 발생하는 스크롤 클램프를 무시.
+  // 날짜 선택으로 인한 자동 smooth scroll 동안 onListScroll/onTouchMove 가 임계값을 넘어 캘린더를 멋대로 접거나 펴지 않도록 잠시 collapse 판정을 무시한다.
+  // 사용자가 직접 손으로 스크롤한 경우엔 락이 풀린 뒤 정상적으로 임계값으로 접힘/펼침이 동작한다.
+  // 초기 마운트(selectedDate가 today로 초기화되는 시점)에는 락이 의미 없으므로 첫 effect 실행을 스킵한다.
+  const didMountRef = useRef(false)
   useEffect(() => {
-    lockUntilRef.current = Math.max(lockUntilRef.current, Date.now() + SELECTION_LOCK_MS)
+    if (!didMountRef.current) {
+      didMountRef.current = true
+      return
+    }
+    lockUntilRef.current = Math.max(lockUntilRef.current, Date.now() + AUTO_SCROLL_LOCK_MS)
   }, [selectedDate])
 
   return {
