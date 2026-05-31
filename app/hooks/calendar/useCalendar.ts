@@ -15,6 +15,7 @@ export function useCalendar() {
   const [slideDirection, setSlideDirection] = useState<CalendarSlideDirection | null>(null)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   // 리스트 스크롤 의도 트리거. 사용자 탭/월 이동 시 증가 → 리스트가 anchor로 smooth scroll.
+  // 리스트 스크롤이 거꾸로 selectedDate를 갱신할 땐 tick 증가시키지 않아 feedback loop를 방지.
   const [scrollTick, setScrollTick] = useState(0)
   const bumpTick = useCallback(() => setScrollTick((t) => t + 1), [])
 
@@ -69,27 +70,26 @@ export function useCalendar() {
   )
 
   const selectDate = useCallback((day: number) => {
-    setSelectedDate((prev) => {
-      // 같은 날 재탭 → anchor 해제. 리스트는 월 전체 top으로 복귀
-      if (
-        prev &&
-        prev.getFullYear() === year &&
-        prev.getMonth() === month - 1 &&
-        prev.getDate() === day
-      ) {
-        track('calendar_date_deselect')
-        return null
-      }
-      track('calendar_date_select')
-      return new Date(year, month - 1, day)
-    })
+    const isSameAsCurrent =
+      selectedDate !== null &&
+      selectedDate.getFullYear() === year &&
+      selectedDate.getMonth() === month - 1 &&
+      selectedDate.getDate() === day
+    if (isSameAsCurrent) {
+      // 같은 날 재탭 → 선택 해제. 사용자가 보고 있는 스크롤 위치는 그대로 유지(bumpTick 생략).
+      track('calendar_date_deselect')
+      setSelectedDate(null)
+      return
+    }
+    track('calendar_date_select')
+    setSelectedDate(new Date(year, month - 1, day))
     bumpTick()
-  }, [year, month, bumpTick])
+  }, [year, month, selectedDate, bumpTick])
 
+  // 외부 영역 탭/빈 셀 등으로 선택만 해제. 리스트는 사용자가 보고 있던 위치를 유지하므로 bumpTick을 호출하지 않는다.
   const clearSelection = useCallback(() => {
     setSelectedDate(null)
-    bumpTick()
-  }, [bumpTick])
+  }, [])
 
   const goToToday = useCallback(() => {
     track('calendar_go_today')
