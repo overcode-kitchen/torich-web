@@ -46,7 +46,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           isPaid={isCompleted}
           onTogglePaid={toggle}
           onSelectRecord={(id) => router.push(`/investment?id=${id}`)}
-          onSelectGoal={(id) => router.push(`/goal/${id}`)}
+          onSelectGoal={(id) => router.push(`/goal/detail?id=${id}`)}
           onAddRecord={(id) => router.push(`/add?goalId=${id}`)}
         />
       ))}

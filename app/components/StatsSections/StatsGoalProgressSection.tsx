@@ -53,7 +53,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
             <li key={goal.id} className="border-b border-border-subtle last:border-b-0">
               <button
                 type="button"
-                onClick={() => router.push(`/goal/${goal.id}`)}
+                onClick={() => router.push(`/goal/detail?id=${goal.id}`)}
                 className="flex w-full items-center justify-between gap-3 px-2 py-2.5 text-left"
               >
                 <div className="min-w-0 flex-1">
