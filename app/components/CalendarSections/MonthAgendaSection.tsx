@@ -4,11 +4,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { PaymentEvent } from '@/app/utils/stats'
 import type { Investment } from '@/app/types/investment'
-import {
-  groupByDay,
-  formatGroupLabel,
-  findNearestDayKey,
-} from '@/app/utils/calendar-agenda'
+import { buildMonthDayGroups, formatGroupLabel } from '@/app/utils/calendar-agenda'
 import { PaymentEventRow } from './PaymentEventRow'
 
 // programmatic smooth scroll 도중 발생하는 scroll 이벤트로 인해 그리드 selection이 깜빡이지 않도록 락을 건다.
@@ -47,7 +43,19 @@ export function MonthAgendaSection({
     return map
   }, [records])
 
-  const groups = useMemo(() => groupByDay(eventsForMonth), [eventsForMonth])
+  // 한 달 1일~말일까지 모든 날짜 그룹. 빈 날짜는 events.length === 0 으로 들어와 헤더 한 줄로 컴팩트 표기된다.
+  const dayGroups = useMemo(
+    () => buildMonthDayGroups(eventsForMonth, year, month),
+    [eventsForMonth, year, month]
+  )
+
+  // 선택된 날짜가 현재 보이는 월에 속할 때만 highlight 대상으로 삼는다. 모든 날짜가 리스트에 존재하므로 보정 없이 그대로 사용 가능.
+  const selectedDayKey =
+    selectedDate &&
+    selectedDate.getFullYear() === year &&
+    selectedDate.getMonth() === month - 1
+      ? selectedDate.getDate()
+      : null
 
   const groupRefs = useRef<Map<number, HTMLElement>>(new Map())
   const rootRef = useRef<HTMLDivElement>(null)
@@ -64,7 +72,7 @@ export function MonthAgendaSection({
     lastReportedDayRef.current = null
   }, [year, month])
 
-  // scrollTick이 바뀔 때만 리스트를 selectedDate(또는 가장 가까운 그룹)로 smooth scroll
+  // scrollTick이 바뀔 때 리스트를 selectedDate 자리로 smooth scroll.
   useEffect(() => {
     programmaticUntilRef.current = Date.now() + PROGRAMMATIC_SCROLL_LOCK_MS
     const d = selectedDateRef.current
@@ -75,18 +83,16 @@ export function MonthAgendaSection({
       return
     }
     if (d.getFullYear() !== year || d.getMonth() !== month - 1) return
-    const targetDay = findNearestDayKey(groups, d.getDate())
-    if (targetDay === null) return
-    const el = groupRefs.current.get(targetDay)
+    const el = groupRefs.current.get(d.getDate())
     if (!el) return
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [scrollTick, groups, year, month])
+  }, [scrollTick, dayGroups, year, month])
 
   // 리스트 스크롤 → 최상단에 노출된 그룹으로 selectedDate 동기화 (그리드 highlight)
   useEffect(() => {
     const scroller = rootRef.current?.closest('[data-calendar-scroll]')
     if (!(scroller instanceof HTMLElement)) return
-    if (groups.length === 0) return
+    if (dayGroups.length === 0) return
     let rafId: number | null = null
     const onScroll = () => {
       if (rafId !== null) return
@@ -95,7 +101,7 @@ export function MonthAgendaSection({
         if (Date.now() < programmaticUntilRef.current) return
         const scrollerRect = scroller.getBoundingClientRect()
         let activeDay: number | null = null
-        for (const g of groups) {
+        for (const g of dayGroups) {
           const el = groupRefs.current.get(g.dayKey)
           if (!el) continue
           const topRelative = el.getBoundingClientRect().top - scrollerRect.top
@@ -113,7 +119,7 @@ export function MonthAgendaSection({
       scroller.removeEventListener('scroll', onScroll)
       if (rafId !== null) cancelAnimationFrame(rafId)
     }
-  }, [groups, year, month, onVisibleDayChange])
+  }, [dayGroups, year, month, onVisibleDayChange])
 
   const goToDetail = (investmentId: string) => {
     router.push(`/investment?id=${investmentId}`)
@@ -121,29 +127,34 @@ export function MonthAgendaSection({
 
   return (
     <div ref={rootRef}>
-      {groups.length === 0 ? (
-        <p className="text-sm text-muted-foreground">이 달에는 예정된 투자가 없어요</p>
-      ) : (
-        groups.map(({ date, dayKey, events }) => {
-          const isOverdue = date < today
-          const allCompleted = events.every((e) => isEventCompleted(e))
-          const pendingCount = events.filter((e) => !isEventCompleted(e)).length
-          return (
-            <section
-              key={dayKey}
-              ref={(el) => {
-                if (el) groupRefs.current.set(dayKey, el)
-                else groupRefs.current.delete(dayKey)
-              }}
-              className="mb-3 last:mb-0 scroll-mt-0"
+      {dayGroups.map(({ date, dayKey, events }) => {
+        const isEmpty = events.length === 0
+        const isOverdue = !isEmpty && date < today
+        const allCompleted = !isEmpty && events.every((e) => isEventCompleted(e))
+        const pendingCount = events.filter((e) => !isEventCompleted(e)).length
+        const isSelected = dayKey === selectedDayKey
+        return (
+          <section
+            key={dayKey}
+            ref={(el) => {
+              if (el) groupRefs.current.set(dayKey, el)
+              else groupRefs.current.delete(dayKey)
+            }}
+            className="mb-3 last:mb-0 scroll-mt-0"
+          >
+            <h4
+              className={`sticky top-0 z-10 -mx-4 px-4 bg-card py-3 text-xs transition-colors ${
+                isSelected ? 'font-semibold text-brand-600' : 'font-medium text-foreground-subtle'
+              }`}
             >
-              <h4 className="sticky top-0 z-10 -mx-4 px-4 bg-card py-3 text-xs font-medium text-foreground-subtle">
-                {formatGroupLabel(date, today)}
-                {isOverdue && !allCompleted && (
-                  <span className="ml-1.5 text-red-500">· 미완료 {pendingCount}</span>
-                )}
-              </h4>
-              {events.map((e, idx) => (
+              {formatGroupLabel(date, today)}
+              {isEmpty && <span className="ml-1.5 text-foreground-subtle">· 예정 없음</span>}
+              {!isEmpty && isOverdue && !allCompleted && (
+                <span className="ml-1.5 text-red-500">· 미완료 {pendingCount}</span>
+              )}
+            </h4>
+            {!isEmpty &&
+              events.map((e, idx) => (
                 <PaymentEventRow
                   key={`${e.year}-${e.month}-${e.day}-${e.investmentId}`}
                   event={e}
@@ -154,10 +165,9 @@ export function MonthAgendaSection({
                   showDivider={idx !== events.length - 1}
                 />
               ))}
-            </section>
-          )
-        })
-      )}
+          </section>
+        )
+      })}
     </div>
   )
 }
