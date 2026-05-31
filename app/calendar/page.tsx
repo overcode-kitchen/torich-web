@@ -38,7 +38,6 @@ export default function CalendarPage() {
     selectDate,
     clearSelection,
     scrollTick,
-    syncSelectedFromScroll,
     year,
     month,
   } = useCalendar()
@@ -89,7 +88,6 @@ export default function CalendarPage() {
       selectDate={selectDate}
       clearSelection={clearSelection}
       scrollTick={scrollTick}
-      syncSelectedFromScroll={syncSelectedFromScroll}
       getDayStatus={getDayStatus}
       eventsForMonth={eventsForMonth}
       records={records}

@@ -38,7 +38,6 @@ interface CalendarViewProps {
     selectDate: (day: number) => void
     clearSelection: () => void
     scrollTick: number
-    syncSelectedFromScroll: (date: Date | null) => void
 
     // Event Status
     getDayStatus: (day: number) => 'completed' | 'missed' | 'scheduled' | null
@@ -77,7 +76,6 @@ export default function CalendarView({
     selectDate,
     clearSelection,
     scrollTick,
-    syncSelectedFromScroll,
     getDayStatus,
     eventsForMonth,
     records,
@@ -174,7 +172,6 @@ export default function CalendarView({
                                 records={records}
                                 selectedDate={selectedDate}
                                 scrollTick={scrollTick}
-                                onVisibleDayChange={syncSelectedFromScroll}
                                 isEventCompleted={isEventCompleted}
                                 handleComplete={handleComplete}
                             />

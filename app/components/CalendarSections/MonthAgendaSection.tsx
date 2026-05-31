@@ -7,9 +7,6 @@ import type { Investment } from '@/app/types/investment'
 import { buildMonthDayGroups, formatGroupLabel } from '@/app/utils/calendar-agenda'
 import { PaymentEventRow } from './PaymentEventRow'
 
-// programmatic smooth scroll 도중 발생하는 scroll 이벤트로 인해 그리드 selection이 깜빡이지 않도록 락을 건다.
-const PROGRAMMATIC_SCROLL_LOCK_MS = 800
-
 interface MonthAgendaSectionProps {
   year: number
   month: number
@@ -17,7 +14,6 @@ interface MonthAgendaSectionProps {
   records: Investment[]
   selectedDate: Date | null
   scrollTick: number
-  onVisibleDayChange: (date: Date | null) => void
   isEventCompleted: (event: PaymentEvent) => boolean
   handleComplete: (event: PaymentEvent) => void
 }
@@ -29,7 +25,6 @@ export function MonthAgendaSection({
   records,
   selectedDate,
   scrollTick,
-  onVisibleDayChange,
   isEventCompleted,
   handleComplete,
 }: MonthAgendaSectionProps) {
@@ -59,22 +54,12 @@ export function MonthAgendaSection({
 
   const groupRefs = useRef<Map<number, HTMLElement>>(new Map())
   const rootRef = useRef<HTMLDivElement>(null)
-  // 사용자 탭/월 이동으로 시작된 smooth scroll 동안의 사용자 측 scroll-sync 무시용 락
-  const programmaticUntilRef = useRef(0)
-  // 같은 day가 중복 통보되는 걸 막기 위한 직전 값
-  const lastReportedDayRef = useRef<number | null>(null)
   // ref로 최신 selectedDate를 effect에 노출 — selectedDate 변경 단독으론 스크롤 트리거하지 않음
   const selectedDateRef = useRef(selectedDate)
   selectedDateRef.current = selectedDate
 
-  // 월/연 변경 시 직전 보고값 초기화 (월 간 비교 의미 없음)
-  useEffect(() => {
-    lastReportedDayRef.current = null
-  }, [year, month])
-
   // scrollTick이 바뀔 때 리스트를 selectedDate 자리로 smooth scroll.
   useEffect(() => {
-    programmaticUntilRef.current = Date.now() + PROGRAMMATIC_SCROLL_LOCK_MS
     const d = selectedDateRef.current
     const scroller = rootRef.current?.closest('[data-calendar-scroll]')
     if (!(scroller instanceof HTMLElement)) return
@@ -87,39 +72,6 @@ export function MonthAgendaSection({
     if (!el) return
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [scrollTick, dayGroups, year, month])
-
-  // 리스트 스크롤 → 최상단에 노출된 그룹으로 selectedDate 동기화 (그리드 highlight)
-  useEffect(() => {
-    const scroller = rootRef.current?.closest('[data-calendar-scroll]')
-    if (!(scroller instanceof HTMLElement)) return
-    if (dayGroups.length === 0) return
-    let rafId: number | null = null
-    const onScroll = () => {
-      if (rafId !== null) return
-      rafId = requestAnimationFrame(() => {
-        rafId = null
-        if (Date.now() < programmaticUntilRef.current) return
-        const scrollerRect = scroller.getBoundingClientRect()
-        let activeDay: number | null = null
-        for (const g of dayGroups) {
-          const el = groupRefs.current.get(g.dayKey)
-          if (!el) continue
-          const topRelative = el.getBoundingClientRect().top - scrollerRect.top
-          // 그룹 상단이 컨테이너 상단을 통과한 마지막 그룹이 곧 sticky pinned 그룹
-          if (topRelative <= 1) activeDay = g.dayKey
-          else break
-        }
-        if (activeDay === lastReportedDayRef.current) return
-        lastReportedDayRef.current = activeDay
-        onVisibleDayChange(activeDay !== null ? new Date(year, month - 1, activeDay) : null)
-      })
-    }
-    scroller.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      scroller.removeEventListener('scroll', onScroll)
-      if (rafId !== null) cancelAnimationFrame(rafId)
-    }
-  }, [dayGroups, year, month, onVisibleDayChange])
 
   const goToDetail = (investmentId: string) => {
     router.push(`/investment?id=${investmentId}`)

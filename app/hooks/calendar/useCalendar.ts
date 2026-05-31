@@ -15,7 +15,6 @@ export function useCalendar() {
   const [slideDirection, setSlideDirection] = useState<CalendarSlideDirection | null>(null)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   // 리스트 스크롤 의도 트리거. 사용자 탭/월 이동 시 증가 → 리스트가 anchor로 smooth scroll.
-  // 리스트 스크롤이 거꾸로 selectedDate를 갱신할 땐 tick 증가시키지 않아 feedback loop를 방지.
   const [scrollTick, setScrollTick] = useState(0)
   const bumpTick = useCallback(() => setScrollTick((t) => t + 1), [])
 
@@ -92,11 +91,6 @@ export function useCalendar() {
     bumpTick()
   }, [bumpTick])
 
-  // 리스트 스크롤에 의해 selectedDate가 갱신될 때 호출. tick을 증가시키지 않아 리스트 재스크롤을 유발하지 않는다.
-  const syncSelectedFromScroll = useCallback((date: Date | null) => {
-    setSelectedDate(date)
-  }, [])
-
   const goToToday = useCallback(() => {
     track('calendar_go_today')
     const today = new Date()
@@ -129,6 +123,5 @@ export function useCalendar() {
     selectDate,
     clearSelection,
     scrollTick,
-    syncSelectedFromScroll,
   }
 }
