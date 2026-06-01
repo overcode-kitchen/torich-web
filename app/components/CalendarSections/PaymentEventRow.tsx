@@ -4,6 +4,7 @@ import type { PaymentEvent } from '@/app/utils/stats'
 import type { Investment } from '@/app/types/investment'
 import { formatMonthlyContribution } from '@/app/utils/investment-display'
 import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
+import { getRecordAvatar } from '@/app/utils/recordAvatar'
 
 interface PaymentEventRowProps {
   event: PaymentEvent
@@ -23,7 +24,16 @@ export function PaymentEventRow({
   showDivider,
 }: PaymentEventRowProps) {
   const contribution = investment ? formatMonthlyContribution(investment).main : null
-  const isUS = investment?.market === 'US'
+  // 홈 탭과 동일한 아바타 규칙(투자=초록/파랑, 예적금·현금=중립)을 공유해
+  // 같은 항목이 탭에 따라 다른 아이콘으로 보이지 않도록 한다.
+  const avatarLabel = investment
+    ? getRecordAvatar(investment).label
+    : getInvestmentAvatarLabel(event.title)
+  const avatarClassName = isCompleted
+    ? 'bg-surface-hover text-foreground-subtle'
+    : investment
+      ? getRecordAvatar(investment).className
+      : 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)]'
 
   return (
     <div
@@ -43,15 +53,9 @@ export function PaymentEventRow({
     >
       <div className="flex items-center gap-2 min-w-0">
         <div
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
-            isCompleted
-              ? 'bg-surface-hover text-foreground-subtle'
-              : isUS
-                ? 'bg-blue-100 text-blue-600'
-                : 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)]'
-          }`}
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${avatarClassName}`}
         >
-          {getInvestmentAvatarLabel(event.title)}
+          {avatarLabel}
         </div>
         <div className="min-w-0">
           <p
