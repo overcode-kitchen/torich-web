@@ -44,12 +44,18 @@ export function useCalendarCollapse({ selectedDate }: UseCalendarCollapseProps) 
     if (isLocked()) return
     const top = e.currentTarget.scrollTop
     const now = Date.now()
-    const velocity = computeVelocity(top - lastScrollTopRef.current, now - lastScrollTimeRef.current)
+    const delta = top - lastScrollTopRef.current
+    const velocity = computeVelocity(delta, now - lastScrollTimeRef.current)
     lastScrollTopRef.current = top
     lastScrollTimeRef.current = now
 
+    // 자동 접힘은 리스트를 "아래로" 내릴 때만 일어나야 한다. 위로 올리는 중에는
+    // 임계값을 넘긴 위치라도 접지 않는다 (펼침은 아래 else 분기에서 그대로 처리).
+    const isScrollingDown = delta > 0
+
     setIsCollapsed((prev) => {
       if (!prev) {
+        if (!isScrollingDown) return prev
         if (velocity > FAST_VELOCITY && top > 6) {
           lockToggle()
           return true
