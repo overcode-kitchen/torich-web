@@ -6,6 +6,7 @@ import { usePaymentHistory } from './usePaymentHistory'
 import { isPaymentCompleted } from '@/app/utils/payment-completion'
 import { toastSuccess } from '@/app/utils/toast'
 import { awardToryInvestmentComplete } from '@/app/utils/tory-raising/awardToryInvestmentComplete'
+import { hapticSuccess, hapticLightImpact } from '@/app/utils/haptics'
 
 const TOAST_DURATION_MS = 5000
 
@@ -34,6 +35,9 @@ export function usePaymentCompletion() {
     // Toggle to true (currently false)
     await togglePayment(e.investmentId, dateStr, false)
 
+    // 납입 완료 = 되돌리기 어려운 상태 변경 → HIG "Confirm a successful action" 성공 햅틱
+    hapticSuccess()
+
     const reward = awardToryInvestmentComplete({ paymentDateYMD: dateStr, amount: 10 })
     if (reward.awarded) toastSuccess(`🌰 +${reward.amount} 도토리`)
 
@@ -54,6 +58,9 @@ export function usePaymentCompletion() {
 
     // Toggle to false (currently true)
     await togglePayment(p.investmentId, dateStr, true)
+
+    // 완료의 짝(되돌리기) → 저강도 물리 피드백으로 토글 해제를 손끝으로 확인
+    hapticLightImpact()
 
     setPendingUndo(null)
 
