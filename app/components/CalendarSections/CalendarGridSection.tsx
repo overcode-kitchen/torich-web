@@ -15,9 +15,9 @@ interface CalendarGridSectionProps {
   isCollapsed: boolean
   /** 접힘 상태에서만 카드 하단에 등장하는 펼침 토글 */
   toggleCollapsed: () => void
-  /** '오늘로' 단축 — 다른 달일 때만 범례 우측에 노출 */
+  /** '오늘' 단축 — 오늘 날짜가 선택돼 있지 않을 때 범례 우측에 노출 */
   goToToday: () => void
-  isCurrentMonth: boolean
+  isTodaySelected: boolean
 }
 
 function chunkWeeks(days: (number | null)[]): (number | null)[][] {
@@ -53,7 +53,7 @@ export function CalendarGridSection({
   isCollapsed,
   toggleCollapsed,
   goToToday,
-  isCurrentMonth,
+  isTodaySelected,
 }: CalendarGridSectionProps) {
   const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`
   const animationClass = slideDirection
@@ -179,14 +179,14 @@ export function CalendarGridSection({
             <span className="w-2 h-2 rounded-full bg-surface-strong-hover" />
             <span className="text-xs text-foreground-muted">예정</span>
           </div>
-          {!isCurrentMonth && (
+          {!isTodaySelected && (
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation()
                 goToToday()
               }}
-              aria-label="이번 달로 이동"
+              aria-label="오늘로 이동"
               className="absolute right-0 inline-flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground"
             >
               <ArrowUUpLeft className="w-3 h-3" />

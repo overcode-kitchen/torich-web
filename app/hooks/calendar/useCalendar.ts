@@ -24,9 +24,13 @@ export function useCalendar() {
 
   // 자정 경과 후에도 "오늘"이 그날의 실제 today를 가리키도록 매 렌더 평가
   const now = new Date()
-  const isCurrentMonth =
-    currentMonth.getFullYear() === now.getFullYear() &&
-    currentMonth.getMonth() === now.getMonth()
+  // '오늘' 단축은 오늘 날짜가 선택돼 있지 않을 때만 노출 — 다른 달뿐 아니라
+  // 같은 달의 다른 날을 탭한 경우에도 "오늘로 돌아가기"가 가능해야 워딩과 맞음
+  const isTodaySelected =
+    selectedDate !== null &&
+    selectedDate.getFullYear() === now.getFullYear() &&
+    selectedDate.getMonth() === now.getMonth() &&
+    selectedDate.getDate() === now.getDate()
 
   const calendarDays = useMemo(() => {
     const daysInMonth = getDaysInMonth(currentMonth)
@@ -91,6 +95,8 @@ export function useCalendar() {
     setSelectedDate(null)
   }, [])
 
+  // '오늘' 단축: 이번 달로 이동할 뿐 아니라 오늘 날짜를 실제로 선택하고
+  // 리스트를 오늘 항목으로 스크롤한다(bumpTick) — 워딩 "오늘"과 동작을 일치시킴
   const goToToday = useCallback(() => {
     track('calendar_go_today')
     const today = new Date()
@@ -101,7 +107,7 @@ export function useCalendar() {
       setSlideDirection(nextIndex < prevIndex ? 'prev' : 'next')
       return new Date(today.getFullYear(), today.getMonth(), 1)
     })
-    setSelectedDate(null)
+    setSelectedDate(new Date(today.getFullYear(), today.getMonth(), today.getDate()))
     bumpTick()
   }, [bumpTick])
 
@@ -117,7 +123,7 @@ export function useCalendar() {
     goToNextMonth,
     goToMonth,
     goToToday,
-    isCurrentMonth,
+    isTodaySelected,
     openPicker,
     closePicker,
     selectDate,
