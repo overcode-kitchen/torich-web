@@ -74,3 +74,38 @@ export function isMaturedAndUnsettled(
   if (record.settled_at) return false
   return new Date(record.maturity_date) <= now
 }
+
+export interface MaturityMismatch {
+  /** 가장 늦은 만기를 가진 record의 표시명 (UI 노출용) */
+  recordTitle: string
+  /** 그 record의 만기일 (YYYY-MM-DD) */
+  recordMaturityDate: string
+}
+
+/**
+ * 목적 종료일이 묶인 적금 만기보다 빠른 케이스 A 미스매치를 감지한다.
+ * 가장 늦은 만기일을 기준으로 비교하여 mismatch가 있으면 그 record 정보를 반환한다.
+ *
+ * 케이스 B(만기 ≤ 종료일)는 사전 안내 대상이 아니므로 null.
+ * 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
+ */
+export function detectMaturityMismatch(
+  goalTargetDate: string | null,
+  linkedRecords: Pick<Investment, 'title' | 'maturity_date'>[]
+): MaturityMismatch | null {
+  if (!goalTargetDate) return null
+  const goalDate = new Date(goalTargetDate)
+  if (Number.isNaN(goalDate.getTime())) return null
+
+  let latest: MaturityMismatch | null = null
+  for (const r of linkedRecords) {
+    if (!r.maturity_date) continue
+    const rDate = new Date(r.maturity_date)
+    if (Number.isNaN(rDate.getTime())) continue
+    if (rDate <= goalDate) continue
+    if (!latest || rDate > new Date(latest.recordMaturityDate)) {
+      latest = { recordTitle: r.title, recordMaturityDate: r.maturity_date }
+    }
+  }
+  return latest
+}
