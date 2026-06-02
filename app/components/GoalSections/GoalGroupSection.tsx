@@ -37,12 +37,13 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
 
   return (
     <div className="space-y-4">
-      {groups.map(({ goal, progress, records: groupRecords }) => (
+      {groups.map(({ goal, progress, records: groupRecords, status }) => (
         <GoalGroupCard
           key={goal.id}
           goal={goal}
           progress={progress}
           records={groupRecords}
+          status={status}
           isPaid={isCompleted}
           onTogglePaid={toggle}
           onSelectRecord={(id) => router.push(`/investment?id=${id}`)}

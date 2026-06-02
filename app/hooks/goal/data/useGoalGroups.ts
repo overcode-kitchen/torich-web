@@ -7,11 +7,14 @@ import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 import type { Investment } from '@/app/types/investment'
+import { deriveGoalStatus, type GoalStatus } from '@/app/utils/goal-status'
 
 export interface GoalGroup {
   goal: Goal
   progress: GoalProgress | undefined
   records: Investment[]
+  /** 파생 상태: 진행 중 / 정산 대기 / 완료. 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md */
+  status: GoalStatus
 }
 
 export interface UseGoalGroupsReturn {
@@ -49,11 +52,23 @@ export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
   )
 
   const groups = useMemo<GoalGroup[]>(() => {
-    return goals.map((goal) => ({
-      goal,
-      progress: progressMap.get(goal.id),
-      records: records.filter((r) => r.goal_id === goal.id),
-    }))
+    const now = new Date()
+    return goals.map((goal) => {
+      const linkedRecords = records.filter((r) => r.goal_id === goal.id)
+      const progress = progressMap.get(goal.id)
+      const status = deriveGoalStatus({
+        goal,
+        linkedRecords,
+        accumulatedAmount: progress?.currentValue ?? 0,
+        now,
+      })
+      return {
+        goal,
+        progress,
+        records: linkedRecords,
+        status,
+      }
+    })
   }, [goals, progressMap, records])
 
   const unassignedRecords = useMemo<Investment[]>(
