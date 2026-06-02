@@ -10,6 +10,7 @@ import GroupC_When from '@/app/components/AddItemSections/GroupC_When'
 import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialog'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import ManualInputModal from '@/app/components/ManualInputModal'
+import MaturityMismatchConfirmModal from '@/app/components/Common/MaturityMismatchConfirmModal'
 import { useAddRecordPage } from '@/app/hooks/investment/add/useAddRecordPage'
 
 function AddRecordContent() {
@@ -31,6 +32,11 @@ function AddRecordContent() {
     setExitDialogOpen,
     goBackToRoot,
     onSkip,
+    pendingMismatch,
+    linkedGoal,
+    dismissMismatch,
+    proceedDespiteMismatch,
+    alignAndSubmit,
   } = page
 
   return (
@@ -134,6 +140,20 @@ function AddRecordContent() {
           goBackToRoot()
         }}
       />
+
+      {pendingMismatch && linkedGoal?.target_date && (
+        <MaturityMismatchConfirmModal
+          isOpen={!!pendingMismatch}
+          goalName={linkedGoal.name}
+          goalTargetDate={linkedGoal.target_date}
+          recordTitle={pendingMismatch.recordTitle}
+          recordMaturityDate={pendingMismatch.recordMaturityDate}
+          onProceed={() => void proceedDespiteMismatch()}
+          onAlignDate={() => void alignAndSubmit()}
+          onCancel={dismissMismatch}
+          isProcessing={isSubmitting}
+        />
+      )}
     </>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAddInvestmentForm } from './useAddInvestmentForm'
 import { useSavingsCashSubmit } from './useSavingsCashSubmit'
@@ -12,7 +12,12 @@ import { useAddItemActions } from './useAddItemActions'
 import { useModalState } from '@/app/hooks/ui/useModalState'
 import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { useAuth } from '@/app/hooks/auth/useAuth'
+import { useGoals } from '@/app/hooks/goal/data/useGoals'
+import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
+import { detectMaturityMismatch, type MaturityMismatch } from '@/app/utils/goal-status'
 import { getRecordType } from '@/app/types/investment'
+import type { Goal } from '@/app/types/goal'
 import type { RecordType } from '@/app/types/investment'
 
 /**
@@ -98,6 +103,64 @@ export function useAddRecordPage() {
 
   const { goBack: goBackToRoot } = useFlowBack({ rootPath: '/' })
 
+  // 케이스 A 사전 안내 — 적금 신규/수정 시 묶인 목적의 종료일이 만기보다 빠른지 검사.
+  // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
+  const { user } = useAuth()
+  const { goals } = useGoals(user?.id)
+  const { updateGoal } = useGoalUpdate(user?.id)
+  const linkedGoal: Goal | null = useMemo(
+    () => (goalId ? goals.find((g) => g.id === goalId) ?? null : null),
+    [goalId, goals],
+  )
+  const [pendingMismatch, setPendingMismatch] = useState<MaturityMismatch | null>(null)
+
+  const guardedOnSubmitSavingsCash = useCallback(async (): Promise<void> => {
+    if (
+      effectiveRecordType === 'savings' &&
+      linkedGoal?.target_date &&
+      formState.maturityDate
+    ) {
+      const m = detectMaturityMismatch(linkedGoal.target_date, [
+        {
+          title: formState.title.trim() || '예적금',
+          maturity_date: formState.maturityDate,
+        },
+      ])
+      if (m) {
+        setPendingMismatch(m)
+        return
+      }
+    }
+    await savingsCashSubmit.handleSubmit()
+  }, [
+    effectiveRecordType,
+    linkedGoal,
+    formState.maturityDate,
+    formState.title,
+    savingsCashSubmit,
+  ])
+
+  const dismissMismatch = useCallback((): void => {
+    setPendingMismatch(null)
+  }, [])
+
+  const proceedDespiteMismatch = useCallback(async (): Promise<void> => {
+    setPendingMismatch(null)
+    await savingsCashSubmit.handleSubmit()
+  }, [savingsCashSubmit])
+
+  const alignAndSubmit = useCallback(async (): Promise<void> => {
+    setPendingMismatch(null)
+    if (linkedGoal && formState.maturityDate) {
+      try {
+        await updateGoal(linkedGoal.id, { target_date: formState.maturityDate })
+      } catch {
+        // 목적 업데이트 실패 시에도 사용자가 의도한 적금 저장은 계속 진행
+      }
+    }
+    await savingsCashSubmit.handleSubmit()
+  }, [linkedGoal, formState.maturityDate, updateGoal, savingsCashSubmit])
+
   const isSubmitting = investmentForm.isSubmitting || savingsCashSubmit.isSubmitting
   const actions = useAddItemActions({
     recordType,
@@ -105,7 +168,7 @@ export function useAddRecordPage() {
     investmentForm,
     formState,
     onSubmitInvestment: investmentForm.handleSubmit,
-    onSubmitSavingsCash: savingsCashSubmit.handleSubmit,
+    onSubmitSavingsCash: guardedOnSubmitSavingsCash,
     isSubmitting,
   })
 
@@ -143,5 +206,11 @@ export function useAddRecordPage() {
     setExitDialogOpen,
     goBackToRoot,
     onSkip,
+    // 케이스 A 사전 확인 모달용
+    pendingMismatch,
+    linkedGoal,
+    dismissMismatch,
+    proceedDespiteMismatch,
+    alignAndSubmit,
   }
 }
