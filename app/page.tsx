@@ -7,6 +7,7 @@ import { useAuth } from '@/app/hooks/auth/useAuth'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { useRateUpdate } from '@/app/hooks/stock/useRateUpdate'
+import { useAutoSettleMaturedRecords } from '@/app/hooks/investment/useAutoSettleMaturedRecords'
 import { useInvestmentFilter } from '@/app/hooks/investment/filter/useInvestmentFilter'
 import { useHomePageUI } from '@/app/hooks/ui/useHomePageUI'
 import HomeView from '@/app/components/HomeView'
@@ -18,6 +19,10 @@ export default function Home() {
   const userId = user?.id
   const { isUpdating: isUpdatingRates, checkAndUpdate } = useRateUpdate(userId)
   const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records)
+
+  // 만기 도달 + 미정산 예적금을 자동 정산하고 비차단 토스트로 안내한다.
+  // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
+  useAutoSettleMaturedRecords()
 
   const [showMonthlyAmount, setShowMonthlyAmount] = useState<boolean>(true)
 

@@ -48,6 +48,9 @@ export function GoalGroupItemRow({
       ? `${record.monthly_shares}주`
       : formatCurrency(record.monthly_amount)
   const avatar = getRecordAvatar(record)
+  // 만기 정산이 끝난 적금: 더 이상 월 납입 없음 → "완료하기" 버튼 대신 "만기 완료" 배지.
+  // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
+  const isSettled = !!record.settled_at
 
   return (
     <>
@@ -118,24 +121,33 @@ export function GoalGroupItemRow({
             <span className="text-sm font-bold tabular-nums text-foreground">
               {amountLabel}
             </span>
-            <Button
-              type="button"
-              variant={isPaid ? 'ghost' : 'soft'}
-              size="xs"
-              className={
-                isPaid
-                  ? 'shrink-0 gap-1 px-3 text-muted-foreground'
-                  : 'shrink-0 px-3'
-              }
-              onClick={(ev) => {
-                ev.stopPropagation()
-                onTogglePaid(record)
-              }}
-              aria-label={isPaid ? '이번 달 납입 완료 취소' : '이번 달 납입 완료'}
-            >
-              {isPaid && <Check className="h-3.5 w-3.5" weight="bold" />}
-              {isPaid ? '완료' : '완료하기'}
-            </Button>
+            {isSettled ? (
+              <span
+                className="shrink-0 rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground-soft"
+                aria-label="만기 정산 완료"
+              >
+                만기 완료
+              </span>
+            ) : (
+              <Button
+                type="button"
+                variant={isPaid ? 'ghost' : 'soft'}
+                size="xs"
+                className={
+                  isPaid
+                    ? 'shrink-0 gap-1 px-3 text-muted-foreground'
+                    : 'shrink-0 px-3'
+                }
+                onClick={(ev) => {
+                  ev.stopPropagation()
+                  onTogglePaid(record)
+                }}
+                aria-label={isPaid ? '이번 달 납입 완료 취소' : '이번 달 납입 완료'}
+              >
+                {isPaid && <Check className="h-3.5 w-3.5" weight="bold" />}
+                {isPaid ? '완료' : '완료하기'}
+              </Button>
+            )}
           </div>
         </div>
       </div>

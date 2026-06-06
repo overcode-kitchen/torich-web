@@ -47,6 +47,9 @@ export interface Investment {
   interest_rate?: number | null
   // 예적금 만기일 (YYYY-MM-DD). 예적금 외 유형은 null.
   maturity_date?: string | null
+  // 만기 수령이 묶인 목적에 정산 반영된 시각. 미정산이면 null/undefined.
+  // 구버전 앱 호환: optional. 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
+  settled_at?: string | null
 }
 
 /**
