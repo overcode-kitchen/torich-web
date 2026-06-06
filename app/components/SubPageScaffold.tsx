@@ -15,6 +15,8 @@ export interface SubPageScaffoldProps {
   surfaceClassName?: string
   /** 헤더 우측 액션 영역 (예: 더보기 메뉴) */
   actions?: ReactNode
+  /** 본문 스크롤 컨테이너 ref (탭바 스크롤 점프 등에 사용) */
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>
 }
 
 /**
@@ -27,6 +29,7 @@ export default function SubPageScaffold({
   contentClassName,
   surfaceClassName = 'bg-surface',
   actions,
+  scrollContainerRef,
 }: SubPageScaffoldProps) {
   const isNativeApp = useIsNativeApp()
 
@@ -60,6 +63,7 @@ export default function SubPageScaffold({
       </header>
 
       <div
+        ref={scrollContainerRef}
         className="flex min-h-0 flex-1 flex-col overflow-y-auto"
         style={{ paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM }}
       >

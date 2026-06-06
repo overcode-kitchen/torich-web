@@ -38,6 +38,8 @@ interface FormattedInvestmentData {
   market: 'KR' | 'US' | null
   unit_type: InvestmentUnitType
   monthly_shares: number | null
+  /** 적립 항목 유형. 투자 저장 경로는 항상 'investment'. */
+  record_type: 'investment'
 }
 
 /**
@@ -131,5 +133,6 @@ export async function formatInvestmentData(
     market: params.market ?? null,
     unit_type: unitType,
     monthly_shares: monthlySharesNum,
+    record_type: 'investment',
   }
 }

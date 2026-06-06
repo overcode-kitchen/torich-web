@@ -45,7 +45,7 @@ export function useStatsData(): UseStatsDataReturn {
 
         if (cancelled) return
         if (error) throw error
-        setRecords(data || [])
+        setRecords((data || []) as Investment[])
       } catch {
         toastError(TOAST_MESSAGES.statsLoadFailed)
       } finally {

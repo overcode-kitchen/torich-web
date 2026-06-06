@@ -45,7 +45,6 @@ export function InvestmentDetailContent() {
             <InvestmentDetailOverview
                 item={item}
                 isEditMode={isEditMode}
-                nextPaymentDate={investmentData.nextPaymentDate}
                 completed={investmentData.completed}
                 overviewRef={overviewRef}
                 titleRef={titleRef}

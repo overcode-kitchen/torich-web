@@ -27,8 +27,9 @@
 # OMC (oh-my-claudecode) local state
 .omc/
 
-# Claude Code — 팀 공유 설정/훅은 추적하고, 개인 로컬 설정은 제외
+# Claude Code — 팀 공유 설정/훅/커맨드는 추적하고, 개인 로컬 설정은 제외
 .claude/*
+!.claude/commands/
 !.claude/settings.json
 !.claude/hooks/
 .claude/settings.local.json
@@ -45,6 +46,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -54,5 +56,7 @@ yarn-error.log*
 next-env.d.ts
 api.backup
 app/api.backup
+server-routes.backup/
 
 **/GoogleService-Info.plist
+supabase/.temp/

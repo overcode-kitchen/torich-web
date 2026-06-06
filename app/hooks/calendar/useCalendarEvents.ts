@@ -10,7 +10,6 @@ interface UseCalendarEventsProps {
   records: Investment[]
   year: number
   month: number
-  selectedDate: Date | null
   isEventCompleted: (event: PaymentEvent) => boolean
 }
 
@@ -18,7 +17,6 @@ export function useCalendarEvents({
   records,
   year,
   month,
-  selectedDate,
   isEventCompleted,
 }: UseCalendarEventsProps) {
   // 활성 투자 필터링 (정렬 포함)
@@ -53,14 +51,6 @@ export function useCalendarEvents({
     return map
   }, [eventsForMonth])
 
-  // 선택된 날짜의 이벤트
-  const selectedEvents = useMemo(() => {
-    if (!selectedDate) return []
-    if (selectedDate.getFullYear() !== year || selectedDate.getMonth() !== month - 1) return []
-    const d = selectedDate.getDate()
-    return eventsByDay.get(d) || []
-  }, [selectedDate, eventsByDay, year, month])
-
   // 날짜 상태 계산
   const getDayStatus = (day: number): 'completed' | 'missed' | 'scheduled' | null => {
     const events = eventsByDay.get(day) || []
@@ -79,7 +69,6 @@ export function useCalendarEvents({
     activeRecords,
     eventsForMonth,
     eventsByDay,
-    selectedEvents,
     getDayStatus,
   }
 }

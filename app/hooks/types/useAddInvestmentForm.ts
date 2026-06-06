@@ -69,7 +69,7 @@ export interface UseAddInvestmentFormReturn {
   handleRateChange: (value: string) => void
 
   // 폼 제출
-  handleSubmit: (e: React.FormEvent) => Promise<void>
+  handleSubmit: () => Promise<void>
 
   // 유틸리티
   handleMarketChange: (newMarket: 'KR' | 'US') => void

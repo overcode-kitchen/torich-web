@@ -5,7 +5,6 @@ import type { Investment } from '@/app/types/investment'
 import type { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
 import MonthlyAmountCard from './MonthlyAmountCard'
 import BrandStorySection from './BrandStorySection'
-import EmptyState from './EmptyState'
 import GoalGroupSection from '@/app/components/GoalSections/GoalGroupSection'
 
 type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
@@ -71,11 +70,7 @@ export default function DashboardContent({
 
     return (
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4 py-4 space-y-4">
-            {records.length > 0 ? (
-                <GoalGroupSection records={records} />
-            ) : (
-                <EmptyState />
-            )}
+            <GoalGroupSection records={records} />
 
             <MonthlyAmountCard
                 records={records}

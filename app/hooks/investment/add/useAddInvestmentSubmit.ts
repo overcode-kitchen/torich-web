@@ -31,10 +31,14 @@ export interface UseAddInvestmentSubmitProps {
   monthlyShares?: string
   /** 목적 만들기 흐름에서 넘어온 경우, 생성될 투자를 이 목적에 연결한다. */
   goalId?: string
+  /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
+  mode?: 'create' | 'edit'
+  /** edit 모드에서 수정할 records.id */
+  recordId?: string
 }
 
 export interface UseAddInvestmentSubmitReturn {
-  handleSubmit: (e: React.FormEvent) => Promise<void>
+  handleSubmit: () => Promise<void>
   isSubmitting: boolean
   userId: string | null
 }
@@ -54,15 +58,15 @@ export function useAddInvestmentSubmit({
   unitType,
   monthlyShares,
   goalId,
+  mode = 'create',
+  recordId,
 }: UseAddInvestmentSubmitProps): UseAddInvestmentSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
-  const { addInvestment } = useInvestmentsContext()
+  const { addInvestment, updateInvestment } = useInvestmentsContext()
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
-  const handleSubmit = useCallback(async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault()
-
+  const handleSubmit = useCallback(async (): Promise<void> => {
     const sharePrice = typeof selectedStock?.currentPrice === 'number' ? selectedStock.currentPrice : undefined
 
     // 유효성 검사
@@ -89,8 +93,6 @@ export function useAddInvestmentSubmit({
     try {
       setIsSubmitting(true)
 
-      const supabase = createClient()
-
       // 데이터 변환
       const formattedData = await formatInvestmentData({
         stockName,
@@ -109,11 +111,26 @@ export function useAddInvestmentSubmit({
         sharePrice,
       })
 
-      // Supabase에 데이터 저장 (개별 알림 기본값: 켜짐)
+      // 편집 모드: updateInvestment에 위임(단일 진실 출처). 중복 .update() 방지.
+      if (mode === 'edit' && recordId) {
+        await updateInvestment(recordId, formattedData as Partial<Investment>)
+
+        track('investment_update_success', {
+          amount_bucket: amountBucket(formattedData.monthly_amount),
+          cycle_type: investmentDays.length > 0 ? 'custom' : 'monthly',
+          has_rate: annualRate > 0,
+        })
+
+        router.push(`/investment?id=${recordId}`)
+        return
+      }
+
+      // 신규 추가
+      const supabase = createClient()
       const { data: inserted, error } = await supabase
         .from('records')
         .insert({
-          user_id: userId,
+          user_id: userId!,
           ...formattedData,
           notification_enabled: true,
           ...(goalId ? { goal_id: goalId } : {}),
@@ -136,7 +153,6 @@ export function useAddInvestmentSubmit({
       })
 
       // 과거 시작일이면 상세 페이지에서 소급 안내 시트를 띄운다.
-      // 기준: 시작일이 이번 달 1일보다 이전인 경우
       const today = new Date()
       const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1)
       const isPastStartDate = startDate < currentMonthStart
@@ -166,9 +182,12 @@ export function useAddInvestmentSubmit({
     unitType,
     monthlyShares,
     goalId,
+    mode,
+    recordId,
     userId,
     router,
     addInvestment,
+    updateInvestment,
   ])
 
   return {

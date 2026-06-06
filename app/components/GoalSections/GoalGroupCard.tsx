@@ -1,8 +1,11 @@
 'use client'
 
+import Image from 'next/image'
 import { Plus } from '@phosphor-icons/react'
 import { GoalGroupItemRow } from './GoalGroupItemRow'
+import { resolvePurposeIcon } from '@/app/constants/goal'
 import { dDayLabel } from '@/app/utils/goal-format'
+import type { GoalStatus } from '@/app/utils/goal-status'
 import type { Investment } from '@/app/types/investment'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 
@@ -20,6 +23,8 @@ export interface GoalGroupCardProps {
   onSelectGoal?: (goalId: string) => void
   /** 적립 항목 추가 (미지정 카드는 미전달) */
   onAddRecord?: (goalId: string) => void
+  /** 파생 상태. 'pending_settlement'일 때 헤더에 "정산 대기" 배지 노출. */
+  status?: GoalStatus
 }
 
 /**
@@ -39,16 +44,33 @@ export function GoalGroupCard({
   onSelectRecord,
   onSelectGoal,
   onAddRecord,
+  status,
 }: GoalGroupCardProps) {
   const name = goal?.name ?? fallbackName ?? '목적 미지정'
   const dDay = dDayLabel(progress?.dDay ?? null)
   const percent = progress?.progressPercent ?? null
+  const icon = resolvePurposeIcon(goal?.emoji)
+  const isPendingSettlement = status === 'pending_settlement'
 
   const HeaderInner = (
     <>
+      {icon && (
+        <Image
+          src={icon.src}
+          alt=""
+          width={28}
+          height={28}
+          className="h-7 w-7 shrink-0 object-contain"
+        />
+      )}
       <h3 className="min-w-0 flex-1 truncate text-base font-bold text-foreground">
         {name}
       </h3>
+      {isPendingSettlement && (
+        <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-medium text-foreground-soft">
+          정산 대기
+        </span>
+      )}
       {dDay && (
         <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
           {dDay}
@@ -69,24 +91,25 @@ export function GoalGroupCard({
           <button
             type="button"
             onClick={() => onSelectGoal(goal.id)}
-            className="mb-2 flex w-full items-center gap-3 text-left"
+            className="mb-2 flex w-full items-center gap-1 text-left"
             aria-label={`${name} 목적 상세 보기`}
           >
             {HeaderInner}
           </button>
         ) : (
-          <div className="mb-2 flex w-full items-center gap-3">{HeaderInner}</div>
+          <div className="mb-2 flex w-full items-center gap-1">{HeaderInner}</div>
         )}
 
         {records.length > 0 ? (
           <div>
-            {records.map((record) => (
+            {records.map((record, idx) => (
               <GoalGroupItemRow
                 key={record.id}
                 record={record}
                 isPaid={isPaid(record.id)}
                 onTogglePaid={onTogglePaid}
                 onSelect={onSelectRecord}
+                isLast={idx === records.length - 1}
               />
             ))}
           </div>

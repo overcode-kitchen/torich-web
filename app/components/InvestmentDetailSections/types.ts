@@ -43,4 +43,6 @@ export interface PaymentHistorySectionProps {
   hasMorePaymentHistory: boolean
   loadMore: () => void
   historyRef: React.RefObject<HTMLElement | null>
+  onToggleRetroactive?: (yearMonth: string, currentCompleted: boolean) => void
+  onMarkAllRetroactive?: (yearMonths: string[]) => Promise<void>
 }

@@ -11,6 +11,10 @@ import type { UseAddInvestmentFormReturn } from '../../types/useAddInvestmentFor
 export interface UseAddInvestmentFormOptions {
   /** 목적 만들기 흐름에서 넘어온 경우, 생성될 투자를 이 목적에 연결한다. */
   goalId?: string
+  /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
+  mode?: 'create' | 'edit'
+  /** edit 모드에서 수정할 records.id */
+  recordId?: string
 }
 
 export function useAddInvestmentForm(
@@ -57,6 +61,8 @@ export function useAddInvestmentForm(
     unitType: ui.unitType,
     monthlyShares: ui.monthlyShares,
     goalId: options?.goalId,
+    mode: options?.mode,
+    recordId: options?.recordId,
   })
 
   return {

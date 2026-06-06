@@ -1,16 +1,44 @@
-import { CaretLeft, CaretRight } from '@phosphor-icons/react'
-import { format } from 'date-fns'
-import { ko } from 'date-fns/locale'
+import { ArrowUUpLeft, CaretDown } from '@phosphor-icons/react'
+import type { SwipeHandlers } from '@/app/hooks/useSwipe'
+import type { CalendarSlideDirection } from '@/app/hooks/calendar/useCalendar'
 
 interface CalendarGridSectionProps {
   currentMonth: Date
   calendarDays: (number | null)[]
   selectedDate: Date | null
   getDayStatus: (day: number) => 'completed' | 'missed' | 'scheduled' | null
-  goToPrevMonth: () => void
-  goToNextMonth: () => void
   selectDate: (day: number) => void
   clearSelection: () => void
+  swipeHandlers: SwipeHandlers
+  slideDirection: CalendarSlideDirection | null
+  /** true면 포커스된 주만 노출하고 나머지 주 행을 접는다 */
+  isCollapsed: boolean
+  /** 접힘 상태에서만 카드 하단에 등장하는 펼침 토글 */
+  toggleCollapsed: () => void
+  /** '오늘로' 단축 — 다른 달일 때만 범례 우측에 노출 */
+  goToToday: () => void
+  isCurrentMonth: boolean
+}
+
+function chunkWeeks(days: (number | null)[]): (number | null)[][] {
+  const weeks: (number | null)[][] = []
+  for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7))
+  return weeks
+}
+
+function getFocusedWeekIndex(
+  weeks: (number | null)[][],
+  currentMonth: Date,
+  selectedDate: Date | null
+): number {
+  const ref = selectedDate ?? new Date()
+  const sameMonth =
+    ref.getFullYear() === currentMonth.getFullYear() &&
+    ref.getMonth() === currentMonth.getMonth()
+  if (!sameMonth) return 0
+  const targetDay = ref.getDate()
+  const idx = weeks.findIndex((w) => w.includes(targetDay))
+  return idx >= 0 ? idx : 0
 }
 
 export function CalendarGridSection({
@@ -18,86 +46,127 @@ export function CalendarGridSection({
   calendarDays,
   selectedDate,
   getDayStatus,
-  goToPrevMonth,
-  goToNextMonth,
   selectDate,
   clearSelection,
+  swipeHandlers,
+  slideDirection,
+  isCollapsed,
+  toggleCollapsed,
+  goToToday,
+  isCurrentMonth,
 }: CalendarGridSectionProps) {
-  return (
-    <>
-      {/* 월 네비게이션 */}
-      <div className="flex items-center justify-between mb-4">
-        <button
-          type="button"
-          onClick={goToPrevMonth}
-          className="p-2 text-foreground-muted hover:text-foreground"
-        >
-          <CaretLeft className="w-6 h-6" />
-        </button>
-        <span className="text-lg font-semibold text-foreground">
-          {format(currentMonth, 'yyyy년 M월', { locale: ko })}
-        </span>
-        <button
-          type="button"
-          onClick={goToNextMonth}
-          className="p-2 text-foreground-muted hover:text-foreground"
-        >
-          <CaretRight className="w-6 h-6" />
-        </button>
-      </div>
+  const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`
+  const animationClass = slideDirection
+    ? `animate-in fade-in duration-300 ease-out motion-reduce:animate-none ${
+        slideDirection === 'next' ? 'slide-in-from-right-8' : 'slide-in-from-left-8'
+      }`
+    : ''
 
-      {/* 캘린더 그리드 */}
-      <div
-        className="bg-card rounded-2xl p-4 mb-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {['일', '월', '화', '수', '목', '금', '토'].map((w) => (
-            <div key={w} className="text-center text-xs font-medium text-muted-foreground py-1">
-              {w}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {calendarDays.map((day, i) => {
-            if (day === null) {
-              return (
-                <div
-                  key={`empty-${i}`}
-                  className="aspect-square cursor-pointer"
-                  onClick={clearSelection}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && clearSelection()}
-                  aria-label="선택 해제"
-                />
-              )
-            }
-            const status = getDayStatus(day)
-            const isSelected = selectedDate?.getDate() === day && selectedDate?.getMonth() === currentMonth.getMonth()
-            return (
-              <button
-                key={day}
-                type="button"
-                onClick={() => selectDate(day)}
-                className={`aspect-square rounded-lg flex flex-col items-center justify-center text-sm transition-colors ${
-                  isSelected ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] ring-2 ring-brand-500' : 'hover:bg-surface-hover'
-                }`}
-              >
-                <span className="font-medium">{day}</span>
-                {status && (
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full mt-0.5 ${
-                      status === 'completed' ? 'bg-green-500' : status === 'missed' ? 'bg-red-500' : 'bg-surface-strong-hover'
+  const weeks = chunkWeeks(calendarDays)
+  const focusedWeekIndex = getFocusedWeekIndex(weeks, currentMonth, selectedDate)
+
+  const today = new Date()
+  const isCurrentMonthToday =
+    today.getFullYear() === currentMonth.getFullYear() &&
+    today.getMonth() === currentMonth.getMonth()
+  const todayDate = isCurrentMonthToday ? today.getDate() : null
+
+  return (
+    <div
+      className="bg-card rounded-2xl p-4 mb-3 touch-pan-y select-none"
+      onClick={(e) => e.stopPropagation()}
+      {...swipeHandlers}
+    >
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {['일', '월', '화', '수', '목', '금', '토'].map((w) => (
+          <div key={w} className="text-center text-xs font-medium text-muted-foreground py-1">
+            {w}
+          </div>
+        ))}
+      </div>
+      <div key={monthKey} className={animationClass}>
+        {weeks.map((week, wi) => {
+          const isHidden = isCollapsed && wi !== focusedWeekIndex
+          return (
+            <div
+              key={wi}
+              aria-hidden={isHidden}
+              className={`grid grid-cols-7 gap-x-1 overflow-hidden transition-[max-height,opacity,margin-top] duration-[320ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+                isHidden
+                  ? 'max-h-0 opacity-0 mt-0 pointer-events-none'
+                  : 'max-h-20 opacity-100 mt-1.5'
+              }`}
+            >
+              {week.map((day, di) => {
+                if (day === null) {
+                  return (
+                    <div
+                      key={`empty-${wi}-${di}`}
+                      className="aspect-square cursor-pointer"
+                      onClick={clearSelection}
+                      role="button"
+                      tabIndex={isHidden ? -1 : 0}
+                      onKeyDown={(e) => e.key === 'Enter' && clearSelection()}
+                      aria-label="선택 해제"
+                    />
+                  )
+                }
+                const status = getDayStatus(day)
+                const isSelected =
+                  selectedDate?.getDate() === day &&
+                  selectedDate?.getMonth() === currentMonth.getMonth()
+                const isToday = todayDate === day
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    tabIndex={isHidden ? -1 : 0}
+                    onClick={() => selectDate(day)}
+                    aria-current={isToday ? 'date' : undefined}
+                    className={`relative aspect-square w-full rounded-lg flex items-center justify-center text-center text-sm transition-colors ${
+                      isSelected
+                        ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] ring-1 ring-inset ring-brand-500'
+                        : isToday
+                          ? 'text-foreground hover:bg-surface-hover'
+                          : 'text-foreground-soft hover:bg-surface-hover'
                     }`}
-                  />
-                )}
-              </button>
-            )
-          })}
-        </div>
-        {/* 색상 범례 */}
-        <div className="flex items-center justify-center gap-4 mt-3 pt-3 border-t border-border-subtle">
+                  >
+                    <span
+                      className={`-translate-y-1 transition-transform duration-200 ease-out ${
+                        isToday && !isSelected ? 'font-bold' : 'font-medium'
+                      } ${isSelected ? 'scale-110' : 'scale-100'}`}
+                    >
+                      {day}
+                    </span>
+                    {status && (
+                      <span
+                        className={`absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full transition-transform duration-200 ease-out ${
+                          isSelected ? 'scale-110' : 'scale-100'
+                        } ${
+                          status === 'completed'
+                            ? 'bg-green-500'
+                            : status === 'missed'
+                              ? 'bg-red-500'
+                              : 'bg-surface-strong-hover'
+                        }`}
+                      />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )
+        })}
+      </div>
+      <div
+        className={`overflow-hidden transition-[max-height,opacity,margin-top,padding-top] duration-[320ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+          isCollapsed
+            ? 'max-h-0 opacity-0 mt-0 pt-0 border-t-0'
+            : 'max-h-12 opacity-100 mt-3 pt-3 border-t border-border-subtle'
+        }`}
+        aria-hidden={isCollapsed}
+      >
+        <div className="relative flex items-center justify-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-500" />
             <span className="text-xs text-foreground-muted">완료됨</span>
@@ -110,8 +179,38 @@ export function CalendarGridSection({
             <span className="w-2 h-2 rounded-full bg-surface-strong-hover" />
             <span className="text-xs text-foreground-muted">예정</span>
           </div>
+          {!isCurrentMonth && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                goToToday()
+              }}
+              aria-label="이번 달로 이동"
+              className="absolute right-0 inline-flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground"
+            >
+              <ArrowUUpLeft className="w-3 h-3" />
+              오늘
+            </button>
+          )}
         </div>
       </div>
-    </>
+      <div
+        className={`overflow-hidden transition-[max-height,opacity,margin-top] duration-[320ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+          isCollapsed ? 'max-h-6 opacity-100 mt-1' : 'max-h-0 opacity-0 mt-0'
+        }`}
+        aria-hidden={!isCollapsed}
+      >
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label="캘린더 펼치기"
+          tabIndex={isCollapsed ? 0 : -1}
+          className="w-full flex items-center justify-center text-foreground-subtle hover:text-foreground-muted"
+        >
+          <CaretDown className="w-3 h-3 scale-x-[2]" />
+        </button>
+      </div>
+    </div>
   )
 }

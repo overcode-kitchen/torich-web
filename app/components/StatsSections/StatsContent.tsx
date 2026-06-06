@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
+import Link from 'next/link'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
 import MonthlyStatusSection from '@/app/components/StatsSections/MonthlyStatusSection'
 import CompletionRateSection from '@/app/components/StatsSections/CompletionRateSection'
@@ -109,6 +110,13 @@ export default function StatsContent({
                 chartData={chartData}
                 chartBarColor={chartBarColor}
             />
+
+            <Link
+                href="/faq"
+                className="block text-center pt-3 pb-4 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
+            >
+                토리치는 왜 수익률을 안 보여주나요? →
+            </Link>
         </>
     )
 }

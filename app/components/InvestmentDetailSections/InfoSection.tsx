@@ -61,7 +61,7 @@ export function InfoSection(props: InfoSectionProps) {
   }
 
   return (
-    <section ref={infoRef} className="py-6">
+    <section ref={infoRef} className="py-8">
       <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
         {isEditMode ? '투자 정보 수정' : '투자 정보'}
       </h3>
