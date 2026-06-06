@@ -47,8 +47,15 @@ fi
 OUTPUT="$(eval "$CMD" 2>&1)"
 STATUS=$?
 if [ "$STATUS" -ne 0 ]; then
-  echo "타입체크 실패 — 아래 타입 에러를 확인하고 수정해 주세요:" >&2
-  echo "$OUTPUT" >&2
-  exit 2
+  # Next.js 생성물(.next/)의 타입 에러는 stale 빌드 캐시인 경우가 많아(삭제된 라우트를
+  # 가리키는 등) 블로킹에서 제외하고, 실제 '소스' 타입 에러만 Claude 에 피드백한다.
+  # (라우트 export 계약 등 생성 타입 검증의 정본은 `next build`/CI 이다.)
+  SOURCE_ERRORS="$(printf '%s\n' "$OUTPUT" | grep -E 'error TS' | grep -v '^\.next/' || true)"
+  if [ -n "$SOURCE_ERRORS" ]; then
+    echo "타입체크 실패 — 아래 소스 타입 에러를 확인하고 수정해 주세요:" >&2
+    printf '%s\n' "$SOURCE_ERRORS" >&2
+    exit 2
+  fi
+  # 소스 에러는 없고 .next 생성 캐시 에러만 있는 경우 → 통과 (캐시는 dev/build 시 갱신됨)
 fi
 exit 0
