@@ -2,8 +2,18 @@
 
 ## Language
 - Always respond in Korean (한국어로 응답)
-- 커밋 메시지는 글로벌 규칙(`~/.claude/CLAUDE.md`)에 정의된 한글 prefix + 종결형 어미 형식을 따른다.
-  - 예: `feat(login): 로그인 버튼 클릭 시 로딩 상태 표시 기능을 추가함`
+
+## Commit Convention
+커밋 메시지는 아래 형식을 따른다. (이 저장소의 단일 기준이며, 외부 파일을 참조하지 않는다.)
+
+- **형식**: `type(scope): 한글 설명 + 종결형 어미`
+- **type**: `feat`(기능 추가) / `fix`(버그 수정) / `style`(UI·스타일) / `refactor`(리팩터링) / `chore`(설정·잡무) / `docs`(문서)
+- **scope**: 변경이 일어난 도메인·화면 (예: `home`, `goal`, `stats`, `investment`, `faq`, `calendar`, `layout`, `navigation`)
+- **설명**: 한글로 작성하고, **평서 종결형 어미**로 끝낸다. (`~함` / `~음` / `~바꿈` / `~낮춤` 등)
+- **예시**:
+  - `feat(login): 로그인 버튼 클릭 시 로딩 상태 표시 기능을 추가함`
+  - `fix(stats): 손실 데이터가 차트에서 음수 영역으로 표시되도록 수정함`
+  - `style(home): 목적 만들기 CTA를 주목도 높은 버튼으로 바꿈`
 
 ---
 
