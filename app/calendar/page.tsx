@@ -46,6 +46,7 @@ export default function CalendarPage() {
   const {
     isEventCompleted,
     handleComplete,
+    handleUncomplete,
     handleUndo,
     pendingUndo,
   } = usePaymentCompletion()
@@ -93,6 +94,7 @@ export default function CalendarPage() {
       records={records}
       isEventCompleted={isEventCompleted}
       handleComplete={handleComplete}
+      handleUncomplete={handleUncomplete}
       pendingUndo={!!pendingUndo}
       handleUndo={handleUndo}
     />

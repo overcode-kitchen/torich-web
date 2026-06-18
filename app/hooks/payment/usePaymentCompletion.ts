@@ -70,9 +70,19 @@ export function usePaymentCompletion() {
     }
   }, [togglePayment])
 
+  // 이미 완료된 항목의 '완료됨' 표기를 다시 눌렀을 때 미완료로 되돌린다.
+  // (홈 토스트의 '되돌리기'와 동일한 토글이되, 토스트 상태와 무관하게 항상 동작)
+  const handleUncomplete = useCallback(async (e: PaymentEvent) => {
+    const dateStr = `${e.year}-${String(e.month).padStart(2, '0')}-${String(e.day).padStart(2, '0')}`
+
+    await togglePayment(e.investmentId, dateStr, true)
+    hapticLightImpact()
+  }, [togglePayment])
+
   return {
     isEventCompleted,
     handleComplete,
+    handleUncomplete,
     handleUndo,
     pendingUndo,
   }

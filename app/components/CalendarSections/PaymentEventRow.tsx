@@ -1,7 +1,9 @@
 'use client'
 
+import { Check } from '@phosphor-icons/react'
 import type { PaymentEvent } from '@/app/utils/stats'
 import type { Investment } from '@/app/types/investment'
+import { Button } from '@/components/ui/button'
 import { formatMonthlyContribution } from '@/app/utils/investment-display'
 import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
 import { getRecordAvatar } from '@/app/utils/recordAvatar'
@@ -12,6 +14,7 @@ interface PaymentEventRowProps {
   isCompleted: boolean
   onClick: () => void
   onComplete: () => void
+  onUncomplete: () => void
   showDivider: boolean
 }
 
@@ -21,6 +24,7 @@ export function PaymentEventRow({
   isCompleted,
   onClick,
   onComplete,
+  onUncomplete,
   showDivider,
 }: PaymentEventRowProps) {
   const contribution = investment ? formatMonthlyContribution(investment).main : null
@@ -71,21 +75,36 @@ export function PaymentEventRow({
         </div>
       </div>
       {isCompleted ? (
-        <span className="shrink-0 text-xs font-medium text-muted-foreground">
-          ✓ 완료됨
-        </span>
-      ) : (
-        <button
+        // 홈(GoalGroupItemRow)과 동일하게 ghost 버튼 + 체크 아이콘 + '완료' 텍스트로 통일하고,
+        // 다시 누르면 미완료로 되돌린다.
+        <Button
           type="button"
+          variant="ghost"
+          size="xs"
+          className="shrink-0 gap-1 px-3 text-muted-foreground"
+          onClick={(ev) => {
+            ev.stopPropagation()
+            onUncomplete()
+          }}
+          aria-label="납입 완료 취소"
+        >
+          <Check className="h-3.5 w-3.5" weight="bold" />
+          완료
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          variant="soft"
+          size="xs"
+          className="shrink-0 px-3"
           onClick={(ev) => {
             ev.stopPropagation()
             onComplete()
           }}
-          className="shrink-0 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90"
           aria-label="납입 완료 체크"
         >
           완료하기
-        </button>
+        </Button>
       )}
     </div>
   )

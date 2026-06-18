@@ -16,6 +16,7 @@ interface MonthAgendaSectionProps {
   scrollTick: number
   isEventCompleted: (event: PaymentEvent) => boolean
   handleComplete: (event: PaymentEvent) => void
+  handleUncomplete: (event: PaymentEvent) => void
 }
 
 export function MonthAgendaSection({
@@ -27,6 +28,7 @@ export function MonthAgendaSection({
   scrollTick,
   isEventCompleted,
   handleComplete,
+  handleUncomplete,
 }: MonthAgendaSectionProps) {
   const router = useRouter()
   const today = new Date()
@@ -114,6 +116,7 @@ export function MonthAgendaSection({
                   isCompleted={isEventCompleted(e)}
                   onClick={() => goToDetail(e.investmentId)}
                   onComplete={() => handleComplete(e)}
+                  onUncomplete={() => handleUncomplete(e)}
                   showDivider={idx !== events.length - 1}
                 />
               ))}

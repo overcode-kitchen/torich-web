@@ -51,6 +51,7 @@ interface CalendarViewProps {
     // Payment Actions
     isEventCompleted: (e: PaymentEvent) => boolean
     handleComplete: (e: PaymentEvent) => void
+    handleUncomplete: (e: PaymentEvent) => void
 
     // Undo
     pendingUndo: boolean
@@ -81,6 +82,7 @@ export default function CalendarView({
     records,
     isEventCompleted,
     handleComplete,
+    handleUncomplete,
     pendingUndo,
     handleUndo,
 }: CalendarViewProps) {
@@ -174,6 +176,7 @@ export default function CalendarView({
                                 scrollTick={scrollTick}
                                 isEventCompleted={isEventCompleted}
                                 handleComplete={handleComplete}
+                                handleUncomplete={handleUncomplete}
                             />
                         </div>
                     </div>
