@@ -30,11 +30,11 @@ elif [ -f yarn.lock ]; then PM="yarn"
 elif [ -f package-lock.json ]; then PM="npm"
 else PM="npm"; fi
 
-# lint 실행
+# 변경된 파일만 lint (전체 프로젝트 검사 대신 해당 파일만)
 case "$PM" in
-  pnpm) CMD="pnpm run lint" ;;
-  yarn) CMD="yarn lint" ;;
-  npm)  CMD="npm run lint" ;;
+  pnpm) CMD="pnpm exec eslint \"$FILE_PATH\"" ;;
+  yarn) CMD="yarn exec eslint \"$FILE_PATH\"" ;;
+  npm)  CMD="npx --no-install eslint \"$FILE_PATH\"" ;;
 esac
 
 OUTPUT="$(eval "$CMD" 2>&1)"
