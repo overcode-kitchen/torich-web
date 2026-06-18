@@ -1,7 +1,7 @@
 'use client'
 
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
-import { Input } from '@/components/ui/input'
+import { FlowInput } from '@/app/components/Common/FlowInput'
 
 interface GoalStepAmountProps {
   values: GoalFormValues
@@ -40,36 +40,35 @@ const TARGET_QUICK_ADJUSTS: { label: string; delta: number }[] = [
 ]
 
 /**
- * 단계 B — 얼마를 모으려고 하나요?
- * 만원 단위 입력 + ±100만/±1,000만 빠른 조정.
+ * 단계 B — 얼마나 모을까요?
+ * 맥락화된 제목 + 대형 금액 입력 + ±100만/±1,000만 빠른 조정.
  */
 export default function GoalStepAmount({
   values,
   setField,
   disabled,
 }: GoalStepAmountProps) {
+  const goalName = values.name.trim()
+  const title = goalName ? `${goalName}, 얼마나 모을까요?` : '얼마나 모을까요?'
+
   return (
     <div className="py-4">
-      <h2 className="text-lg font-semibold text-foreground tracking-tight mb-4">
-        얼마를 모으려고 하나요?
+      <h2 className="text-2xl font-bold text-foreground tracking-tight mb-10">
+        {title}
       </h2>
-      <div className="relative">
-        <Input
-          id="goal-target"
-          className="pr-14"
-          inputMode="numeric"
-          placeholder="예: 5,000"
-          value={wonToManwonDisplay(values.target_amount)}
-          onChange={(e) =>
-            setField('target_amount', manwonInputToWon(e.target.value))
-          }
-          disabled={disabled}
-        />
-        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foreground-soft">
-          만원
-        </span>
-      </div>
-      <div className="flex flex-wrap justify-end gap-2 mt-3">
+      <FlowInput
+        id="goal-target"
+        size="lg"
+        suffix="만원"
+        inputMode="numeric"
+        placeholder="0"
+        value={wonToManwonDisplay(values.target_amount)}
+        onChange={(e) =>
+          setField('target_amount', manwonInputToWon(e.target.value))
+        }
+        disabled={disabled}
+      />
+      <div className="flex flex-wrap justify-end gap-2 mt-4">
         {TARGET_QUICK_ADJUSTS.map(({ label, delta }) => (
           <button
             key={label}

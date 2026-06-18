@@ -9,6 +9,8 @@ interface GoalTargetDateFieldProps {
   value: string
   onChange: (value: string) => void
   disabled?: boolean
+  /** 'default': 기존 보더 스타일 | 'flow': 보더 없는 FlowInput 스타일 */
+  variant?: 'default' | 'flow'
 }
 
 function toIsoDate(date: Date): string {
@@ -29,9 +31,15 @@ export default function GoalTargetDateField({
   value,
   onChange,
   disabled,
+  variant = 'default',
 }: GoalTargetDateFieldProps) {
   const [isOpen, setIsOpen] = useState(false)
   const selectedDate = parseIsoDate(value)
+
+  const buttonClass =
+    variant === 'flow'
+      ? 'w-full flex items-center justify-between bg-muted/50 rounded-xl h-12 px-4 text-base text-foreground border-0 hover:bg-muted/70 focus:outline-none focus:ring-2 focus:ring-ring/60 transition-all disabled:opacity-50'
+      : 'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-sm text-foreground border border-input hover:bg-surface transition-colors disabled:opacity-50'
 
   return (
     <>
@@ -39,7 +47,7 @@ export default function GoalTargetDateField({
         type="button"
         onClick={() => setIsOpen(true)}
         disabled={disabled}
-        className="w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-sm text-foreground border border-input hover:bg-surface transition-colors disabled:opacity-50"
+        className={buttonClass}
       >
         <span className={selectedDate ? '' : 'text-foreground-subtle'}>
           {selectedDate

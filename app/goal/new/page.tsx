@@ -113,7 +113,7 @@ function NewGoalContent() {
       >
         <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-2xl px-4 pt-4">
           <PrimaryCTAButton
-            label={flow.isAtLastStep ? '목적 만들기' : '다음'}
+            label={flow.isAtLastStep ? '이대로 만들기' : '다음으로'}
             onClick={handleAction}
             disabled={!canAdvance}
             loading={isCreating}

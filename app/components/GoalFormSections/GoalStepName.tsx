@@ -7,7 +7,7 @@ import {
   type GoalPreset,
 } from '@/app/constants/goal'
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
-import { Input } from '@/components/ui/input'
+import { FlowInput } from '@/app/components/Common/FlowInput'
 import { cn } from '@/lib/utils'
 import PurposeIconSlot from './PurposeIconSlot'
 
@@ -36,11 +36,11 @@ export default function GoalStepName({
 
   return (
     <div className="py-4">
-      <h2 className="text-lg font-semibold text-foreground tracking-tight mb-4">
+      <h2 className="text-2xl font-bold text-foreground tracking-tight mb-8">
         어떤 목적을 만들까요?
       </h2>
 
-      <div className="mb-6">
+      <div className="mb-8">
         <PurposeIconSlot
           value={values.emoji}
           onChange={(iconKey) => setField('emoji', iconKey)}
@@ -48,7 +48,7 @@ export default function GoalStepName({
         />
       </div>
 
-      <Input
+      <FlowInput
         id="goal-name"
         placeholder="예: 결혼자금"
         value={values.name}
