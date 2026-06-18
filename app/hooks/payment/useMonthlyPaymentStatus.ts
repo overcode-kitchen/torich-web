@@ -17,7 +17,11 @@ import { usePaymentHistory } from './usePaymentHistory'
 /** 이번 달 캐논컬 납입일을 YYYY-MM-DD 문자열로 반환 */
 function monthlyPaymentDateStr(record: Investment, year: number, month: number): string {
   const days = record.investment_days
-  const day = days && days.length > 0 ? Math.min(...days) : 1
+  const desired = days && days.length > 0 ? Math.min(...days) : 1
+  // 31일 등 그 달에 없는 날은 말일로 당긴다 (예: 6월이면 30일).
+  // 그대로 두면 "2026-06-31" 같은 잘못된 날짜가 만들어져 Postgres가 22008로 거부한다.
+  const lastDay = new Date(year, month, 0).getDate()
+  const day = Math.min(desired, lastDay)
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
