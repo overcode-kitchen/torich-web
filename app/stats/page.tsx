@@ -51,6 +51,7 @@ export default function StatsPage() {
     chartData,
     chartBarColor,
     chartEmphasisColor,
+    consistency,
   } = useChartData({ activeRecords, completedPayments, isCustomRange, effectiveMonths, customDateRange })
 
   if (!isLoading && !user) {
@@ -96,6 +97,7 @@ export default function StatsPage() {
         chartData,
         chartBarColor,
         chartEmphasisColor,
+        consistency,
       }}
     />
   )

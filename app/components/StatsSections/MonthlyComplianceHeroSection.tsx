@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { TrendUp, TrendDown } from '@phosphor-icons/react'
+import { Target } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -13,7 +13,7 @@ import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts'
 import type { DateRange } from 'react-day-picker'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
-import type { MonthlyPaymentDelta } from '@/app/utils/stats'
+import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 
 interface MonthlyComplianceHeroSectionProps {
   /** 투자 기록 보유 여부 — false면 빈 상태 카드 렌더 */
@@ -24,7 +24,6 @@ interface MonthlyComplianceHeroSectionProps {
     progress: number
     remainingPayment: number
   }
-  delta?: Pick<MonthlyPaymentDelta, 'deltaAmount' | 'hasComparison'>
   // 기간 필터
   periodPreset: PeriodPreset
   setPeriodPreset: (preset: PeriodPreset) => void
@@ -37,6 +36,8 @@ interface MonthlyComplianceHeroSectionProps {
   chartData: Array<{ name: string; rate: number; completed: number; total: number }>
   chartBarColor: string
   chartEmphasisColor: string
+  /** 꾸준함 인사이트 — 통계 고유 집계 지표 (캘린더·홈과 중복되지 않음) */
+  consistency: ConsistencyInsight | null
 }
 
 /**
@@ -46,7 +47,6 @@ interface MonthlyComplianceHeroSectionProps {
 export default function MonthlyComplianceHeroSection({
   hasRecords,
   thisMonth,
-  delta,
   periodPreset,
   setPeriodPreset,
   periodLabel,
@@ -57,6 +57,7 @@ export default function MonthlyComplianceHeroSection({
   chartData,
   chartBarColor,
   chartEmphasisColor,
+  consistency,
 }: MonthlyComplianceHeroSectionProps) {
   const router = useRouter()
 
@@ -72,15 +73,8 @@ export default function MonthlyComplianceHeroSection({
     )
   }
 
-  const showDelta = delta?.hasComparison
-  const isUp = (delta?.deltaAmount ?? 0) > 0
-  const isDown = (delta?.deltaAmount ?? 0) < 0
-  const deltaTone = isUp ? 'text-primary' : isDown ? 'text-muted-foreground' : 'text-foreground-muted'
-  const deltaText = isUp
-    ? `지난달 대비 +${delta!.deltaAmount.toLocaleString()}원`
-    : isDown
-      ? `지난달 대비 ${delta!.deltaAmount.toLocaleString()}원`
-      : '지난달과 동일'
+  // 이번 달 예정 납입을 모두 완료했는지 (성취 마일스톤 표시 조건)
+  const isMonthComplete = thisMonth.totalPayment > 0 && thisMonth.remainingPayment === 0
 
   return (
     <section className="bg-card rounded-2xl p-5 mb-4">
@@ -110,19 +104,19 @@ export default function MonthlyComplianceHeroSection({
         <span className="text-4xl font-extrabold tracking-tight text-foreground tabular-nums">
           {thisMonth.progress}%
         </span>
-        {showDelta && (
-          <span className={`inline-flex items-center gap-0.5 text-sm font-medium mb-1.5 ${deltaTone}`}>
-            {isUp && <TrendUp className="w-4 h-4" weight="bold" />}
-            {isDown && <TrendDown className="w-4 h-4" weight="bold" />}
-            {deltaText}
-          </span>
-        )}
       </div>
 
-      <p className="text-sm text-foreground-muted mb-3">
-        {thisMonth.completedPayment.toLocaleString()}원 / {thisMonth.totalPayment.toLocaleString()}원
-        {thisMonth.remainingPayment > 0 && ` · 남은 ${thisMonth.remainingPayment.toLocaleString()}원`}
-      </p>
+      {/* 금액 줄: 진행 중엔 모은/예정·남은 금액, 이번 달 다 채우면 성취 축하로 전환 */}
+      {isMonthComplete ? (
+        <p className="text-sm font-semibold text-primary mb-3">
+          🎉 이번 달 {thisMonth.totalPayment.toLocaleString()}원 모으기 성공!
+        </p>
+      ) : (
+        <p className="text-sm text-foreground-muted mb-3">
+          {thisMonth.completedPayment.toLocaleString()}원 / {thisMonth.totalPayment.toLocaleString()}원
+          {thisMonth.remainingPayment > 0 && ` · 남은 ${thisMonth.remainingPayment.toLocaleString()}원`}
+        </p>
+      )}
 
       <div className="h-2 bg-secondary rounded-full overflow-hidden mb-5">
         <div
@@ -161,6 +155,20 @@ export default function MonthlyComplianceHeroSection({
       <p className="text-xs text-muted-foreground mt-1">
         {periodLabel} 월별 완료율 · 평균 {periodCompletionRate}%
       </p>
+
+      {/* 꾸준함 인사이트 — 2개월 이상 데이터가 있을 때만. 단일 월은 위 대형 %와 중복이라 숨김 */}
+      {consistency && consistency.activeMonths >= 2 && (
+        consistency.perfectMonths > 0 ? (
+          <p className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary">
+            <Target className="w-3.5 h-3.5" weight="fill" />
+            {periodLabel} 중 {consistency.perfectMonths}개월 100% 이행 달성
+          </p>
+        ) : (
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            최고 이행 {consistency.bestMonthLabel} {consistency.bestRate}%
+          </p>
+        )
+      )}
     </section>
   )
 }

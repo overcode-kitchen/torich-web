@@ -14,6 +14,7 @@ import {
     HabitStats,
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
 import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 
 interface StatsViewProps {
     isLoading: boolean
@@ -59,6 +60,7 @@ interface StatsViewProps {
         chartData: any[]
         chartBarColor: string
         chartEmphasisColor: string
+        consistency: ConsistencyInsight | null
     }
 }
 

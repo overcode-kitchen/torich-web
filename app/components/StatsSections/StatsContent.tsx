@@ -1,6 +1,5 @@
 'use client'
 
-import { useMemo } from 'react'
 import Link from 'next/link'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
 import MonthlyComplianceHeroSection from '@/app/components/StatsSections/MonthlyComplianceHeroSection'
@@ -12,7 +11,7 @@ import type {
     HabitStats,
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
 import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
-import { getMonthlyPaymentDelta } from '@/app/utils/stats'
+import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 
 interface StatsContentProps {
     data: {
@@ -52,19 +51,18 @@ interface StatsContentProps {
         chartData: any[]
         chartBarColor: string
         chartEmphasisColor: string
+        consistency: ConsistencyInsight | null
     }
 }
 
 export default function StatsContent({
     data,
-    payment,
     ui,
     calculations,
     filter,
     chart,
 }: StatsContentProps) {
-    const { records, activeRecords, hasRecords } = data
-    const { completedPayments, retroactivePayments } = payment
+    const { records, hasRecords } = data
     const { handleShowContribution } = ui
     const {
         totalPaidPrincipal,
@@ -74,12 +72,7 @@ export default function StatsContent({
         habitStats,
     } = calculations
     const { periodPreset, setPeriodPreset, periodLabel, customDateRange, setCustomDateRange, handleCustomPeriod } = filter
-    const { periodCompletionRate, chartData, chartBarColor, chartEmphasisColor } = chart
-
-    const delta = useMemo(
-        () => getMonthlyPaymentDelta(activeRecords, completedPayments, retroactivePayments),
-        [activeRecords, completedPayments, retroactivePayments]
-    )
+    const { periodCompletionRate, chartData, chartBarColor, chartEmphasisColor, consistency } = chart
 
     return (
         <>
@@ -87,7 +80,6 @@ export default function StatsContent({
             <MonthlyComplianceHeroSection
                 hasRecords={hasRecords}
                 thisMonth={thisMonth}
-                delta={delta}
                 periodPreset={periodPreset as any}
                 setPeriodPreset={setPeriodPreset}
                 periodLabel={periodLabel}
@@ -98,6 +90,7 @@ export default function StatsContent({
                 chartData={chartData}
                 chartBarColor={chartBarColor}
                 chartEmphasisColor={chartEmphasisColor}
+                consistency={consistency}
             />
 
             {/* ② 목표 · 진척 묶음 */}
