@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
 import MonthlyComplianceHeroSection from '@/app/components/StatsSections/MonthlyComplianceHeroSection'
+import MonthlyTrendSection from '@/app/components/StatsSections/MonthlyTrendSection'
 import ModeBreakdownSection from '@/app/components/StatsSections/ModeBreakdownSection'
 import StatsGoalProgressSection from '@/app/components/StatsSections/StatsGoalProgressSection'
 import type { Investment } from '@/app/types/investment'
@@ -76,22 +77,25 @@ export default function StatsContent({
 
     return (
         <>
-            {/* ① 이행 현황 Hero — 주인공 (항상 표시, 빈 상태는 hasRecords=false로 분기) */}
-            <MonthlyComplianceHeroSection
-                hasRecords={hasRecords}
-                thisMonth={thisMonth}
-                periodPreset={periodPreset as any}
-                setPeriodPreset={setPeriodPreset}
-                periodLabel={periodLabel}
-                customDateRange={customDateRange}
-                setCustomDateRange={setCustomDateRange}
-                handleCustomPeriod={handleCustomPeriod}
-                periodCompletionRate={periodCompletionRate}
-                chartData={chartData}
-                chartBarColor={chartBarColor}
-                chartEmphasisColor={chartEmphasisColor}
-                consistency={consistency}
-            />
+            {/* ① 이행 Hero — 이번 달 이행 + (구분선) 월별 이행 추세를 한 카드에 묶음.
+                같은 주제의 줌아웃이라 카드를 나누지 않고 공통 영역으로 연결감을 유지한다. */}
+            <MonthlyComplianceHeroSection hasRecords={hasRecords} thisMonth={thisMonth}>
+                {hasRecords && (
+                    <MonthlyTrendSection
+                        periodPreset={periodPreset as any}
+                        setPeriodPreset={setPeriodPreset}
+                        periodLabel={periodLabel}
+                        customDateRange={customDateRange}
+                        setCustomDateRange={setCustomDateRange}
+                        handleCustomPeriod={handleCustomPeriod}
+                        periodCompletionRate={periodCompletionRate}
+                        chartData={chartData}
+                        chartBarColor={chartBarColor}
+                        chartEmphasisColor={chartEmphasisColor}
+                        consistency={consistency}
+                    />
+                )}
+            </MonthlyComplianceHeroSection>
 
             {/* ② 목표 · 진척 묶음 */}
             <StatsGoalProgressSection records={records} />
