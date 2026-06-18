@@ -58,6 +58,7 @@ interface StatsViewProps {
         periodCompletionRate: number
         chartData: any[]
         chartBarColor: string
+        chartEmphasisColor: string
     }
 }
 

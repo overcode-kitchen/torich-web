@@ -47,10 +47,10 @@ export default function StatsPage() {
   } = useStatsCalculations({ records, activeRecords, completedPayments })
 
   const {
-    monthlyRates,
     periodCompletionRate,
     chartData,
     chartBarColor,
+    chartEmphasisColor,
   } = useChartData({ activeRecords, completedPayments, isCustomRange, effectiveMonths, customDateRange })
 
   if (!isLoading && !user) {
@@ -95,6 +95,7 @@ export default function StatsPage() {
         periodCompletionRate,
         chartData,
         chartBarColor,
+        chartEmphasisColor,
       }}
     />
   )

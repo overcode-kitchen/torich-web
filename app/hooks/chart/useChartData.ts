@@ -19,7 +19,10 @@ export interface UseChartDataReturn {
   monthlyRates: { monthLabel: string; rate: number; completed: number; total: number }[]
   periodCompletionRate: number
   chartData: { name: string; rate: number; completed: number; total: number }[]
+  /** 과거 달(중립) 막대 색 */
   chartBarColor: string
+  /** 현재 달(가장 최근, 차트 마지막 항목) 강조 막대 색 */
+  chartEmphasisColor: string
 }
 
 export function useChartData({
@@ -59,8 +62,18 @@ export function useChartData({
       return '#9c9ea6'
     }
     const root = getComputedStyle(document.documentElement)
-    const fromToken = root.getPropertyValue('--foreground-soft').trim()
+    const fromToken = root.getPropertyValue('--foreground-subtle').trim()
     return fromToken || '#9c9ea6'
+  }, [])
+
+  const chartEmphasisColor = useMemo(() => {
+    if (typeof window === 'undefined') {
+      // SSR fallback — 브랜드 컬러 근사치
+      return '#16a34a'
+    }
+    const root = getComputedStyle(document.documentElement)
+    const fromToken = root.getPropertyValue('--primary').trim()
+    return fromToken || '#16a34a'
   }, [])
 
   return {
@@ -68,5 +81,6 @@ export function useChartData({
     periodCompletionRate,
     chartData,
     chartBarColor,
+    chartEmphasisColor,
   }
 }

@@ -3,8 +3,7 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
-import MonthlyStatusSection from '@/app/components/StatsSections/MonthlyStatusSection'
-import CompletionRateSection from '@/app/components/StatsSections/CompletionRateSection'
+import MonthlyComplianceHeroSection from '@/app/components/StatsSections/MonthlyComplianceHeroSection'
 import ModeBreakdownSection from '@/app/components/StatsSections/ModeBreakdownSection'
 import StatsGoalProgressSection from '@/app/components/StatsSections/StatsGoalProgressSection'
 import type { Investment } from '@/app/types/investment'
@@ -52,6 +51,7 @@ interface StatsContentProps {
         periodCompletionRate: number
         chartData: any[]
         chartBarColor: string
+        chartEmphasisColor: string
     }
 }
 
@@ -74,7 +74,7 @@ export default function StatsContent({
         habitStats,
     } = calculations
     const { periodPreset, setPeriodPreset, periodLabel, customDateRange, setCustomDateRange, handleCustomPeriod } = filter
-    const { periodCompletionRate, chartData, chartBarColor } = chart
+    const { periodCompletionRate, chartData, chartBarColor, chartEmphasisColor } = chart
 
     const delta = useMemo(
         () => getMonthlyPaymentDelta(activeRecords, completedPayments, retroactivePayments),
@@ -83,23 +83,11 @@ export default function StatsContent({
 
     return (
         <>
-            <StatsGoalProgressSection records={records} />
-
-            {hasRecords && (
-                <ExpectedAssetSection
-                    totalPaidPrincipal={totalPaidPrincipal}
-                    totalMonthlyPayment={totalMonthlyPayment}
-                    onShowContribution={handleShowContribution}
-                />
-            )}
-
-            <MonthlyStatusSection thisMonth={thisMonth} delta={delta} />
-
-            {hasRecords && (
-                <ModeBreakdownSection goalStats={goalStats} habitStats={habitStats} />
-            )}
-
-            <CompletionRateSection
+            {/* ① 이행 현황 Hero — 주인공 (항상 표시, 빈 상태는 hasRecords=false로 분기) */}
+            <MonthlyComplianceHeroSection
+                hasRecords={hasRecords}
+                thisMonth={thisMonth}
+                delta={delta}
                 periodPreset={periodPreset as any}
                 setPeriodPreset={setPeriodPreset}
                 periodLabel={periodLabel}
@@ -109,7 +97,23 @@ export default function StatsContent({
                 periodCompletionRate={periodCompletionRate}
                 chartData={chartData}
                 chartBarColor={chartBarColor}
+                chartEmphasisColor={chartEmphasisColor}
             />
+
+            {/* ② 목표 · 진척 묶음 */}
+            <StatsGoalProgressSection records={records} />
+            {hasRecords && (
+                <ModeBreakdownSection goalStats={goalStats} habitStats={habitStats} />
+            )}
+
+            {/* ③ 자산 요약 (톤다운, 맨 아래 보조 카드) */}
+            {hasRecords && (
+                <ExpectedAssetSection
+                    totalPaidPrincipal={totalPaidPrincipal}
+                    totalMonthlyPayment={totalMonthlyPayment}
+                    onShowContribution={handleShowContribution}
+                />
+            )}
 
             <Link
                 href="/faq"
