@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import RotatingInsights from '@/app/components/StatsSections/RotatingInsights'
 
 interface MonthlyComplianceHeroSectionProps {
   /** 투자 기록 보유 여부 — false면 빈 상태 카드 렌더 */
@@ -12,6 +13,8 @@ interface MonthlyComplianceHeroSectionProps {
     progress: number
     remainingPayment: number
   }
+  /** 회전 칭찬 인사이트(누적 원금·지난달보다 더 등) — 진행바 아래에서 번갈아 노출 */
+  insights?: React.ReactNode[]
   /** 월별 이행 추세 블록 — 같은 주제(이행)의 줌아웃이라 구분선 아래 같은 카드에 합쳐 렌더 */
   children?: React.ReactNode
 }
@@ -24,6 +27,7 @@ interface MonthlyComplianceHeroSectionProps {
 export default function MonthlyComplianceHeroSection({
   hasRecords,
   thisMonth,
+  insights,
   children,
 }: MonthlyComplianceHeroSectionProps) {
   const router = useRouter()
@@ -45,39 +49,38 @@ export default function MonthlyComplianceHeroSection({
 
   return (
     <section className="bg-card rounded-2xl p-5 mb-4">
-      {/* 헤드라인: 차가운 숫자 대신 행동을 칭찬하는 문장(토리치 격려 톤). 적립·목표를 아우르는 중립어 "이행" 사용, 숫자는 강조해 한눈에 들어오게 유지 */}
+      {/* 헤드라인: 이행률(%)을 주인공으로 — 금액은 홈(가리기 토글)과 중복·민감정보라 Hero에서 제외하고,
+          통계 고유 지표인 '이번 달 이행' 정도를 크게 보여준다(토리치 이행·꾸준함 톤). */}
       {isMonthComplete ? (
-        <h2 className="text-xl font-bold text-foreground mb-1.5">
-          🎉 이번 달, 계획을 모두 이행했어요
-        </h2>
+        <div className="mb-3">
+          <p className="text-sm text-foreground-muted mb-1">🎉 이번 달</p>
+          <p className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
+            100<span className="ml-0.5 text-xl font-semibold">% 이행 완료</span>
+          </p>
+        </div>
       ) : (
-        <h2 className="text-xl font-bold text-foreground mb-1.5">
-          이번 달{' '}
-          <span className="text-2xl font-extrabold text-primary tabular-nums">
-            {thisMonth.progress}%
-          </span>{' '}
-          이행했어요
-        </h2>
+        <div className="mb-3">
+          <p className="text-sm text-foreground-muted mb-1">이번 달 이행률</p>
+          <p className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
+            {thisMonth.progress}<span className="ml-0.5 text-xl font-semibold">% 이행 중</span>
+          </p>
+        </div>
       )}
 
-      {/* 금액 줄: 진행 중엔 모은/예정·남은 금액, 이번 달 다 채우면 모은 금액 강조 */}
-      {isMonthComplete ? (
-        <p className="text-sm font-semibold text-primary mb-3">
-          {thisMonth.totalPayment.toLocaleString()}원 모으기 성공!
-        </p>
-      ) : (
-        <p className="text-sm text-foreground-muted mb-3">
-          {thisMonth.completedPayment.toLocaleString()}원 / {thisMonth.totalPayment.toLocaleString()}원
-          {thisMonth.remainingPayment > 0 && ` · 남은 ${thisMonth.remainingPayment.toLocaleString()}원`}
-        </p>
-      )}
-
+      {/* 진행바만 — 이행률 수치는 헤드라인이 주인공이라 여기선 막대로만 보강. 금액은 비노출(홈 가리기 정책과 일관). */}
       <div className="h-2 bg-secondary rounded-full overflow-hidden">
         <div
           className="h-full bg-primary rounded-full transition-all duration-500"
           style={{ width: `${thisMonth.progress}%` }}
         />
       </div>
+
+      {/* 회전 칭찬 인사이트 — 토스풍으로 아래에서 위로 슬라이드하며 번갈아 노출 */}
+      {insights && insights.length > 0 && (
+        <div className="mt-3">
+          <RotatingInsights items={insights} />
+        </div>
+      )}
 
       {/* 월별 이행 추세 — 같은 주제의 줌아웃이라 구분선 아래 같은 카드에 묶는다 */}
       {children && <div className="mt-5 pt-5 border-t border-border">{children}</div>}

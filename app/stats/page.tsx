@@ -7,12 +7,15 @@ import { useStatsCalculations } from '@/app/hooks/investment/calculations/useSta
 import { useChartData } from '@/app/hooks/chart/useChartData'
 import { useStatsPageUI } from '@/app/hooks/stats/useStatsPageUI'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import StatsView from '@/app/components/StatsSections/StatsView'
 import { track } from '@/app/lib/analytics'
 
 export default function StatsPage() {
   const { user, records, activeRecords, isLoading, router } = useStatsData()
   const { completedPayments, retroactivePayments, isLoading: historyLoading } = usePaymentHistory()
+  // '이미 모은 돈'(goal.external_amount) 합산용 — 자산 누적과 목적 진척의 금액 기준을 맞춘다
+  const { goals } = useGoals(user?.id)
 
   const {
     showContributionSheet,
@@ -44,7 +47,7 @@ export default function StatsPage() {
     thisMonth,
     goalStats,
     habitStats,
-  } = useStatsCalculations({ records, activeRecords, completedPayments })
+  } = useStatsCalculations({ records, activeRecords, completedPayments, retroactivePayments, goals })
 
   const {
     periodCompletionRate,
