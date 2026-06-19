@@ -4,9 +4,7 @@ import { CircleNotch } from '@phosphor-icons/react'
 import MonthlyContributionSheet from './MonthlyContributionSheet'
 import type { Investment } from '@/app/types/investment'
 import { useMonthlyContribution } from '@/app/hooks/investment/calculations/useMonthlyContribution'
-import StatsHeader from '@/app/components/StatsSections/StatsHeader'
 import StatsContent from '@/app/components/StatsSections/StatsContent'
-import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 import {
@@ -74,7 +72,6 @@ export default function StatsView({
     calculations,
     chart,
 }: StatsViewProps) {
-    const isNativeApp = useIsNativeApp()
     const { contributionItems } = useMonthlyContribution({
         items: data.records,
         totalAmount: calculations.totalMonthlyPayment,
@@ -95,34 +92,17 @@ export default function StatsView({
     const { showContributionSheet, handleCloseContribution } = ui
     const { totalMonthlyPayment } = calculations
 
-    const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
-    const contentPaddingTop = isNativeApp
-        ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)'
-        : '56px'
-
     return (
+        // 타이틀 없는 화면 — main의 bg-surface가 상태바(safe area)까지 덮어 회색으로 보이게 하고,
+        // 콘텐츠는 env(safe-area-inset-top)만큼 내려 노치를 비운다. isNativeApp 게이트 없이 env를 직접 써
+        // 웹(viewport-fit=cover) 시뮬레이터에서도 노치가 흰색 카드로 덮이지 않게 한다.
         <main
             className="min-h-screen bg-surface"
             style={{
-                // 앱바 실제 높이(safe area + 48px) + 여유 8px
-                paddingTop: contentPaddingTop,
+                paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)',
                 paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM,
             }}
         >
-            {/* 앱바: 배경은 화면 맨 위까지, 콘텐츠는 상태바 아래로만 (Safe Area) */}
-            <header
-                className="fixed inset-x-0 top-0 z-30 w-full bg-surface"
-                style={{
-                    paddingTop: headerSafeTop,
-                }}
-            >
-                <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto pl-4 pr-2">
-                    <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
-                        <StatsHeader />
-                    </div>
-                </div>
-            </header>
-
             <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4">
                 <StatsContent
                     data={data}

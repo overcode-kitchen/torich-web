@@ -301,8 +301,13 @@
   *::-webkit-scrollbar {
     display: none;
   }
+  /* viewport-fit=cover: safe-area(상태바)·오버스크롤 영역은 문서 루트(html) 배경이 칠한다.
+     기본 흰색이면 고정 헤더가 없는 화면(예: 통계)에서 상태바가 흰색으로 비치므로 surface로 맞춘다. */
+  html {
+    background-color: var(--surface);
+  }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-surface text-foreground font-sans;
   }
 }
 
