@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, TrashSimple } from '@phosphor-icons/react'
+import { Check, Clock, TrashSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import { formatInvestmentDays } from '@/app/types/investment'
@@ -14,8 +14,14 @@ export interface GoalGroupItemRowProps {
   record: Investment
   /** 이번 달 납입 완료 여부 */
   isPaid: boolean
+  /** 이번 달 미룸 여부 */
+  isPostponed: boolean
+  /** 이번 달 미루기 노출 가능 여부 (납입일 당일부터 true) */
+  canPostpone: boolean
   /** 이번 달 납입 완료 토글 */
   onTogglePaid: (record: Investment) => void
+  /** 이번 달 미룸 토글 */
+  onTogglePostpone: (record: Investment) => void
   /** 행(완료 버튼 외 영역) 탭 → 투자 상세 */
   onSelect: (recordId: string) => void
   /** 카드 내 마지막 행이면 border-bottom 미표시 */
@@ -32,7 +38,10 @@ export interface GoalGroupItemRowProps {
 export function GoalGroupItemRow({
   record,
   isPaid,
+  isPostponed,
+  canPostpone,
   onTogglePaid,
+  onTogglePostpone,
   onSelect,
   isLast = false,
 }: GoalGroupItemRowProps) {
@@ -128,25 +137,70 @@ export function GoalGroupItemRow({
               >
                 만기 완료
               </span>
-            ) : (
+            ) : isPaid ? (
+              // 완료 상태: 다시 누르면 미완료로 되돌린다.
               <Button
                 type="button"
-                variant={isPaid ? 'ghost' : 'soft'}
+                variant="ghost"
                 size="xs"
-                className={
-                  isPaid
-                    ? 'shrink-0 gap-1 px-3 text-muted-foreground'
-                    : 'shrink-0 px-3'
-                }
+                className="shrink-0 gap-1 px-3 text-muted-foreground"
                 onClick={(ev) => {
                   ev.stopPropagation()
                   onTogglePaid(record)
                 }}
-                aria-label={isPaid ? '이번 달 납입 완료 취소' : '이번 달 납입 완료'}
+                aria-label="이번 달 납입 완료 취소"
               >
-                {isPaid && <Check className="h-3.5 w-3.5" weight="bold" />}
-                {isPaid ? '완료' : '완료하기'}
+                <Check className="h-3.5 w-3.5" weight="bold" />
+                완료
               </Button>
+            ) : isPostponed ? (
+              // 미룸 상태: 완료도 미완료도 아닌 "미룸". 다시 누르면 미룸을 해제한다.
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                className="shrink-0 gap-1 px-3 text-muted-foreground"
+                onClick={(ev) => {
+                  ev.stopPropagation()
+                  onTogglePostpone(record)
+                }}
+                aria-label="이번 달 미룸 해제"
+              >
+                <Clock className="h-3.5 w-3.5" weight="bold" />
+                미룸
+              </Button>
+            ) : (
+              // 대기 상태: 완료하기(프라이머리 컬러) + (납입일 당일부터) 미루기(회색)
+              <>
+                {canPostpone && (
+                  <Button
+                    type="button"
+                    variant="soft"
+                    size="xs"
+                    className="shrink-0 px-3"
+                    onClick={(ev) => {
+                      ev.stopPropagation()
+                      onTogglePostpone(record)
+                    }}
+                    aria-label="이번 달 납입 미루기"
+                  >
+                    미루기
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="default"
+                  size="xs"
+                  className="shrink-0 px-3"
+                  onClick={(ev) => {
+                    ev.stopPropagation()
+                    onTogglePaid(record)
+                  }}
+                  aria-label="이번 달 납입 완료"
+                >
+                  완료하기
+                </Button>
+              </>
             )}
           </div>
         </div>
