@@ -13,6 +13,8 @@ import {
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
 import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
+import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
+import type { DateRange } from 'react-day-picker'
 
 interface StatsViewProps {
     isLoading: boolean
@@ -34,11 +36,11 @@ interface StatsViewProps {
         handleShowContribution: () => void
     }
     filter: {
-        periodPreset: string
-        setPeriodPreset: (preset: any) => void
+        periodPreset: PeriodPreset
+        setPeriodPreset: (preset: PeriodPreset) => void
         periodLabel: string
-        customDateRange: any
-        setCustomDateRange: (range: any) => void
+        customDateRange: DateRange | undefined
+        setCustomDateRange: (range: DateRange | undefined) => void
         handleCustomPeriod: () => void
     }
     calculations: {
@@ -55,7 +57,7 @@ interface StatsViewProps {
     }
     chart: {
         periodCompletionRate: number
-        chartData: any[]
+        chartData: Array<{ name: string; rate: number; completed: number; total: number }>
         chartBarColor: string
         chartEmphasisColor: string
         consistency: ConsistencyInsight | null

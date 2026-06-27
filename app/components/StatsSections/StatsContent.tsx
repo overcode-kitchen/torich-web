@@ -14,6 +14,8 @@ import type {
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
 import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
+import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
+import type { DateRange } from 'react-day-picker'
 
 interface StatsContentProps {
     data: {
@@ -41,16 +43,16 @@ interface StatsContentProps {
         habitStats: HabitStats
     }
     filter: {
-        periodPreset: string
-        setPeriodPreset: (preset: any) => void
+        periodPreset: PeriodPreset
+        setPeriodPreset: (preset: PeriodPreset) => void
         periodLabel: string
-        customDateRange: any
-        setCustomDateRange: (range: any) => void
+        customDateRange: DateRange | undefined
+        setCustomDateRange: (range: DateRange | undefined) => void
         handleCustomPeriod: () => void
     }
     chart: {
         periodCompletionRate: number
-        chartData: any[]
+        chartData: Array<{ name: string; rate: number; completed: number; total: number }>
         chartBarColor: string
         chartEmphasisColor: string
         consistency: ConsistencyInsight | null
@@ -104,7 +106,7 @@ export default function StatsContent({
     const trend = hasRecords && hasComplianceData ? (
         <section key="trend" className="bg-card rounded-2xl p-5 mb-4">
             <MonthlyTrendSection
-                periodPreset={periodPreset as any}
+                periodPreset={periodPreset}
                 setPeriodPreset={setPeriodPreset}
                 periodLabel={periodLabel}
                 customDateRange={customDateRange}
@@ -120,13 +122,22 @@ export default function StatsContent({
     ) : null
 
     // 결과(모은 자산) — 모은 돈이 0이면 '0원' 노이즈 대신 숨김.
+    // 수익률 안내 링크는 '모은 돈'을 본 직후 "근데 수익률은?"이 떠오르는 자리라, 자산 카드에 딸린 각주로 바로 아래 묶는다.
+    // 자산 카드가 숨으면(0원·신규) 이 링크도 함께 사라진다 — 돈 정보가 있을 때만 의미 있는 안내.
     const asset = hasRecords && totalPaidPrincipal > 0 ? (
-        <ExpectedAssetSection
-            key="asset"
-            totalPaidPrincipal={totalPaidPrincipal}
-            totalMonthlyPayment={totalMonthlyPayment}
-            onShowContribution={handleShowContribution}
-        />
+        <div key="asset">
+            <ExpectedAssetSection
+                totalPaidPrincipal={totalPaidPrincipal}
+                totalMonthlyPayment={totalMonthlyPayment}
+                onShowContribution={handleShowContribution}
+            />
+            <Link
+                href="/faq"
+                className="block text-center pt-3 pb-4 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
+            >
+                토리치는 왜 수익률을 안 보여주나요? →
+            </Link>
+        </div>
     ) : null
 
     // 결과(목적 진척) — 활성 목적이 없으면 컴포넌트가 스스로 null 렌더.
@@ -137,22 +148,12 @@ export default function StatsContent({
         <ModeBreakdownSection key="status" goalStats={goalStats} habitStats={habitStats} />
     ) : null
 
-    // 기본: 행동(이행→추세) → 결과(자산→목적→상태).
+    // 기본: 행동(이행→추세) → 결과(목적→상태) → 자산(톤다운된 보조 카드, 수익률 해명 링크 동반).
+    // 자산을 결과 맨 끝에 둬야 딸린 "왜 수익률을 안 보여주나" 링크가 콘텐츠 흐름을 끊지 않고 마무리 각주가 된다.
     // 저데이터: 이행이 비어 있으니 목적 진척을 맨 위로 올려 첫 화면을 채운다.
     const sections = hasComplianceData
-        ? [hero, trend, asset, goalProgress, status]
-        : [goalProgress, hero, asset, status]
+        ? [hero, trend, goalProgress, status, asset]
+        : [goalProgress, hero, status, asset]
 
-    return (
-        <>
-            {sections}
-
-            <Link
-                href="/faq"
-                className="block text-center pt-3 pb-4 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
-            >
-                토리치는 왜 수익률을 안 보여주나요? →
-            </Link>
-        </>
-    )
+    return <>{sections}</>
 }
