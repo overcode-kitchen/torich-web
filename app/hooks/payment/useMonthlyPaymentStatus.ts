@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from 'react'
 import type { Investment } from '@/app/types/investment'
 import { usePaymentHistory } from './usePaymentHistory'
+import { usePostponedPayments } from './usePostponedPayments'
 
 /**
  * 이번 달 납입 완료 상태(투자별) 판단 + 토글.
@@ -25,40 +26,80 @@ function monthlyPaymentDateStr(record: Investment, year: number, month: number):
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
+/** 이번 달 날짜 집합(YYYY-MM-DD Set)에서 해당 월에 속한 날짜를 찾는다. 없으면 null. */
+function dateInMonth(
+  dates: Set<string> | undefined,
+  year: number,
+  month: number,
+): string | null {
+  if (!dates) return null
+  const prefix = `${year}-${String(month).padStart(2, '0')}-`
+  for (const d of dates) {
+    if (d.startsWith(prefix)) return d
+  }
+  return null
+}
+
 export interface MonthlyPaymentStatus {
   /** recordId -> 이번 달 납입 완료 여부 */
   isCompleted: (recordId: string) => boolean
+  /** recordId -> 이번 달 미룸 여부 */
+  isPostponed: (recordId: string) => boolean
+  /** 이번 달 미루기 노출 가능 여부 (납입일 당일부터 true). 미래 납입엔 미루기를 숨긴다. */
+  canPostpone: (record: Investment) => boolean
   /** 이번 달 납입 완료 토글 */
   toggle: (record: Investment) => Promise<void>
+  /** 이번 달 미룸 토글 */
+  togglePostpone: (record: Investment) => Promise<void>
   /** payment_history 로딩 중 여부 */
   isLoading: boolean
 }
 
 export function useMonthlyPaymentStatus(): MonthlyPaymentStatus {
   const { completedPayments, isLoading, togglePayment } = usePaymentHistory()
+  const { postponedPayments, togglePostpone: togglePostponeRow } = usePostponedPayments()
 
-  const { year, month } = useMemo(() => {
+  const { year, month, todayStr } = useMemo(() => {
     const now = new Date()
-    return { year: now.getFullYear(), month: now.getMonth() + 1 }
+    const y = now.getFullYear()
+    const m = now.getMonth() + 1
+    const d = now.getDate()
+    return {
+      year: y,
+      month: m,
+      todayStr: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+    }
   }, [])
 
   /** 이번 달에 기록된 납입일(YYYY-MM-DD)을 찾는다. 없으면 null. */
   const completedDateThisMonth = useCallback(
-    (recordId: string): string | null => {
-      const dates = completedPayments.get(recordId)
-      if (!dates) return null
-      const prefix = `${year}-${String(month).padStart(2, '0')}-`
-      for (const d of dates) {
-        if (d.startsWith(prefix)) return d
-      }
-      return null
-    },
+    (recordId: string): string | null =>
+      dateInMonth(completedPayments.get(recordId), year, month),
     [completedPayments, year, month],
+  )
+
+  /** 이번 달 미룸 처리된 날짜(YYYY-MM-DD)를 찾는다. 없으면 null. */
+  const postponedDateThisMonth = useCallback(
+    (recordId: string): string | null =>
+      dateInMonth(postponedPayments.get(recordId), year, month),
+    [postponedPayments, year, month],
   )
 
   const isCompleted = useCallback(
     (recordId: string): boolean => completedDateThisMonth(recordId) !== null,
     [completedDateThisMonth],
+  )
+
+  const isPostponed = useCallback(
+    (recordId: string): boolean => postponedDateThisMonth(recordId) !== null,
+    [postponedDateThisMonth],
+  )
+
+  // 미루기는 납입일이 도래한 뒤(오늘 >= 이번 달 납입일)에만 노출한다.
+  // 아직 안 온 납입을 미리 미루는 건 의미가 없고, 평소 화면 클러터도 줄인다.
+  const canPostpone = useCallback(
+    (record: Investment): boolean => todayStr >= monthlyPaymentDateStr(record, year, month),
+    [todayStr, year, month],
   )
 
   const toggle = useCallback(
@@ -68,11 +109,26 @@ export function useMonthlyPaymentStatus(): MonthlyPaymentStatus {
         // 이미 기록된 행을 그대로 지워야 DELETE가 맞아떨어진다.
         await togglePayment(record.id, existing, true)
       } else {
+        // 완료 처리 시 같은 달 미룸 상태가 있으면 함께 해제(완료가 미룸을 무효화).
+        const postponed = postponedDateThisMonth(record.id)
+        if (postponed) await togglePostponeRow(record.id, postponed, true)
         await togglePayment(record.id, monthlyPaymentDateStr(record, year, month), false)
       }
     },
-    [togglePayment, completedDateThisMonth, year, month],
+    [togglePayment, togglePostponeRow, completedDateThisMonth, postponedDateThisMonth, year, month],
   )
 
-  return { isCompleted, toggle, isLoading }
+  const togglePostpone = useCallback(
+    async (record: Investment): Promise<void> => {
+      const existing = postponedDateThisMonth(record.id)
+      if (existing) {
+        await togglePostponeRow(record.id, existing, true)
+      } else {
+        await togglePostponeRow(record.id, monthlyPaymentDateStr(record, year, month), false)
+      }
+    },
+    [togglePostponeRow, postponedDateThisMonth, year, month],
+  )
+
+  return { isCompleted, isPostponed, canPostpone, toggle, togglePostpone, isLoading }
 }
