@@ -24,20 +24,10 @@ cd "$ROOT" 2>/dev/null || exit 0
 HAS_LINT="$(node -e 'try{const p=require("./package.json");process.stdout.write((p.scripts&&p.scripts.lint)?"1":"")}catch(e){process.stdout.write("")}' 2>/dev/null)"
 [ -n "$HAS_LINT" ] || exit 0
 
-# 패키지 매니저 자동 감지 (lock 파일 기준)
-if [ -f pnpm-lock.yaml ]; then PM="pnpm"
-elif [ -f yarn.lock ]; then PM="yarn"
-elif [ -f package-lock.json ]; then PM="npm"
-else PM="npm"; fi
-
-# lint 실행
-case "$PM" in
-  pnpm) CMD="pnpm run lint" ;;
-  yarn) CMD="yarn lint" ;;
-  npm)  CMD="npm run lint" ;;
-esac
-
-OUTPUT="$(eval "$CMD" 2>&1)"
+# 방금 수정된 파일만 lint 한다 (프로젝트 전체가 아님).
+# 전체 lint는 무관한 기존 문제까지 매번 쏟아내 피드백을 흐리므로, 변경 파일에 한정한다.
+# (훅의 의도: "TS/JS 파일이 수정되면 lint")
+OUTPUT="$(npx eslint "$FILE_PATH" 2>&1)"
 STATUS=$?
 if [ "$STATUS" -ne 0 ]; then
   echo "lint 실패 — 아래 문제를 확인하고 수정해 주세요:" >&2
