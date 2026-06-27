@@ -90,7 +90,7 @@ function SavingsCashDetailViewInner({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => detail.setShowDeleteModal(true)}
-                className="text-red-600 focus:text-red-600"
+                className="text-destructive focus:text-destructive"
               >
                 삭제하기
               </DropdownMenuItem>

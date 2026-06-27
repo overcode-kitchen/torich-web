@@ -162,7 +162,7 @@ export default function GoalDetailClient() {
             {goal.name}
           </h2>
           {progress.isCompleted && (
-            <p className="text-sm font-medium text-green-600">
+            <p className="text-sm font-medium text-primary">
               목표 달성! 🎉
             </p>
           )}

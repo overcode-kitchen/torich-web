@@ -55,7 +55,7 @@ export default function DeleteConfirmModal({
           <button
             onClick={() => onConfirm()}
             disabled={isDeleting}
-            className="flex-1 py-3 text-base font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+            className="flex-1 py-3 text-base font-medium text-white bg-destructive rounded-xl hover:bg-destructive/90 transition-colors disabled:opacity-50"
           >
             {isDeleting ? '삭제 중...' : '삭제'}
           </button>

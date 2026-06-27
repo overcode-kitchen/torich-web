@@ -63,7 +63,7 @@ export function GoalGroupItemRow({
         <button
           type="button"
           onClick={swipe.onDeleteButtonClick}
-          className="absolute inset-y-px right-0 flex w-20 flex-col items-center justify-center gap-1 bg-red-500"
+          className="absolute inset-y-px right-0 flex w-20 flex-col items-center justify-center gap-1 bg-destructive"
           aria-label="삭제"
         >
           <TrashSimple className="h-5 w-5 text-white" weight="bold" />
