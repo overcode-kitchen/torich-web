@@ -106,6 +106,38 @@ export type Database = {
           },
         ]
       }
+      postponed_payments: {
+        Row: {
+          created_at: string
+          id: string
+          payment_date: string
+          record_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payment_date: string
+          record_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payment_date?: string
+          record_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "postponed_payments_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       records: {
         Row: {
           annual_rate: number
