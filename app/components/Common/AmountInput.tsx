@@ -22,6 +22,7 @@ export default function AmountInput({
         <input
           type="text"
           inputMode="numeric"
+          aria-label="금액 입력 (만원 단위)"
           value={value}
           onChange={onChange}
           placeholder="월 100 (만원 단위)"

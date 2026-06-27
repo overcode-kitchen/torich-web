@@ -17,6 +17,7 @@ export default function GoalFlowHeader({ currentStep }: GoalFlowHeaderProps) {
     <StepProgressBar
       current={STEP_ORDER.indexOf(currentStep) + 1}
       total={STEP_ORDER.length}
+      className="w-32 mx-auto gap-1.5"
     />
   )
 }
