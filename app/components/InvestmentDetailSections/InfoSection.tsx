@@ -7,39 +7,27 @@ import { useInvestmentDetailContext } from './InvestmentDetailContext'
 import { InvestmentDaysField } from './InvestmentDaysField'
 import PeriodInput from '@/app/components/Common/PeriodInput'
 import { isHabitMode as checkIsHabitMode } from '@/app/types/investment'
-import type { InfoSectionProps as OriginalInfoSectionProps } from './types'
 
-interface InfoSectionProps extends Partial<OriginalInfoSectionProps> {
+interface InfoSectionProps {
   infoRef: React.RefObject<HTMLElement | null>
 }
 
-export function InfoSection(props: InfoSectionProps) {
-  let contextValue: any = null
-  try {
-    contextValue = useInvestmentDetailContext()
-  } catch (e) {
-    // Context missing, will rely on props (for InvestmentEditView)
-  }
-
-  const item = props.item || contextValue?.item
-  const isEditMode = props.isEditMode ?? contextValue?.isEditMode
-  const investmentData = props.editMonthlyAmount !== undefined ? props : contextValue?.investmentData
-  const ui = contextValue?.ui
+export function InfoSection({ infoRef }: InfoSectionProps) {
+  const { item, isEditMode, investmentData, ui } = useInvestmentDetailContext()
 
   const {
-    editMonthlyAmount = props.editMonthlyAmount,
-    editPeriodYears = props.editPeriodYears,
-    editInvestmentDays = props.editInvestmentDays,
+    editMonthlyAmount,
+    editPeriodYears,
+    editInvestmentDays,
     editIsHabitMode,
     setEditIsHabitMode,
-    setEditMonthlyAmount = props.setEditMonthlyAmount,
-    setEditPeriodYears = props.setEditPeriodYears,
-    setEditInvestmentDays = props.setEditInvestmentDays,
-    handleNumericInput = props.handleNumericInput,
+    setEditMonthlyAmount,
+    setEditPeriodYears,
+    setEditInvestmentDays,
+    handleNumericInput,
   } = investmentData || {}
 
-  const setIsDaysPickerOpen = props.setIsDaysPickerOpen || ui?.setIsDaysPickerOpen
-  const { infoRef } = props
+  const setIsDaysPickerOpen = ui?.setIsDaysPickerOpen
 
   if (!item) return null
 
