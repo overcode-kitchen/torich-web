@@ -27,6 +27,13 @@ export interface ConsistencyInsight {
   /** 이행률이 가장 높았던 달 라벨 (동률 시 최근 우선) */
   bestMonthLabel: string
   bestRate: number
+  /**
+   * 최근부터 연속으로 100% 이행한 달 수.
+   * - 이번 달이 진행 중(미완료)이면 제외하고 지난달부터 센다(월초에 0으로 깨지지 않게).
+   * - 납입 예정이 없던 달(total=0)은 건너뛴다(쉬어간 달로 끊기지 않게).
+   * - 100% 못 채운 과거 달을 만나면 멈춘다.
+   */
+  currentPerfectStreak: number
 }
 
 export interface UseChartDataReturn {
@@ -80,11 +87,23 @@ export function useChartData({
     for (const r of active) {
       if (r.rate > best.rate) best = r
     }
+
+    // 연속 100% 이행 스트릭 — monthlyRates[0]이 이번 달. 최근→과거로 센다.
+    let currentPerfectStreak = 0
+    for (let i = 0; i < monthlyRates.length; i++) {
+      const m = monthlyRates[i]
+      if (i === 0 && m.total > 0 && m.rate < 100) continue // 이번 달 진행 중 → 제외하고 지난달부터
+      if (m.total === 0) continue // 예정 없던 달 → 건너뜀(연속 유지)
+      if (m.rate === 100) currentPerfectStreak++
+      else break // 100% 못 채운 과거 달 → 중단
+    }
+
     return {
       activeMonths: active.length,
       perfectMonths: active.filter((r) => r.rate === 100).length,
       bestMonthLabel: best.monthLabel,
       bestRate: best.rate,
+      currentPerfectStreak,
     }
   }, [monthlyRates])
 

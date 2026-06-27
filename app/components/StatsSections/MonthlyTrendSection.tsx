@@ -1,6 +1,6 @@
 'use client'
 
-import { Target } from '@phosphor-icons/react'
+import { Target, Flame } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -96,8 +96,14 @@ export default function MonthlyTrendSection({
             완료했어요
           </p>
 
-          {/* 꾸준함 인사이트 — 통계 고유 집계 (캘린더·홈과 중복 없음) */}
-          {consistency.perfectMonths > 0 ? (
+          {/* 꾸준함 인사이트 — 통계 고유 집계 (캘린더·홈과 중복 없음).
+              연속 2개월 이상이면 스트릭으로 강조, 아니면 기존 집계/최고 기록으로 폴백. */}
+          {consistency.currentPerfectStreak >= 2 ? (
+            <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
+              <Flame className="w-3.5 h-3.5" weight="fill" />
+              {consistency.currentPerfectStreak}개월째 빠짐없이 이행 중
+            </p>
+          ) : consistency.perfectMonths > 0 ? (
             <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
               <Target className="w-3.5 h-3.5" weight="fill" />
               {periodLabel} 중 {consistency.perfectMonths}개월 100% 이행 달성
