@@ -31,7 +31,7 @@ interface SavingsCashDetailViewProps {
 /**
  * 예적금·현금 항목 상세 화면.
  * 주식 상세(InvestmentDetailView)와 동일한 레이아웃 규약을 따른다:
- * 헤더(아바타+제목+서브) → 스티키 탭바 → 진행률 → 투자 정보 → 납입 기록.
+ * 헤더(아바타+제목+서브) → 스티키 탭바 → 진행률 → 적립 정보 → 납입 기록.
  * 정보 행을 탭하면 토스 스타일 편집 플로우(/add?editId=...&field=...)로 진입한다.
  */
 export default function SavingsCashDetailView(props: SavingsCashDetailViewProps) {
@@ -134,7 +134,7 @@ function SavingsCashDetailViewInner({
                       : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
                   }`}
                 >
-                  투자 정보
+                  적립 정보
                 </button>
                 <button
                   type="button"
