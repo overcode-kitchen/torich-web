@@ -1,7 +1,8 @@
 'use client'
 
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
-import DateSelectField from '@/app/components/Common/DateSelectField'
+import GoalDateField from './fields/GoalDateField'
+import { GOAL_DEADLINE_HELP } from '@/app/utils/goal-amount'
 
 interface GoalStepDateProps {
   values: GoalFormValues
@@ -14,7 +15,7 @@ interface GoalStepDateProps {
 
 /**
  * 단계 C — 언제까지 이룰까요? (선택)
- * 맥락화된 제목 + 비워두고 저장해도 무방. 마감일이 있으면 예상 금액 함께 표시.
+ * 맥락화된 제목 + 공용 GoalDateField(flow). 헬프텍스트는 제목 아래에서 안내.
  */
 export default function GoalStepDate({
   values,
@@ -29,17 +30,13 @@ export default function GoalStepDate({
       <h2 className="text-2xl font-bold text-foreground tracking-tight mb-3">
         {title}
       </h2>
-      <p className="text-sm text-foreground-subtle mb-8">
-        마감일이 있으면 그때까지의 예상 금액도 같이 보여드려요. 건너뛰어도 괜찮아요.
-      </p>
-      <DateSelectField
+      <p className="text-sm text-foreground-subtle mb-8">{GOAL_DEADLINE_HELP}</p>
+      <GoalDateField
         value={values.target_date}
         onChange={(v) => setField('target_date', v)}
         disabled={disabled}
         variant="flow"
-        placeholder="마감일 선택"
-        clearable
-        emptyLabel="마감일 없음"
+        showHelp={false}
       />
     </div>
   )
