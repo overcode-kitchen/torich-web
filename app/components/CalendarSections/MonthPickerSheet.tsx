@@ -1,9 +1,9 @@
 'use client'
 
-import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
-import { useMonthPicker } from '@/app/hooks/calendar/useMonthPicker'
+import { useState } from 'react'
+import { X } from '@phosphor-icons/react'
+import YearMonthWheel from '@/app/components/Common/YearMonthWheel'
 import { useDismissibleSheet } from '@/app/hooks/useDismissibleSheet'
-import { useSwipe } from '@/app/hooks/useSwipe'
 import { APP_BOTTOM_NAV_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
 
 interface MonthPickerSheetProps {
@@ -14,34 +14,23 @@ interface MonthPickerSheetProps {
   onClose: () => void
 }
 
-const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1)
-
 export default function MonthPickerSheet({
   currentMonth,
   onSelect,
   onClose,
 }: MonthPickerSheetProps) {
-  const { viewYear, slideDirection, goPrevYear, goNextYear } = useMonthPicker(
-    currentMonth.getFullYear(),
-  )
   const { isClosing, requestClose, onAnimationEnd } = useDismissibleSheet(onClose)
 
-  // 연도 영역 좌우 스와이프로 연도 페이징 (스테퍼 캐럿은 보조 컨트롤)
-  const swipeHandlers = useSwipe({
-    onSwipeLeft: goNextYear,
-    onSwipeRight: goPrevYear,
-  })
+  // 휠로 굴리는 동안의 임시 선택값. "완료"를 눌러야 실제로 반영된다.
+  const [draftYear, setDraftYear] = useState<number>(currentMonth.getFullYear())
+  const [draftMonth, setDraftMonth] = useState<number>(
+    currentMonth.getMonth() + 1,
+  )
 
-  const viewingYear = currentMonth.getFullYear()
-  const viewingMonth = currentMonth.getMonth() + 1
-  const today = new Date()
-
-  // 연도 변경 시 캘린더 그리드와 동일한 슬라이드 인 애니메이션 (최초 표시는 제외)
-  const monthsAnimationClass = slideDirection
-    ? `animate-in fade-in duration-300 ease-out motion-reduce:animate-none ${
-        slideDirection === 'next' ? 'slide-in-from-right-8' : 'slide-in-from-left-8'
-      }`
-    : ''
+  const handleConfirm = () => {
+    onSelect(draftYear, draftMonth)
+    requestClose()
+  }
 
   return (
     <div
@@ -80,68 +69,23 @@ export default function MonthPickerSheet({
           </button>
         </div>
 
-        {/* 연도·월 영역: 좌우 스와이프로 연도 페이징 */}
-        <div className="select-none touch-pan-y" {...swipeHandlers}>
-          {/* 연도 스테퍼 */}
-          <div className="flex items-center justify-center gap-6 px-6 py-4">
-            <button
-              type="button"
-              onClick={goPrevYear}
-              aria-label="이전 연도"
-              className="p-2 text-foreground-muted hover:text-foreground"
-            >
-              <CaretLeft className="w-6 h-6" />
-            </button>
-            <span className="w-24 text-center text-xl font-bold text-foreground tabular-nums">
-              {viewYear}년
-            </span>
-            <button
-              type="button"
-              onClick={goNextYear}
-              aria-label="다음 연도"
-              className="p-2 text-foreground-muted hover:text-foreground"
-            >
-              <CaretRight className="w-6 h-6" />
-            </button>
-          </div>
-
-          {/* 월 그리드: 연도가 바뀌면 key 갱신으로 슬라이드 인 애니메이션 재실행 */}
-          <div
-            key={viewYear}
-            className={`grid grid-cols-3 gap-2 px-6 pb-8 ${monthsAnimationClass}`}
+        {/* 연/월 스크롤 휠 */}
+        <div className="px-6 pb-6 pt-2">
+          <YearMonthWheel
+            year={draftYear}
+            month={draftMonth}
+            onChange={(y, m) => {
+              setDraftYear(y)
+              setDraftMonth(m)
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="mt-2 w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            {MONTHS.map((m) => {
-              const isViewing = viewYear === viewingYear && m === viewingMonth
-              const isThisMonth =
-                viewYear === today.getFullYear() && m === today.getMonth() + 1
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => {
-                    onSelect(viewYear, m)
-                    requestClose()
-                  }}
-                  className={`flex h-14 items-center justify-center rounded-xl text-base transition-colors ${
-                    isViewing
-                      ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] ring-1 ring-brand-500'
-                      : isThisMonth
-                        ? 'bg-surface text-foreground'
-                        : 'text-foreground-subtle hover:bg-surface-hover'
-                  }`}
-                >
-                  {/* 선택된 월은 캘린더 날짜 선택과 동일하게 콘텐츠가 살짝 확대된다 */}
-                  <span
-                    className={`font-medium transition-transform duration-200 ease-out ${
-                      isViewing ? 'scale-110' : 'scale-100'
-                    }`}
-                  >
-                    {m}월
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+            완료
+          </button>
         </div>
       </div>
     </div>

@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
-import GoalTargetDateField from './GoalTargetDateField'
+import DateSelectField from '@/app/components/Common/DateSelectField'
 import PurposeIconSlot from './PurposeIconSlot'
 
 export interface GoalFormSectionProps {
@@ -156,10 +156,13 @@ export function GoalFormSection({
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="goal-date">마감일 (선택)</Label>
-        <GoalTargetDateField
+        <DateSelectField
           value={values.target_date}
           onChange={(v) => setField('target_date', v)}
           disabled={disabled}
+          placeholder="마감일 선택"
+          clearable
+          emptyLabel="마감일 없음"
         />
         <p className="text-xs text-foreground-subtle">
           마감일이 있으면 그때까지의 예상 금액도 같이 보여드려요.

@@ -60,9 +60,9 @@ export default function MaturityMismatchConfirmModal({
             묶인 적금이 더 늦게 만기돼요
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            <span className="font-medium text-foreground">"{goalName}"</span>의
+            <span className="font-medium text-foreground">&ldquo;{goalName}&rdquo;</span>의
             종료일은 <span className="tabular-nums">{goalDateLabel}</span>이고,
-            묶은 <span className="font-medium text-foreground">"{recordTitle}"</span>
+            묶은 <span className="font-medium text-foreground">&ldquo;{recordTitle}&rdquo;</span>
             의 만기는 <span className="tabular-nums">{recordDateLabel}</span>예요.
             <br />
             <br />
