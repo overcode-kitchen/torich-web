@@ -43,10 +43,30 @@
 - [ ] 저장 후 복귀 경로: `/investment?id=` 로 일관되게 (예적금과 동일)
 - [ ] 운영 앱 딥링크/이전 동선이 인플레이스를 가정하지 않는지
 
+### ⚠️ 구현 착수 후 발견된 결정적 사실 (2026-06-27)
+
+`/add`의 투자 편집은 **저장(submit)만 배선돼 있고 프리필(기존 값 로드)은 구현된 적이 없다.**
+- 저장: [useAddInvestmentSubmit.ts:115-126](../app/hooks/investment/add/useAddInvestmentSubmit.ts#L115-L126) — `mode==='edit'`이면 `updateInvestment(recordId, formattedData)` ✅
+- 프리필: [useAddInvestmentUI.ts:52-61](../app/hooks/investment/add/useAddInvestmentUI.ts#L52-L61) — 모든 state를 `''`/`new Date()`/`[]`/`'shares'`로 빈 초기화. `initData`를 받지 않음 ❌
+- 대조: 예적금/현금은 [useAddItemFormState.ts:51-69](../app/hooks/investment/add/useAddItemFormState.ts#L51-L69)에서 `initData`로 프리필됨.
+
+**데이터 손실 위험 (그냥 진입 경로만 바꾸면 발생):**
+1. 빈 폼이 떠서 저장 시 기존 record를 빈 값으로 덮어씀.
+2. `determineStockSymbol`([investment-formatter.ts:80-85](../app/utils/investment-formatter.ts#L80-L85))은 `selectedStock` 없으면 `symbol=null` 반환 → **종목 ticker 소실**.
+3. `unit_type:'shares'` 투자는 저장 시 `sharePrice`로 주수→원 환산([:98-102](../app/utils/investment-formatter.ts#L98-L102)). 종목 재선택 없으면 `sharePrice` 없어 **monthly_amount=0** 으로 파괴.
+
+**따라서 P0-2는 "투자 편집 프리필" 신규 구현이 선행돼야 한다:**
+- [ ] `useAddInvestmentForm`/`useAddInvestmentUI`가 `initData`(투자) 수용 → stockName/market/monthlyAmount(원→만원)/period·habit/startDate/investmentDays/annualRate/unitType/monthlyShares 복원
+- [ ] **selectedStock 복원**: symbol으로 시세 재조회하거나, 편집 시 기존 symbol/price를 보존해 저장 시 ticker·sharePrice 유실 방지 (가장 위험)
+- [ ] manual-input 투자(symbol 없음) 분기 처리
+- [ ] 검증: 검색종목·수동입력·주수모드·금액모드 각각 편집→저장 후 record 무결성
+
 ### 기대 효과
 - 투자/예적금/현금 "수정"이 **동일한 화면·인터랙션**으로 통일
 - 투자에서 막혔던 종목명·시장·시작일·연수익률 수정이 **자동으로 풀림** (P0-2의 두 번째 문제 동시 해결)
 - 인플레이스 편집 코드 + `alert()` 검증 제거 → 부채 감소
+
+> 단, 위 프리필 신규 구현이 선행돼야 하며 이는 금융 데이터 무결성 작업이라 충분한 검증 필요.
 
 ---
 
@@ -92,15 +112,15 @@
 - [ ] `capacitor.config.ts` `server.url` 주석 + `loggingBehavior: 'production'`
 - [ ] 구버전 앱 호환: 투자 수정이 인플레이스→`/add`로 바뀌어도 구버전 앱은 기존 코드로 동작(클라 전용 변경이라 안전), 신버전만 통일된 경험
 
-## 권장 구현 순서
+## 구현 순서 (2026-06-27 확정 — P0-2 프리필 미구현 발견으로 순서 변경)
 
-1. **P0-2** 먼저 (`/add`가 이미 투자 편집 지원 → 진입 경로 변경 + 인플레이스 제거, 리스크 낮음)
-2. **P0-1** (공유 필드 추출 → 헬퍼 단일화 → 두 셸 교체)
+1. **P0-1 먼저** (UI 리팩터링, 금융 데이터 무관, 리스크 낮음 + 일관성 효과 큼)
+2. **P0-2는 전용 작업으로 후속 진행** — 투자 편집 프리필 신규 구현 + 종목/시세 복원 + 메인 QA가 선행돼야 안전. 한 PR에 묶지 않는다.
 3. 각 단계 후 `tsc --noEmit` + `npm run build:app` 검증
-4. P0 완료 후 P1(금액입력/CTA/날짜시트/네이티브 다이얼로그)로 진행
+4. 이후 P1(금액입력/CTA/날짜시트/네이티브 다이얼로그)로 진행
 
 ## 진행 상황
 
-- [x] 죽은 코드 3덩이 삭제 + `InfoSection`/`types.ts` 정리 (2026-06-27, tsc 통과)
-- [ ] P0-2 구현
-- [ ] P0-1 구현
+- [x] 죽은 코드 3덩이 삭제 + `InfoSection`/`types.ts` 정리 (2026-06-27, tsc 통과, 커밋·푸시됨)
+- [ ] **P0-1 구현 (진행 중)**
+- [ ] P0-2 구현 (전용 작업, 프리필 선행 필요)
