@@ -21,10 +21,11 @@ export default function AmountInput({
       <div className="relative">
         <input
           type="text"
+          inputMode="numeric"
           value={value}
           onChange={onChange}
           placeholder="월 100 (만원 단위)"
-          className={`w-full bg-card rounded-2xl py-3.5 pl-4 text-foreground placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-ring ${onUnitTypeToggle ? 'pr-28' : 'pr-16'}`}
+          className={`w-full h-12 rounded-xl bg-muted/50 pl-4 text-base text-foreground placeholder:text-foreground-subtle border-0 focus:outline-none focus:ring-2 focus:ring-ring/60 focus:bg-card transition-all ${onUnitTypeToggle ? 'pr-28' : 'pr-14'}`}
         />
         {onUnitTypeToggle ? (
           <button
@@ -38,7 +39,7 @@ export default function AmountInput({
             주
           </button>
         ) : (
-          <span className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-foreground-soft">
             만원
           </span>
         )}
