@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { track } from '@/app/lib/analytics'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
 interface UpdateData {
@@ -46,6 +47,7 @@ export function useInvestmentActions({
   const handleDelete = async () => {
     setIsDeleting(true)
     try {
+      track('investment_delete')
       await onDelete()
     } catch {
       toastError(TOAST_MESSAGES.deleteFailed)
