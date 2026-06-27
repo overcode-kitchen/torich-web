@@ -4,12 +4,16 @@ import { Investment, getStartDate, isHabitMode } from '@/app/types/investment'
 import { getPaymentEventsForMonth, getThisMonthStats } from '@/app/utils/stats'
 import { isPaymentCompleted } from '@/app/utils/payment-completion'
 import { calculateEndDate, getElapsedMonths } from '@/app/utils/date'
+import type { Goal } from '@/app/types/goal'
 import type { PaymentHistoryMap } from '../../payment/usePaymentHistory'
 
 interface UseStatsCalculationsProps {
   records: Investment[]
   activeRecords: Investment[]
   completedPayments: PaymentHistoryMap
+  retroactivePayments: PaymentHistoryMap
+  /** 목적(Goal) 목록 — 직접 입력한 '이미 모은 돈'(external_amount) 합산용 */
+  goals: Goal[]
 }
 
 export interface GoalStats {
@@ -48,18 +52,24 @@ export function useStatsCalculations({
   records,
   activeRecords,
   completedPayments,
+  retroactivePayments,
+  goals,
 }: UseStatsCalculationsProps): UseStatsCalculationsReturn {
   const { totalPaidPrincipal, totalMonthlyPayment } = useMemo(() => {
-    if (records.length === 0) {
-      return { totalPaidPrincipal: 0, totalMonthlyPayment: 0 }
-    }
-    const totalPaidPrincipal = records.reduce((sum, record) => {
-      const elapsedMonths = Math.max(0, getElapsedMonths(getStartDate(record)))
-      return sum + record.monthly_amount * elapsedMonths
+    // "지금까지 모은 돈" = 앱에 기록된 전체 모은 돈.
+    // = 실제 납입한 원금(payment_history 기준, 예정치 아님) + 목적에 직접 입력한 '이미 모은 돈'(external_amount).
+    // 목적 진척 currentValue(= external + 실현 납입)와 같은 기준으로 맞춰 카드 간 금액이 모순되지 않게 한다.
+    const realizedPrincipal = records.reduce((sum, record) => {
+      if (!record.monthly_amount || record.monthly_amount <= 0) return sum
+      const paidCount =
+        (completedPayments.get(record.id)?.size ?? 0) +
+        (retroactivePayments.get(record.id)?.size ?? 0)
+      return sum + record.monthly_amount * paidCount
     }, 0)
+    const externalTotal = goals.reduce((sum, g) => sum + (g.external_amount ?? 0), 0)
     const totalMonthlyPayment = records.reduce((sum, record) => sum + record.monthly_amount, 0)
-    return { totalPaidPrincipal, totalMonthlyPayment }
-  }, [records])
+    return { totalPaidPrincipal: realizedPrincipal + externalTotal, totalMonthlyPayment }
+  }, [records, completedPayments, retroactivePayments, goals])
 
   const thisMonth = useMemo(() => getThisMonthStats(activeRecords, completedPayments), [activeRecords, completedPayments])
 

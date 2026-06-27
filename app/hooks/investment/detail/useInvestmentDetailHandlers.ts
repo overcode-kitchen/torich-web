@@ -59,11 +59,11 @@ export function useInvestmentDetailHandlers({
     const periodYearsToSave: number | null = isHabit ? null : parsedPeriod
 
     if (monthlyAmountInWon <= 0 || annualRate <= 0) {
-      alert('모든 값을 올바르게 입력해주세요.')
+      toastError('모든 값을 올바르게 입력해주세요.')
       return
     }
     if (!isHabit && parsedPeriod <= 0) {
-      alert('목표 기간을 입력하거나 "목표 기간 없이 적립하기"를 선택해주세요.')
+      toastError('목표 기간을 입력하거나 "목표 기간 없이 적립하기"를 선택해주세요.')
       return
     }
 

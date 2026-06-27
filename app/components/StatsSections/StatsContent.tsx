@@ -6,6 +6,7 @@ import MonthlyComplianceHeroSection from '@/app/components/StatsSections/Monthly
 import MonthlyTrendSection from '@/app/components/StatsSections/MonthlyTrendSection'
 import ModeBreakdownSection from '@/app/components/StatsSections/ModeBreakdownSection'
 import StatsGoalProgressSection from '@/app/components/StatsSections/StatsGoalProgressSection'
+import { useStatsInsights } from '@/app/hooks/stats/useStatsInsights'
 import type { Investment } from '@/app/types/investment'
 import type {
     GoalStats,
@@ -13,6 +14,8 @@ import type {
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
 import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
+import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
+import type { DateRange } from 'react-day-picker'
 
 interface StatsContentProps {
     data: {
@@ -40,16 +43,16 @@ interface StatsContentProps {
         habitStats: HabitStats
     }
     filter: {
-        periodPreset: string
-        setPeriodPreset: (preset: any) => void
+        periodPreset: PeriodPreset
+        setPeriodPreset: (preset: PeriodPreset) => void
         periodLabel: string
-        customDateRange: any
-        setCustomDateRange: (range: any) => void
+        customDateRange: DateRange | undefined
+        setCustomDateRange: (range: DateRange | undefined) => void
         handleCustomPeriod: () => void
     }
     chart: {
         periodCompletionRate: number
-        chartData: any[]
+        chartData: Array<{ name: string; rate: number; completed: number; total: number }>
         chartBarColor: string
         chartEmphasisColor: string
         consistency: ConsistencyInsight | null
@@ -58,12 +61,14 @@ interface StatsContentProps {
 
 export default function StatsContent({
     data,
+    payment,
     ui,
     calculations,
     filter,
     chart,
 }: StatsContentProps) {
-    const { records, hasRecords } = data
+    const { records, activeRecords, hasRecords } = data
+    const { completedPayments } = payment
     const { handleShowContribution } = ui
     const {
         totalPaidPrincipal,
@@ -75,49 +80,80 @@ export default function StatsContent({
     const { periodPreset, setPeriodPreset, periodLabel, customDateRange, setCustomDateRange, handleCustomPeriod } = filter
     const { periodCompletionRate, chartData, chartBarColor, chartEmphasisColor, consistency } = chart
 
-    return (
-        <>
-            {/* ① 이행 Hero — 이번 달 이행 + (구분선) 월별 이행 추세를 한 카드에 묶음.
-                같은 주제의 줌아웃이라 카드를 나누지 않고 공통 영역으로 연결감을 유지한다. */}
-            <MonthlyComplianceHeroSection hasRecords={hasRecords} thisMonth={thisMonth}>
-                {hasRecords && (
-                    <MonthlyTrendSection
-                        periodPreset={periodPreset as any}
-                        setPeriodPreset={setPeriodPreset}
-                        periodLabel={periodLabel}
-                        customDateRange={customDateRange}
-                        setCustomDateRange={setCustomDateRange}
-                        handleCustomPeriod={handleCustomPeriod}
-                        periodCompletionRate={periodCompletionRate}
-                        chartData={chartData}
-                        chartBarColor={chartBarColor}
-                        chartEmphasisColor={chartEmphasisColor}
-                        consistency={consistency}
-                    />
-                )}
-            </MonthlyComplianceHeroSection>
+    // 이행 Hero 회전 서브라인용 칭찬 인사이트 (누적 원금·지난달보다 더)
+    const insights = useStatsInsights({
+        activeRecords,
+        completedPayments,
+        thisMonthCompleted: thisMonth.completedPayment,
+    })
 
-            {/* ② 목표 · 진척 묶음 */}
-            <StatsGoalProgressSection records={records} />
-            {hasRecords && (
-                <ModeBreakdownSection goalStats={goalStats} habitStats={habitStats} />
-            )}
+    // 이행(행동) 데이터가 쌓였는지 — 이번 달 예정 납입이 있거나 과거 활동이 1개월 이상.
+    // 신규/저데이터 사용자는 이 값이 false → 화면이 비어 보이지 않게 목적 진척을 위로 끌어올린다.
+    const hasComplianceData =
+        thisMonth.totalPayment > 0 || (consistency?.activeMonths ?? 0) >= 1
 
-            {/* ③ 자산 요약 (톤다운, 맨 아래 보조 카드) */}
-            {hasRecords && (
-                <ExpectedAssetSection
-                    totalPaidPrincipal={totalPaidPrincipal}
-                    totalMonthlyPayment={totalMonthlyPayment}
-                    onShowContribution={handleShowContribution}
-                />
-            )}
+    // 행동(이행·동기부여) 카드
+    const hero = (
+        <MonthlyComplianceHeroSection
+            key="hero"
+            hasRecords={hasRecords}
+            thisMonth={thisMonth}
+            insights={insights}
+        />
+    )
 
+    // 회고(월별 이행 추세·꾸준함) — Hero에서 분리한 독립 카드. 이행 데이터가 있을 때만 노출.
+    const trend = hasRecords && hasComplianceData ? (
+        <section key="trend" className="bg-card rounded-2xl p-5 mb-4">
+            <MonthlyTrendSection
+                periodPreset={periodPreset}
+                setPeriodPreset={setPeriodPreset}
+                periodLabel={periodLabel}
+                customDateRange={customDateRange}
+                setCustomDateRange={setCustomDateRange}
+                handleCustomPeriod={handleCustomPeriod}
+                periodCompletionRate={periodCompletionRate}
+                chartData={chartData}
+                chartBarColor={chartBarColor}
+                chartEmphasisColor={chartEmphasisColor}
+                consistency={consistency}
+            />
+        </section>
+    ) : null
+
+    // 결과(모은 자산) — 모은 돈이 0이면 '0원' 노이즈 대신 숨김.
+    // 수익률 안내 링크는 '모은 돈'을 본 직후 "근데 수익률은?"이 떠오르는 자리라, 자산 카드에 딸린 각주로 바로 아래 묶는다.
+    // 자산 카드가 숨으면(0원·신규) 이 링크도 함께 사라진다 — 돈 정보가 있을 때만 의미 있는 안내.
+    const asset = hasRecords && totalPaidPrincipal > 0 ? (
+        <div key="asset">
+            <ExpectedAssetSection
+                totalPaidPrincipal={totalPaidPrincipal}
+                totalMonthlyPayment={totalMonthlyPayment}
+                onShowContribution={handleShowContribution}
+            />
             <Link
                 href="/faq"
                 className="block text-center pt-3 pb-4 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
             >
                 토리치는 왜 수익률을 안 보여주나요? →
             </Link>
-        </>
-    )
+        </div>
+    ) : null
+
+    // 결과(목적 진척) — 활성 목적이 없으면 컴포넌트가 스스로 null 렌더.
+    const goalProgress = <StatsGoalProgressSection key="goal" records={records} />
+
+    // 결과(투자 상태 요약) — 목표형·적립형 혼재 시에만 컴포넌트가 렌더.
+    const status = hasRecords ? (
+        <ModeBreakdownSection key="status" goalStats={goalStats} habitStats={habitStats} />
+    ) : null
+
+    // 기본: 행동(이행→추세) → 결과(목적→상태) → 자산(톤다운된 보조 카드, 수익률 해명 링크 동반).
+    // 자산을 결과 맨 끝에 둬야 딸린 "왜 수익률을 안 보여주나" 링크가 콘텐츠 흐름을 끊지 않고 마무리 각주가 된다.
+    // 저데이터: 이행이 비어 있으니 목적 진척을 맨 위로 올려 첫 화면을 채운다.
+    const sections = hasComplianceData
+        ? [hero, trend, goalProgress, status, asset]
+        : [goalProgress, hero, status, asset]
+
+    return <>{sections}</>
 }

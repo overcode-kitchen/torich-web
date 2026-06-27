@@ -107,6 +107,33 @@ export function getThisMonthStats(
 }
 
 /**
+ * 특정 연/월의 완료 납입 금액 합계 (회전 인사이트의 "지난달 대비" 계산용)
+ */
+export function getCompletedPaymentForMonth(
+  investments: Array<{
+    id: string
+    title: string
+    monthly_amount: number
+    investment_days?: number[] | null
+    period_years: number | null
+    start_date?: string | null
+    created_at: string
+  }>,
+  completedPayments: PaymentHistoryMap,
+  year: number,
+  month: number
+): number {
+  const events = getPaymentEventsForMonth(investments, year, month)
+  let sum = 0
+  for (const e of events) {
+    if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
+      sum += e.monthlyAmount
+    }
+  }
+  return sum
+}
+
+/**
  * 최근 N개월 총 납입 금액 (완료된 건만)
  */
 export function getPeriodTotalPaid(

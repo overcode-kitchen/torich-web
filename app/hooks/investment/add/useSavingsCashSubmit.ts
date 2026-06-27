@@ -64,21 +64,21 @@ export function useSavingsCashSubmit({
       return
     }
     if (!title.trim()) {
-      alert('이름을 입력해주세요.')
+      toastError('이름을 입력해주세요.')
       return
     }
     const amountInWon = parseInt(monthlyAmount.replace(/,/g, ''), 10) * 10000
     if (!Number.isFinite(amountInWon) || amountInWon <= 0) {
-      alert('매달 금액을 입력해주세요.')
+      toastError('매달 금액을 입력해주세요.')
       return
     }
     const rate = parseFloat(interestRate)
     if (recordType === 'savings' && (!Number.isFinite(rate) || rate <= 0)) {
-      alert('약정 연이율을 입력해주세요.')
+      toastError('약정 연이율을 입력해주세요.')
       return
     }
     if (recordType === 'savings' && !maturityDate) {
-      alert('만기일을 선택해주세요.')
+      toastError('만기일을 선택해주세요.')
       return
     }
 

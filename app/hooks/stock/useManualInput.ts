@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { toastError } from '@/app/utils/toast'
 
 type HandleManualConfirmCallbacks = {
   onConfirm: (name: string, rate: number) => void
@@ -36,7 +37,7 @@ export function useManualInput(): UseManualInputReturn {
   const handleManualConfirm = useCallback(
     (callbacks: HandleManualConfirmCallbacks): void => {
       if (!manualStockName.trim()) {
-        alert('종목 이름을 입력해주세요.')
+        toastError('종목 이름을 입력해주세요.')
         return
       }
 

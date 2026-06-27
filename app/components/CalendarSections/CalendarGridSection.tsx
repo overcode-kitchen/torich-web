@@ -123,7 +123,7 @@ export function CalendarGridSection({
                     tabIndex={isHidden ? -1 : 0}
                     onClick={() => selectDate(day)}
                     aria-current={isToday ? 'date' : undefined}
-                    className={`relative aspect-square w-full rounded-lg flex items-center justify-center text-center text-sm transition-colors ${
+                    className={`relative aspect-square w-full rounded-lg flex items-center justify-center text-center text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500 ${
                       isSelected
                         ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] ring-1 ring-inset ring-brand-500'
                         : isToday

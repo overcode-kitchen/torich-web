@@ -84,7 +84,7 @@ export function useAddInvestmentSubmit({
 
     const isValid = validateAndHandleError(
       validation,
-      (message) => alert(message),
+      (message) => toastError(message),
       () => router.push('/login')
     )
 

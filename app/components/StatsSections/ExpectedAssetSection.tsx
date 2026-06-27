@@ -15,10 +15,10 @@ export default function ExpectedAssetSection({
   return (
     <section className="bg-card rounded-2xl p-5 mb-4 relative">
       <div className="flex items-center gap-1 mb-3">
-        <h2 className="text-sm font-semibold text-foreground-muted">지금까지 모은 원금</h2>
+        <h2 className="text-sm font-semibold text-foreground-muted">지금까지 모은 돈</h2>
       </div>
       <div className="mb-3">
-        <p className="text-2xl font-extrabold tracking-tight text-foreground">
+        <p className="text-xl font-bold tracking-tight text-foreground tabular-nums">
           {formatCurrency(totalPaidPrincipal)}
         </p>
       </div>

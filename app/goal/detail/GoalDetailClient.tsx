@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { CalendarBlank, CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
+import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { GoalInfoSection } from '@/app/components/GoalDetailSections/GoalInfoSection'
 import { GoalLifecycleSection } from '@/app/components/GoalDetailSections/GoalLifecycleSection'
 import { GoalProgressSection } from '@/app/components/GoalDetailSections/GoalProgressSection'
@@ -33,6 +34,7 @@ export default function GoalDetailClient() {
   const goalId = searchParams.get('id') ?? undefined
   const router = useRouter()
   const [userId, setUserId] = useState<string | undefined>(undefined)
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const { goBack } = useFlowBack({
     rootPath: '/',
     enableHistoryFallback: true,
@@ -73,12 +75,8 @@ export default function GoalDetailClient() {
     }
   }, [goal, progress, updateGoal, setGoal, records.length])
 
-  async function handleArchive(): Promise<void> {
+  async function confirmArchive(): Promise<void> {
     if (!goal) return
-    const confirmed = window.confirm(
-      `"${goal.name}"을(를) 삭제할까요? 묶였던 투자는 자유 상태로 돌아갑니다.`,
-    )
-    if (!confirmed) return
     await archiveGoal(goal.id)
     track('goal_delete', { entry_point: 'detail_menu' })
     router.push('/')
@@ -140,7 +138,7 @@ export default function GoalDetailClient() {
           수정하기
         </DropdownMenuItem>
         <DropdownMenuItem
-          onSelect={() => void handleArchive()}
+          onSelect={() => setShowDeleteModal(true)}
           disabled={isUpdating}
           variant="destructive"
         >
@@ -209,6 +207,15 @@ export default function GoalDetailClient() {
       />
 
       <GoalLifecycleSection goal={goal} progress={progress} />
+
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmArchive}
+        isDeleting={isUpdating}
+        title="목적을 삭제할까요?"
+        description={`"${goal.name}"을(를) 삭제하면 묶였던 투자는 자유 상태로 돌아가요. 이 작업은 되돌릴 수 없어요.`}
+      />
     </SubPageScaffold>
   )
 }
