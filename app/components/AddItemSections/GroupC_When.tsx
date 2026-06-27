@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { CalendarBlank } from '@phosphor-icons/react'
-import InvestmentStartDateSheet from '@/app/components/AddInvestmentSections/InvestmentStartDateSheet'
+import DateSelectSheet from '@/app/components/Common/DateSelectSheet'
 import ProgressiveField from './ProgressiveField'
 import { formatInvestmentDays } from '@/app/types/investment'
 import type { RecordType } from '@/app/types/investment'
@@ -74,10 +74,12 @@ export default function GroupC_When({
             <CalendarBlank className="w-4 h-4 text-foreground-subtle" />
           </button>
           {isStartDatePickerOpen && (
-            <InvestmentStartDateSheet
+            <DateSelectSheet
               selectedDate={investmentForm.startDate}
               onSelect={investmentForm.setStartDate}
               onClose={() => onStartDatePickerOpenChange(false)}
+              title="투자 시작일 선택"
+              pastYears={30}
             />
           )}
         </ProgressiveField>

@@ -15,12 +15,6 @@ export function useAccountDeletion(): UseAccountDeletionReturn {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
 
   const handleDeleteAccount = async (): Promise<void> => {
-    const confirmed = window.confirm(
-      '정말로 탈퇴하시겠습니까? 모든 데이터가 삭제되며 복구할 수 없습니다.'
-    )
-
-    if (!confirmed) return
-
     setIsDeletingAccount(true)
     try {
       const res = await fetch('/api/delete-account', {
