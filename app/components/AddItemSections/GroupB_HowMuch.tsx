@@ -3,6 +3,7 @@
 import AmountInput from '@/app/components/Common/AmountInput'
 import ShareInput from '@/app/components/Common/ShareInput'
 import PeriodInput from '@/app/components/Common/PeriodInput'
+import DateSelectField from '@/app/components/Common/DateSelectField'
 import ProgressiveField from './ProgressiveField'
 import type { RecordType } from '@/app/types/investment'
 import type { UseAddItemFormStateReturn } from '@/app/hooks/investment/add/useAddItemFormState'
@@ -118,11 +119,10 @@ function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) 
 
       {rateFilled && (
         <ProgressiveField label="언제 만기인가요?">
-          <input
-            type="date"
+          <DateSelectField
             value={formState.maturityDate}
-            onChange={(e) => formState.setMaturityDate(e.target.value)}
-            className="w-full bg-card rounded-2xl py-3.5 px-4 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            onChange={formState.setMaturityDate}
+            placeholder="만기일 선택"
           />
         </ProgressiveField>
       )}

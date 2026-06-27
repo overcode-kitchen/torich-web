@@ -2,15 +2,23 @@
 
 import { useState } from 'react'
 import { CalendarBlank } from '@phosphor-icons/react'
-import GoalTargetDateSheet from './GoalTargetDateSheet'
+import DateSelectSheet from './DateSelectSheet'
 
-interface GoalTargetDateFieldProps {
+interface DateSelectFieldProps {
   /** YYYY-MM-DD 또는 빈 문자열 */
   value: string
   onChange: (value: string) => void
   disabled?: boolean
-  /** 'default': 기존 보더 스타일 | 'flow': 보더 없는 FlowInput 스타일 */
+  /** 'default': 카드 보더 스타일 | 'flow': 보더 없는 FlowInput 스타일 */
   variant?: 'default' | 'flow'
+  /** 미선택 시 버튼에 표시할 문구 */
+  placeholder?: string
+  /** 시트 헤더 제목 (기본: placeholder) */
+  sheetTitle?: string
+  /** true면 시트에서 날짜 비우기(삭제) 허용 */
+  clearable?: boolean
+  /** clearable일 때 미선택 푸터 문구 */
+  emptyLabel?: string
 }
 
 function toIsoDate(date: Date): string {
@@ -27,12 +35,20 @@ function parseIsoDate(value: string): Date | null {
   return new Date(y, m - 1, d)
 }
 
-export default function GoalTargetDateField({
+/**
+ * 서비스 공용 날짜 선택 필드.
+ * 버튼을 누르면 년/월 드롭다운이 포함된 공용 달력 시트가 열린다.
+ */
+export default function DateSelectField({
   value,
   onChange,
   disabled,
   variant = 'default',
-}: GoalTargetDateFieldProps) {
+  placeholder = '날짜 선택',
+  sheetTitle,
+  clearable = false,
+  emptyLabel,
+}: DateSelectFieldProps) {
   const [isOpen, setIsOpen] = useState(false)
   const selectedDate = parseIsoDate(value)
 
@@ -56,16 +72,18 @@ export default function GoalTargetDateField({
                 month: 'long',
                 day: 'numeric',
               })
-            : '마감일 선택'}
+            : placeholder}
         </span>
         <CalendarBlank className="w-4 h-4 text-foreground-subtle" />
       </button>
 
       {isOpen && (
-        <GoalTargetDateSheet
+        <DateSelectSheet
           selectedDate={selectedDate}
+          title={sheetTitle ?? placeholder}
+          emptyLabel={emptyLabel}
           onSelect={(date) => onChange(toIsoDate(date))}
-          onClear={() => onChange('')}
+          onClear={clearable ? () => onChange('') : undefined}
           onClose={() => setIsOpen(false)}
         />
       )}
