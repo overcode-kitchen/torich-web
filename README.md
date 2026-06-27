@@ -56,6 +56,7 @@ npm run build:app   # iOS 앱용 (정적 export → Capacitor)
 
 | 문서 | 내용 |
 |------|------|
+| [docs/service-analysis.md](docs/service-analysis.md) | **서비스 전체 분석** — 아키텍처·데이터모델·도메인·인프라 마스터 개요 |
 | [CLAUDE.md](CLAUDE.md) | 아키텍처/디자인 시스템 규칙, Supabase 호환성 룰 (AI/개발자 공통) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 브랜치 전략, 협업 규칙, 배포 프로세스 |
 | [docs/TECH_STACK.md](docs/TECH_STACK.md) | 기술 스택 상세 |
