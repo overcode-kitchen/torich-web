@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# PostToolUse 훅: TS/JS 파일이 수정되면 lint 를 실행한다.
-# - 대상 확장자(.ts/.tsx/.js/.jsx)가 아니면 조용히 종료
-# - package.json 에 lint 스크립트가 없으면 조용히 종료 (에러 내지 않음)
-# - lint 실패 시 결과를 stderr 로 출력하고 exit 2 → Claude 가 피드백으로 받음
+# PostToolUse 훅: 방금 수정된 TS/JS 파일 "하나"만 lint 한다.
+# - 전체 lint(npm run lint)는 레포 전역의 기존 부채(빌드 산출물·기존 any 등)까지 끌어와
+#   이번 변경과 무관한 차단을 일으키므로, 변경된 파일 하나만 검사한다.
+# - 경고는 차단하지 않고 에러만 차단한다(--quiet). eslint 는 에러>0 일 때만 exit≠0.
+# - 대상 확장자(.ts/.tsx/.js/.jsx)가 아니면 조용히 종료.
+# - lint 에러 시 결과를 stderr 로 출력하고 exit 2 → Claude 가 피드백으로 받음.
 set -uo pipefail
 
 # stdin 으로 들어온 훅 페이로드에서 수정된 파일 경로를 추출
@@ -18,29 +20,15 @@ esac
 # 프로젝트 루트로 이동
 ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$ROOT" 2>/dev/null || exit 0
-[ -f package.json ] || exit 0
 
-# lint 스크립트 존재 확인 (없으면 조용히 종료)
-HAS_LINT="$(node -e 'try{const p=require("./package.json");process.stdout.write((p.scripts&&p.scripts.lint)?"1":"")}catch(e){process.stdout.write("")}' 2>/dev/null)"
-[ -n "$HAS_LINT" ] || exit 0
+# eslint 바이너리가 없으면 조용히 종료
+[ -x node_modules/.bin/eslint ] || exit 0
 
-# 패키지 매니저 자동 감지 (lock 파일 기준)
-if [ -f pnpm-lock.yaml ]; then PM="pnpm"
-elif [ -f yarn.lock ]; then PM="yarn"
-elif [ -f package-lock.json ]; then PM="npm"
-else PM="npm"; fi
-
-# lint 실행
-case "$PM" in
-  pnpm) CMD="pnpm run lint" ;;
-  yarn) CMD="yarn lint" ;;
-  npm)  CMD="npm run lint" ;;
-esac
-
-OUTPUT="$(eval "$CMD" 2>&1)"
+# 변경 파일 하나만 lint (경고는 숨기고 에러만 → 에러 있을 때만 차단)
+OUTPUT="$(node_modules/.bin/eslint "$FILE_PATH" --quiet 2>&1)"
 STATUS=$?
 if [ "$STATUS" -ne 0 ]; then
-  echo "lint 실패 — 아래 문제를 확인하고 수정해 주세요:" >&2
+  echo "lint 실패 ($FILE_PATH) — 아래 문제를 확인하고 수정해 주세요:" >&2
   echo "$OUTPUT" >&2
   exit 2
 fi
