@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { CaretDown, CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import { ko } from 'date-fns/locale'
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import YearMonthWheel from './YearMonthWheel'
 
 // aspect-square를 제거해 너비만 가변되고 높이는 고정되게 함
 function AdaptiveDayButton(props: React.ComponentProps<typeof CalendarDayButton>) {
@@ -14,88 +15,6 @@ function AdaptiveDayButton(props: React.ComponentProps<typeof CalendarDayButton>
       {...props}
       className={cn(props.className, 'aspect-auto h-10')}
     />
-  )
-}
-
-const ITEM_H = 40 // 휠 한 칸 높이(px)
-
-/**
- * 스크롤 휠 컬럼 — iOS 스타일 픽커.
- * 가운데 칸에 오는 항목이 선택값. 스크롤이 멈추면 가장 가까운 칸으로 스냅한다.
- */
-function WheelColumn({
-  items,
-  value,
-  onChange,
-  format,
-}: {
-  items: number[]
-  value: number
-  onChange: (value: number) => void
-  format: (value: number) => string
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [active, setActive] = useState<number>(() =>
-    Math.max(0, items.indexOf(value)),
-  )
-
-  // 마운트 시 현재 값 위치로 스크롤 정렬
-  useEffect(() => {
-    if (ref.current) ref.current.scrollTop = active * ITEM_H
-    return () => {
-      if (settleTimer.current) clearTimeout(settleTimer.current)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const handleScroll = () => {
-    const el = ref.current
-    if (!el) return
-    const idx = Math.max(
-      0,
-      Math.min(items.length - 1, Math.round(el.scrollTop / ITEM_H)),
-    )
-    if (idx !== active) setActive(idx)
-
-    if (settleTimer.current) clearTimeout(settleTimer.current)
-    settleTimer.current = setTimeout(() => {
-      el.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' })
-      if (items[idx] !== value) onChange(items[idx])
-    }, 120)
-  }
-
-  const selectAt = (idx: number) => {
-    setActive(idx)
-    ref.current?.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' })
-    if (items[idx] !== value) onChange(items[idx])
-  }
-
-  return (
-    <div
-      ref={ref}
-      onScroll={handleScroll}
-      className="h-[200px] overflow-y-auto snap-y snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
-      {/* 첫/마지막 항목이 가운데 올 수 있도록 위아래 여백 (= (200-40)/2 = 80) */}
-      <div style={{ height: ITEM_H * 2 }} />
-      {items.map((it, i) => (
-        <button
-          key={it}
-          type="button"
-          onClick={() => selectAt(i)}
-          className={cn(
-            'flex h-10 w-full snap-center items-center justify-center text-base transition-colors',
-            i === active
-              ? 'font-bold text-foreground'
-              : 'text-foreground-subtle',
-          )}
-        >
-          {format(it)}
-        </button>
-      ))}
-      <div style={{ height: ITEM_H * 2 }} />
-    </div>
   )
 }
 
@@ -110,8 +29,6 @@ interface DateSelectSheetProps {
   /** 날짜 미선택 시 푸터에 표시할 문구 */
   emptyLabel?: string
 }
-
-const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1)
 
 function shiftMonth(base: Date, delta: number): Date {
   return new Date(base.getFullYear(), base.getMonth() + delta, 1)
@@ -136,10 +53,6 @@ export default function DateSelectSheet({
   // 휠 연도 범위: 과거 선택값도 포괄하고, 장기 목표를 위해 +30년까지 노출.
   const startYear = Math.min(currentYear, selectedYear)
   const endYear = Math.max(currentYear + 30, selectedYear)
-  const years = Array.from(
-    { length: endYear - startYear + 1 },
-    (_, i) => startYear + i,
-  )
 
   const [month, setMonth] = useState<Date>(selectedDate ?? new Date())
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -212,28 +125,13 @@ export default function DateSelectSheet({
         {pickerOpen ? (
           // 연/월 스크롤 휠 픽커
           <div className="px-6 pb-2 shrink-0">
-            <div className="relative">
-              {/* 가운데 선택 밴드 */}
-              <div className="pointer-events-none absolute inset-x-0 top-1/2 h-10 -translate-y-1/2 rounded-lg bg-surface" />
-              <div className="relative grid grid-cols-2">
-                <WheelColumn
-                  items={years}
-                  value={month.getFullYear()}
-                  onChange={(y) =>
-                    setMonth((m) => new Date(y, m.getMonth(), 1))
-                  }
-                  format={(y) => `${y}년`}
-                />
-                <WheelColumn
-                  items={MONTHS}
-                  value={month.getMonth() + 1}
-                  onChange={(mm) =>
-                    setMonth((m) => new Date(m.getFullYear(), mm - 1, 1))
-                  }
-                  format={(mm) => `${mm}월`}
-                />
-              </div>
-            </div>
+            <YearMonthWheel
+              year={month.getFullYear()}
+              month={month.getMonth() + 1}
+              startYear={startYear}
+              endYear={endYear}
+              onChange={(y, m) => setMonth(new Date(y, m - 1, 1))}
+            />
             <button
               type="button"
               onClick={() => setPickerOpen(false)}
