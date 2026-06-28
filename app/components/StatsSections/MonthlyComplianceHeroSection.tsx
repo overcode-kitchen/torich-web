@@ -37,7 +37,7 @@ export default function MonthlyComplianceHeroSection({
       <section className="bg-card rounded-2xl p-6 mb-4 text-center">
         <h2 className="text-base font-bold text-foreground mb-1">아직 투자 기록이 없어요</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          첫 투자를 등록하고 이번 달 이행률을 확인해보세요.
+          첫 투자를 등록하고 매달 적립을 챙겨보세요.
         </p>
         <Button onClick={() => router.push('/add')}>첫 투자 등록하기</Button>
       </section>
@@ -55,14 +55,14 @@ export default function MonthlyComplianceHeroSection({
         <div className="mb-3">
           <p className="text-sm text-foreground-muted mb-1">🎉 이번 달</p>
           <p className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
-            100<span className="ml-0.5 text-xl font-semibold">% 이행 완료</span>
+            100<span className="ml-0.5 text-xl font-semibold">% 완료</span>
           </p>
         </div>
       ) : (
         <div className="mb-3">
-          <p className="text-sm text-foreground-muted mb-1">이번 달 이행률</p>
+          <p className="text-sm text-foreground-muted mb-1">이번 달 적립</p>
           <p className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
-            {thisMonth.progress}<span className="ml-0.5 text-xl font-semibold">% 이행 중</span>
+            {thisMonth.progress}<span className="ml-0.5 text-xl font-semibold">% 완료</span>
           </p>
         </div>
       )}

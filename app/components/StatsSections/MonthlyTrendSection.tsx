@@ -55,7 +55,7 @@ export default function MonthlyTrendSection({
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-3">
-        <h2 className="text-sm font-semibold text-foreground-muted">월별 이행 추세</h2>
+        <h2 className="text-sm font-semibold text-foreground-muted">월별 적립 기록</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -106,11 +106,11 @@ export default function MonthlyTrendSection({
           ) : consistency.perfectMonths > 0 ? (
             <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
               <Target className="w-3.5 h-3.5" weight="fill" />
-              {periodLabel} 중 {consistency.perfectMonths}개월 100% 이행 달성
+              {periodLabel} 중 {consistency.perfectMonths}개월 100% 완료
             </p>
           ) : (
             <p className="mt-1 text-xs text-muted-foreground">
-              최고 이행 {consistency.bestMonthLabel} {consistency.bestRate}%
+              가장 잘한 달 {consistency.bestMonthLabel} {consistency.bestRate}%
             </p>
           )}
 
@@ -134,7 +134,7 @@ export default function MonthlyTrendSection({
       ) : (
         // 추세를 그릴 만큼 쌓이지 않은 신규/단월 상태 — 빈 차트 대신 격려 문구.
         <p className="text-sm text-muted-foreground py-6 text-center">
-          다음 달부터 월별 이행 추세가 쌓여요.
+          다음 달부터 월별 적립 기록이 쌓여요.
         </p>
       )}
     </div>
