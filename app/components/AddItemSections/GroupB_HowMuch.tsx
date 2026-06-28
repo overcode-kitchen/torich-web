@@ -4,6 +4,7 @@ import AmountInput from '@/app/components/Common/AmountInput'
 import ShareInput from '@/app/components/Common/ShareInput'
 import PeriodInput from '@/app/components/Common/PeriodInput'
 import DateSelectField from '@/app/components/Common/DateSelectField'
+import { FlowInput } from '@/app/components/Common/FlowInput'
 import ProgressiveField from './ProgressiveField'
 import type { RecordType } from '@/app/types/investment'
 import type { UseAddItemFormStateReturn } from '@/app/hooks/investment/add/useAddItemFormState'
@@ -101,19 +102,14 @@ function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) 
 
       {amountFilled && (
         <ProgressiveField label="약정 연이율이 어떻게 되나요?">
-          <div className="relative">
-            <input
-              type="text"
-              inputMode="decimal"
-              value={formState.interestRate}
-              onChange={formState.handleInterestRateChange}
-              placeholder="예: 3.5"
-              className="w-full bg-card rounded-2xl py-3.5 pl-4 pr-12 text-foreground placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
-              %
-            </span>
-          </div>
+          <FlowInput
+            inputMode="decimal"
+            suffix="%"
+            className="h-14 text-xl text-center font-semibold"
+            value={formState.interestRate}
+            onChange={formState.handleInterestRateChange}
+            placeholder="예: 3.5"
+          />
         </ProgressiveField>
       )}
 
@@ -122,6 +118,7 @@ function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) 
           <DateSelectField
             value={formState.maturityDate}
             onChange={formState.setMaturityDate}
+            variant="flow"
             placeholder="만기일 선택"
           />
         </ProgressiveField>

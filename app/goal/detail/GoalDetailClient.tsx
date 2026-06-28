@@ -162,7 +162,7 @@ export default function GoalDetailClient() {
             {goal.name}
           </h2>
           {progress.isCompleted && (
-            <p className="text-sm font-medium text-green-600">
+            <p className="text-sm font-medium text-primary">
               목표 달성! 🎉
             </p>
           )}
@@ -214,7 +214,7 @@ export default function GoalDetailClient() {
         onConfirm={confirmArchive}
         isDeleting={isUpdating}
         title="목적을 삭제할까요?"
-        description={`"${goal.name}"을(를) 삭제하면 묶였던 투자는 자유 상태로 돌아가요. 이 작업은 되돌릴 수 없어요.`}
+        description={`"${goal.name}"을(를) 삭제하면 묶였던 투자는 자유 상태로 돌아가요.`}
       />
     </SubPageScaffold>
   )

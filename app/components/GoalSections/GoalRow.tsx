@@ -41,7 +41,7 @@ export function GoalRow({
         onTouchEnd={swipe.onTouchEnd}
       >
         {onDelete && (
-          <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-red-500">
+          <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-destructive">
             <button
               type="button"
               onClick={swipe.onDeleteButtonClick}
