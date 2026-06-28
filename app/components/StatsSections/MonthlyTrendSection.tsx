@@ -101,7 +101,7 @@ export default function MonthlyTrendSection({
           {consistency.currentPerfectStreak >= 2 ? (
             <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
               <Flame className="w-3.5 h-3.5" weight="fill" />
-              {consistency.currentPerfectStreak}개월째 빠짐없이 이행 중
+              {consistency.currentPerfectStreak}개월째 빠짐없이 적립 완료 중
             </p>
           ) : consistency.perfectMonths > 0 ? (
             <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">

@@ -68,7 +68,7 @@ export default function StatsContent({
     chart,
 }: StatsContentProps) {
     const { records, activeRecords, hasRecords } = data
-    const { completedPayments } = payment
+    const { completedPayments, retroactivePayments } = payment
     const { handleShowContribution } = ui
     const {
         totalPaidPrincipal,
@@ -84,7 +84,9 @@ export default function StatsContent({
     const insights = useStatsInsights({
         activeRecords,
         completedPayments,
+        retroactivePayments,
         thisMonthCompleted: thisMonth.completedPayment,
+        consistency,
     })
 
     // 이행(행동) 데이터가 쌓였는지 — 이번 달 예정 납입이 있거나 과거 활동이 1개월 이상.

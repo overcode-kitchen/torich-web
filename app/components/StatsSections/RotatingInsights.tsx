@@ -32,9 +32,9 @@ export default function RotatingInsights({ items, intervalMs = 3800 }: RotatingI
   const safeIndex = index % items.length
 
   return (
-    <div className="h-5 overflow-hidden">
+    <div className="h-6 overflow-hidden">
       {/* key로 항목이 바뀔 때마다 슬라이드 애니메이션 재생 */}
-      <p key={safeIndex} className="animate-insight text-sm text-foreground-muted leading-5">
+      <p key={safeIndex} className="animate-insight text-sm text-foreground-muted leading-6">
         {items[safeIndex]}
       </p>
     </div>
