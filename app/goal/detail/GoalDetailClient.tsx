@@ -5,9 +5,10 @@ import { useEffect, useState } from 'react'
 import { CalendarBlank, CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
+import { DetailHero } from '@/app/components/Common/DetailHero'
+import { ProgressBar } from '@/app/components/Common/ProgressBar'
 import { GoalInfoSection } from '@/app/components/GoalDetailSections/GoalInfoSection'
 import { GoalLifecycleSection } from '@/app/components/GoalDetailSections/GoalLifecycleSection'
-import { GoalProgressSection } from '@/app/components/GoalDetailSections/GoalProgressSection'
 import { LinkedRecordsSection } from '@/app/components/GoalDetailSections/LinkedRecordsSection'
 import { UnlinkedRecordsSection } from '@/app/components/GoalDetailSections/UnlinkedRecordsSection'
 import { useGoalProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
@@ -27,6 +28,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { formatFullDate } from '@/app/utils/date'
 import { dDayLabel } from '@/app/utils/goal-format'
+import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
 
 export default function GoalDetailClient() {
@@ -155,20 +157,13 @@ export default function GoalDetailClient() {
       contentClassName="px-6"
       actions={headerActions}
     >
-      {/* 제목 + 메모 + 마감일 알림 */}
-      <section className="py-6 space-y-4">
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">
-            {goal.name}
-          </h2>
-          {progress.isCompleted && (
-            <p className="text-sm font-medium text-primary">
-              목표 달성! 🎉
-            </p>
-          )}
-        </div>
+      {/* 제목 + 메모 */}
+      <section className="pt-6 pb-2 space-y-4">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+          {goal.name}
+        </h2>
         {goal.memo?.trim() && (
-          <p className="text-sm text-foreground-subtle whitespace-pre-line break-words">
+          <p className="text-sm text-foreground-muted whitespace-pre-line break-words">
             {goal.memo}
           </p>
         )}
@@ -180,7 +175,7 @@ export default function GoalDetailClient() {
                 <AlertTitle className="text-sm font-medium text-foreground-soft">
                   마감일
                 </AlertTitle>
-                <AlertDescription className="mt-0.5 text-base font-semibold text-primary">
+                <AlertDescription className="mt-0.5 text-base font-semibold text-foreground">
                   {dDayLabel(progress.dDay)} ·{' '}
                   {formatFullDate(new Date(goal.target_date))}
                 </AlertDescription>
@@ -190,7 +185,42 @@ export default function GoalDetailClient() {
         )}
       </section>
 
-      <GoalProgressSection goal={goal} progress={progress} />
+      {/* 히어로: 현재 모은 금액 + 진행률 바 */}
+      <div className="border-b border-border-subtle-lighter">
+        <DetailHero
+          label="현재 모은 금액"
+          amount={formatCurrency(progress.currentValue)}
+          sub={
+            progress.progressPercent === null
+              ? '목표 금액을 정하면 진행률을 볼 수 있어요.'
+              : progress.isCompleted
+                ? '목표를 달성했어요 🎉'
+                : `목표까지 ${formatCurrency(Math.max(0, goal.target_amount - progress.currentValue))}`
+          }
+        >
+          {progress.progressPercent !== null && (
+            <div>
+              <div className="flex items-baseline justify-between mb-2">
+                <span className="text-sm font-medium text-muted-foreground">진행률</span>
+                <span className="text-sm font-bold text-foreground tabular-nums">
+                  {progress.progressPercent}%
+                </span>
+              </div>
+              <ProgressBar
+                percent={progress.progressPercent}
+                completed={progress.isCompleted}
+                label="목적 진행률"
+              />
+              <div className="flex justify-between text-xs text-foreground-muted mt-2">
+                <span>시작 {formatFullDate(new Date(goal.created_at))}</span>
+                {goal.target_date && (
+                  <span>마감 {formatFullDate(new Date(goal.target_date))}</span>
+                )}
+              </div>
+            </div>
+          )}
+        </DetailHero>
+      </div>
 
       <GoalInfoSection goal={goal} progress={progress} />
 

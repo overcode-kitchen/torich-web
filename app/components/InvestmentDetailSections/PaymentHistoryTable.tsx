@@ -137,11 +137,11 @@ function renderStatus(completed: boolean, isRetro: boolean, canToggle: boolean) 
   }
 
   return completed ? (
-    <span className="text-green-600 font-medium" title="해당 월 납입 완료됨">
+    <span className="text-success font-medium" title="해당 월 납입 완료됨">
       ✓ 완료됨
     </span>
   ) : (
-    <span className="text-red-500 font-medium" title="해당 월 납입 미완료">
+    <span className="text-destructive font-medium" title="해당 월 납입 미완료">
       ✗ 미완료
     </span>
   )

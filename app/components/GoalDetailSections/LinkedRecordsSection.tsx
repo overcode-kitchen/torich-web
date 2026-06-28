@@ -26,7 +26,7 @@ export function LinkedRecordsSection({
         묶인 투자 {records.length > 0 && `(${records.length})`}
       </h3>
       {records.length === 0 ? (
-        <p className="text-sm text-foreground-subtle">
+        <p className="text-sm text-foreground-muted">
           아직 묶인 투자가 없어요. 아래에서 묶을 투자를 골라보세요.
         </p>
       ) : (
@@ -47,7 +47,7 @@ export function LinkedRecordsSection({
               <Button
                 size="xs"
                 variant="ghost"
-                className="shrink-0 text-muted-foreground hover:text-foreground-soft hover:bg-secondary h-auto py-1 px-2"
+                className="shrink-0 text-muted-foreground hover:text-foreground-soft hover:bg-secondary h-auto min-h-[44px] px-3"
                 onClick={() => onUnlink(r.id)}
                 disabled={isLinking}
               >

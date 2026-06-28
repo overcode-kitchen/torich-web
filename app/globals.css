@@ -36,6 +36,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -170,6 +171,8 @@
   --accent: var(--palette-coolgray-100);
   --accent-foreground: var(--palette-coolgray-900);
   --destructive: var(--palette-destructive);
+  /* 성공/달성 상태 텍스트용 진한 그린 — 흰 배경에서 WCAG AA(4.58:1). brand-600(text)은 대비 미달이라 텍스트엔 이 토큰 사용 */
+  --success: var(--palette-brand-700);
   --border: var(--palette-coolgray-200);
   --input: var(--palette-coolgray-200);
   --ring: var(--palette-brand-600);
@@ -253,6 +256,8 @@
   --accent: var(--palette-coolgray-600);
   --accent-foreground: var(--palette-coolgray-25);
   --destructive: var(--palette-destructive);
+  /* 다크 배경에서는 밝은 그린이 잘 읽힘 (brand-400) */
+  --success: var(--palette-brand-400);
   --border: var(--palette-coolgray-500);
   --input: var(--palette-coolgray-500);
   --ring: var(--palette-brand-600);

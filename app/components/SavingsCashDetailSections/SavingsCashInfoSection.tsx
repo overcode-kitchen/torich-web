@@ -1,5 +1,6 @@
 'use client'
 
+import { CaretRight } from '@phosphor-icons/react'
 import { InvestmentField } from '@/app/components/Common/InvestmentField'
 import { formatCurrency } from '@/lib/utils'
 import { formatFullDate } from '@/app/utils/date'
@@ -32,9 +33,10 @@ function TappableField({ label, value, onTap }: TappableFieldProps) {
     <button
       type="button"
       onClick={onTap}
-      className="block w-full text-left rounded-lg -mx-2 px-2 py-1 hover:bg-muted/30 transition-colors"
+      className="flex w-full items-center gap-2 text-left rounded-lg -mx-2 px-2 min-h-[44px] hover:bg-muted/30 transition-colors"
     >
-      {field}
+      <span className="min-w-0 flex-1">{field}</span>
+      <CaretRight className="h-4 w-4 shrink-0 text-foreground-subtle" weight="bold" aria-hidden />
     </button>
   )
 }
@@ -57,7 +59,7 @@ export function SavingsCashInfoSection({
     onFieldTap ? () => onFieldTap(field) : undefined
 
   return (
-    <section ref={infoRef} className="py-8">
+    <section ref={infoRef} className="py-6">
       <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
         적립 정보
       </h3>
@@ -105,7 +107,7 @@ export function SavingsCashInfoSection({
               <span className="tabular-nums">{formatCurrency(maturity.interest)}</span>
             </div>
           </div>
-          <p className="mt-3 text-xs text-foreground-subtle">
+          <p className="mt-3 text-xs text-foreground-muted">
             단리·세전 기준 약식 추정값이에요. 우대금리·세금은 반영되지 않아요.
           </p>
         </div>

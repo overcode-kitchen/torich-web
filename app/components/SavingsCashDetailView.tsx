@@ -14,6 +14,7 @@ import { SavingsCashInfoSection } from '@/app/components/SavingsCashDetailSectio
 import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
 import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailSections/InvestmentDetailOverview'
+import { DetailTabs } from '@/app/components/Common/DetailTabs'
 import {
   InvestmentTabProvider,
   useInvestmentTabContext,
@@ -21,7 +22,6 @@ import {
 import { useSavingsCashDetail } from '@/app/hooks/investment/detail/useSavingsCashDetail'
 import { useNotificationToggle } from '@/app/hooks/notification/useNotificationToggle'
 import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
-import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
 import { cn } from '@/lib/utils'
 import type { Investment } from '@/app/types/investment'
 
@@ -76,7 +76,7 @@ function SavingsCashDetailViewInner({
     <>
       <SubPageScaffold
         onBack={onBack}
-        contentClassName="py-6"
+        contentClassName="px-6 py-6"
         surfaceClassName="bg-background"
         scrollContainerRef={scrollContainerRef}
         actions={
@@ -88,7 +88,7 @@ function SavingsCashDetailViewInner({
               aria-disabled={isNotificationDisabled}
               aria-label={notificationOn ? '알림 끄기' : '알림 켜기'}
               className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-hover transition-colors',
+                'flex h-11 w-11 items-center justify-center rounded-full text-foreground hover:bg-surface-hover transition-colors',
                 isNotificationDisabled &&
                   'text-foreground-subtle cursor-not-allowed hover:bg-transparent',
               )}
@@ -103,7 +103,7 @@ function SavingsCashDetailViewInner({
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-hover transition-colors"
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-foreground hover:bg-surface-hover transition-colors"
                   aria-label="메뉴"
                 >
                   <DotsThreeVertical className="h-6 w-6" weight="regular" />
@@ -135,46 +135,16 @@ function SavingsCashDetailViewInner({
           />
 
           {hasHistory && (
-            <div
-              className="sticky z-40 -mx-4 px-4 bg-background border-b border-border-subtle-lighter"
-              style={{ top: APP_HEADER_TOTAL_HEIGHT }}
-            >
-              <div className="flex gap-6">
-                <button
-                  type="button"
-                  onClick={() => handleTabClick('overview')}
-                  className={`py-3 text-sm font-medium transition-colors border-b-2 ${
-                    activeTab === 'overview'
-                      ? 'border-foreground text-foreground'
-                      : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                  }`}
-                >
-                  개요
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTabClick('info')}
-                  className={`py-3 text-sm font-medium transition-colors border-b-2 ${
-                    activeTab === 'info'
-                      ? 'border-foreground text-foreground'
-                      : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                  }`}
-                >
-                  적립 정보
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTabClick('history')}
-                  className={`py-3 text-sm font-medium transition-colors border-b-2 ${
-                    activeTab === 'history'
-                      ? 'border-foreground text-foreground'
-                      : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                  }`}
-                >
-                  납입 기록
-                </button>
-              </div>
-            </div>
+            <DetailTabs
+              tabs={[
+                { key: 'overview', label: '개요' },
+                { key: 'info', label: '적립 정보' },
+                { key: 'history', label: '납입 기록' },
+              ]}
+              activeTab={activeTab}
+              onTabClick={handleTabClick}
+              bleedClassName="-mx-6 px-6"
+            />
           )}
 
           <ProgressSection

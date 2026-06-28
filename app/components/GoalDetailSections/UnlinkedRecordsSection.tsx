@@ -28,8 +28,8 @@ export function UnlinkedRecordsSection({
         <h3 className="text-lg font-semibold tracking-tight text-foreground">
           묶을 수 있는 투자
         </h3>
-        <p className="text-xs text-foreground-subtle mt-1">
-          '묶기'를 누르면 이 목적의 진척도에 합산돼요.
+        <p className="text-xs text-foreground-muted mt-1">
+          &lsquo;묶기&rsquo;를 누르면 이 목적의 진척도에 합산돼요.
         </p>
       </div>
       <ul className="flex flex-col">
@@ -49,7 +49,7 @@ export function UnlinkedRecordsSection({
             <Button
               size="xs"
               variant="outline"
-              className="shrink-0 h-auto py-1 px-3"
+              className="shrink-0 h-auto min-h-[44px] px-4"
               onClick={() => onLink(r.id)}
               disabled={isLinking}
             >

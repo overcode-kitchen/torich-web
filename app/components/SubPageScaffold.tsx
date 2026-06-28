@@ -15,6 +15,8 @@ export interface SubPageScaffoldProps {
   surfaceClassName?: string
   /** 헤더 우측 액션 영역 (예: 더보기 메뉴) */
   actions?: ReactNode
+  /** 헤더 중앙 슬롯 (예: 스크롤 시 나타나는 스티키 제목) */
+  centerSlot?: ReactNode
   /** 본문 스크롤 컨테이너 ref (탭바 스크롤 점프 등에 사용) */
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>
 }
@@ -29,6 +31,7 @@ export default function SubPageScaffold({
   contentClassName,
   surfaceClassName = 'bg-surface',
   actions,
+  centerSlot,
   scrollContainerRef,
 }: SubPageScaffoldProps) {
   const isNativeApp = useIsNativeApp()
@@ -48,16 +51,17 @@ export default function SubPageScaffold({
         style={{ paddingTop: headerSafeTop }}
       >
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto pl-4 pr-2">
-          <div className="h-12 min-h-[48px] max-h-[48px] flex items-center justify-between shrink-0">
+          <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
             <button
               type="button"
               onClick={onBack}
-              className="p-2 -ml-1 text-foreground-soft hover:text-foreground transition-colors"
+              className="p-2 -ml-1 shrink-0 text-foreground-soft hover:text-foreground transition-colors"
               aria-label="뒤로가기"
             >
               <ArrowLeft className="w-6 h-6" weight="regular" />
             </button>
-            {actions && <div className="flex items-center">{actions}</div>}
+            <div className="min-w-0 flex-1 px-2">{centerSlot}</div>
+            {actions && <div className="flex items-center shrink-0">{actions}</div>}
           </div>
         </div>
       </header>
