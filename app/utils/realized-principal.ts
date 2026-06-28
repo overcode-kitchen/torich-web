@@ -33,3 +33,20 @@ export function getRecordRealizedPrincipal(
   addDates(retroactivePayments.get(record.id))
   return total
 }
+
+/**
+ * 한 record의 납입을 "월(YYYY-MM) → 그 달 실제 납입액(원)"으로 집계한다.
+ * 납입 기록 표에서 각 행을 매수 시점 실제 금액으로 표시하기 위함.
+ * (해당 월에 캡처가 없으면 맵에 없음 → 호출측이 현재 monthly_amount로 폴백)
+ */
+export function buildCapturedByMonth(
+  capturedForRecord: Map<string, number> | undefined,
+): Map<string, number> {
+  const byMonth = new Map<string, number>()
+  if (!capturedForRecord) return byMonth
+  for (const [date, won] of capturedForRecord) {
+    const yearMonth = date.slice(0, 7) // YYYY-MM
+    byMonth.set(yearMonth, (byMonth.get(yearMonth) ?? 0) + won)
+  }
+  return byMonth
+}
