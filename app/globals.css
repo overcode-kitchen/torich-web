@@ -65,6 +65,7 @@
   --color-brand-accent-bg: var(--brand-accent-bg);
   --color-brand-accent-text: var(--brand-accent-text);
   --color-brand-accent-border: var(--brand-accent-border);
+  --color-field-bg: var(--field-bg);
   --color-chart-profit: var(--chart-profit);
   --color-chart-principal: var(--chart-principal);
 
@@ -206,6 +207,8 @@
   --brand-accent-bg: var(--palette-brand-50);
   --brand-accent-text: var(--palette-brand-700);
   --brand-accent-border: var(--palette-brand-200);
+  /* 입력칸 배경: 라이트=연한 민트 틴트 */
+  --field-bg: var(--palette-brand-50);
   /* 차트 색상 */
   --chart-profit: var(--palette-brand-500);
   --chart-principal: var(--palette-brand-100);
@@ -287,6 +290,8 @@
   --brand-accent-bg: var(--palette-brand-200);
   --brand-accent-text: var(--palette-brand-600);
   --brand-accent-border: var(--palette-brand-300);
+  /* 입력칸 배경: 다크=중립 다크 서피스 (밝은 민트는 눈부셔서 제외, text-foreground 대비 확보) */
+  --field-bg: var(--palette-coolgray-800);
   /* 차트 색상 - 다크모드에서도 밝은 색상 유지 */
   --chart-profit: var(--palette-brand-500);
   --chart-principal: var(--palette-brand-200);

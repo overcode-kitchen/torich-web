@@ -21,8 +21,8 @@ interface FlowInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement
 const FlowInput = React.forwardRef<HTMLInputElement, FlowInputProps>(
   ({ className, size = 'md', suffix, ...props }, ref) => {
     const base =
-      'w-full rounded-xl bg-muted/50 text-foreground placeholder:text-foreground-subtle ' +
-      'border-0 focus:outline-none focus:ring-2 focus:ring-ring/60 focus:bg-card ' +
+      'w-full rounded-xl bg-field-bg text-foreground placeholder:text-foreground-subtle ' +
+      'border-0 focus:outline-none focus:ring-2 focus:ring-ring/60 ' +
       'disabled:opacity-50 transition-all'
 
     const sizeClass =
