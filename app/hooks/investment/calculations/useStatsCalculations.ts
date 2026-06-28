@@ -2,11 +2,12 @@ import { useMemo } from 'react'
 import { differenceInDays, startOfDay } from 'date-fns'
 import { Investment, getStartDate, isHabitMode } from '@/app/types/investment'
 import { getPaymentEventsForMonth, getThisMonthStats } from '@/app/utils/stats'
-import { isPaymentCompleted } from '@/app/utils/payment-completion'
+import { isPaymentCompleted, isRecordPostponedInMonth } from '@/app/utils/payment-completion'
 import { calculateEndDate, getElapsedMonths } from '@/app/utils/date'
 import { getRecordRealizedPrincipal } from '@/app/utils/realized-principal'
 import type { Goal } from '@/app/types/goal'
 import type { PaymentHistoryMap, CapturedAmountsMap } from '../../payment/usePaymentHistory'
+import type { PostponedPaymentsMap } from '../../payment/usePostponedPayments'
 
 const EMPTY_CAPTURED: CapturedAmountsMap = new Map()
 
@@ -15,6 +16,8 @@ interface UseStatsCalculationsProps {
   activeRecords: Investment[]
   completedPayments: PaymentHistoryMap
   retroactivePayments: PaymentHistoryMap
+  /** 이번 달 미룸 처리된 회차 — 예정(분모)에서 제외 */
+  postponedPayments: PostponedPaymentsMap
   /** 각 납입의 매수 시점 실제 금액(원). 실현 원금을 현재 금액이 아닌 매수 시점 금액으로 합산 */
   capturedAmounts?: CapturedAmountsMap
   /** 목적(Goal) 목록 — 직접 입력한 '이미 모은 돈'(external_amount) 합산용 */
@@ -58,6 +61,7 @@ export function useStatsCalculations({
   activeRecords,
   completedPayments,
   retroactivePayments,
+  postponedPayments,
   capturedAmounts = EMPTY_CAPTURED,
   goals,
 }: UseStatsCalculationsProps): UseStatsCalculationsReturn {
@@ -77,7 +81,7 @@ export function useStatsCalculations({
     return { totalPaidPrincipal: realizedPrincipal + externalTotal, totalMonthlyPayment }
   }, [records, completedPayments, retroactivePayments, capturedAmounts, goals])
 
-  const thisMonth = useMemo(() => getThisMonthStats(activeRecords, completedPayments), [activeRecords, completedPayments])
+  const thisMonth = useMemo(() => getThisMonthStats(activeRecords, completedPayments, postponedPayments), [activeRecords, completedPayments, postponedPayments])
 
   // 목표형/적립형 분리 집계 (Health Check용)
   const goalStats = useMemo<GoalStats>(() => {
@@ -144,9 +148,15 @@ export function useStatsCalculations({
     }
 
     const now = new Date()
-    const events = getPaymentEventsForMonth(habitRecords, now.getFullYear(), now.getMonth() + 1)
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+    const events = getPaymentEventsForMonth(habitRecords, year, month)
+    let thisMonthTotalCount = 0
     let thisMonthCompletedCount = 0
     for (const e of events) {
+      // 미룬 회차는 이번 달 예정(분모)에서 제외
+      if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) continue
+      thisMonthTotalCount++
       if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         thisMonthCompletedCount++
       }
@@ -169,10 +179,10 @@ export function useStatsCalculations({
     return {
       count: habitRecords.length,
       thisMonthCompletedCount,
-      thisMonthTotalCount: events.length,
+      thisMonthTotalCount,
       longestHabitItem,
     }
-  }, [activeRecords, completedPayments])
+  }, [activeRecords, completedPayments, postponedPayments])
 
   return {
     totalPaidPrincipal,

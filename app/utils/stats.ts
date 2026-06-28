@@ -1,5 +1,8 @@
 import { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
-import { isPaymentCompleted } from './payment-completion'
+import { PostponedPaymentsMap } from '@/app/hooks/payment/usePostponedPayments'
+import { isPaymentCompleted, isRecordPostponedInMonth } from './payment-completion'
+
+const EMPTY_POSTPONED: PostponedPaymentsMap = new Map()
 
 export interface PaymentEvent {
   investmentId: string
@@ -83,7 +86,8 @@ export function getThisMonthStats(
     start_date?: string | null
     created_at: string
   }>,
-  completedPayments: PaymentHistoryMap
+  completedPayments: PaymentHistoryMap,
+  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED
 ): { totalPayment: number; completedPayment: number; progress: number; remainingPayment: number } {
   const today = new Date()
   const year = today.getFullYear()
@@ -94,6 +98,8 @@ export function getThisMonthStats(
   let completedPayment = 0
 
   for (const e of events) {
+    // 미룬 회차는 '이번 달 할 일'에서 빠진 것 → 예정(분모)에서 제외
+    if (isRecordPostponedInMonth(postponedPayments, e.investmentId, e.year, e.month)) continue
     totalPayment += e.monthlyAmount
     if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
       completedPayment += e.monthlyAmount
@@ -182,7 +188,8 @@ export function getMonthlyCompletionRates(
     created_at: string
   }>,
   completedPayments: PaymentHistoryMap,
-  monthsBack: number
+  monthsBack: number,
+  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED
 ): Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> {
   const today = new Date()
   const results: Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> = []
@@ -195,17 +202,21 @@ export function getMonthlyCompletionRates(
     const monthLabel = `${month}월`
 
     const events = getPaymentEventsForMonth(investments, year, month)
+    let total = 0
     let completed = 0
     for (const e of events) {
+      // 미룬 회차는 예정(분모)에서 제외 — 완료율·스트릭을 깎지 않게
+      if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) continue
+      total++
       if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         completed++
       }
     }
-    const rate = events.length > 0 ? Math.round((completed / events.length) * 100) : 0
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 0
     results.push({
       yearMonth,
       monthLabel,
-      total: events.length,
+      total,
       completed,
       rate,
     })
@@ -228,13 +239,14 @@ export function getMonthlyCompletionRatesForRange(
   }>,
   completedPayments: PaymentHistoryMap,
   fromDate: Date,
-  toDate: Date
+  toDate: Date,
+  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED
 ): Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> {
   const results: Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> = []
   const from = new Date(fromDate.getFullYear(), fromDate.getMonth(), 1)
   const to = new Date(toDate.getFullYear(), toDate.getMonth(), 1)
 
-  let current = new Date(from)
+  const current = new Date(from)
   while (current <= to) {
     const year = current.getFullYear()
     const month = current.getMonth() + 1
@@ -242,14 +254,18 @@ export function getMonthlyCompletionRatesForRange(
     const monthLabel = `${month}월`
 
     const events = getPaymentEventsForMonth(investments, year, month)
+    let total = 0
     let completed = 0
     for (const e of events) {
+      // 미룬 회차는 예정(분모)에서 제외
+      if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) continue
+      total++
       if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         completed++
       }
     }
-    const rate = events.length > 0 ? Math.round((completed / events.length) * 100) : 0
-    results.push({ yearMonth, monthLabel, total: events.length, completed, rate })
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 0
+    results.push({ yearMonth, monthLabel, total, completed, rate })
 
     current.setMonth(current.getMonth() + 1)
   }
@@ -363,7 +379,7 @@ export function getPeriodTotalPaidForRange(
   const to = new Date(toDate.getFullYear(), toDate.getMonth(), 1)
   let total = 0
 
-  let current = new Date(from)
+  const current = new Date(from)
   while (current <= to) {
     const year = current.getFullYear()
     const month = current.getMonth() + 1
