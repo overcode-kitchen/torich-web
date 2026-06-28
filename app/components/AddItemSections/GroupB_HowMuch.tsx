@@ -103,6 +103,7 @@ function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) 
       {amountFilled && (
         <ProgressiveField label="약정 연이율이 어떻게 되나요?">
           <FlowInput
+            size="lg"
             inputMode="decimal"
             suffix="%"
             value={formState.interestRate}
