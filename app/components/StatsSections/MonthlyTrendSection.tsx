@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Target, Flame } from '@phosphor-icons/react'
 import {
   DropdownMenu,
@@ -9,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LabelList } from 'recharts'
 import type { DateRange } from 'react-day-picker'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
@@ -49,6 +50,17 @@ export default function MonthlyTrendSection({
   chartEmphasisColor,
   consistency,
 }: MonthlyTrendSectionProps) {
+  // 막대 탭 → 그 달 요약(차트 아래). 같은 막대 재탭 시 해제. 기간 필터 변경 시 선택 초기화.
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const handlePreset = (p: PeriodPreset) => {
+    setSelectedIndex(null)
+    setPeriodPreset(p)
+  }
+  const handleCustom = () => {
+    setSelectedIndex(null)
+    handleCustomPeriod()
+  }
+
   // 추세로 볼 만한 데이터(2개월 이상 납입 활동)가 있는지 — 없으면 빈 차트 대신 안내.
   const hasTrend = !!consistency && consistency.activeMonths >= 2
 
@@ -67,11 +79,11 @@ export default function MonthlyTrendSection({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[140px]">
-            <DropdownMenuItem onClick={() => setPeriodPreset('1')}>이번 달</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setPeriodPreset('3')}>최근 3개월</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setPeriodPreset('6')}>최근 6개월</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setPeriodPreset('12')}>최근 12개월</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleCustomPeriod}>기간 선택</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handlePreset('1')}>이번 달</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handlePreset('3')}>최근 3개월</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handlePreset('6')}>최근 6개월</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handlePreset('12')}>최근 12개월</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCustom}>기간 선택</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -116,20 +128,67 @@ export default function MonthlyTrendSection({
 
           <div className="h-28 mt-3">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <BarChart data={chartData} margin={{ top: 22, right: 8, left: 0, bottom: 0 }}>
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} width={28} />
-                <Bar dataKey="rate" radius={[4, 4, 0, 0]}>
-                  {chartData.map((_, i) => (
-                    <Cell
-                      key={i}
-                      fill={i === chartData.length - 1 ? chartEmphasisColor : chartBarColor}
-                    />
-                  ))}
+                <Bar
+                  dataKey="rate"
+                  radius={[4, 4, 0, 0]}
+                  isAnimationActive={false}
+                  onClick={(_, index) => setSelectedIndex((prev) => (prev === index ? null : index))}
+                >
+                  <LabelList
+                    dataKey="rate"
+                    content={(props: unknown) => {
+                      // 이번 달(마지막) 막대 위에만 '적립 중' — 아직 적립 중이라 완료율이 확정 아님을 알림
+                      const { x, y, width, index } = props as {
+                        x: number
+                        y: number
+                        width: number
+                        index: number
+                      }
+                      if (index !== chartData.length - 1) return null
+                      return (
+                        <text
+                          x={x + width / 2}
+                          y={y - 6}
+                          textAnchor="middle"
+                          style={{ fontSize: 9 }}
+                          className="fill-muted-foreground"
+                        >
+                          적립 중
+                        </text>
+                      )
+                    }}
+                  />
+                  {chartData.map((_, i) => {
+                    // 강조는 '선택된 달'만 — 미선택일 땐 전부 중립.
+                    // (강조색이 '이번 달'과 '선택한 달' 두 의미로 혼동되지 않게, 탭하면 색이 바뀌어 피드백도 생기게)
+                    const isHighlighted = selectedIndex !== null && i === selectedIndex
+                    return (
+                      <Cell
+                        key={i}
+                        fill={isHighlighted ? chartEmphasisColor : chartBarColor}
+                        cursor="pointer"
+                      />
+                    )
+                  })}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
+
+          {/* 막대 탭 시 그 달 요약(차트 아래 고정 줄). 미선택 시 탐색 안내. */}
+          {selectedIndex !== null && chartData[selectedIndex] ? (
+            <p className="mt-2 text-center text-sm text-muted-foreground">
+              {chartData[selectedIndex].name} · {chartData[selectedIndex].total}건 중 {chartData[selectedIndex].completed}건 ·{' '}
+              <span className="font-bold text-primary">{chartData[selectedIndex].rate}%</span> 완료
+            </p>
+          ) : (
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              막대를 눌러 월별 기록을 볼 수 있어요
+            </p>
+          )}
         </>
       ) : (
         // 추세를 그릴 만큼 쌓이지 않은 신규/단월 상태 — 빈 차트 대신 격려 문구.
