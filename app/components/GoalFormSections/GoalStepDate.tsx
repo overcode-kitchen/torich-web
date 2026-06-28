@@ -2,7 +2,6 @@
 
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
 import GoalDateField from './fields/GoalDateField'
-import GoalOptionalFields from './fields/GoalOptionalFields'
 import { GOAL_DEADLINE_HELP } from '@/app/utils/goal-amount'
 
 interface GoalStepDateProps {
@@ -39,14 +38,6 @@ export default function GoalStepDate({
         variant="flow"
         showHelp={false}
       />
-
-      <div className="mt-10 border-t border-border-subtle pt-8">
-        <GoalOptionalFields
-          values={values}
-          setField={setField}
-          disabled={disabled}
-        />
-      </div>
     </div>
   )
 }
