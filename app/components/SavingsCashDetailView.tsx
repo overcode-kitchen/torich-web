@@ -1,6 +1,6 @@
 'use client'
 
-import { DotsThreeVertical } from '@phosphor-icons/react'
+import { Bell, BellSlash, DotsThreeVertical } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
@@ -19,7 +19,10 @@ import {
   useInvestmentTabContext,
 } from '@/app/contexts/InvestmentTabContext'
 import { useSavingsCashDetail } from '@/app/hooks/investment/detail/useSavingsCashDetail'
+import { useNotificationToggle } from '@/app/hooks/notification/useNotificationToggle'
+import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
 import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
+import { cn } from '@/lib/utils'
 import type { Investment } from '@/app/types/investment'
 
 interface SavingsCashDetailViewProps {
@@ -31,7 +34,7 @@ interface SavingsCashDetailViewProps {
 /**
  * 예적금·현금 항목 상세 화면.
  * 주식 상세(InvestmentDetailView)와 동일한 레이아웃 규약을 따른다:
- * 헤더(아바타+제목+서브) → 스티키 탭바 → 진행률 → 투자 정보 → 납입 기록.
+ * 헤더(아바타+제목+서브) → 스티키 탭바 → 진행률 → 적립 정보 → 납입 기록.
  * 정보 행을 탭하면 토스 스타일 편집 플로우(/add?editId=...&field=...)로 진입한다.
  */
 export default function SavingsCashDetailView(props: SavingsCashDetailViewProps) {
@@ -49,6 +52,9 @@ function SavingsCashDetailViewInner({
 }: SavingsCashDetailViewProps) {
   const router = useRouter()
   const detail = useSavingsCashDetail(item, onDelete)
+  const { notificationOn, toggleNotification } = useNotificationToggle(item.id)
+  const { notificationOn: isGlobalNotificationOn } = useGlobalNotification()
+  const isNotificationDisabled = !isGlobalNotificationOn
   const {
     activeTab,
     handleTabClick,
@@ -74,28 +80,48 @@ function SavingsCashDetailViewInner({
         surfaceClassName="bg-background"
         scrollContainerRef={scrollContainerRef}
         actions={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-hover transition-colors"
-                aria-label="메뉴"
-              >
-                <DotsThreeVertical className="h-6 w-6" weight="regular" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/add?editId=${item.id}`)}>
-                수정하기
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => detail.setShowDeleteModal(true)}
-                className="text-red-600 focus:text-red-600"
-              >
-                삭제하기
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={toggleNotification}
+              disabled={isNotificationDisabled}
+              aria-disabled={isNotificationDisabled}
+              aria-label={notificationOn ? '알림 끄기' : '알림 켜기'}
+              className={cn(
+                'flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-hover transition-colors',
+                isNotificationDisabled &&
+                  'text-foreground-subtle cursor-not-allowed hover:bg-transparent',
+              )}
+            >
+              {notificationOn ? (
+                <Bell className="h-6 w-6" weight="regular" />
+              ) : (
+                <BellSlash className="h-6 w-6 text-muted-foreground" weight="regular" />
+              )}
+            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-foreground hover:bg-surface-hover transition-colors"
+                  aria-label="메뉴"
+                >
+                  <DotsThreeVertical className="h-6 w-6" weight="regular" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => router.push(`/add?editId=${item.id}`)}>
+                  수정하기
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => detail.setShowDeleteModal(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  삭제하기
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         }
       >
         <div className="mx-auto max-w-md md:max-w-lg lg:max-w-2xl">
@@ -134,7 +160,7 @@ function SavingsCashDetailViewInner({
                       : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
                   }`}
                 >
-                  투자 정보
+                  적립 정보
                 </button>
                 <button
                   type="button"

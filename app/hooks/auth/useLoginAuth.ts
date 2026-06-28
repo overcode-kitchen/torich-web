@@ -129,7 +129,7 @@ export function useLoginAuth() {
       }
       track('login_failure', { method: 'apple', reason: classifyAuthFailure(error) })
       console.error('Apple 로그인 실패:', error)
-      alert(`로그인 실패: ${err?.message ?? (error instanceof Error ? error.message : '알 수 없음')}`)
+      toastError(`로그인 실패: ${err?.message ?? (error instanceof Error ? error.message : '알 수 없음')}`)
     } finally {
       setIsLoading(false)
     }

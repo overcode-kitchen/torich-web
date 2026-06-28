@@ -37,12 +37,13 @@ export default function GoalSection({ records }: GoalSectionProps) {
 
   const { goals, isLoading, refetch } = useGoals(userId)
   const { archiveGoal } = useGoalUpdate(userId)
-  const { completedPayments, retroactivePayments } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistory()
   const progressMap = useGoalsProgress(
     goals,
     records,
     completedPayments,
     retroactivePayments,
+    capturedAmounts,
   )
 
   async function handleDelete(id: string): Promise<void> {

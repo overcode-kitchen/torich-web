@@ -25,7 +25,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
   }, [])
 
   const { goals } = useGoals(userId)
-  const { completedPayments, retroactivePayments } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistory()
 
   const activeGoals = useMemo(
     () => goals.filter((g) => g.completed_at === null),
@@ -37,6 +37,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
     records,
     completedPayments,
     retroactivePayments,
+    capturedAmounts,
   )
 
   if (activeGoals.length === 0) return null

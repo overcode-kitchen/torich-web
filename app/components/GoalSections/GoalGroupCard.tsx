@@ -17,7 +17,13 @@ export interface GoalGroupCardProps {
   progress?: GoalProgress
   records: Investment[]
   isPaid: (recordId: string) => boolean
+  /** 이번 달 미룸 여부 */
+  isPostponed: (recordId: string) => boolean
+  /** 이번 달 미루기 노출 가능 여부 (납입일 당일부터 true) */
+  canPostpone: (record: Investment) => boolean
   onTogglePaid: (record: Investment) => void
+  /** 이번 달 미룸 토글 */
+  onTogglePostpone: (record: Investment) => void
   onSelectRecord: (recordId: string) => void
   /** 목적 헤더 탭 → 목적 상세 (미지정 카드는 미전달) */
   onSelectGoal?: (goalId: string) => void
@@ -40,7 +46,10 @@ export function GoalGroupCard({
   progress,
   records,
   isPaid,
+  isPostponed,
+  canPostpone,
   onTogglePaid,
+  onTogglePostpone,
   onSelectRecord,
   onSelectGoal,
   onAddRecord,
@@ -107,7 +116,10 @@ export function GoalGroupCard({
                 key={record.id}
                 record={record}
                 isPaid={isPaid(record.id)}
+                isPostponed={isPostponed(record.id)}
+                canPostpone={canPostpone(record)}
                 onTogglePaid={onTogglePaid}
+                onTogglePostpone={onTogglePostpone}
                 onSelect={onSelectRecord}
                 isLast={idx === records.length - 1}
               />

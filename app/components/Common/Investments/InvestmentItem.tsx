@@ -41,7 +41,7 @@ export default function InvestmentItem({
       >
         {/* 배경: 삭제 버튼 (스와이프 시 노출) */}
         {onDelete && (
-          <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-red-500">
+          <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center bg-destructive">
             <button
               type="button"
               onClick={swipe.onDeleteButtonClick}
@@ -91,7 +91,7 @@ export default function InvestmentItem({
 
               {/* 2줄: 월 투자금 · 투자일 · 모드 뱃지 */}
               <div className="pl-2 flex items-center gap-2 flex-wrap">
-                <p className={`text-sm ${completed ? 'text-green-600 font-semibold' : 'text-muted-foreground'}`}>
+                <p className={`text-sm ${completed ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                   {contribution.main}
                   {contribution.sub && (
                     <span className="text-foreground-subtle"> ({contribution.sub})</span>

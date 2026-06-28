@@ -42,13 +42,14 @@ export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
   }, [])
 
   const { goals, isLoading: goalsLoading } = useGoals(userId)
-  const { completedPayments, retroactivePayments, isLoading: paymentsLoading } =
+  const { completedPayments, retroactivePayments, capturedAmounts, isLoading: paymentsLoading } =
     usePaymentHistory()
   const progressMap = useGoalsProgress(
     goals,
     records,
     completedPayments,
     retroactivePayments,
+    capturedAmounts,
   )
 
   const groups = useMemo<GoalGroup[]>(() => {

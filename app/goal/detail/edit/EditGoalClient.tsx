@@ -7,6 +7,7 @@ import SubPageScaffold from '@/app/components/SubPageScaffold'
 import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
 import { GoalFormSection } from '@/app/components/GoalFormSections/GoalFormSection'
 import MaturityMismatchConfirmModal from '@/app/components/Common/MaturityMismatchConfirmModal'
+import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialog'
 import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
@@ -20,15 +21,28 @@ import type { Goal, GoalCreateInput } from '@/app/types/goal'
 interface EditFormProps {
   goal: Goal
   userId: string | undefined
-  onCancel: () => void
+  onExit: () => void
 }
 
-function EditForm({ goal, userId, onCancel }: EditFormProps) {
+function EditForm({ goal, userId, onExit }: EditFormProps) {
   const router = useRouter()
   const { values, setField, isValid, toCreateInput } = useGoalForm(goal)
   const { updateGoal, isUpdating } = useGoalUpdate(userId)
   const { records } = useInvestmentsContext()
   const [confirmOpen, setConfirmOpen] = useState<boolean>(false)
+  const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
+
+  // 변경사항이 있으면 뒤로가기·취소 시 이탈 확인을 띄운다.
+  const [initialSnapshot] = useState<string>(() => JSON.stringify(values))
+  const isDirty = JSON.stringify(values) !== initialSnapshot
+
+  const requestExit = (): void => {
+    if (isDirty) {
+      setExitDialogOpen(true)
+      return
+    }
+    onExit()
+  }
 
   // 케이스 A 사전 안내: 새 종료일이 묶인 적금 만기보다 빠른지 검사.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
@@ -68,7 +82,7 @@ function EditForm({ goal, userId, onCancel }: EditFormProps) {
   }
 
   return (
-    <>
+    <SubPageScaffold onBack={requestExit} contentClassName="py-6">
       <div className="mb-8">
         <h1 className="text-xl font-bold text-foreground mb-3">목적 다듬기</h1>
         <p className="text-sm text-foreground-subtle">
@@ -93,7 +107,7 @@ function EditForm({ goal, userId, onCancel }: EditFormProps) {
         />
         <button
           type="button"
-          onClick={onCancel}
+          onClick={requestExit}
           disabled={isUpdating}
           className="w-full text-sm text-foreground-subtle py-2 hover:text-foreground transition-colors disabled:opacity-50"
         >
@@ -114,7 +128,16 @@ function EditForm({ goal, userId, onCancel }: EditFormProps) {
           isProcessing={isUpdating}
         />
       )}
-    </>
+
+      <ExitConfirmDialog
+        isOpen={exitDialogOpen}
+        onClose={() => setExitDialogOpen(false)}
+        onConfirm={() => {
+          setExitDialogOpen(false)
+          onExit()
+        }}
+      />
+    </SubPageScaffold>
   )
 }
 
@@ -160,9 +183,5 @@ export default function EditGoalClient() {
     )
   }
 
-  return (
-    <SubPageScaffold onBack={goBack} contentClassName="py-6">
-      <EditForm goal={goal} userId={userId} onCancel={goBack} />
-    </SubPageScaffold>
-  )
+  return <EditForm goal={goal} userId={userId} onExit={goBack} />
 }

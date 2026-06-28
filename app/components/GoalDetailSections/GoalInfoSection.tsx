@@ -1,7 +1,6 @@
 'use client'
 
 import { formatCurrency } from '@/lib/utils'
-import { formatFullDate } from '@/app/utils/date'
 import { InvestmentField } from '@/app/components/Common/InvestmentField'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 
@@ -23,12 +22,6 @@ export function GoalInfoSection({ goal, progress }: GoalInfoSectionProps) {
         <InvestmentField
           label="목표 금액"
           value={hasTarget ? formatCurrency(goal.target_amount) : '미설정'}
-          isEditMode={false}
-        />
-
-        <InvestmentField
-          label="마감일"
-          value={goal.target_date ? formatFullDate(new Date(goal.target_date)) : '없음'}
           isEditMode={false}
         />
 

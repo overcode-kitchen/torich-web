@@ -4,8 +4,9 @@ import { useMemo } from 'react'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 import type { Investment } from '@/app/types/investment'
 import { getStartDate } from '@/app/types/investment'
-import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { PaymentHistoryMap, CapturedAmountsMap } from '@/app/hooks/payment/usePaymentHistory'
 import { calculateSavingsMaturity } from '@/app/utils/savingsMaturity'
+import { getRecordRealizedPrincipal } from '@/app/utils/realized-principal'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -21,14 +22,6 @@ function monthsBetween(from: Date, to: Date): number {
   return yearDiff * 12 + monthDiff + dayAdjust
 }
 
-function paidCount(
-  recordId: string,
-  auto: PaymentHistoryMap,
-  retro: PaymentHistoryMap,
-): number {
-  return (auto.get(recordId)?.size ?? 0) + (retro.get(recordId)?.size ?? 0)
-}
-
 /**
  * 묶인 record들의 실현된(이미 확정된) 금액 합.
  * - 미정산(settled_at == null): 실제 납입 원금 합 (payment_history 기준)
@@ -41,11 +34,10 @@ function sumRealizedAmount(
   records: Investment[],
   auto: PaymentHistoryMap,
   retro: PaymentHistoryMap,
+  captured: CapturedAmountsMap,
 ): number {
   let total = 0
   for (const r of records) {
-    if (!r.monthly_amount || r.monthly_amount <= 0) continue
-
     if (r.settled_at && r.record_type === 'savings') {
       const maturity = calculateSavingsMaturity(r)
       if (maturity) {
@@ -53,7 +45,8 @@ function sumRealizedAmount(
         continue
       }
     }
-    total += paidCount(r.id, auto, retro) * r.monthly_amount
+    // 매수 시점 실제 금액으로 합산(캡처 없는 건만 현재 금액 폴백) → 금액 수정 시 과거 불변
+    total += getRecordRealizedPrincipal(r, auto, retro, captured)
   }
   return total
 }
@@ -92,11 +85,12 @@ function calculateGoalProgress(
   linkedRecords: Investment[],
   auto: PaymentHistoryMap,
   retro: PaymentHistoryMap,
+  captured: CapturedAmountsMap,
 ): GoalProgress {
   const today = new Date()
   const targetDate = goal.target_date ? new Date(goal.target_date) : null
 
-  const realizedAmount = sumRealizedAmount(linkedRecords, auto, retro)
+  const realizedAmount = sumRealizedAmount(linkedRecords, auto, retro, captured)
   const currentValue = goal.external_amount + realizedAmount
 
   const projectedValue =
@@ -131,6 +125,7 @@ function calculateGoalProgress(
 }
 
 const EMPTY_MAP: PaymentHistoryMap = new Map()
+const EMPTY_CAPTURED: CapturedAmountsMap = new Map()
 
 /**
  * 단일 목적의 진척도 계산.
@@ -143,6 +138,7 @@ export function useGoalProgress(
   records: Investment[],
   completedPayments: PaymentHistoryMap = EMPTY_MAP,
   retroactivePayments: PaymentHistoryMap = EMPTY_MAP,
+  capturedAmounts: CapturedAmountsMap = EMPTY_CAPTURED,
 ): GoalProgress | null {
   return useMemo(() => {
     if (!goal) return null
@@ -152,8 +148,9 @@ export function useGoalProgress(
       linked,
       completedPayments,
       retroactivePayments,
+      capturedAmounts,
     )
-  }, [goal, records, completedPayments, retroactivePayments])
+  }, [goal, records, completedPayments, retroactivePayments, capturedAmounts])
 }
 
 /**
@@ -164,6 +161,7 @@ export function useGoalsProgress(
   records: Investment[],
   completedPayments: PaymentHistoryMap = EMPTY_MAP,
   retroactivePayments: PaymentHistoryMap = EMPTY_MAP,
+  capturedAmounts: CapturedAmountsMap = EMPTY_CAPTURED,
 ): Map<string, GoalProgress> {
   return useMemo(() => {
     const map = new Map<string, GoalProgress>()
@@ -176,9 +174,10 @@ export function useGoalsProgress(
           linked,
           completedPayments,
           retroactivePayments,
+          capturedAmounts,
         ),
       )
     }
     return map
-  }, [goals, records, completedPayments, retroactivePayments])
+  }, [goals, records, completedPayments, retroactivePayments, capturedAmounts])
 }

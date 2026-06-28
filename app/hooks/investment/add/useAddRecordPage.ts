@@ -56,6 +56,7 @@ export function useAddRecordPage() {
     goalId,
     mode: isEditMode ? 'edit' : 'create',
     recordId: isEditMode ? editId ?? undefined : undefined,
+    initData: edit.initData,
   })
 
   const savingsCashSubmit = useSavingsCashSubmit({

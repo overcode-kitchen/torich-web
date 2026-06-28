@@ -42,7 +42,7 @@ export default function ExitConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            className="flex-1 py-3 text-base font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors"
+            className="flex-1 py-3 text-base font-medium text-white bg-destructive rounded-xl hover:bg-destructive/90 transition-colors"
           >
             그만두기
           </button>

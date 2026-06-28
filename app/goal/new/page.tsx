@@ -113,11 +113,11 @@ function NewGoalContent() {
       >
         <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-2xl px-4 pt-4">
           <PrimaryCTAButton
-            label={flow.isAtLastStep ? '이대로 만들기' : '다음으로'}
+            label={flow.isAtLastStep ? '저장하기' : '다음으로'}
             onClick={handleAction}
             disabled={!canAdvance}
             loading={isCreating}
-            loadingLabel="만드는 중..."
+            loadingLabel="저장 중..."
           />
         </div>
       </div>

@@ -28,6 +28,8 @@ interface DateSelectSheetProps {
   onClear?: () => void
   /** 날짜 미선택 시 푸터에 표시할 문구 */
   emptyLabel?: string
+  /** 연도 휠을 올해보다 과거로 몇 년까지 열지 (시작일 등 과거 선택용). 기본 0(과거 불가). */
+  pastYears?: number
 }
 
 function shiftMonth(base: Date, delta: number): Date {
@@ -47,11 +49,12 @@ export default function DateSelectSheet({
   title = '날짜 선택',
   onClear,
   emptyLabel = '선택 안 함',
+  pastYears = 0,
 }: DateSelectSheetProps) {
   const currentYear = new Date().getFullYear()
   const selectedYear = selectedDate?.getFullYear() ?? currentYear
-  // 휠 연도 범위: 과거 선택값도 포괄하고, 장기 목표를 위해 +30년까지 노출.
-  const startYear = Math.min(currentYear, selectedYear)
+  // 휠 연도 범위: 과거 선택값·pastYears(과거 시작일 등)를 포괄하고, 장기 목표를 위해 +30년까지 노출.
+  const startYear = Math.min(currentYear - pastYears, selectedYear)
   const endYear = Math.max(currentYear + 30, selectedYear)
 
   const [month, setMonth] = useState<Date>(selectedDate ?? new Date())

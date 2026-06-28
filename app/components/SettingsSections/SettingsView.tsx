@@ -1,10 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import { Switch } from '@/components/ui/switch'
 import { SettingsSection } from './SettingsSection'
 import { ThemeSelector } from '@/app/components/ThemeSections/ThemeSelector'
 import { BrandStorySheet } from '@/app/components/BrandStorySheet'
+import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { SettingsItem } from './SettingsItem'
 import type { Theme } from '@/app/components/ThemeSections/ThemeProvider'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
@@ -59,6 +61,7 @@ export default function SettingsView({
     currentVersion,
 }: SettingsViewProps) {
     const isNativeApp = useIsNativeApp()
+    const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
 
     const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
     const contentPaddingTop = isNativeApp
@@ -141,7 +144,7 @@ export default function SettingsView({
                 <SettingsSection title="계정 삭제" className="mt-6">
                     <SettingsItem
                         label={isDeletingAccount ? '회원 탈퇴 중...' : '회원 탈퇴'}
-                        onClick={handleDeleteAccount}
+                        onClick={() => setShowDeleteModal(true)}
                         disabled={isDeletingAccount || isLoggingOut}
                         destructive
                         showChevron={false}
@@ -200,6 +203,15 @@ export default function SettingsView({
                     />
                 </SettingsSection>
             </div>
+
+            <DeleteConfirmModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleDeleteAccount}
+                isDeleting={isDeletingAccount}
+                title="정말 탈퇴할까요?"
+                description="모든 데이터가 삭제되며 복구할 수 없어요."
+            />
         </main>
     )
 }

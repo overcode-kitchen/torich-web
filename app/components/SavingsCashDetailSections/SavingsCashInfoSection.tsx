@@ -59,7 +59,7 @@ export function SavingsCashInfoSection({
   return (
     <section ref={infoRef} className="py-8">
       <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
-        투자 정보
+        적립 정보
       </h3>
       <div className="space-y-6">
         <TappableField

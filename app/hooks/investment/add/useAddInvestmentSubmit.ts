@@ -35,6 +35,8 @@ export interface UseAddInvestmentSubmitProps {
   mode?: 'create' | 'edit'
   /** edit 모드에서 수정할 records.id */
   recordId?: string
+  /** edit 모드 원본 record — 저장 시 폼으로 복원 불가한 값(종목코드·사용자지정 수익률) 보존용 */
+  initData?: Investment | null
 }
 
 export interface UseAddInvestmentSubmitReturn {
@@ -60,6 +62,7 @@ export function useAddInvestmentSubmit({
   goalId,
   mode = 'create',
   recordId,
+  initData,
 }: UseAddInvestmentSubmitProps): UseAddInvestmentSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
@@ -84,7 +87,7 @@ export function useAddInvestmentSubmit({
 
     const isValid = validateAndHandleError(
       validation,
-      (message) => alert(message),
+      (message) => toastError(message),
       () => router.push('/login')
     )
 
@@ -113,7 +116,22 @@ export function useAddInvestmentSubmit({
 
       // 편집 모드: updateInvestment에 위임(단일 진실 출처). 중복 .update() 방지.
       if (mode === 'edit' && recordId) {
-        await updateInvestment(recordId, formattedData as Partial<Investment>)
+        // 폼 복원만으로는 안전하지 않은 값을 원본 기준으로 보존한다.
+        // - symbol: 폼에서 비었는데 수동입력이 아니면 원본 종목코드 유지(유실 방지)
+        // - is_custom_rate: 수익률을 안 바꿨으면 원본 플래그 유지(원본 시스템 수익률을
+        //   기록만으로 알 수 없어 폼 복원으로는 정확히 재현 불가)
+        let dataToSave: Partial<Investment> = formattedData as Partial<Investment>
+        if (initData) {
+          const rateUnchanged = formattedData.annual_rate === initData.annual_rate
+          dataToSave = {
+            ...formattedData,
+            symbol: formattedData.symbol ?? (isManualInput ? null : initData.symbol ?? null),
+            is_custom_rate: rateUnchanged
+              ? initData.is_custom_rate ?? formattedData.is_custom_rate
+              : formattedData.is_custom_rate,
+          }
+        }
+        await updateInvestment(recordId, dataToSave)
 
         track('investment_update_success', {
           amount_bucket: amountBucket(formattedData.monthly_amount),

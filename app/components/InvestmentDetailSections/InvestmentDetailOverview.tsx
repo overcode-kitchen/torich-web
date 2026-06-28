@@ -60,7 +60,7 @@ export function InvestmentDetailOverview({
         <p className="text-sm text-foreground-subtle">종목명은 수정할 수 없습니다</p>
       ) : (
         completed && (
-          <p className="text-sm font-medium text-green-600">
+          <p className="text-sm font-medium text-primary">
             목표 달성! 🎉
           </p>
         )
