@@ -13,7 +13,7 @@ import { track } from '@/app/lib/analytics'
 
 export default function StatsPage() {
   const { user, records, activeRecords, isLoading, router } = useStatsData()
-  const { completedPayments, retroactivePayments, isLoading: historyLoading } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, capturedAmounts, isLoading: historyLoading } = usePaymentHistory()
   // '이미 모은 돈'(goal.external_amount) 합산용 — 자산 누적과 목적 진척의 금액 기준을 맞춘다
   const { goals } = useGoals(user?.id)
 
@@ -47,7 +47,7 @@ export default function StatsPage() {
     thisMonth,
     goalStats,
     habitStats,
-  } = useStatsCalculations({ records, activeRecords, completedPayments, retroactivePayments, goals })
+  } = useStatsCalculations({ records, activeRecords, completedPayments, retroactivePayments, capturedAmounts, goals })
 
   const {
     periodCompletionRate,
