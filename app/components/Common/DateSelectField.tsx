@@ -54,7 +54,7 @@ export default function DateSelectField({
 
   const buttonClass =
     variant === 'flow'
-      ? 'w-full flex items-center justify-between bg-field-bg rounded-xl h-12 px-4 text-base text-foreground border border-border-subtle hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-ring/60 transition-all disabled:opacity-50'
+      ? 'w-full flex items-center justify-between bg-field-bg rounded-xl h-12 px-4 text-base text-foreground border border-border-subtle/50 hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-ring/60 transition-all disabled:opacity-50'
       : 'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-sm text-foreground border border-input hover:bg-surface transition-colors disabled:opacity-50'
 
   return (

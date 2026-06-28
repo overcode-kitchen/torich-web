@@ -24,7 +24,7 @@ export default function ShareInput({ value, onChange, onUnitTypeToggle }: ShareI
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="0"
-          className="w-full h-16 rounded-xl bg-field-bg px-4 pr-16 text-2xl font-bold text-center tracking-tight text-foreground placeholder:text-foreground-subtle border border-border-subtle focus:outline-none focus:ring-2 focus:ring-ring/60 transition-all"
+          className="w-full h-16 rounded-xl bg-field-bg px-4 pr-16 text-2xl font-bold text-center tracking-tight text-foreground placeholder:text-foreground-subtle border border-border-subtle/50 focus:outline-none focus:ring-2 focus:ring-ring/60 transition-all"
         />
         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-base font-medium text-foreground-soft pointer-events-none">
           주
