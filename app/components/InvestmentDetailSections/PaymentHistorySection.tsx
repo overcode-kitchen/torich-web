@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
+import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { buildCapturedByMonth } from '@/app/utils/realized-principal'
 import type { PaymentHistorySectionProps as OriginalPaymentHistorySectionProps } from './types'
 import { PaymentHistoryTable } from './PaymentHistoryTable'
 import BulkCompleteRetroactiveModal from './BulkCompleteRetroactiveModal'
@@ -17,6 +19,9 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
   } catch (e) {
     // Context missing, will rely on props
   }
+
+  // 각 납입의 매수 시점 실제 금액(원) — 표에서 행별 금액을 현재 금액이 아닌 그때 금액으로 표시
+  const { capturedAmounts } = usePaymentHistory()
 
   const item = props.item || contextValue?.item
   const investmentData = props.paymentHistory !== undefined ? props : contextValue?.investmentData
@@ -34,6 +39,11 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
 
   const [showBulkConfirm, setShowBulkConfirm] = useState(false)
   const [isBulkPending, setIsBulkPending] = useState(false)
+
+  const capturedByMonth = useMemo(
+    () => buildCapturedByMonth(capturedAmounts.get(item?.id ?? '')),
+    [capturedAmounts, item?.id],
+  )
 
   if (!item || !paymentHistory) return null
 
@@ -79,6 +89,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             rows={retroactivePaymentHistory!}
             variant="retroactive"
             onToggleRetroactive={onToggleRetroactive}
+            capturedByMonth={capturedByMonth}
           />
           <div className="flex items-center justify-between gap-2 px-1 pt-1">
             <p className="text-xs text-foreground-subtle">
@@ -115,6 +126,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             item={item}
             rows={paymentHistory}
             variant="auto"
+            capturedByMonth={capturedByMonth}
           />
           {hasMorePaymentHistory && (
             <button

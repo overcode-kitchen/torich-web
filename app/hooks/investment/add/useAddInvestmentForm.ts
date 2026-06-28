@@ -111,18 +111,28 @@ export function useAddInvestmentForm(
     updatedStockSearch.setOriginalSystemRate(initData.annual_rate ?? null)
 
     if (initData.symbol) {
-      // 주수 모드면 원본 monthly_amount/monthly_shares로 1주 시세를 역산해 보존
-      const impliedPrice =
-        shares && initData.monthly_shares
-          ? initData.monthly_amount / initData.monthly_shares
-          : 0
       manualInput.setIsManualInput(false)
-      updatedStockSearch.setSelectedStock({
-        symbol: initData.symbol,
-        name: initData.title ?? '',
-        averageRate: initData.annual_rate ?? 0,
-        currentPrice: impliedPrice,
-      })
+      if (shares && initData.monthly_shares) {
+        // 주수 모드: 원본 monthly_amount/monthly_shares로 1주 시세를 역산해 보존(저장 시 금액 불변)
+        updatedStockSearch.setSelectedStock({
+          symbol: initData.symbol,
+          name: initData.title ?? '',
+          averageRate: initData.annual_rate ?? 0,
+          currentPrice: initData.monthly_amount / initData.monthly_shares,
+        })
+      } else {
+        // 금액 모드: 시세가 없으면 주수 모드로 전환할 수 없으므로(시세 필요) 실제 현재가를 받아온다.
+        // handleSelectStock이 시세 fetch + selectedStock 설정을 하되 수익률을 시스템값으로 덮으므로
+        // 직후 저장된 수익률로 복원한다.
+        const symbol = initData.symbol
+        const name = initData.title ?? ''
+        const savedRate = initData.annual_rate ?? 0
+        void (async () => {
+          await updatedStockSearch.handleSelectStock({ symbol, name })
+          updatedStockSearch.setAnnualRate(savedRate)
+          updatedStockSearch.setOriginalSystemRate(savedRate)
+        })()
+      }
     } else {
       manualInput.setIsManualInput(true)
       updatedStockSearch.setSelectedStock(null)

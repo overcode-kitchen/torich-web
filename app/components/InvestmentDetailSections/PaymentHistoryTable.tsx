@@ -24,6 +24,8 @@ interface PaymentHistoryTableProps {
   rows: PaymentHistoryRow[]
   variant: 'auto' | 'retroactive'
   onToggleRetroactive?: (yearMonth: string, currentCompleted: boolean) => void
+  /** 월(YYYY-MM) → 그 달 매수 시점 실제 납입액(원). 없는 달은 현재 monthly_amount로 폴백 */
+  capturedByMonth?: Map<string, number>
 }
 
 export function PaymentHistoryTable({
@@ -31,6 +33,7 @@ export function PaymentHistoryTable({
   rows,
   variant,
   onToggleRetroactive,
+  capturedByMonth,
 }: PaymentHistoryTableProps) {
   const isRetro = variant === 'retroactive'
   const canToggle = isRetro && !!onToggleRetroactive
@@ -107,7 +110,7 @@ export function PaymentHistoryTable({
                   isRetro ? 'text-foreground-subtle' : 'text-foreground-muted'
                 )}
               >
-                {formatCurrency(item.monthly_amount)}
+                {formatCurrency(capturedByMonth?.get(yearMonth) ?? item.monthly_amount)}
               </TableCell>
               <TableCell className="text-sm">
                 {renderStatus(completed, isRetro, canToggle)}

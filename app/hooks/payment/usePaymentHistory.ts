@@ -9,18 +9,24 @@ import { capturePriceForPayment } from '@/app/utils/payment-capture'
 import { track, monthOffset, countBucket } from '@/app/lib/analytics'
 
 export type PaymentHistoryMap = Map<string, Set<string>> // recordId -> Set<YYYY-MM-DD>
+/** recordId -> (YYYY-MM-DD -> 그 납입 시점 실제 납입액(원). captured_shares × captured_price) */
+export type CapturedAmountsMap = Map<string, Map<string, number>>
 
 export function usePaymentHistory() {
     const { user } = useAuth()
     const supabase = createClient()
     const [completedPayments, setCompletedPayments] = useState<PaymentHistoryMap>(new Map())
     const [retroactivePayments, setRetroactivePayments] = useState<PaymentHistoryMap>(new Map())
+    // 각 납입의 "그때 실제 납입액"(원). 통계·목적 진척의 실현 원금이 현재 금액이 아니라
+    // 매수 시점 금액을 쓰도록 하기 위함. 캡처 없는 옛/소급 납입은 여기에 없어 호출측이 폴백한다.
+    const [capturedAmounts, setCapturedAmounts] = useState<CapturedAmountsMap>(new Map())
     const [isLoading, setIsLoading] = useState(true)
 
     const fetchHistory = useCallback(async () => {
         if (!user) {
             setCompletedPayments(new Map())
             setRetroactivePayments(new Map())
+            setCapturedAmounts(new Map())
             setIsLoading(false)
             return
         }
@@ -28,22 +34,34 @@ export function usePaymentHistory() {
         try {
             const { data, error } = await supabase
                 .from('payment_history')
-                .select('record_id, payment_date, is_retroactive')
+                .select('record_id, payment_date, is_retroactive, captured_shares, captured_price')
                 .eq('user_id', user.id)
 
             if (error) throw error
 
             const autoMap = new Map<string, Set<string>>()
             const retroMap = new Map<string, Set<string>>()
+            const capturedMap: CapturedAmountsMap = new Map()
             data?.forEach((item) => {
                 const target = item.is_retroactive ? retroMap : autoMap
                 if (!target.has(item.record_id)) {
                     target.set(item.record_id, new Set())
                 }
                 target.get(item.record_id)?.add(item.payment_date)
+
+                // 매수 시점 실제 납입액 = 캡처 주수 × 캡처 시세 (둘 다 있을 때만)
+                const shares = item.captured_shares
+                const price = item.captured_price
+                if (shares != null && price != null && shares > 0 && price > 0) {
+                    if (!capturedMap.has(item.record_id)) {
+                        capturedMap.set(item.record_id, new Map())
+                    }
+                    capturedMap.get(item.record_id)?.set(item.payment_date, Math.round(shares * price))
+                }
             })
             setCompletedPayments(autoMap)
             setRetroactivePayments(retroMap)
+            setCapturedAmounts(capturedMap)
         } catch {
             toastError(TOAST_MESSAGES.paymentHistoryLoadFailed)
         } finally {
@@ -168,6 +186,7 @@ export function usePaymentHistory() {
     return {
         completedPayments,
         retroactivePayments,
+        capturedAmounts,
         isLoading,
         togglePayment,
         toggleRetroactivePayment,
