@@ -1,11 +1,13 @@
 // Supabase Edge Function: schedule-re-reminders
 // pg_cron으로 매일 KST 00:10(UTC 15:10)에 호출되어,
 // 어제 납입일이었는데 payment_history에 완료 기록이 없는 경우 "다음날 재알림"을 scheduled_notifications에 예약합니다.
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference -- Deno ambient 타입 선언은 import로 대체 불가
 /// <reference path="../../../types/supabase-deno.d.ts" />
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import {
   generatePaymentDates,
+  getNotificationTerms,
   type SchedulePushToken,
   type ScheduledNotificationRow,
 } from '../_shared/notification-schedule.ts'
@@ -77,7 +79,7 @@ Deno.serve(async (req) => {
     // 1. 알림 ON인 record 전부 조회. 재알림 메시지 분기를 위해 unit_type/monthly_shares도 같이 가져옴
     const { data: records, error: recordsError } = await supabase
       .from('records')
-      .select('id, user_id, title, start_date, period_years, investment_days, unit_type, monthly_shares')
+      .select('id, user_id, title, start_date, period_years, investment_days, unit_type, monthly_shares, record_type')
       .eq('notification_enabled', true)
 
     if (recordsError) {
@@ -97,6 +99,7 @@ Deno.serve(async (req) => {
       investment_days: number[]
       unit_type?: 'amount' | 'shares'
       monthly_shares?: number | null
+      record_type?: 'investment' | 'savings' | 'cash'
     }>
 
     // 2. 어제가 유효 납입일인 record만 필터
@@ -256,9 +259,10 @@ Deno.serve(async (req) => {
         record.unit_type === 'shares' &&
         typeof record.monthly_shares === 'number' &&
         record.monthly_shares > 0
+      const { dateNoun } = getNotificationTerms(record.record_type)
       const bodyText = isShareMode
         ? `${record.title} - 어제 ${record.monthly_shares}주 매수일을 놓치셨어요. 오늘 완료해 주세요.`
-        : `${record.title} - 매수일이 지났어요. 오늘 완료해 주세요.`
+        : `${record.title} - ${dateNoun}이 지났어요. 오늘 완료해 주세요.`
 
       for (const token of tokens) {
         allRows.push({
