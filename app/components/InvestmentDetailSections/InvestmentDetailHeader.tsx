@@ -1,6 +1,7 @@
 'use client'
 
 import { ArrowLeft, Bell, BellSlash, DotsThreeVertical } from '@phosphor-icons/react'
+import { useRouter } from 'next/navigation'
 import { Investment } from '@/app/types/investment'
 import {
     DropdownMenu,
@@ -33,6 +34,7 @@ export function InvestmentDetailHeader({
     toggleNotification,
     isGlobalNotificationOn,
 }: InvestmentDetailHeaderProps) {
+    const router = useRouter()
     const isNotificationDisabled = !isGlobalNotificationOn
 
     return (
@@ -82,7 +84,7 @@ export function InvestmentDetailHeader({
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setIsEditMode(true)}>
+                            <DropdownMenuItem onClick={() => router.push(`/add?editId=${item.id}`)}>
                                 수정하기
                             </DropdownMenuItem>
                             <DropdownMenuItem
