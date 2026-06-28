@@ -207,8 +207,8 @@
   --brand-accent-bg: var(--palette-brand-50);
   --brand-accent-text: var(--palette-brand-700);
   --brand-accent-border: var(--palette-brand-200);
-  /* 입력칸 배경: 라이트=연한 민트 틴트 */
-  --field-bg: var(--palette-brand-50);
+  /* 입력칸 배경: 라이트=깔끔한 연한 회색(솔리드, 반투명 회색의 칙칙함 제거) */
+  --field-bg: var(--palette-coolgray-50);
   /* 차트 색상 */
   --chart-profit: var(--palette-brand-500);
   --chart-principal: var(--palette-brand-100);
