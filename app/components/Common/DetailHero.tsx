@@ -4,8 +4,8 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface DetailHeroProps {
-  /** 히어로 숫자 위 라벨 (예: "현재 모은 금액", "총 납입액") */
-  label: string
+  /** 히어로 숫자 위 라벨 (예: "총 납입액"). 생략 시 숫자만 노출 */
+  label?: string
   /** 주인공 숫자 (이미 포맷된 문자열) */
   amount: string
   /** 숫자 아래 보조 줄 (예: "목표까지 100만원") */
@@ -23,7 +23,7 @@ export interface DetailHeroProps {
 export function DetailHero({ label, amount, sub, children, className }: DetailHeroProps) {
   return (
     <section className={cn('pt-2 pb-6', className)}>
-      <p className="text-sm font-medium text-muted-foreground">{label}</p>
+      {label && <p className="text-sm font-medium text-muted-foreground">{label}</p>}
       <p className="mt-1 text-3xl font-bold tracking-tight text-foreground tabular-nums break-all">
         {amount}
       </p>

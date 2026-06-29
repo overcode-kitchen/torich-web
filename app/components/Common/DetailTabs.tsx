@@ -2,17 +2,16 @@
 
 import { cn } from '@/lib/utils'
 import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
-import type { TabType } from '@/app/contexts/InvestmentTabContext'
 
 export interface DetailTab {
-  key: TabType
+  key: string
   label: string
 }
 
 export interface DetailTabsProps {
   tabs: DetailTab[]
-  activeTab: TabType
-  onTabClick: (tab: TabType) => void
+  activeTab: string
+  onTabClick: (tab: string) => void
   /**
    * 본문 가로 패딩만큼 끝까지 늘려 보더를 화면 폭에 맞추는 클래스.
    * 예: 본문이 px-6면 '-mx-6 px-6'.
