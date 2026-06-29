@@ -1,14 +1,15 @@
 'use client'
 
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { CalendarBlank, CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
+import { useEffect, useRef, useState } from 'react'
+import { CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { DetailHero } from '@/app/components/Common/DetailHero'
-import { ProgressBar } from '@/app/components/Common/ProgressBar'
+import { DetailProgressCard } from '@/app/components/Common/DetailProgressCard'
+import { DetailTabs } from '@/app/components/Common/DetailTabs'
 import { GoalInfoSection } from '@/app/components/GoalDetailSections/GoalInfoSection'
-import { GoalLifecycleSection } from '@/app/components/GoalDetailSections/GoalLifecycleSection'
 import { LinkedRecordsSection } from '@/app/components/GoalDetailSections/LinkedRecordsSection'
 import { UnlinkedRecordsSection } from '@/app/components/GoalDetailSections/UnlinkedRecordsSection'
 import { useGoalProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
@@ -18,7 +19,6 @@ import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import { amountBucket, daysBetween, track } from '@/app/lib/analytics'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -26,8 +26,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { formatFullDate } from '@/app/utils/date'
-import { dDayLabel } from '@/app/utils/goal-format'
+import { resolvePurposeIcon } from '@/app/constants/goal'
+import { formatKoreanDate } from '@/app/utils/date'
 import { formatCurrency } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
 
@@ -37,6 +37,10 @@ export default function GoalDetailClient() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | undefined>(undefined)
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
+  const [activeTab, setActiveTab] = useState<string>('info')
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const infoRef = useRef<HTMLDivElement>(null)
+  const linkedRef = useRef<HTMLDivElement>(null)
   const { goBack } = useFlowBack({
     rootPath: '/',
     enableHistoryFallback: true,
@@ -76,6 +80,19 @@ export default function GoalDetailClient() {
       })
     }
   }, [goal, progress, updateGoal, setGoal, records.length])
+
+  function handleTabClick(tab: string): void {
+    setActiveTab(tab)
+    const container = scrollContainerRef.current
+    const target = tab === 'info' ? infoRef.current : linkedRef.current
+    if (!container || !target) return
+    const headerAndTabsHeight = 52 + 40
+    const containerRect = container.getBoundingClientRect()
+    const targetRect = target.getBoundingClientRect()
+    const offset =
+      targetRect.top - containerRect.top + container.scrollTop - headerAndTabsHeight
+    container.scrollTo({ top: offset, behavior: 'smooth' })
+  }
 
   async function confirmArchive(): Promise<void> {
     if (!goal) return
@@ -124,6 +141,24 @@ export default function GoalDetailClient() {
     )
   }
 
+  const icon = resolvePurposeIcon(goal.emoji)
+  const remaining = Math.max(0, goal.target_amount - progress.currentValue)
+  const isPastDue =
+    progress.dDay !== null &&
+    progress.dDay < 0 &&
+    goal.archived_at === null &&
+    !progress.isCompleted
+
+  // 진행률 박스 안에 들어갈 상태 메시지 (달성/마감 지남) — 기존 하단 카드를 위로 통합
+  const progressStatus = progress.isCompleted ? (
+    <p className="font-semibold text-success">🎉 목표를 달성했어요</p>
+  ) : isPastDue ? (
+    <p className="text-foreground-muted">
+      마감일이 지났어요
+      {progress.progressPercent !== null && ` · 달성률 ${progress.progressPercent}%`}
+    </p>
+  ) : undefined
+
   const headerActions = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -156,87 +191,84 @@ export default function GoalDetailClient() {
       surfaceClassName="bg-background"
       contentClassName="px-6"
       actions={headerActions}
+      scrollContainerRef={scrollContainerRef}
     >
-      {/* 제목 + 메모 */}
-      <section className="pt-6 pb-2 space-y-4">
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          {goal.name}
-        </h2>
+      {/* 아이콘 + 제목 + 메모 */}
+      <section className="pt-6 pb-5 space-y-3">
+        <div className="flex items-center gap-3">
+          {icon && (
+            <Image
+              src={icon.src}
+              alt=""
+              width={40}
+              height={40}
+              className="h-10 w-10 shrink-0 object-contain"
+            />
+          )}
+          <h2 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground break-keep">
+            {goal.name}
+          </h2>
+        </div>
         {goal.memo?.trim() && (
           <p className="text-sm text-foreground-muted whitespace-pre-line break-words">
             {goal.memo}
           </p>
         )}
-        {goal.target_date && (
-          <Alert className="mt-1 border-none bg-primary/10 text-foreground px-4 py-3 rounded-2xl">
-            <CalendarBlank className="w-5 h-5 text-primary" />
-            <div className="flex items-baseline justify-between gap-4 col-start-2 w-full">
-              <div>
-                <AlertTitle className="text-sm font-medium text-foreground-soft">
-                  마감일
-                </AlertTitle>
-                <AlertDescription className="mt-0.5 text-base font-semibold text-foreground">
-                  {dDayLabel(progress.dDay)} ·{' '}
-                  {formatFullDate(new Date(goal.target_date))}
-                </AlertDescription>
-              </div>
-            </div>
-          </Alert>
-        )}
       </section>
 
-      {/* 히어로: 현재 모은 금액 + 진행률 바 */}
-      <div className="border-b border-border-subtle-lighter">
-        <DetailHero
-          label="현재 모은 금액"
-          amount={formatCurrency(progress.currentValue)}
-          sub={
-            progress.progressPercent === null
-              ? '목표 금액을 정하면 진행률을 볼 수 있어요.'
-              : progress.isCompleted
-                ? '목표를 달성했어요 🎉'
-                : `목표까지 ${formatCurrency(Math.max(0, goal.target_amount - progress.currentValue))}`
-          }
-        >
-          {progress.progressPercent !== null && (
-            <div>
-              <div className="flex items-baseline justify-between mb-2">
-                <span className="text-sm font-medium text-muted-foreground">진행률</span>
-                <span className="text-sm font-bold text-foreground tabular-nums">
-                  {progress.progressPercent}%
-                </span>
-              </div>
-              <ProgressBar
-                percent={progress.progressPercent}
-                completed={progress.isCompleted}
-                label="목적 진행률"
-              />
-              <div className="flex justify-between text-xs text-foreground-muted mt-2">
-                <span>시작 {formatFullDate(new Date(goal.created_at))}</span>
-                {goal.target_date && (
-                  <span>마감 {formatFullDate(new Date(goal.target_date))}</span>
-                )}
-              </div>
-            </div>
-          )}
-        </DetailHero>
+      {/* 진행률 박스 (목표 금액이 있을 때만) */}
+      {progress.progressPercent !== null && (
+        <DetailProgressCard
+          percent={progress.progressPercent}
+          completed={progress.isCompleted}
+          startLabel={formatKoreanDate(new Date(goal.created_at))}
+          endLabel={goal.target_date ? formatKoreanDate(new Date(goal.target_date)) : undefined}
+          status={progressStatus}
+          ariaLabel="목적 진행률"
+        />
+      )}
+
+      {/* 히어로 숫자 (라벨 없이, 사용자가 바로 이해) */}
+      <DetailHero
+        className="pt-4"
+        amount={formatCurrency(progress.currentValue)}
+        sub={
+          progress.progressPercent === null
+            ? '목표 금액을 정하면 진행률을 볼 수 있어요.'
+            : progress.isCompleted
+              ? undefined
+              : `목표까지 ${formatCurrency(remaining)}`
+        }
+      />
+
+      {/* 섹션 탭바 */}
+      <DetailTabs
+        tabs={[
+          { key: 'info', label: '목적 정보' },
+          { key: 'linked', label: `묶인 투자${records.length > 0 ? ` (${records.length})` : ''}` },
+        ]}
+        activeTab={activeTab}
+        onTabClick={handleTabClick}
+        bleedClassName="-mx-6 px-6"
+      />
+
+      <div ref={infoRef}>
+        <GoalInfoSection goal={goal} progress={progress} />
       </div>
 
-      <GoalInfoSection goal={goal} progress={progress} />
-
-      <LinkedRecordsSection
-        records={records}
-        isLinking={isLinking}
-        onUnlink={(id) => void handleUnlink(id)}
-      />
+      <div ref={linkedRef}>
+        <LinkedRecordsSection
+          records={records}
+          isLinking={isLinking}
+          onUnlink={(id) => void handleUnlink(id)}
+        />
+      </div>
 
       <UnlinkedRecordsSection
         records={unlinkedRecords}
         isLinking={isLinking}
         onLink={(id) => void handleLink(id)}
       />
-
-      <GoalLifecycleSection goal={goal} progress={progress} />
 
       <DeleteConfirmModal
         isOpen={showDeleteModal}

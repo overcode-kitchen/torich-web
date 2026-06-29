@@ -21,7 +21,7 @@ export function LinkedRecordsSection({
   onUnlink,
 }: LinkedRecordsSectionProps) {
   return (
-    <section className="py-6 border-t border-border-subtle-lighter">
+    <section className="py-6">
       <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
         묶인 투자 {records.length > 0 && `(${records.length})`}
       </h3>
@@ -34,7 +34,7 @@ export function LinkedRecordsSection({
           {records.map((r) => (
             <li
               key={r.id}
-              className="flex items-center justify-between gap-4 border-b border-border-subtle px-2 py-3 last:border-b-0"
+              className="flex items-center justify-between gap-4 border-b border-border-subtle-lighter px-2 py-3 last:border-b-0"
             >
               <div className="min-w-0 flex flex-col gap-0.5">
                 <span className="text-sm font-semibold text-foreground truncate">
@@ -45,9 +45,10 @@ export function LinkedRecordsSection({
                 </span>
               </div>
               <Button
+                type="button"
                 size="xs"
-                variant="ghost"
-                className="shrink-0 text-muted-foreground hover:text-foreground-soft hover:bg-secondary h-auto min-h-[44px] px-3"
+                variant="soft"
+                className="shrink-0 px-3"
                 onClick={() => onUnlink(r.id)}
                 disabled={isLinking}
               >

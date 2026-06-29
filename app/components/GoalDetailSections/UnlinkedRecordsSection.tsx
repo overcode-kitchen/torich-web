@@ -36,7 +36,7 @@ export function UnlinkedRecordsSection({
         {records.map((r) => (
           <li
             key={r.id}
-            className="flex items-center justify-between gap-4 border-b border-border-subtle px-2 py-3 last:border-b-0"
+            className="flex items-center justify-between gap-4 border-b border-border-subtle-lighter px-2 py-3 last:border-b-0"
           >
             <div className="min-w-0 flex flex-col gap-0.5">
               <span className="text-sm font-semibold text-foreground truncate">
@@ -47,9 +47,10 @@ export function UnlinkedRecordsSection({
               </span>
             </div>
             <Button
+              type="button"
               size="xs"
               variant="outline"
-              className="shrink-0 h-auto min-h-[44px] px-4"
+              className="shrink-0 px-3"
               onClick={() => onLink(r.id)}
               disabled={isLinking}
             >
