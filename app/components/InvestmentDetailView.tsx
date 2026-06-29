@@ -210,7 +210,7 @@ function InternalInvestmentDetailView({
 // InvestmentDetailViewWithProvider로 감싸서 내보내기
 export default function InvestmentDetailView(props: InvestmentDetailViewProps) {
   return (
-    <InvestmentTabProvider>
+    <InvestmentTabProvider initialTab="info">
       <InternalInvestmentDetailView {...props} />
     </InvestmentTabProvider>
   )

@@ -39,7 +39,7 @@ interface SavingsCashDetailViewProps {
  */
 export default function SavingsCashDetailView(props: SavingsCashDetailViewProps) {
   return (
-    <InvestmentTabProvider>
+    <InvestmentTabProvider initialTab="info">
       <SavingsCashDetailViewInner {...props} />
     </InvestmentTabProvider>
   )
@@ -134,19 +134,6 @@ function SavingsCashDetailViewInner({
             onTitleClick={() => handleFieldTap('title')}
           />
 
-          {hasHistory && (
-            <DetailTabs
-              tabs={[
-                { key: 'overview', label: '개요' },
-                { key: 'info', label: '적립 정보' },
-                { key: 'history', label: '납입 기록' },
-              ]}
-              activeTab={activeTab}
-              onTabClick={handleTabClick}
-              bleedClassName="-mx-6 px-6"
-            />
-          )}
-
           <ProgressSection
             progress={detail.progress}
             completed={detail.completed}
@@ -156,6 +143,18 @@ function SavingsCashDetailViewInner({
             elapsedMonths={detail.elapsedMonths}
             totalPaidPrincipal={detail.totalPaidPrincipal}
           />
+
+          {hasHistory && (
+            <DetailTabs
+              tabs={[
+                { key: 'info', label: '적립 정보' },
+                { key: 'history', label: '납입 기록' },
+              ]}
+              activeTab={activeTab}
+              onTabClick={(tab) => handleTabClick(tab as typeof activeTab)}
+              bleedClassName="-mx-6 px-6"
+            />
+          )}
 
           <div className="divide-y divide-border-subtle-lighter">
             <SavingsCashInfoSection

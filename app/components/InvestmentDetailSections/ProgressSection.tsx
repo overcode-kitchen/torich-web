@@ -1,9 +1,9 @@
 'use client'
 
 import { formatCurrency } from '@/lib/utils'
-import { formatSmartDate, formatYearMonth, formatDuration } from '@/app/utils/date'
+import { formatKoreanDate, formatYearMonth, formatDuration } from '@/app/utils/date'
 import { DetailHero } from '@/app/components/Common/DetailHero'
-import { ProgressBar } from '@/app/components/Common/ProgressBar'
+import { DetailProgressCard } from '@/app/components/Common/DetailProgressCard'
 
 interface ProgressSectionProps {
   progress?: number | null
@@ -26,44 +26,42 @@ export function ProgressSection({
 }: ProgressSectionProps) {
   if (startDate === undefined) return null
 
-  // 적립형: 총 납입액을 히어로로, streak는 보조줄로
+  // 적립형: 진행률 바 없이 총 납입액 히어로 + streak 보조줄
   if (isHabitMode || !endDate) {
     const elapsedText =
       elapsedMonths > 0 ? `${formatDuration(elapsedMonths)}째 적립 중` : '이번 달부터 적립 시작'
 
     return (
-      <div className="border-b border-border-subtle-lighter">
-        <DetailHero
-          label="총 납입액"
-          amount={formatCurrency(totalPaidPrincipal)}
-          sub={`🔥 ${elapsedText} · ${formatYearMonth(startDate)}부터`}
-        />
-      </div>
-    )
-  }
-
-  // 목표형: 총 납입액 히어로 + 진행률 바
-  if (progress === null || progress === undefined) return null
-
-  return (
-    <div className="border-b border-border-subtle-lighter">
       <DetailHero
         label="총 납입액"
         amount={formatCurrency(totalPaidPrincipal)}
-        sub={completed ? '목표를 달성했어요 🎉' : undefined}
-      >
-        <div>
-          <div className="flex items-baseline justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">진행률</span>
-            <span className="text-sm font-bold text-foreground tabular-nums">{progress}%</span>
-          </div>
-          <ProgressBar percent={progress} completed={completed} label="투자 진행률" />
-          <div className="flex justify-between text-xs text-foreground-muted mt-2">
-            <span>{formatSmartDate(startDate)}</span>
-            <span>{formatSmartDate(endDate)}</span>
-          </div>
-        </div>
-      </DetailHero>
-    </div>
+        sub={`🔥 ${elapsedText} · ${formatYearMonth(startDate)}부터`}
+      />
+    )
+  }
+
+  // 목표형: 회색 진행률 박스 + 총 납입액 히어로
+  if (progress === null || progress === undefined) return null
+
+  return (
+    <>
+      <DetailProgressCard
+        percent={progress}
+        completed={completed}
+        startLabel={formatKoreanDate(startDate)}
+        endLabel={formatKoreanDate(endDate)}
+        status={
+          completed ? (
+            <p className="font-semibold text-success">🎉 목표를 달성했어요</p>
+          ) : undefined
+        }
+        ariaLabel="적립 진행률"
+      />
+      <DetailHero
+        className="pt-4"
+        label="총 납입액"
+        amount={formatCurrency(totalPaidPrincipal)}
+      />
+    </>
   )
 }

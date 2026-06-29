@@ -49,19 +49,7 @@ export function InvestmentDetailContent() {
                 titleRef={titleRef}
             />
 
-            {/* 전역 섹션 탭바 - 스크롤 전체 기준으로 헤더 바로 아래에 고정 */}
-            <DetailTabs
-                tabs={[
-                    { key: 'overview', label: '개요' },
-                    { key: 'info', label: '투자 정보' },
-                    { key: 'history', label: '납입 기록' },
-                ]}
-                activeTab={activeTab}
-                onTabClick={handleTabClick}
-                bleedClassName="-mx-6 px-6"
-            />
-
-            {/* 진행률 / 적립형 요약 - 수정 모드에서는 숨김 */}
+            {/* 진행률 박스 + 총 납입액 히어로 - 탭 위, 수정 모드에서는 숨김 */}
             {!isEditMode && (
                 <ProgressSection
                     progress={investmentData.progress}
@@ -73,6 +61,17 @@ export function InvestmentDetailContent() {
                     totalPaidPrincipal={investmentData.totalPaidPrincipal}
                 />
             )}
+
+            {/* 섹션 탭바 - 스크롤 전체 기준으로 헤더 바로 아래에 고정 */}
+            <DetailTabs
+                tabs={[
+                    { key: 'info', label: '투자 정보' },
+                    { key: 'history', label: '납입 기록' },
+                ]}
+                activeTab={activeTab}
+                onTabClick={(tab) => handleTabClick(tab as typeof activeTab)}
+                bleedClassName="-mx-6 px-6"
+            />
 
             <div className="divide-y divide-border-subtle-lighter">
                 <InfoSection infoRef={infoRef} />
