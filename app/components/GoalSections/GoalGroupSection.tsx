@@ -37,7 +37,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
 
   return (
     <div className="space-y-4">
-      {groups.map(({ goal, progress, records: groupRecords, status }) => (
+      {groups.map(({ goal, progress, records: groupRecords, status }, index) => (
         <GoalGroupCard
           key={goal.id}
           goal={goal}
@@ -49,6 +49,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           onSelectRecord={(id) => router.push(`/investment?id=${id}`)}
           onSelectGoal={(id) => router.push(`/goal/detail?id=${id}`)}
           onAddRecord={(id) => router.push(`/add?goalId=${id}`)}
+          nudge={groups.length > 1 && index === 0}
         />
       ))}
 

@@ -344,6 +344,65 @@
   }
 }
 
+/* 적립 항목 추가 손잡이 넛지: 5초에 한 번 살짝 튀어 관심을 끈다 (띠용띠용) */
+@layer utilities {
+  .animate-handle-nudge {
+    animation: handle-nudge 5s ease-in-out infinite;
+  }
+  /* 넛지와 같은 주기로 손잡이 아래 "당겨서…" 힌트가 함께 뜬다 (오퍼시티만 → 레이아웃 밀지 않음) */
+  .animate-handle-hint {
+    animation: handle-hint 5s ease-in-out infinite;
+  }
+}
+
+@keyframes handle-nudge {
+  0%,
+  72% {
+    transform: translateY(0);
+  }
+  79% {
+    transform: translateY(5px);
+  }
+  86% {
+    transform: translateY(0);
+  }
+  92% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes handle-hint {
+  0%,
+  68% {
+    opacity: 0;
+    transform: translate(-50%, -3px);
+  }
+  79%,
+  92% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-handle-nudge {
+    animation: none;
+  }
+  /* 모션 최소화 사용자: 넛지 애니메이션 대신 힌트를 정적으로 보여준다 */
+  .animate-handle-hint {
+    animation: none;
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
 /* ConcernSection: 중간 이하 뷰포트에서 그래픽 영역 높이 제한 → 말풍선과 그래픽이 붙어 보이게, 긴 기기(850px+)에서만 flex-1로 아래까지 채움 */
 @media (max-height: 850px) {
   .concern-graphic-cap {

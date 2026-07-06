@@ -1,8 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { Plus } from '@phosphor-icons/react'
 import { GoalGroupItemRow } from './GoalGroupItemRow'
+import { AddRecordDrawer } from './AddRecordDrawer'
 import { resolvePurposeIcon } from '@/app/constants/goal'
 import { dDayLabel } from '@/app/utils/goal-format'
 import type { GoalStatus } from '@/app/utils/goal-status'
@@ -25,6 +25,8 @@ export interface GoalGroupCardProps {
   onAddRecord?: (goalId: string) => void
   /** 파생 상태. 'pending_settlement'일 때 헤더에 "정산 대기" 배지 노출. */
   status?: GoalStatus
+  /** 최상단 카드 등에서 손잡이에 관심 유도 넛지(띠용띠용)를 켠다. */
+  nudge?: boolean
 }
 
 /**
@@ -45,6 +47,7 @@ export function GoalGroupCard({
   onSelectGoal,
   onAddRecord,
   status,
+  nudge = false,
 }: GoalGroupCardProps) {
   const name = goal?.name ?? fallbackName ?? '목적 미지정'
   const dDay = dDayLabel(progress?.dDay ?? null)
@@ -85,51 +88,50 @@ export function GoalGroupCard({
   )
 
   return (
-    <section className="overflow-hidden rounded-3xl bg-card">
-      <div className="p-6 pb-4">
-        {goal && onSelectGoal ? (
-          <button
-            type="button"
-            onClick={() => onSelectGoal(goal.id)}
-            className="mb-2 flex w-full items-center gap-1 text-left"
-            aria-label={`${name} 목적 상세 보기`}
-          >
-            {HeaderInner}
-          </button>
-        ) : (
-          <div className="mb-2 flex w-full items-center gap-1">{HeaderInner}</div>
-        )}
+    <div className="relative">
+      <section className="relative z-10 overflow-hidden rounded-3xl bg-card">
+        <div className="p-6 pb-4">
+          {goal && onSelectGoal ? (
+            <button
+              type="button"
+              onClick={() => onSelectGoal(goal.id)}
+              className="mb-2 flex w-full items-center gap-1 text-left"
+              aria-label={`${name} 목적 상세 보기`}
+            >
+              {HeaderInner}
+            </button>
+          ) : (
+            <div className="mb-2 flex w-full items-center gap-1">{HeaderInner}</div>
+          )}
 
-        {records.length > 0 ? (
-          <div>
-            {records.map((record, idx) => (
-              <GoalGroupItemRow
-                key={record.id}
-                record={record}
-                isPaid={isPaid(record.id)}
-                onTogglePaid={onTogglePaid}
-                onSelect={onSelectRecord}
-                isLast={idx === records.length - 1}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            아직 적립 항목이 없어요
-          </p>
-        )}
-      </div>
+          {records.length > 0 ? (
+            <div>
+              {records.map((record, idx) => (
+                <GoalGroupItemRow
+                  key={record.id}
+                  record={record}
+                  isPaid={isPaid(record.id)}
+                  onTogglePaid={onTogglePaid}
+                  onSelect={onSelectRecord}
+                  isLast={idx === records.length - 1}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              아직 적립 항목이 없어요
+            </p>
+          )}
+        </div>
+      </section>
 
       {goal && onAddRecord && (
-        <button
-          type="button"
-          onClick={() => onAddRecord(goal.id)}
-          className="flex w-full items-center justify-center gap-1.5 bg-muted/80 py-2 text-xs font-medium text-foreground-soft transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <Plus className="h-3.5 w-3.5" weight="bold" />
-          적립 항목 추가
-        </button>
+        <AddRecordDrawer
+          goalId={goal.id}
+          onAddRecord={onAddRecord}
+          nudge={nudge}
+        />
       )}
-    </section>
+    </div>
   )
 }
