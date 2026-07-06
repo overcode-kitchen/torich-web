@@ -40,7 +40,7 @@ export function LinkedRecordsSection({
                 <span className="text-sm font-semibold text-foreground truncate">
                   {r.title}
                 </span>
-                <span className="text-xs text-foreground-subtle">
+                <span className="text-xs text-foreground-muted">
                   월 {formatCurrency(r.monthly_amount)} · {modeLabel(r.period_years)}
                 </span>
               </div>
