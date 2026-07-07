@@ -41,7 +41,7 @@ function AddRecordContent() {
 
   return (
     <>
-      <SubPageScaffold onBack={handleBack} contentClassName="py-6 pb-40">
+      <SubPageScaffold onBack={handleBack} contentClassName="py-6 pb-40" enterAnimation>
         <AddItemHeader currentGroup={flow.currentGroup} />
 
         {flow.currentGroup === 'A' && (

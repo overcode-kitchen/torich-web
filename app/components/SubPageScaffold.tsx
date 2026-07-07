@@ -19,6 +19,8 @@ export interface SubPageScaffoldProps {
   centerSlot?: ReactNode
   /** 본문 스크롤 컨테이너 ref (탭바 스크롤 점프 등에 사용) */
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>
+  /** 진입 시 아래에서 스르륵 올라오는 페이드-인 애니메이션 (서랍을 당겨 들어오는 화면 등) */
+  enterAnimation?: boolean
 }
 
 /**
@@ -33,6 +35,7 @@ export default function SubPageScaffold({
   actions,
   centerSlot,
   scrollContainerRef,
+  enterAnimation = false,
 }: SubPageScaffoldProps) {
   const isNativeApp = useIsNativeApp()
 
@@ -42,7 +45,13 @@ export default function SubPageScaffold({
     : '56px'
 
   return (
-    <div className={cn('flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden', surfaceClassName)}>
+    <div
+      className={cn(
+        'flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden',
+        surfaceClassName,
+        enterAnimation && 'animate-page-in',
+      )}
+    >
       {/* Settings와 동일한 '본문 시작' 높이 — 고정 헤더와 겹치지 않게 스페이서 */}
       <div className="shrink-0" style={{ height: contentPaddingTop }} aria-hidden />
 

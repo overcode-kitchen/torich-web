@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { CaretDown, Plus } from '@phosphor-icons/react'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import {
@@ -11,6 +11,12 @@ import {
 
 /** 서랍 상단이 카드 뒤로 파고드는 양(px). 이만큼은 카드에 가려 안 보인다. */
 const TUCK = 20
+/**
+ * 커밋 확정 후 실제 이동까지의 지연(ms).
+ * 서랍이 열리는 모션을 잠깐 보여준 뒤 이동해, 라우트가 "휙!" 튀는 느낌을 없앤다.
+ * (진입 페이지 쪽은 animate-page-in 슬라이드-인으로 이어받는다)
+ */
+const COMMIT_DELAY = 200
 
 interface AddRecordDrawerProps {
   goalId: string
@@ -31,9 +37,19 @@ export function AddRecordDrawer({
   onAddRecord,
   nudge = false,
 }: AddRecordDrawerProps) {
+  const commitTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(
+    () => () => {
+      if (commitTimer.current) clearTimeout(commitTimer.current)
+    },
+    [],
+  )
+
   const handleCommit = useCallback(() => {
+    // 열림 확정 시점에 햅틱을 먼저 주고, 서랍이 열리는 모션을 잠깐 보여준 뒤 이동한다.
     Haptics.impact({ style: ImpactStyle.Light }).catch(() => {})
-    onAddRecord(goalId)
+    if (commitTimer.current) clearTimeout(commitTimer.current)
+    commitTimer.current = setTimeout(() => onAddRecord(goalId), COMMIT_DELAY)
   }, [goalId, onAddRecord])
 
   const { ref, revealed, isDragging, commit } = useDrawerPull({
@@ -60,12 +76,12 @@ export function AddRecordDrawer({
           commit()
         }
       }}
-      className="relative z-0 flex touch-none select-none justify-center rounded-2xl px-3 pb-3 -mb-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="relative z-0 flex touch-none select-none justify-end rounded-2xl px-4 pb-3 -mb-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       style={{ marginTop: -TUCK }}
     >
       {/* 안쪽: 실제 보이는 초록 손잡이 (힌트가 아래로 넘치도록 overflow 미적용) */}
       <div
-        className={`relative flex w-full items-end justify-center rounded-b-3xl bg-primary text-primary-foreground motion-reduce:!transition-none ${
+        className={`relative flex w-32 items-end justify-center rounded-b-3xl bg-primary text-primary-foreground motion-reduce:!transition-none ${
           nudge && !isDragging ? 'animate-handle-nudge' : ''
         }`}
         style={{
@@ -86,16 +102,6 @@ export function AddRecordDrawer({
           <Plus className="h-3 w-3" weight="bold" />
           적립 항목 추가
         </span>
-
-        {/* 넛지 힌트: 넛지 발생 시 손잡이 아래에 "당겨서…" 텍스트가 같은 주기로 함께 뜬다 */}
-        {nudge && (
-          <span
-            aria-hidden
-            className="animate-handle-hint pointer-events-none absolute left-1/2 top-full mt-1 whitespace-nowrap text-[10px] font-semibold text-primary dark:text-brand-400"
-          >
-            당겨서 적립 항목 추가하기
-          </span>
-        )}
 
         {/* 항상 보이는 손잡이 셰브런 (filled + 오퍼시티 낮은 흰색) */}
         <CaretDown className="mb-0.5 h-3 w-3 text-white/60" weight="fill" aria-hidden />

@@ -349,10 +349,6 @@
   .animate-handle-nudge {
     animation: handle-nudge 5s ease-in-out infinite;
   }
-  /* 넛지와 같은 주기로 손잡이 아래 "당겨서…" 힌트가 함께 뜬다 (오퍼시티만 → 레이아웃 밀지 않음) */
-  .animate-handle-hint {
-    animation: handle-hint 5s ease-in-out infinite;
-  }
 }
 
 @keyframes handle-nudge {
@@ -374,32 +370,33 @@
   }
 }
 
-@keyframes handle-hint {
-  0%,
-  68% {
-    opacity: 0;
-    transform: translate(-50%, -3px);
-  }
-  79%,
-  92% {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -3px);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animate-handle-nudge {
     animation: none;
   }
-  /* 모션 최소화 사용자: 넛지 애니메이션 대신 힌트를 정적으로 보여준다 */
-  .animate-handle-hint {
-    animation: none;
+}
+
+/* 서랍을 당겨 진입하는 화면이 아래에서 스르륵 올라오며 페이드-인 (라우트 즉시 교체의 "휙!" 완화) */
+@layer utilities {
+  .animate-page-in {
+    animation: page-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
     opacity: 1;
-    transform: translateX(-50%);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-in {
+    animation: none;
   }
 }
 

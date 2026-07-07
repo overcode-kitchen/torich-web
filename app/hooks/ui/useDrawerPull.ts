@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-/** collapsed 상태에서 카드 아래로 삐져나온 손잡이 높이(px). 화살표가 여백과 함께 온전히 보일 만큼만 확보 */
-export const HANDLE_PEEK = 18
+/** collapsed 상태에서 카드 아래로 삐져나온 손잡이 높이(px). 화살표가 온전히 보일 만큼만 얇게 확보 */
+export const HANDLE_PEEK = 13
 /** 완전히 열렸을 때 서랍 노출 높이(px) */
 export const OPEN_HEIGHT = 72
 /** 이만큼(peek 기준) 당겨야 열림 확정 → 이 미만이면 다시 올라가고 이동하지 않음 */
