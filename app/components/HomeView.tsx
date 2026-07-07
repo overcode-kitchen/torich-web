@@ -9,10 +9,6 @@ import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import type { Investment } from '@/app/types/investment'
 import type { User } from '@supabase/supabase-js'
 
-// Dashboard.tsx에서 타입 재정의 (export되지 않아서)
-type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
-type SortBy = 'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME' | 'NEXT_PAYMENT'
-
 interface HomeViewProps {
     isLoading: boolean
     isUpdatingRates: boolean
@@ -20,23 +16,11 @@ interface HomeViewProps {
 
     // Data
     records: Investment[]
-    filteredRecords: Investment[]
-    activeRecords: Investment[]
     totalMonthlyPayment: number
-
-    // Filter & Sort
-    filterStatus: FilterStatus
-    setFilterStatus: (status: FilterStatus) => void
-    sortBy: SortBy
-    setSortBy: (sort: SortBy) => void
 
     // Settings
     showMonthlyAmount: boolean
     onToggleMonthlyAmount: () => void
-
-    // List item click → navigate to detail page
-    onItemClick: (item: Investment) => void
-    onDeleteInvestment?: (id: string) => Promise<void>
 
     // Pull-to-refresh
     onRefresh: () => Promise<void>
@@ -45,7 +29,6 @@ interface HomeViewProps {
     isBrandStoryOpen: boolean
     setIsBrandStoryOpen: (open: boolean) => void
     showBrandStoryCard: boolean
-    setShowBrandStoryCard: (show: boolean) => void
     pendingBrandStoryUndo: boolean
     onCloseBrandStoryCard: () => void
     onUndoBrandStory: () => void
@@ -56,22 +39,13 @@ export default function HomeView({
     isUpdatingRates,
     user,
     records,
-    filteredRecords,
-    activeRecords,
     totalMonthlyPayment,
-    filterStatus,
-    setFilterStatus,
-    sortBy,
-    setSortBy,
     showMonthlyAmount,
     onToggleMonthlyAmount,
-    onItemClick,
-    onDeleteInvestment,
     onRefresh,
     isBrandStoryOpen,
     setIsBrandStoryOpen,
     showBrandStoryCard,
-    setShowBrandStoryCard,
     pendingBrandStoryUndo,
     onCloseBrandStoryCard,
     onUndoBrandStory,
@@ -117,26 +91,18 @@ export default function HomeView({
                 topOffset={indicatorTopOffset}
             />
             <Dashboard
-            records={records}
-            filteredRecords={filteredRecords}
-            activeRecords={activeRecords}
-            totalMonthlyPayment={totalMonthlyPayment}
-            filterStatus={filterStatus}
-            onFilterChange={setFilterStatus}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            showMonthlyAmount={showMonthlyAmount}
-            onToggleMonthlyAmount={onToggleMonthlyAmount}
-            onItemClick={onItemClick}
-            onDelete={onDeleteInvestment}
-            showBrandStoryCard={showBrandStoryCard}
-            onCloseBrandStoryCard={onCloseBrandStoryCard}
-            pendingBrandStoryUndo={pendingBrandStoryUndo}
-            onUndoBrandStory={onUndoBrandStory}
-            isBrandStoryOpen={isBrandStoryOpen}
-            onOpenBrandStory={() => setIsBrandStoryOpen(true)}
-            onCloseBrandStory={() => setIsBrandStoryOpen(false)}
-        />
+                records={records}
+                totalMonthlyPayment={totalMonthlyPayment}
+                showMonthlyAmount={showMonthlyAmount}
+                onToggleMonthlyAmount={onToggleMonthlyAmount}
+                showBrandStoryCard={showBrandStoryCard}
+                onCloseBrandStoryCard={onCloseBrandStoryCard}
+                pendingBrandStoryUndo={pendingBrandStoryUndo}
+                onUndoBrandStory={onUndoBrandStory}
+                isBrandStoryOpen={isBrandStoryOpen}
+                onOpenBrandStory={() => setIsBrandStoryOpen(true)}
+                onCloseBrandStory={() => setIsBrandStoryOpen(false)}
+            />
         </>
     )
 }
