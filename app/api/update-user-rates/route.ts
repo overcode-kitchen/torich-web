@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 // [Helper] 날짜를 한국 시간(KST) 기준의 연월 값(year*12+month)으로 변환
 function getKSTYearMonth(dateStr: string | Date): number {
@@ -8,16 +8,11 @@ function getKSTYearMonth(dateStr: string | Date): number {
   return kstDate.getUTCFullYear() * 12 + kstDate.getUTCMonth()
 }
 
-// [Helper] 날짜를 KST 기준 년/월 문자열로 변환 (로그용)
-function getKSTDateString(dateStr: string | Date): string {
-  const date = new Date(dateStr)
-  const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000)
-  return `${kstDate.getUTCFullYear()}년 ${kstDate.getUTCMonth() + 1}월`
-}
-
 // CAGR 계산 함수 (지난달 말일 기준, 정확히 10년)
 async function calculateCAGR(symbol: string): Promise<number | null> {
   try {
+    // yahoo-finance2는 CJS 기본 export가 클래스라, import 전환 시 ESM/CJS 상호운용으로 깨질 수 있어 require 유지.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { default: YahooFinanceClass } = require('yahoo-finance2')
     const yahooFinance = new YahooFinanceClass({
       suppressNotices: ['ripHistorical', 'yahooSurvey']
@@ -40,7 +35,7 @@ async function calculateCAGR(symbol: string): Promise<number | null> {
       period1: startDate,
       period2: endDate,
       interval: '1mo'
-    }) as any
+    })
 
     const historicalData = chartResult.quotes
 
@@ -67,7 +62,7 @@ async function calculateCAGR(symbol: string): Promise<number | null> {
     
     // 마지막 데이터가 현재 월 이상이면 제거 (KST 기준)
     let lastData = historicalData[historicalData.length - 1]
-    let lastDataYearMonth = getKSTYearMonth(lastData.date)
+    const lastDataYearMonth = getKSTYearMonth(lastData.date)
     
     if (lastDataYearMonth >= currentYearMonth) {
       historicalData.pop()
@@ -116,7 +111,7 @@ function calculateFinalAmount(monthlyAmount: number, periodYears: number, annual
 }
 
 // Supabase에서 종목 심볼 조회 (title로 검색)
-async function getSymbolFromTitle(supabase: any, title: string): Promise<string | null> {
+async function getSymbolFromTitle(supabase: SupabaseClient, title: string): Promise<string | null> {
   const { data, error } = await supabase
     .from('stocks')
     .select('symbol')
@@ -148,9 +143,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'userId가 필요합니다.' }, { status: 400 })
     }
 
+    // 서버 전용 라우트이므로 service_role 키로 접근한다.
+    // anon 키는 RLS(본인만 자기 레코드 조회)에 막혀 항상 0건이 조회되어, 이 자동 갱신이 아무 것도 못 했다.
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } })
 
     const lastMonthEndISO = getLastMonthEndISO()
 
@@ -283,9 +280,10 @@ export async function GET(request: Request) {
   }
 
   try {
+    // 서버 전용 라우트이므로 service_role 키로 접근한다(anon 키는 RLS에 막혀 항상 0건).
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } })
 
     const lastMonthEndISO = getLastMonthEndISO()
 
