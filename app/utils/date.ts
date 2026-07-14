@@ -126,6 +126,13 @@ export function formatFullDate(date: Date): string {
 }
 
 /**
+ * 날짜를 "YY년 M월 D일" 형식으로 포맷 (상세 진행률 박스용)
+ */
+export function formatKoreanDate(date: Date): string {
+  return format(date, 'yy년 M월 d일')
+}
+
+/**
  * 스마트 날짜 포맷
  * - 올해: M.D (예: 5.20)
  * - 다른 연도: YY.M.D (예: 29.5.20)

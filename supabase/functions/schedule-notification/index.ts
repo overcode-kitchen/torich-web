@@ -2,6 +2,7 @@
 // records 테이블 INSERT 시 Database Webhook으로 호출되어 알림 예약
 //
 // Webhook 설정: HTTP Headers의 Authorization에는 반드시 Service Role Key를 사용하세요.
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference -- Deno ambient 타입 선언은 import로 대체 불가
 /// <reference path="../../../types/supabase-deno.d.ts" />
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -67,6 +68,7 @@ Deno.serve(async (req) => {
       monthly_amount: monthlyAmount,
       unit_type: unitType,
       monthly_shares: monthlyShares,
+      record_type: recordType,
     } = record
 
     if (notificationEnabled === false) {
@@ -175,6 +177,7 @@ Deno.serve(async (req) => {
       monthly_amount: monthlyAmount,
       unit_type: unitType,
       monthly_shares: monthlyShares,
+      record_type: recordType,
     }
 
     const now = new Date()

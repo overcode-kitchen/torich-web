@@ -31,31 +31,13 @@ export function GoalInfoSection({ goal, progress }: GoalInfoSectionProps) {
           isEditMode={false}
         />
 
-        <div className="space-y-6">
-          <div className="border-t border-border-subtle-lighter my-2" />
-
+        {hasTarget && (
           <InvestmentField
-            label="현재 모은 금액"
-            value={formatCurrency(progress.currentValue)}
+            label="남은 금액"
+            value={formatCurrency(remaining)}
             isEditMode={false}
           />
-
-          {progress.projectedValue !== null && (
-            <InvestmentField
-              label="마감일 예상 금액"
-              value={formatCurrency(progress.projectedValue)}
-              isEditMode={false}
-            />
-          )}
-
-          {hasTarget && (
-            <InvestmentField
-              label="남은 금액"
-              value={formatCurrency(remaining)}
-              isEditMode={false}
-            />
-          )}
-        </div>
+        )}
       </div>
     </section>
   )

@@ -1,18 +1,17 @@
 'use client'
 
 import React from 'react'
-import { Investment } from '@/app/types/investment'
 import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
 import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSection'
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
 import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailSections/InvestmentDetailOverview'
 import { InvestmentDetailActions } from '@/app/components/InvestmentDetailSections/InvestmentDetailActions'
+import { DetailTabs } from '@/app/components/Common/DetailTabs'
 
 import { useInvestmentDetailContext } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 import { useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
-import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
 
 export function InvestmentDetailContent() {
     const {
@@ -50,49 +49,29 @@ export function InvestmentDetailContent() {
                 titleRef={titleRef}
             />
 
-            {/* 전역 섹션 탭바 - 스크롤 전체 기준으로 헤더 바로 아래에 고정 */}
-            <div
-                className="sticky z-40 -mx-6 px-6 bg-background border-b border-border-subtle-lighter"
-                style={{ top: APP_HEADER_TOTAL_HEIGHT }}
-            >
-                <div className="flex gap-6">
-                    <button
-                        type="button"
-                        onClick={() => handleTabClick('overview')}
-                        className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'overview'
-                            ? 'border-foreground text-foreground'
-                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                            }`}
-                    >
-                        개요
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleTabClick('info')}
-                        className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'info'
-                            ? 'border-foreground text-foreground'
-                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                            }`}
-                    >
-                        투자 정보
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleTabClick('history')}
-                        className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'history'
-                            ? 'border-foreground text-foreground'
-                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                            }`}
-                    >
-                        납입 기록
-                    </button>
-                </div>
-            </div>
-
-            {/* 진행률 / 적립형 요약 - 수정 모드에서는 숨김 */}
+            {/* 진행률 박스 + 총 납입액 히어로 - 탭 위, 수정 모드에서는 숨김 */}
             {!isEditMode && (
-                <ProgressSection />
+                <ProgressSection
+                    progress={investmentData.progress}
+                    completed={investmentData.completed}
+                    startDate={investmentData.startDate}
+                    endDate={investmentData.endDate}
+                    isHabitMode={investmentData.isHabitMode}
+                    elapsedMonths={investmentData.elapsedMonths}
+                    totalPaidPrincipal={investmentData.totalPaidPrincipal}
+                />
             )}
+
+            {/* 섹션 탭바 - 스크롤 전체 기준으로 헤더 바로 아래에 고정 */}
+            <DetailTabs
+                tabs={[
+                    { key: 'info', label: '투자 정보' },
+                    { key: 'history', label: '납입 기록' },
+                ]}
+                activeTab={activeTab}
+                onTabClick={(tab) => handleTabClick(tab as typeof activeTab)}
+                bleedClassName="-mx-6 px-6"
+            />
 
             <div className="divide-y divide-border-subtle-lighter">
                 <InfoSection infoRef={infoRef} />

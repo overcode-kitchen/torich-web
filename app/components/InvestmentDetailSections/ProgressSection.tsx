@@ -1,9 +1,9 @@
 'use client'
 
 import { formatCurrency } from '@/lib/utils'
-import { formatSmartDate, formatYearMonth, formatDuration } from '@/app/utils/date'
-
-import { useInvestmentDetailContext } from './InvestmentDetailContext'
+import { formatKoreanDate, formatYearMonth, formatDuration } from '@/app/utils/date'
+import { DetailHero } from '@/app/components/Common/DetailHero'
+import { DetailProgressCard } from '@/app/components/Common/DetailProgressCard'
 
 interface ProgressSectionProps {
   progress?: number | null
@@ -15,72 +15,53 @@ interface ProgressSectionProps {
   totalPaidPrincipal?: number
 }
 
-export function ProgressSection(props: ProgressSectionProps) {
-  let contextValue: any = null
-  try {
-    contextValue = useInvestmentDetailContext()
-  } catch (e) {
-    // Context missing, will rely on props
-  }
-
-  const investmentData = contextValue?.investmentData
-
-  const progress = props.progress ?? investmentData?.progress
-  const completed = props.completed ?? investmentData?.completed
-  const startDate = props.startDate ?? investmentData?.startDate
-  const endDate = props.endDate ?? investmentData?.endDate
-  const habit = props.isHabitMode ?? investmentData?.isHabitMode ?? false
-  const elapsedMonths = props.elapsedMonths ?? investmentData?.elapsedMonths ?? 0
-  const totalPaidPrincipal = props.totalPaidPrincipal ?? investmentData?.totalPaidPrincipal ?? 0
-
+export function ProgressSection({
+  progress,
+  completed = false,
+  startDate,
+  endDate,
+  isHabitMode = false,
+  elapsedMonths = 0,
+  totalPaidPrincipal = 0,
+}: ProgressSectionProps) {
   if (startDate === undefined) return null
 
-  // 적립형: streak + 총 납입액
-  if (habit || !endDate) {
-    const elapsedText = elapsedMonths > 0 ? `${formatDuration(elapsedMonths)}째 적립 중` : '이번 달부터 적립 시작'
+  // 적립형: 진행률 바 없이 총 납입액 히어로 + streak 보조줄
+  if (isHabitMode || !endDate) {
+    const elapsedText =
+      elapsedMonths > 0 ? `${formatDuration(elapsedMonths)}째 적립 중` : '이번 달부터 적립 시작'
 
     return (
-      <section className="py-8 border-b border-border-subtle-lighter">
-        <div className="mb-4">
-          <p className="text-lg font-semibold text-foreground">
-            🔥 {elapsedText}
-          </p>
-          <p className="text-sm text-foreground-subtle mt-1">
-            {formatYearMonth(startDate)}부터 시작
-          </p>
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-baseline justify-between">
-            <span className="text-sm text-muted-foreground">총 납입액</span>
-            <span className="text-base font-semibold text-foreground">
-              {formatCurrency(totalPaidPrincipal)}
-            </span>
-          </div>
-        </div>
-      </section>
+      <DetailHero
+        label="총 납입액"
+        amount={formatCurrency(totalPaidPrincipal)}
+        sub={`🔥 ${elapsedText} · ${formatYearMonth(startDate)}부터`}
+      />
     )
   }
 
-  // 목표형(기존 레이아웃)
+  // 목표형: 회색 진행률 박스 + 총 납입액 히어로
   if (progress === null || progress === undefined) return null
 
   return (
-    <section className="py-8 border-b border-border-subtle-lighter">
-      <div className="flex items-baseline justify-between mb-3">
-        <span className="text-lg font-semibold tracking-tight text-foreground">진행률</span>
-        <span className="text-lg font-semibold tracking-tight text-foreground">{progress}%</span>
-      </div>
-      <div className="w-full h-2 bg-surface-hover rounded-full overflow-hidden">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${completed ? 'bg-green-500' : 'bg-brand-500'
-            }`}
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <div className="flex justify-between text-sm text-foreground-subtle mt-3">
-        <span>{formatSmartDate(startDate)}</span>
-        <span>{formatSmartDate(endDate)}</span>
-      </div>
-    </section>
+    <>
+      <DetailProgressCard
+        percent={progress}
+        completed={completed}
+        startLabel={formatKoreanDate(startDate)}
+        endLabel={formatKoreanDate(endDate)}
+        status={
+          completed ? (
+            <p className="font-semibold text-success">🎉 목표를 달성했어요</p>
+          ) : undefined
+        }
+        ariaLabel="적립 진행률"
+      />
+      <DetailHero
+        className="pt-4"
+        label="총 납입액"
+        amount={formatCurrency(totalPaidPrincipal)}
+      />
+    </>
   )
 }

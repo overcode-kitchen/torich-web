@@ -1,19 +1,27 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Bell, BellSlash, DotsThreeVertical } from '@phosphor-icons/react'
 import { Investment } from '@/app/types/investment'
 import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
 import { useScrollHeader } from '@/app/hooks/ui/useScrollHeader'
 import { useInvestmentDetailUI } from '@/app/hooks/investment/detail/useInvestmentDetailUI'
 import { useInvestmentDetailHandlers } from '@/app/hooks/investment/detail/useInvestmentDetailHandlers'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
-import { InvestmentDetailHeader } from '@/app/components/InvestmentDetailSections/InvestmentDetailHeader'
+import SubPageScaffold from '@/app/components/SubPageScaffold'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { InvestmentDetailContent } from '@/app/components/InvestmentDetailSections/InvestmentDetailContent'
 import { InvestmentDetailProvider } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 import { RetroactiveOnboardingSheet } from '@/app/components/InvestmentDetailSections/RetroactiveOnboardingSheet'
 import { useRetroactiveOnboarding } from '@/app/hooks/investment/detail/useRetroactiveOnboarding'
 import { useShareModeSync } from '@/app/hooks/investment/detail/useShareModeSync'
-import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
+import { cn } from '@/lib/utils'
 
 interface InvestmentDetailViewProps {
   item: Investment
@@ -31,19 +39,12 @@ function InternalInvestmentDetailView({
   onUpdate,
   onDelete,
 }: InvestmentDetailViewProps) {
-  // Context
-  const {
-    activeTab,
-    handleTabClick,
-    scrollContainerRef,
-    overviewRef,
-    infoRef,
-    historyRef,
-    titleRef,
-  } = useInvestmentTabContext()
+  const router = useRouter()
+
+  // Context (스크롤 컨테이너·제목 ref만 필요. 탭 ref는 InvestmentDetailContent가 직접 사용)
+  const { scrollContainerRef, titleRef } = useInvestmentTabContext()
 
   const { showStickyTitle } = useScrollHeader(titleRef)
-  const isNativeApp = useIsNativeApp()
 
   // Payment History Hook
   const {
@@ -104,11 +105,50 @@ function InternalInvestmentDetailView({
     retroactivePaymentHistory: investmentData.retroactivePaymentHistory,
   })
 
+  const isNotificationDisabled = !isGlobalNotificationOn
 
-  const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
-  const contentPaddingTop = isNativeApp
-    ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)'
-    : '56px'
+  // 헤더 우측 액션: 알림 토글 + 더보기 메뉴 (수정 모드에서는 숨김)
+  const headerActions = !isEditMode ? (
+    <div className="flex items-center -mr-1">
+      <button
+        type="button"
+        onClick={investmentData.toggleNotification}
+        disabled={isNotificationDisabled}
+        aria-disabled={isNotificationDisabled}
+        aria-label={investmentData.notificationOn ? '알림 끄기' : '알림 켜기'}
+        className={cn(
+          'flex h-11 w-11 items-center justify-center rounded-full text-foreground hover:bg-surface-hover transition-colors',
+          isNotificationDisabled && 'text-foreground-subtle cursor-not-allowed hover:bg-transparent',
+        )}
+      >
+        {investmentData.notificationOn ? (
+          <Bell className="h-6 w-6" weight="regular" />
+        ) : (
+          <BellSlash className="h-6 w-6 text-muted-foreground" weight="regular" />
+        )}
+      </button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-foreground hover:bg-surface-hover transition-colors"
+            aria-label="메뉴"
+          >
+            <DotsThreeVertical className="h-6 w-6" weight="regular" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => router.push(`/add?editId=${item.id}`)}>수정하기</DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setShowDeleteModal(true)}
+            className="text-destructive focus:text-destructive"
+          >
+            삭제하기
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  ) : undefined
 
   return (
     <InvestmentDetailProvider
@@ -132,51 +172,30 @@ function InternalInvestmentDetailView({
         },
       }}
     >
-      {/* 상단 고정 헤더: 홈/통계/캘린더/설정과 동일 패턴 (Safe Area + 48px) */}
-      <header
-        className="fixed inset-x-0 top-0 z-50 w-full bg-background border-b border-border-subtle-lighter"
-        style={{
-          paddingTop: headerSafeTop,
-        }}
+      <SubPageScaffold
+        onBack={onBack}
+        surfaceClassName="bg-background"
+        contentClassName="px-0"
+        scrollContainerRef={scrollContainerRef}
+        actions={headerActions}
+        centerSlot={
+          showStickyTitle ? (
+            <h1 className="text-center text-base font-semibold tracking-tight text-foreground truncate">
+              {item.title}
+            </h1>
+          ) : undefined
+        }
       >
-        <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
-          <InvestmentDetailHeader
-            item={item}
-            onBack={onBack}
-            showStickyTitle={showStickyTitle}
-            isEditMode={isEditMode}
-            setIsEditMode={setIsEditMode}
-            setShowDeleteModal={setShowDeleteModal}
-            notificationOn={investmentData.notificationOn}
-            toggleNotification={investmentData.toggleNotification}
-            isGlobalNotificationOn={isGlobalNotificationOn}
-          />
-        </div>
-      </header>
+        <InvestmentDetailContent />
 
-      <div
-        ref={scrollContainerRef}
-        className="fixed inset-0 z-20 h-dvh bg-background overflow-y-auto"
-      >
-        <div
-          className="min-h-dvh"
-          style={{
-            // 고정 헤더 높이(Safe Area + 48px) + 여유 8px
-            paddingTop: contentPaddingTop,
-            paddingBottom: isNativeApp ? 'calc(env(safe-area-inset-bottom, 0px) + 24px)' : '24px',
-          }}
-        >
-          <InvestmentDetailContent />
-
-          {/* 삭제 확인 모달 */}
-          <DeleteConfirmModal
-            isOpen={showDeleteModal}
-            onClose={() => setShowDeleteModal(false)}
-            onConfirm={handleDelete}
-            isDeleting={isDeleting}
-          />
-        </div>
-      </div>
+        {/* 삭제 확인 모달 */}
+        <DeleteConfirmModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDelete}
+          isDeleting={isDeleting}
+        />
+      </SubPageScaffold>
 
       {/* 소급 안내 시트 (과거 시작일로 등록 후 진입 시) */}
       <RetroactiveOnboardingSheet
@@ -194,7 +213,7 @@ function InternalInvestmentDetailView({
 // InvestmentDetailViewWithProvider로 감싸서 내보내기
 export default function InvestmentDetailView(props: InvestmentDetailViewProps) {
   return (
-    <InvestmentTabProvider>
+    <InvestmentTabProvider initialTab="info">
       <InternalInvestmentDetailView {...props} />
     </InvestmentTabProvider>
   )

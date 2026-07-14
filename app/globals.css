@@ -36,6 +36,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -170,6 +171,8 @@
   --accent: var(--palette-coolgray-100);
   --accent-foreground: var(--palette-coolgray-900);
   --destructive: var(--palette-destructive);
+  /* 성공/달성 상태 텍스트용 진한 그린 — 흰 배경에서 WCAG AA(4.58:1). brand-600(text)은 대비 미달이라 텍스트엔 이 토큰 사용 */
+  --success: var(--palette-brand-700);
   --border: var(--palette-coolgray-200);
   --input: var(--palette-coolgray-200);
   --ring: var(--palette-brand-600);
@@ -253,6 +256,8 @@
   --accent: var(--palette-coolgray-600);
   --accent-foreground: var(--palette-coolgray-25);
   --destructive: var(--palette-destructive);
+  /* 다크 배경에서는 밝은 그린이 잘 읽힘 (brand-400) */
+  --success: var(--palette-brand-400);
   --border: var(--palette-coolgray-500);
   --input: var(--palette-coolgray-500);
   --ring: var(--palette-brand-600);
@@ -359,6 +364,62 @@
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: var(--palette-coolgray-200);
     background-clip: content-box;
+  }
+}
+
+/* 적립 항목 추가 손잡이 넛지: 5초에 한 번 살짝 튀어 관심을 끈다 (띠용띠용) */
+@layer utilities {
+  .animate-handle-nudge {
+    animation: handle-nudge 5s ease-in-out infinite;
+  }
+}
+
+@keyframes handle-nudge {
+  0%,
+  72% {
+    transform: translateY(0);
+  }
+  79% {
+    transform: translateY(5px);
+  }
+  86% {
+    transform: translateY(0);
+  }
+  92% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-handle-nudge {
+    animation: none;
+  }
+}
+
+/* 서랍을 당겨 진입하는 화면이 아래에서 스르륵 올라오며 페이드-인 (라우트 즉시 교체의 "휙!" 완화) */
+@layer utilities {
+  .animate-page-in {
+    animation: page-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-in {
+    animation: none;
   }
 }
 
