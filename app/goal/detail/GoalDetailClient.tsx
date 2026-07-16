@@ -55,12 +55,13 @@ export default function GoalDetailClient() {
 
   const { goal, records, unlinkedRecords, isLoading, refetch, setGoal } =
     useGoalDetail(goalId, userId)
-  const { completedPayments, retroactivePayments } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistory()
   const progress = useGoalProgress(
     goal,
     records,
     completedPayments,
     retroactivePayments,
+    capturedAmounts,
   )
   const { updateGoal, archiveGoal, isUpdating } = useGoalUpdate(userId)
   const { linkRecordToGoal, isLinking } = useInvestmentGoalLink(userId)

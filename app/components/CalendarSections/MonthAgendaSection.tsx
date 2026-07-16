@@ -15,8 +15,11 @@ interface MonthAgendaSectionProps {
   selectedDate: Date | null
   scrollTick: number
   isEventCompleted: (event: PaymentEvent) => boolean
+  isEventPostponed: (event: PaymentEvent) => boolean
   handleComplete: (event: PaymentEvent) => void
   handleUncomplete: (event: PaymentEvent) => void
+  handlePostpone: (event: PaymentEvent) => void
+  handleUnpostpone: (event: PaymentEvent) => void
 }
 
 export function MonthAgendaSection({
@@ -27,8 +30,11 @@ export function MonthAgendaSection({
   selectedDate,
   scrollTick,
   isEventCompleted,
+  isEventPostponed,
   handleComplete,
   handleUncomplete,
+  handlePostpone,
+  handleUnpostpone,
 }: MonthAgendaSectionProps) {
   const router = useRouter()
   const today = new Date()
@@ -84,8 +90,10 @@ export function MonthAgendaSection({
       {dayGroups.map(({ date, dayKey, events }) => {
         const isEmpty = events.length === 0
         const isOverdue = !isEmpty && date < today
-        const allCompleted = !isEmpty && events.every((e) => isEventCompleted(e))
-        const pendingCount = events.filter((e) => !isEventCompleted(e)).length
+        // 미룸 항목은 "해소됨"으로 보고 미완료 집계에서 제외한다.
+        const pendingCount = events.filter(
+          (e) => !isEventCompleted(e) && !isEventPostponed(e),
+        ).length
         const isSelected = dayKey === selectedDayKey
         return (
           <section
@@ -103,7 +111,7 @@ export function MonthAgendaSection({
             >
               {formatGroupLabel(date, today)}
               {isEmpty && <span className="ml-1.5 text-foreground-subtle">· 예정 없음</span>}
-              {!isEmpty && isOverdue && !allCompleted && (
+              {!isEmpty && isOverdue && pendingCount > 0 && (
                 <span className="ml-1.5 text-red-500">· 미완료 {pendingCount}</span>
               )}
             </h4>
@@ -114,9 +122,13 @@ export function MonthAgendaSection({
                   event={e}
                   investment={investmentMap.get(e.investmentId)}
                   isCompleted={isEventCompleted(e)}
+                  isPostponed={isEventPostponed(e)}
+                  canPostpone={date <= today}
                   onClick={() => goToDetail(e.investmentId)}
                   onComplete={() => handleComplete(e)}
                   onUncomplete={() => handleUncomplete(e)}
+                  onPostpone={() => handlePostpone(e)}
+                  onUnpostpone={() => handleUnpostpone(e)}
                   showDivider={idx !== events.length - 1}
                 />
               ))}

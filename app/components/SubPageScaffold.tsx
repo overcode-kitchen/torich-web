@@ -2,7 +2,6 @@
 
 import type { ReactNode } from 'react'
 import { ArrowLeft } from '@phosphor-icons/react'
-import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 import { cn } from '@/lib/utils'
 
@@ -37,12 +36,11 @@ export default function SubPageScaffold({
   scrollContainerRef,
   enterAnimation = false,
 }: SubPageScaffoldProps) {
-  const isNativeApp = useIsNativeApp()
-
-  const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
-  const contentPaddingTop = isNativeApp
-    ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)'
-    : '56px'
+  // env(safe-area-inset-top)는 웹에서 0으로 계산되므로 웹=0px/56px, 앱=노치+헤더로 동일 수식이
+  // 양쪽을 모두 커버한다. isNativeApp 분기를 두면 서버(false)·클라(true) 렌더가 달라져 하이드레이션
+  // 불일치가 나므로, JS 분기 없이 CSS env로만 처리한다. (헤더 바 48px + 간격 8px = 콘텐츠 상단 여백)
+  const headerSafeTop = 'env(safe-area-inset-top, 0px)'
+  const contentPaddingTop = 'calc(env(safe-area-inset-top, 0px) + 48px + 8px)'
 
   return (
     <div

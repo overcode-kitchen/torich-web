@@ -2,14 +2,26 @@ import { useMemo } from 'react'
 import { differenceInDays, startOfDay } from 'date-fns'
 import { Investment, getStartDate, isHabitMode } from '@/app/types/investment'
 import { getPaymentEventsForMonth, getThisMonthStats } from '@/app/utils/stats'
-import { isPaymentCompleted } from '@/app/utils/payment-completion'
+import { isPaymentCompleted, isRecordPostponedInMonth } from '@/app/utils/payment-completion'
 import { calculateEndDate, getElapsedMonths } from '@/app/utils/date'
-import type { PaymentHistoryMap } from '../../payment/usePaymentHistory'
+import { getRecordRealizedPrincipal } from '@/app/utils/realized-principal'
+import type { Goal } from '@/app/types/goal'
+import type { PaymentHistoryMap, CapturedAmountsMap } from '../../payment/usePaymentHistory'
+import type { PostponedPaymentsMap } from '../../payment/usePostponedPayments'
+
+const EMPTY_CAPTURED: CapturedAmountsMap = new Map()
 
 interface UseStatsCalculationsProps {
   records: Investment[]
   activeRecords: Investment[]
   completedPayments: PaymentHistoryMap
+  retroactivePayments: PaymentHistoryMap
+  /** 이번 달 미룸 처리된 회차 — 예정(분모)에서 제외 */
+  postponedPayments: PostponedPaymentsMap
+  /** 각 납입의 매수 시점 실제 금액(원). 실현 원금을 현재 금액이 아닌 매수 시점 금액으로 합산 */
+  capturedAmounts?: CapturedAmountsMap
+  /** 목적(Goal) 목록 — 직접 입력한 '이미 모은 돈'(external_amount) 합산용 */
+  goals: Goal[]
 }
 
 export interface GoalStats {
@@ -48,20 +60,28 @@ export function useStatsCalculations({
   records,
   activeRecords,
   completedPayments,
+  retroactivePayments,
+  postponedPayments,
+  capturedAmounts = EMPTY_CAPTURED,
+  goals,
 }: UseStatsCalculationsProps): UseStatsCalculationsReturn {
   const { totalPaidPrincipal, totalMonthlyPayment } = useMemo(() => {
-    if (records.length === 0) {
-      return { totalPaidPrincipal: 0, totalMonthlyPayment: 0 }
-    }
-    const totalPaidPrincipal = records.reduce((sum, record) => {
-      const elapsedMonths = Math.max(0, getElapsedMonths(getStartDate(record)))
-      return sum + record.monthly_amount * elapsedMonths
-    }, 0)
+    // "지금까지 모은 돈" = 앱에 기록된 전체 모은 돈.
+    // = 실제 납입한 원금(payment_history 기준, 예정치 아님) + 목적에 직접 입력한 '이미 모은 돈'(external_amount).
+    // 각 납입은 매수 시점 실제 금액(captured)으로 합산 → 금액 수정해도 과거가 소급 변동하지 않음.
+    // 목적 진척 currentValue(= external + 실현 납입)와 같은 기준으로 맞춰 카드 간 금액이 모순되지 않게 한다.
+    const realizedPrincipal = records.reduce(
+      (sum, record) =>
+        sum +
+        getRecordRealizedPrincipal(record, completedPayments, retroactivePayments, capturedAmounts),
+      0,
+    )
+    const externalTotal = goals.reduce((sum, g) => sum + (g.external_amount ?? 0), 0)
     const totalMonthlyPayment = records.reduce((sum, record) => sum + record.monthly_amount, 0)
-    return { totalPaidPrincipal, totalMonthlyPayment }
-  }, [records])
+    return { totalPaidPrincipal: realizedPrincipal + externalTotal, totalMonthlyPayment }
+  }, [records, completedPayments, retroactivePayments, capturedAmounts, goals])
 
-  const thisMonth = useMemo(() => getThisMonthStats(activeRecords, completedPayments), [activeRecords, completedPayments])
+  const thisMonth = useMemo(() => getThisMonthStats(activeRecords, completedPayments, postponedPayments), [activeRecords, completedPayments, postponedPayments])
 
   // 목표형/적립형 분리 집계 (Health Check용)
   const goalStats = useMemo<GoalStats>(() => {
@@ -128,9 +148,15 @@ export function useStatsCalculations({
     }
 
     const now = new Date()
-    const events = getPaymentEventsForMonth(habitRecords, now.getFullYear(), now.getMonth() + 1)
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+    const events = getPaymentEventsForMonth(habitRecords, year, month)
+    let thisMonthTotalCount = 0
     let thisMonthCompletedCount = 0
     for (const e of events) {
+      // 미룬 회차는 이번 달 예정(분모)에서 제외
+      if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) continue
+      thisMonthTotalCount++
       if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         thisMonthCompletedCount++
       }
@@ -153,10 +179,10 @@ export function useStatsCalculations({
     return {
       count: habitRecords.length,
       thisMonthCompletedCount,
-      thisMonthTotalCount: events.length,
+      thisMonthTotalCount,
       longestHabitItem,
     }
-  }, [activeRecords, completedPayments])
+  }, [activeRecords, completedPayments, postponedPayments])
 
   return {
     totalPaidPrincipal,

@@ -26,7 +26,7 @@ export interface GoalGroupSectionProps {
 export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
   const router = useRouter()
   const { groups, unassignedRecords, isLoading } = useGoalGroups(records)
-  const { isCompleted, toggle } = useMonthlyPaymentStatus()
+  const { isCompleted, isPostponed, canPostpone, toggle, togglePostpone } = useMonthlyPaymentStatus()
 
   if (isLoading) return null
   // 목적·투자가 모두 없는 신규 사용자에게만 빈 화면을 보여준다.
@@ -45,7 +45,10 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           records={groupRecords}
           status={status}
           isPaid={isCompleted}
+          isPostponed={isPostponed}
+          canPostpone={canPostpone}
           onTogglePaid={toggle}
+          onTogglePostpone={togglePostpone}
           onSelectRecord={(id) => router.push(`/investment?id=${id}`)}
           onSelectGoal={(id) => router.push(`/goal/detail?id=${id}`)}
           onAddRecord={(id) => router.push(`/add?goalId=${id}`)}
@@ -59,7 +62,10 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           fallbackName="목적 미지정"
           records={unassignedRecords}
           isPaid={isCompleted}
+          isPostponed={isPostponed}
+          canPostpone={canPostpone}
           onTogglePaid={toggle}
+          onTogglePostpone={togglePostpone}
           onSelectRecord={(id) => router.push(`/investment?id=${id}`)}
         />
       )}

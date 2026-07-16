@@ -3,6 +3,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import AppLayout from "./components/AppLayout";
+import BootGate from "./components/BootGate";
 import ThemeProvider from "./components/ThemeSections/ThemeProvider";
 
 import NotificationProvider from "@/providers/NotificationProvider";
@@ -71,18 +72,20 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body className="font-sans antialiased">
         <AuthProvider>
-          <ThemeProvider>
-            <NotificationProvider>
-              <InvestmentsProvider>
-                <AuthDeepLinkHandler />
-                <AppLayout>{children}</AppLayout>
-              </InvestmentsProvider>
-              <Toaster richColors position="top-center" closeButton />
-            </NotificationProvider>
-            {process.env.NEXT_PUBLIC_GA_ID && (
-              <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-            )}
-          </ThemeProvider>
+          <BootGate>
+            <ThemeProvider>
+              <NotificationProvider>
+                <InvestmentsProvider>
+                  <AuthDeepLinkHandler />
+                  <AppLayout>{children}</AppLayout>
+                </InvestmentsProvider>
+                <Toaster richColors position="top-center" closeButton />
+              </NotificationProvider>
+              {process.env.NEXT_PUBLIC_GA_ID && (
+                <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+              )}
+            </ThemeProvider>
+          </BootGate>
         </AuthProvider>
       </body>
     </html>

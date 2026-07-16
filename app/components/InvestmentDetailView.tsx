@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Bell, BellSlash, DotsThreeVertical } from '@phosphor-icons/react'
 import { Investment } from '@/app/types/investment'
 import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
@@ -38,6 +39,8 @@ function InternalInvestmentDetailView({
   onUpdate,
   onDelete,
 }: InvestmentDetailViewProps) {
+  const router = useRouter()
+
   // Context (스크롤 컨테이너·제목 ref만 필요. 탭 ref는 InvestmentDetailContent가 직접 사용)
   const { scrollContainerRef, titleRef } = useInvestmentTabContext()
 
@@ -135,7 +138,7 @@ function InternalInvestmentDetailView({
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setIsEditMode(true)}>수정하기</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push(`/add?editId=${item.id}`)}>수정하기</DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setShowDeleteModal(true)}
             className="text-destructive focus:text-destructive"

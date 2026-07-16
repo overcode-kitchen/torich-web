@@ -42,11 +42,14 @@ export default function CalendarPage() {
     month,
   } = useCalendar()
 
-  // 납입 완료 훅
+  // 납입 완료/미룸 훅
   const {
     isEventCompleted,
+    isEventPostponed,
     handleComplete,
     handleUncomplete,
+    handlePostpone,
+    handleUnpostpone,
     handleUndo,
     pendingUndo,
   } = usePaymentCompletion()
@@ -60,6 +63,7 @@ export default function CalendarPage() {
     year,
     month,
     isEventCompleted,
+    isEventPostponed,
   })
 
   const isLoading = authLoading || recordsLoading
@@ -93,8 +97,11 @@ export default function CalendarPage() {
       eventsForMonth={eventsForMonth}
       records={records}
       isEventCompleted={isEventCompleted}
+      isEventPostponed={isEventPostponed}
       handleComplete={handleComplete}
       handleUncomplete={handleUncomplete}
+      handlePostpone={handlePostpone}
+      handleUnpostpone={handleUnpostpone}
       pendingUndo={!!pendingUndo}
       handleUndo={handleUndo}
     />

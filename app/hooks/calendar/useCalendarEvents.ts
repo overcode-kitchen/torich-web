@@ -11,6 +11,7 @@ interface UseCalendarEventsProps {
   year: number
   month: number
   isEventCompleted: (event: PaymentEvent) => boolean
+  isEventPostponed: (event: PaymentEvent) => boolean
 }
 
 export function useCalendarEvents({
@@ -18,6 +19,7 @@ export function useCalendarEvents({
   year,
   month,
   isEventCompleted,
+  isEventPostponed,
 }: UseCalendarEventsProps) {
   // 활성 투자 필터링 (정렬 포함)
   const activeRecords = useMemo(() => {
@@ -52,16 +54,21 @@ export function useCalendarEvents({
   }, [eventsForMonth])
 
   // 날짜 상태 계산
+  // 미룸(postpone) 항목은 "해소됨"으로 간주해 미완료(missed)로 빨갛게 표시하지 않는다.
   const getDayStatus = (day: number): 'completed' | 'missed' | 'scheduled' | null => {
     const events = eventsByDay.get(day) || []
     if (events.length === 0) return null
     const today = new Date()
-    const isPast = year < today.getFullYear() || 
-      (year === today.getFullYear() && month < today.getMonth() + 1) || 
+    const isPast = year < today.getFullYear() ||
+      (year === today.getFullYear() && month < today.getMonth() + 1) ||
       (year === today.getFullYear() && month === today.getMonth() + 1 && day < today.getDate())
     const allCompleted = events.every((ev) => isEventCompleted(ev))
     if (allCompleted) return 'completed'
-    if (isPast) return 'missed'
+    // 완료도 미룸도 아닌 진짜 미해소 항목이 있고 과거 날짜일 때만 미완료(빨강).
+    const hasUnresolved = events.some(
+      (ev) => !isEventCompleted(ev) && !isEventPostponed(ev),
+    )
+    if (isPast && hasUnresolved) return 'missed'
     return 'scheduled'
   }
 
