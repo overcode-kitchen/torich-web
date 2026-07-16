@@ -5,7 +5,7 @@ import { GoalGroupItemRow } from './GoalGroupItemRow'
 import { AddRecordDrawer } from './AddRecordDrawer'
 import { resolvePurposeIcon } from '@/app/constants/goal'
 import { dDayLabel } from '@/app/utils/goal-format'
-import type { GoalStatus } from '@/app/utils/goal-status'
+import { nextSettlementDDay, type GoalStatus } from '@/app/utils/goal-status'
 import type { Investment } from '@/app/types/investment'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 
@@ -63,6 +63,10 @@ export function GoalGroupCard({
   const percent = progress?.progressPercent ?? null
   const icon = resolvePurposeIcon(goal?.emoji)
   const isPendingSettlement = status === 'pending_settlement'
+  // 정산 대기: 가장 가까운 만기까지 D-day (없으면 배지에 D-day 미표시)
+  const settlementLabel = isPendingSettlement
+    ? dDayLabel(nextSettlementDDay(records, new Date()))
+    : ''
 
   const HeaderInner = (
     <>
@@ -79,11 +83,11 @@ export function GoalGroupCard({
         {name}
       </h3>
       {isPendingSettlement && (
-        <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-medium text-foreground-soft">
-          정산 대기
+        <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-[11px] font-semibold text-foreground-soft">
+          정산 대기{settlementLabel && ` · ${settlementLabel}`}
         </span>
       )}
-      {dDay && (
+      {!isPendingSettlement && dDay && (
         <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
           {dDay}
         </span>

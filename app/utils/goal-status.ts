@@ -63,6 +63,32 @@ export function isPendingSettlement(
 }
 
 /**
+ * 정산 대기 중인 record들 중 가장 가까운 만기까지 남은 일수(D-day).
+ * 하나도 없으면 null. 정산 대기 배지의 "· D-N" 표시에 사용한다.
+ */
+export function nextSettlementDDay(
+  records: Pick<Investment, 'maturity_date' | 'settled_at'>[],
+  now: Date
+): number | null {
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const days = records
+    .filter((r) => isPendingSettlement(r, now))
+    .map((r) => {
+      const maturity = new Date(r.maturity_date as string)
+      const startOfMaturity = new Date(
+        maturity.getFullYear(),
+        maturity.getMonth(),
+        maturity.getDate()
+      )
+      return Math.round(
+        (startOfMaturity.getTime() - startOfToday.getTime()) / 86_400_000
+      )
+    })
+  if (days.length === 0) return null
+  return Math.min(...days)
+}
+
+/**
  * 단일 record가 "정산 대상" 조건인지: 만기일이 도달했지만 아직 정산되지 않음.
  * 자동 정산 트리거(Phase 4)에서 사용. 케이스 B 처리의 핵심 검사.
  */
