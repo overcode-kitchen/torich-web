@@ -1,5 +1,15 @@
 # 통계(Stats) 탭 — 2차 개선 계획 (v2)
 
+> **👤 담당자: suni** (`develop/suni`) · 상태 업데이트: 2026-07-18
+>
+> **진행 현황 — Phase C만 남음:**
+> - ✅ **Phase A** 수익률 링크 → 자산 섹션 아래 맥락 재배치 — 반영 완료 (`StatsContent.tsx` 자산 카드에 각주로 묶임, 0원일 때 비노출)
+> - ✅ **Phase B** consistency→스트릭 교체 + 마일스톤 회전 인사이트 + 차트 막대 드릴다운 — 반영 완료 (`useChartData.currentPerfectStreak`, `MonthlyTrendSection`의 `selectedIndex` 드릴다운, `useStatsInsights`의 첫 100% 마일스톤)
+> - ⬜ **Phase C** 전망 신호등 + IA '행동→결과→전망' 완성 — **미착수. 여기부터 이어받으면 됨.**
+>   - 신규 `app/components/StatsSections/GoalOutlookSection.tsx`
+>   - `projectedProgressPercent → 신호등 색` 임계값 매핑 (`app/utils/goal-status.ts`에 추가 또는 신규 util)
+>   - `StatsContent.tsx` 섹션 순서를 '행동→결과→전망'으로 마무리
+>
 > 이 문서는 **단독 실행 가능한 작업 명세**다. 대화 히스토리 없이 이 문서만으로 구현할 수 있도록 작성됐다.
 > 대상 저장소: `torich-web` (Next.js 16 / React 19 / TypeScript / Tailwind v4 / Supabase / Capacitor iOS)
 >
