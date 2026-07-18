@@ -16,8 +16,6 @@ export interface GoalGroupItemRowProps {
   isPaid: boolean
   /** 이번 달 미룸 여부 */
   isPostponed: boolean
-  /** 이번 달 미루기 노출 가능 여부 (납입일 당일부터 true) */
-  canPostpone: boolean
   /** 이번 달 납입 완료 토글 */
   onTogglePaid: (record: Investment) => void
   /** 이번 달 미룸 토글 */
@@ -39,7 +37,6 @@ export function GoalGroupItemRow({
   record,
   isPaid,
   isPostponed,
-  canPostpone,
   onTogglePaid,
   onTogglePostpone,
   onSelect,
@@ -55,8 +52,9 @@ export function GoalGroupItemRow({
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
   const isSettled = !!record.settled_at
 
-  // 대기 상태(미완료·미룸아님·정산끝아님)에서만 스와이프에 "미루기"를 함께 노출한다.
-  const showPostponeInSwipe = canPostpone && !isPaid && !isPostponed && !isSettled
+  // 미완료·미룸아님·정산끝아님이면 스와이프에 "미루기"를 함께 노출한다.
+  // 납입일 도래 여부와 무관하게 노출 — 사용자가 이번 달 납입을 미리 미룰 수 있어야 한다.
+  const showPostponeInSwipe = !isPaid && !isPostponed && !isSettled
   const swipe = useSwipeToDelete({
     onDelete: async () => {
       await deleteInvestment(record.id)

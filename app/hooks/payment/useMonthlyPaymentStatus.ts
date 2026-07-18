@@ -45,8 +45,6 @@ export interface MonthlyPaymentStatus {
   isCompleted: (recordId: string) => boolean
   /** recordId -> 이번 달 미룸 여부 */
   isPostponed: (recordId: string) => boolean
-  /** 이번 달 미루기 노출 가능 여부 (납입일 당일부터 true). 미래 납입엔 미루기를 숨긴다. */
-  canPostpone: (record: Investment) => boolean
   /** 이번 달 납입 완료 토글 */
   toggle: (record: Investment) => Promise<void>
   /** 이번 달 미룸 토글 */
@@ -59,15 +57,11 @@ export function useMonthlyPaymentStatus(): MonthlyPaymentStatus {
   const { completedPayments, isLoading, togglePayment } = usePaymentHistory()
   const { postponedPayments, togglePostpone: togglePostponeRow } = usePostponedPayments()
 
-  const { year, month, todayStr } = useMemo(() => {
+  const { year, month } = useMemo(() => {
     const now = new Date()
-    const y = now.getFullYear()
-    const m = now.getMonth() + 1
-    const d = now.getDate()
     return {
-      year: y,
-      month: m,
-      todayStr: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
     }
   }, [])
 
@@ -93,13 +87,6 @@ export function useMonthlyPaymentStatus(): MonthlyPaymentStatus {
   const isPostponed = useCallback(
     (recordId: string): boolean => postponedDateThisMonth(recordId) !== null,
     [postponedDateThisMonth],
-  )
-
-  // 미루기는 납입일이 도래한 뒤(오늘 >= 이번 달 납입일)에만 노출한다.
-  // 아직 안 온 납입을 미리 미루는 건 의미가 없고, 평소 화면 클러터도 줄인다.
-  const canPostpone = useCallback(
-    (record: Investment): boolean => todayStr >= monthlyPaymentDateStr(record, year, month),
-    [todayStr, year, month],
   )
 
   const toggle = useCallback(
@@ -130,5 +117,5 @@ export function useMonthlyPaymentStatus(): MonthlyPaymentStatus {
     [togglePostponeRow, postponedDateThisMonth, year, month],
   )
 
-  return { isCompleted, isPostponed, canPostpone, toggle, togglePostpone, isLoading }
+  return { isCompleted, isPostponed, toggle, togglePostpone, isLoading }
 }

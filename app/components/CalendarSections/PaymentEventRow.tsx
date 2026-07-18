@@ -13,8 +13,6 @@ interface PaymentEventRowProps {
   investment?: Investment
   isCompleted: boolean
   isPostponed: boolean
-  /** 미루기 노출 가능 여부 (납입일 당일부터 true). 미래 납입엔 미루기를 숨긴다. */
-  canPostpone: boolean
   onClick: () => void
   onComplete: () => void
   onUncomplete: () => void
@@ -28,7 +26,6 @@ export function PaymentEventRow({
   investment,
   isCompleted,
   isPostponed,
-  canPostpone,
   onClick,
   onComplete,
   onUncomplete,
@@ -121,23 +118,21 @@ export function PaymentEventRow({
             미룸
           </Button>
         ) : (
-          // 대기 상태: 완료하기(프라이머리 컬러) + (납입일 당일부터) 미루기(회색)
+          // 대기 상태: 미루기(회색) + 완료하기(프라이머리). 미루기는 납입일 전에도 미리 지정할 수 있게 항상 노출한다.
           <>
-            {canPostpone && (
-              <Button
-                type="button"
-                variant="soft"
-                size="xs"
-                className="shrink-0 px-3"
-                onClick={(ev) => {
-                  ev.stopPropagation()
-                  onPostpone()
-                }}
-                aria-label="납입 미루기"
-              >
-                미루기
-              </Button>
-            )}
+            <Button
+              type="button"
+              variant="soft"
+              size="xs"
+              className="shrink-0 px-3"
+              onClick={(ev) => {
+                ev.stopPropagation()
+                onPostpone()
+              }}
+              aria-label="납입 미루기"
+            >
+              미루기
+            </Button>
             <Button
               type="button"
               variant="default"

@@ -19,8 +19,6 @@ export interface GoalGroupCardProps {
   isPaid: (recordId: string) => boolean
   /** 이번 달 미룸 여부 */
   isPostponed: (recordId: string) => boolean
-  /** 이번 달 미루기 노출 가능 여부 (납입일 당일부터 true) */
-  canPostpone: (record: Investment) => boolean
   onTogglePaid: (record: Investment) => void
   /** 이번 달 미룸 토글 */
   onTogglePostpone: (record: Investment) => void
@@ -49,7 +47,6 @@ export function GoalGroupCard({
   records,
   isPaid,
   isPostponed,
-  canPostpone,
   onTogglePaid,
   onTogglePostpone,
   onSelectRecord,
@@ -88,7 +85,7 @@ export function GoalGroupCard({
         </span>
       )}
       {!isPendingSettlement && dDay && (
-        <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
+        <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-[11px] font-semibold text-foreground-soft tabular-nums">
           {dDay}
         </span>
       )}
@@ -125,7 +122,6 @@ export function GoalGroupCard({
                   record={record}
                   isPaid={isPaid(record.id)}
                   isPostponed={isPostponed(record.id)}
-                  canPostpone={canPostpone(record)}
                   onTogglePaid={onTogglePaid}
                   onTogglePostpone={onTogglePostpone}
                   onSelect={onSelectRecord}

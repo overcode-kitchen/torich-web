@@ -62,9 +62,12 @@ export function MonthAgendaSection({
 
   const groupRefs = useRef<Map<number, HTMLElement>>(new Map())
   const rootRef = useRef<HTMLDivElement>(null)
-  // ref로 최신 selectedDate를 effect에 노출 — selectedDate 변경 단독으론 스크롤 트리거하지 않음
+  // ref로 최신 selectedDate를 effect에 노출 — selectedDate 변경 단독으론 스크롤 트리거하지 않음.
+  // 렌더 중 ref 변경은 금지이므로(react-hooks/refs) effect에서 매 렌더 뒤 갱신한다.
   const selectedDateRef = useRef(selectedDate)
-  selectedDateRef.current = selectedDate
+  useEffect(() => {
+    selectedDateRef.current = selectedDate
+  })
 
   // scrollTick이 바뀔 때 리스트를 selectedDate 자리로 smooth scroll.
   useEffect(() => {
@@ -123,7 +126,6 @@ export function MonthAgendaSection({
                   investment={investmentMap.get(e.investmentId)}
                   isCompleted={isEventCompleted(e)}
                   isPostponed={isEventPostponed(e)}
-                  canPostpone={date <= today}
                   onClick={() => goToDetail(e.investmentId)}
                   onComplete={() => handleComplete(e)}
                   onUncomplete={() => handleUncomplete(e)}
