@@ -37,14 +37,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isNativeApp) return
     if (pathname !== '/') return
+    // 스크롤 넛지(1px→0) + 강제 리플로우로 WKWebView가 레이아웃/스크롤 메트릭을 재계산하게 만든다.
+    const kick = () => {
+      window.scrollTo(0, 1)
+      void document.documentElement.offsetHeight // 강제 리플로우
+      window.scrollTo(0, 0)
+    }
     let raf2 = 0
     const raf1 = requestAnimationFrame(() => {
-      window.scrollTo(0, 1)
-      raf2 = requestAnimationFrame(() => window.scrollTo(0, 0))
+      kick()
+      raf2 = requestAnimationFrame(kick)
     })
+    // 라우터 캐시로 홈이 rAF 시점보다 늦게 복원되는 기기 대비 지연 폴백.
+    // 이미 사용자가 스크롤을 시작했으면 위치를 되돌리지 않도록 최상단일 때만 재교정한다.
+    const timer = window.setTimeout(() => {
+      if (window.scrollY <= 1) kick()
+    }, 150)
     return () => {
       cancelAnimationFrame(raf1)
       if (raf2) cancelAnimationFrame(raf2)
+      clearTimeout(timer)
     }
   }, [pathname, isNativeApp])
   const hideNav =
