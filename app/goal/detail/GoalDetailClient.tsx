@@ -206,7 +206,7 @@ export default function GoalDetailClient() {
               className="h-10 w-10 shrink-0 object-contain"
             />
           )}
-          <h2 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground break-keep">
+          <h2 className="min-w-0 text-xl font-semibold tracking-tight text-foreground break-keep">
             {goal.name}
           </h2>
         </div>
@@ -262,6 +262,7 @@ export default function GoalDetailClient() {
           records={records}
           isLinking={isLinking}
           onUnlink={(id) => void handleUnlink(id)}
+          onOpenRecord={(id) => router.push(`/investment?id=${id}`)}
         />
       </div>
 
@@ -269,6 +270,7 @@ export default function GoalDetailClient() {
         records={unlinkedRecords}
         isLinking={isLinking}
         onLink={(id) => void handleLink(id)}
+        onOpenRecord={(id) => router.push(`/investment?id=${id}`)}
       />
 
       <DeleteConfirmModal

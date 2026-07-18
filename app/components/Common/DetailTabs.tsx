@@ -1,7 +1,6 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
 
 export interface DetailTab {
   key: string
@@ -27,8 +26,7 @@ export interface DetailTabsProps {
 export function DetailTabs({ tabs, activeTab, onTabClick, bleedClassName }: DetailTabsProps) {
   return (
     <div
-      className={cn('sticky z-40 bg-background border-b border-border-subtle-lighter', bleedClassName)}
-      style={{ top: APP_HEADER_TOTAL_HEIGHT }}
+      className={cn('sticky top-0 z-40 bg-background border-b border-border-subtle-lighter', bleedClassName)}
       role="tablist"
     >
       <div className="flex gap-6">
