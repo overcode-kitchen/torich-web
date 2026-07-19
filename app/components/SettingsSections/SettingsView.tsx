@@ -126,6 +126,14 @@ export default function SettingsView({
                     />
                 </SettingsSection>
 
+                {/* 목표 */}
+                <SettingsSection title="목표">
+                    <SettingsItem
+                        label="보관한 목표"
+                        href="/settings/archived-goals"
+                    />
+                </SettingsSection>
+
                 {/* 계정 */}
                 <SettingsSection title="계정">
                     <SettingsItem

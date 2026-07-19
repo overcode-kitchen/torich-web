@@ -24,6 +24,8 @@ export interface GoalGroupItemRowProps {
   onSelect: (recordId: string) => void
   /** 카드 내 마지막 행이면 border-bottom 미표시 */
   isLast?: boolean
+  /** 묶인 목적이 완료(기간 종료)면 이번 달 납입 토글·미루기를 비활성(정적)으로 만든다. */
+  frozen?: boolean
 }
 
 /**
@@ -41,6 +43,7 @@ export function GoalGroupItemRow({
   onTogglePostpone,
   onSelect,
   isLast = false,
+  frozen = false,
 }: GoalGroupItemRowProps) {
   const { deleteInvestment } = useInvestmentsContext()
   const amountLabel =
@@ -54,7 +57,8 @@ export function GoalGroupItemRow({
 
   // 미완료·미룸아님·정산끝아님이면 스와이프에 "미루기"를 함께 노출한다.
   // 납입일 도래 여부와 무관하게 노출 — 사용자가 이번 달 납입을 미리 미룰 수 있어야 한다.
-  const showPostponeInSwipe = !isPaid && !isPostponed && !isSettled
+  // 완료(기간 종료)된 목적의 항목은 월 납입 사이클이 무의미하므로 미루기도 접는다.
+  const showPostponeInSwipe = !isPaid && !isPostponed && !isSettled && !frozen
   const swipe = useSwipeToDelete({
     onDelete: async () => {
       await deleteInvestment(record.id)
@@ -154,6 +158,9 @@ export function GoalGroupItemRow({
               >
                 만기 완료
               </span>
+            ) : frozen ? (
+              // 완료된 목적의 항목: 이번 달 납입 토글 비활성 (지난 내역 → 금액만 표시)
+              null
             ) : isPaid ? (
               // 완료 상태: 초록 pill. 탭하면 미완료로 되돌린다.
               <button

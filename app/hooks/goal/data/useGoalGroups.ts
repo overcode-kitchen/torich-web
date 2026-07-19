@@ -23,6 +23,10 @@ export interface UseGoalGroupsReturn {
   /** goal_id가 없는 투자들 */
   unassignedRecords: Investment[]
   isLoading: boolean
+  /** 현재 사용자 id (홈에서 보관 등 mutation 훅에 넘기기 위함) */
+  userId: string | undefined
+  /** 목적 목록 재조회 (보관 후 홈 카드 갱신용) */
+  refetch: () => Promise<void>
 }
 
 /**
@@ -41,7 +45,7 @@ export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
     })
   }, [])
 
-  const { goals, isLoading: goalsLoading } = useGoals(userId)
+  const { goals, isLoading: goalsLoading, refetch } = useGoals(userId)
   const { completedPayments, retroactivePayments, capturedAmounts, isLoading: paymentsLoading } =
     usePaymentHistory()
   const progressMap = useGoalsProgress(
@@ -81,5 +85,7 @@ export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
     groups,
     unassignedRecords,
     isLoading: goalsLoading || paymentsLoading,
+    userId,
+    refetch,
   }
 }

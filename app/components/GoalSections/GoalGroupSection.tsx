@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { GoalGroupCard } from './GoalGroupCard'
 import EmptyState from '@/app/components/DashboardSections/EmptyState'
 import { useGoalGroups } from '@/app/hooks/goal/data/useGoalGroups'
+import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useMonthlyPaymentStatus } from '@/app/hooks/payment/useMonthlyPaymentStatus'
 import { track } from '@/app/lib/analytics'
 import type { Investment } from '@/app/types/investment'
@@ -25,8 +26,15 @@ export interface GoalGroupSectionProps {
  */
 export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
   const router = useRouter()
-  const { groups, unassignedRecords, isLoading } = useGoalGroups(records)
+  const { groups, unassignedRecords, isLoading, userId, refetch } = useGoalGroups(records)
   const { isCompleted, isPostponed, toggle, togglePostpone } = useMonthlyPaymentStatus()
+  const { archiveGoal } = useGoalUpdate(userId)
+
+  async function handleArchive(goalId: string): Promise<void> {
+    await archiveGoal(goalId)
+    track('goal_archive', { entry_point: 'home_card' })
+    await refetch()
+  }
 
   if (isLoading) return null
   // 목적·투자가 모두 없는 신규 사용자에게만 빈 화면을 보여준다.
@@ -51,6 +59,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           onSelectRecord={(id) => router.push(`/investment?id=${id}`)}
           onSelectGoal={(id) => router.push(`/goal/detail?id=${id}`)}
           onAddRecord={(id) => router.push(`/add?goalId=${id}`)}
+          onArchive={(id) => void handleArchive(id)}
           nudge={groups.length > 1 && index === 0}
         />
       ))}

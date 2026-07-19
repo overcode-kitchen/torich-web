@@ -14,6 +14,7 @@ import { LinkedRecordsSection } from '@/app/components/GoalDetailSections/Linked
 import { UnlinkedRecordsSection } from '@/app/components/GoalDetailSections/UnlinkedRecordsSection'
 import { useGoalProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
+import { useGoalDelete } from '@/app/hooks/goal/data/useGoalDelete'
 import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLink'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
@@ -36,6 +37,7 @@ export default function GoalDetailClient() {
   const goalId = searchParams.get('id') ?? undefined
   const router = useRouter()
   const [userId, setUserId] = useState<string | undefined>(undefined)
+  const [showArchiveModal, setShowArchiveModal] = useState<boolean>(false)
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>('info')
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -64,6 +66,7 @@ export default function GoalDetailClient() {
     capturedAmounts,
   )
   const { updateGoal, archiveGoal, isUpdating } = useGoalUpdate(userId)
+  const { deleteGoal, isDeleting } = useGoalDelete(userId)
   const { linkRecordToGoal, isLinking } = useInvestmentGoalLink(userId)
 
   useEffect(() => {
@@ -98,6 +101,13 @@ export default function GoalDetailClient() {
   async function confirmArchive(): Promise<void> {
     if (!goal) return
     await archiveGoal(goal.id)
+    track('goal_archive', { entry_point: 'detail_menu' })
+    router.push('/')
+  }
+
+  async function confirmDelete(): Promise<void> {
+    if (!goal) return
+    await deleteGoal(goal.id)
     track('goal_delete', { entry_point: 'detail_menu' })
     router.push('/')
   }
@@ -176,8 +186,14 @@ export default function GoalDetailClient() {
           수정하기
         </DropdownMenuItem>
         <DropdownMenuItem
-          onSelect={() => setShowDeleteModal(true)}
+          onSelect={() => setShowArchiveModal(true)}
           disabled={isUpdating}
+        >
+          보관하기
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={() => setShowDeleteModal(true)}
+          disabled={isDeleting}
           variant="destructive"
         >
           삭제하기
@@ -274,12 +290,24 @@ export default function GoalDetailClient() {
       />
 
       <DeleteConfirmModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        isOpen={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
         onConfirm={confirmArchive}
         isDeleting={isUpdating}
+        tone="primary"
+        confirmLabel="보관"
+        confirmingLabel="보관 중..."
+        title="목적을 보관할까요?"
+        description={`"${goal.name}"을(를) 보관함으로 옮겨요. 묶인 투자는 그대로 유지되고, 설정 › 보관한 목표에서 언제든 다시 꺼낼 수 있어요.`}
+      />
+
+      <DeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        isDeleting={isDeleting}
         title="목적을 삭제할까요?"
-        description={`"${goal.name}"을(를) 삭제하면 묶였던 투자는 자유 상태로 돌아가요.`}
+        description={`"${goal.name}"을(를) 영구 삭제해요. 되돌릴 수 없고, 묶였던 투자는 자유 상태로 돌아가요.`}
       />
     </SubPageScaffold>
   )
