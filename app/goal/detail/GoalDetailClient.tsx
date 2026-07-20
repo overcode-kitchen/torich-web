@@ -8,6 +8,7 @@ import SubPageScaffold from '@/app/components/SubPageScaffold'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { DetailHero } from '@/app/components/Common/DetailHero'
 import { DetailProgressCard } from '@/app/components/Common/DetailProgressCard'
+import { DetailTitleBlock } from '@/app/components/Common/DetailTitleBlock'
 import { DetailTabs } from '@/app/components/Common/DetailTabs'
 import { GoalInfoSection } from '@/app/components/GoalDetailSections/GoalInfoSection'
 import { LinkedRecordsSection } from '@/app/components/GoalDetailSections/LinkedRecordsSection'
@@ -218,20 +219,21 @@ export default function GoalDetailClient() {
     >
       {/* 아이콘 + 제목 + 메모 */}
       <section ref={titleRef} className="pt-6 pb-5 space-y-3">
-        <div className="flex items-center gap-3">
-          {icon && (
-            <Image
-              src={icon.src}
-              alt=""
-              width={40}
-              height={40}
-              className="h-10 w-10 shrink-0 object-contain"
-            />
-          )}
-          <h2 className="min-w-0 text-xl font-semibold tracking-tight text-foreground break-keep">
-            {goal.name}
-          </h2>
-        </div>
+        <DetailTitleBlock
+          titleWrap="wrap"
+          leading={
+            icon ? (
+              <Image
+                src={icon.src}
+                alt=""
+                width={40}
+                height={40}
+                className="h-10 w-10 shrink-0 object-contain"
+              />
+            ) : undefined
+          }
+          title={goal.name}
+        />
         {goal.memo?.trim() && (
           <p className="text-sm text-foreground-muted whitespace-pre-line break-words">
             {goal.memo}
@@ -251,9 +253,10 @@ export default function GoalDetailClient() {
         />
       )}
 
-      {/* 히어로 숫자 (라벨 없이, 사용자가 바로 이해) */}
+      {/* 히어로 숫자 — 투자 상세("총 납입액")와 위계를 맞춰 라벨을 세운다 */}
       <DetailHero
         className="pt-4"
+        label="모은 금액"
         amount={formatCurrency(progress.currentValue)}
         sub={
           progress.progressPercent === null

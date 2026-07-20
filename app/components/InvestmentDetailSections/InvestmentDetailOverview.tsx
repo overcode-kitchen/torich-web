@@ -3,6 +3,7 @@
 import { Investment } from '@/app/types/investment'
 import { formatCurrency } from '@/lib/utils'
 import { getRecordAvatar } from '@/app/utils/recordAvatar'
+import { DetailTitleBlock } from '@/app/components/Common/DetailTitleBlock'
 
 interface InvestmentDetailOverviewProps {
   item: Investment
@@ -37,24 +38,19 @@ export function InvestmentDetailOverview({
 
   const titleBlock = (
     <>
-      <div className="flex items-center gap-3 mb-2">
-        <div
-          className={`flex shrink-0 items-center justify-center rounded-full font-semibold ${avatar.sizeClassName} ${avatar.className}`}
-          aria-hidden
-        >
-          {avatar.label}
-        </div>
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-xl font-semibold tracking-tight text-foreground">
-            {item.title}
-          </h2>
-          {subtitle && (
-            <p className="mt-0.5 truncate text-sm text-muted-foreground">
-              {subtitle}
-            </p>
-          )}
-        </div>
-      </div>
+      <DetailTitleBlock
+        className="mb-2"
+        leading={
+          <div
+            className={`flex shrink-0 items-center justify-center rounded-full font-semibold ${avatar.sizeClassName} ${avatar.className}`}
+            aria-hidden
+          >
+            {avatar.label}
+          </div>
+        }
+        title={item.title}
+        subtitle={subtitle}
+      />
       {isEditMode && (
         <p className="text-sm text-foreground-subtle">종목명은 수정할 수 없습니다</p>
       )}
