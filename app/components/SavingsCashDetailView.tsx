@@ -135,59 +135,58 @@ function SavingsCashDetailViewInner({
           </div>
         }
       >
-        <div className="mx-auto max-w-md md:max-w-lg lg:max-w-2xl">
-          <InvestmentDetailOverview
+        {/* 폭 제약·가운데 정렬은 SubPageScaffold 본문 컨테이너가 담당한다(중복 max-width 제거). */}
+        <InvestmentDetailOverview
+          item={item}
+          isEditMode={false}
+          completed={detail.completed}
+          overviewRef={overviewRef}
+          titleRef={titleRef}
+          onTitleClick={() => handleFieldTap('title')}
+        />
+
+        <ProgressSection
+          progress={detail.progress}
+          completed={detail.completed}
+          startDate={detail.startDate}
+          endDate={detail.endDate}
+          isHabitMode={detail.isHabitMode}
+          elapsedMonths={detail.elapsedMonths}
+          totalPaidPrincipal={detail.totalPaidPrincipal}
+        />
+
+        {hasHistory && (
+          <DetailTabs
+            tabs={[
+              { key: 'info', label: '적립 정보' },
+              { key: 'history', label: '납입 기록' },
+            ]}
+            activeTab={activeTab}
+            onTabClick={(tab) => handleTabClick(tab as typeof activeTab)}
+            bleedClassName="-mx-6 px-6"
+          />
+        )}
+
+        <div className="divide-y divide-border-subtle-lighter">
+          <SavingsCashInfoSection
             item={item}
-            isEditMode={false}
-            completed={detail.completed}
-            overviewRef={overviewRef}
-            titleRef={titleRef}
-            onTitleClick={() => handleFieldTap('title')}
-          />
-
-          <ProgressSection
-            progress={detail.progress}
-            completed={detail.completed}
-            startDate={detail.startDate}
-            endDate={detail.endDate}
-            isHabitMode={detail.isHabitMode}
-            elapsedMonths={detail.elapsedMonths}
+            maturity={detail.maturity}
             totalPaidPrincipal={detail.totalPaidPrincipal}
+            onFieldTap={handleFieldTap}
+            infoRef={infoRef}
           />
-
           {hasHistory && (
-            <DetailTabs
-              tabs={[
-                { key: 'info', label: '적립 정보' },
-                { key: 'history', label: '납입 기록' },
-              ]}
-              activeTab={activeTab}
-              onTabClick={(tab) => handleTabClick(tab as typeof activeTab)}
-              bleedClassName="-mx-6 px-6"
+            <PaymentHistorySection
+              item={item}
+              paymentHistory={detail.paymentHistory}
+              retroactivePaymentHistory={detail.retroactivePaymentHistory}
+              hasMorePaymentHistory={detail.hasMorePaymentHistory}
+              loadMore={detail.loadMore}
+              onToggleRetroactive={detail.onToggleRetroactive}
+              onMarkAllRetroactive={detail.onMarkAllRetroactive}
+              historyRef={historyRef}
             />
           )}
-
-          <div className="divide-y divide-border-subtle-lighter">
-            <SavingsCashInfoSection
-              item={item}
-              maturity={detail.maturity}
-              totalPaidPrincipal={detail.totalPaidPrincipal}
-              onFieldTap={handleFieldTap}
-              infoRef={infoRef}
-            />
-            {hasHistory && (
-              <PaymentHistorySection
-                item={item}
-                paymentHistory={detail.paymentHistory}
-                retroactivePaymentHistory={detail.retroactivePaymentHistory}
-                hasMorePaymentHistory={detail.hasMorePaymentHistory}
-                loadMore={detail.loadMore}
-                onToggleRetroactive={detail.onToggleRetroactive}
-                onMarkAllRetroactive={detail.onMarkAllRetroactive}
-                historyRef={historyRef}
-              />
-            )}
-          </div>
         </div>
       </SubPageScaffold>
 

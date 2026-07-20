@@ -40,7 +40,8 @@ export function InvestmentDetailContent() {
     })
 
     return (
-        <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-6 pb-12">
+        // 폭 제약·가운데 정렬은 SubPageScaffold 본문 컨테이너가 담당한다(중복 max-width 제거).
+        <div className="px-6 pb-12">
             <InvestmentDetailOverview
                 item={item}
                 isEditMode={isEditMode}
