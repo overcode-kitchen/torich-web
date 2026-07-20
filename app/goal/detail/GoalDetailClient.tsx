@@ -160,10 +160,9 @@ export default function GoalDetailClient() {
     goal.archived_at === null &&
     !progress.isCompleted
 
-  // 진행률 박스 안에 들어갈 상태 메시지 (달성/마감 지남) — 기존 하단 카드를 위로 통합
-  const progressStatus = progress.isCompleted ? (
-    <p className="font-semibold text-success">🎉 목표를 달성했어요</p>
-  ) : isPastDue ? (
+  // 마감 지남은 목적 상세 고유 메시지라 명시값으로 넘긴다.
+  // 달성 메시지("🎉 목표를 달성했어요")는 DetailProgressCard가 completed일 때 기본으로 노출한다.
+  const progressStatus = isPastDue ? (
     <p className="text-foreground-muted">
       마감일이 지났어요
       {progress.progressPercent !== null && ` · 달성률 ${progress.progressPercent}%`}

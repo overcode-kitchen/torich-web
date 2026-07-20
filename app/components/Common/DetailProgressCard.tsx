@@ -12,7 +12,10 @@ export interface DetailProgressCardProps {
   startLabel?: string
   /** 바 아래 오른쪽 (마감일) */
   endLabel?: string
-  /** 바 아래 상태 줄 (달성/마감 지남 등). 있을 때만 노출 */
+  /**
+   * 바 아래 상태 줄 (마감 지남 등). 명시하면 이 값이 우선한다.
+   * 생략하고 completed=true면 기본 달성 메시지("🎉 목표를 달성했어요")를 노출한다.
+   */
   status?: ReactNode
   /** 진행률 바 aria 라벨 */
   ariaLabel?: string
@@ -32,6 +35,12 @@ export function DetailProgressCard({
   ariaLabel = '진행률',
   className,
 }: DetailProgressCardProps) {
+  // status 명시값이 우선하고, 없으면 completed일 때만 기본 달성 메시지를 세운다.
+  // ("🎉 목표를 달성했어요"가 목적 상세·적립 상세에 각각 하드코딩돼 있던 것을 한 곳으로 모음)
+  const statusContent =
+    status ??
+    (completed ? <p className="font-semibold text-success">🎉 목표를 달성했어요</p> : null)
+
   return (
     <div className={cn('rounded-2xl bg-surface px-4 py-4', className)}>
       <ProgressBar
@@ -46,9 +55,9 @@ export function DetailProgressCard({
           <span>{endLabel}</span>
         </div>
       )}
-      {status && (
+      {statusContent && (
         <div className="mt-3 border-t border-border-subtle-lighter pt-3 text-sm">
-          {status}
+          {statusContent}
         </div>
       )}
     </div>

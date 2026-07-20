@@ -50,11 +50,6 @@ export function ProgressSection({
         completed={completed}
         startLabel={formatKoreanDate(startDate)}
         endLabel={formatKoreanDate(endDate)}
-        status={
-          completed ? (
-            <p className="font-semibold text-success">🎉 목표를 달성했어요</p>
-          ) : undefined
-        }
         ariaLabel="적립 진행률"
       />
       <DetailHero
