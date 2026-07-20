@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 
-export function useScrollHeader(titleRef: React.RefObject<HTMLElement | HTMLDivElement | null>) {
+export function useScrollHeader(
+  titleRef: React.RefObject<HTMLElement | HTMLDivElement | null>,
+  // 관찰 대상이 처음 마운트되지 않는 화면(로딩 분기 뒤에야 제목이 렌더되는 목적 상세 등)을 위해,
+  // 대상이 준비된 시점에 이 값을 true로 넘기면 그때 옵저버를 다시 붙인다. 기본 true(대상이 항상 마운트된 화면).
+  enabled: boolean = true,
+) {
   const [showStickyTitle, setShowStickyTitle] = useState(false);
 
   useEffect(() => {
-    if (!titleRef.current) return;
+    if (!enabled || !titleRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -23,7 +28,7 @@ export function useScrollHeader(titleRef: React.RefObject<HTMLElement | HTMLDivE
     return () => {
       observer.disconnect();
     };
-  }, [titleRef]);
+  }, [titleRef, enabled]);
 
   return {
     showStickyTitle,

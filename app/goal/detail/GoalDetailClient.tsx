@@ -17,6 +17,7 @@ import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useGoalDelete } from '@/app/hooks/goal/data/useGoalDelete'
 import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLink'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
+import { useScrollHeader } from '@/app/hooks/ui/useScrollHeader'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import { amountBucket, daysBetween, track } from '@/app/lib/analytics'
@@ -41,6 +42,7 @@ export default function GoalDetailClient() {
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>('info')
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLElement>(null)
   const infoRef = useRef<HTMLDivElement>(null)
   const linkedRef = useRef<HTMLDivElement>(null)
   const { goBack } = useFlowBack({
@@ -68,6 +70,10 @@ export default function GoalDetailClient() {
   const { updateGoal, archiveGoal, isUpdating } = useGoalUpdate(userId)
   const { deleteGoal, isDeleting } = useGoalDelete(userId)
   const { linkRecordToGoal, isLinking } = useInvestmentGoalLink(userId)
+
+  // 제목이 스크롤로 사라지면 헤더 중앙에 스티키 제목을 띄운다(주식 상세와 동일 규약).
+  // 목적 상세는 로딩 분기 뒤에야 제목이 렌더되므로, 데이터 준비 시점에 옵저버를 붙이도록 enabled를 넘긴다.
+  const { showStickyTitle } = useScrollHeader(titleRef, !isLoading && !!goal && !!progress)
 
   useEffect(() => {
     if (!goal || !progress) return
@@ -209,9 +215,16 @@ export default function GoalDetailClient() {
       contentClassName="px-6"
       actions={headerActions}
       scrollContainerRef={scrollContainerRef}
+      centerSlot={
+        showStickyTitle ? (
+          <h1 className="truncate text-center text-base font-semibold tracking-tight text-foreground">
+            {goal.name}
+          </h1>
+        ) : undefined
+      }
     >
       {/* 아이콘 + 제목 + 메모 */}
-      <section className="pt-6 pb-5 space-y-3">
+      <section ref={titleRef} className="pt-6 pb-5 space-y-3">
         <div className="flex items-center gap-3">
           {icon && (
             <Image

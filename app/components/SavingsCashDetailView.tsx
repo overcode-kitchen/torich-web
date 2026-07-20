@@ -20,6 +20,7 @@ import {
   useInvestmentTabContext,
 } from '@/app/contexts/InvestmentTabContext'
 import { useSavingsCashDetail } from '@/app/hooks/investment/detail/useSavingsCashDetail'
+import { useScrollHeader } from '@/app/hooks/ui/useScrollHeader'
 import { useNotificationToggle } from '@/app/hooks/notification/useNotificationToggle'
 import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
 import { cn } from '@/lib/utils'
@@ -65,6 +66,9 @@ function SavingsCashDetailViewInner({
     historyRef,
   } = useInvestmentTabContext()
 
+  // 제목이 스크롤로 사라지면 헤더 중앙에 스티키 제목을 띄운다(주식 상세와 동일 규약).
+  const { showStickyTitle } = useScrollHeader(titleRef)
+
   const hasHistory =
     detail.paymentHistory.length > 0 || detail.retroactivePaymentHistory.length > 0
 
@@ -79,6 +83,13 @@ function SavingsCashDetailViewInner({
         contentClassName="px-6 py-6"
         surfaceClassName="bg-background"
         scrollContainerRef={scrollContainerRef}
+        centerSlot={
+          showStickyTitle ? (
+            <h1 className="truncate text-center text-base font-semibold tracking-tight text-foreground">
+              {item.title}
+            </h1>
+          ) : undefined
+        }
         actions={
           <div className="flex items-center">
             <button
