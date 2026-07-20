@@ -7,7 +7,6 @@ import { CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { DetailHero } from '@/app/components/Common/DetailHero'
-import { DetailProgressCard } from '@/app/components/Common/DetailProgressCard'
 import { DetailTitleBlock } from '@/app/components/Common/DetailTitleBlock'
 import { DetailTabs } from '@/app/components/Common/DetailTabs'
 import { GoalInfoSection } from '@/app/components/GoalDetailSections/GoalInfoSection'
@@ -161,14 +160,16 @@ export default function GoalDetailClient() {
     goal.archived_at === null &&
     !progress.isCompleted
 
-  // 마감 지남은 목적 상세 고유 메시지라 명시값으로 넘긴다.
-  // 달성 메시지("🎉 목표를 달성했어요")는 DetailProgressCard가 completed일 때 기본으로 노출한다.
-  const progressStatus = isPastDue ? (
-    <p className="text-foreground-muted">
-      마감일이 지났어요
-      {progress.progressPercent !== null && ` · 달성률 ${progress.progressPercent}%`}
-    </p>
-  ) : undefined
+  // 히어로 숫자("모은 금액") 아래 보조 줄. 회색 진행 박스를 없앴으므로
+  // 달성/마감지남/남은금액/목표미설정 상태를 모두 이 sub로 모은다(정보 무손실).
+  const heroSub =
+    progress.progressPercent === null
+      ? '목표 금액을 정하면 진행률을 볼 수 있어요.'
+      : progress.isCompleted
+        ? <span className="font-semibold text-success">🎉 목표를 달성했어요</span>
+        : isPastDue
+          ? <span>마감일이 지났어요 · 달성률 {progress.progressPercent}%</span>
+          : `목표까지 ${formatCurrency(remaining)}`
 
   const headerActions = (
     <DropdownMenu>
@@ -241,30 +242,25 @@ export default function GoalDetailClient() {
         )}
       </section>
 
-      {/* 진행률 박스 (목표 금액이 있을 때만) */}
-      {progress.progressPercent !== null && (
-        <DetailProgressCard
-          percent={progress.progressPercent}
-          completed={progress.isCompleted}
-          startLabel={formatKoreanDate(new Date(goal.created_at))}
-          endLabel={goal.target_date ? formatKoreanDate(new Date(goal.target_date)) : undefined}
-          status={progressStatus}
-          ariaLabel="목적 진행률"
-        />
-      )}
-
-      {/* 히어로 숫자 — 투자 상세("총 납입액")와 위계를 맞춰 라벨을 세운다 */}
+      {/* 히어로 숫자("모은 금액")를 유일한 주인공으로 세우고, 진행 바(모은/목표 금액)를
+          별도 카드 대신 히어로에 종속시킨다. 투자 상세("총 납입액")와 동일 규격. */}
       <DetailHero
-        className="pt-4"
         label="모은 금액"
         amount={formatCurrency(progress.currentValue)}
-        sub={
-          progress.progressPercent === null
-            ? '목표 금액을 정하면 진행률을 볼 수 있어요.'
-            : progress.isCompleted
-              ? undefined
-              : `목표까지 ${formatCurrency(remaining)}`
+        progress={
+          progress.progressPercent !== null
+            ? {
+                percent: progress.progressPercent,
+                completed: progress.isCompleted,
+                startLabel: formatKoreanDate(new Date(goal.created_at)),
+                endLabel: goal.target_date
+                  ? formatKoreanDate(new Date(goal.target_date))
+                  : undefined,
+                ariaLabel: '목적 진행률',
+              }
+            : undefined
         }
+        sub={heroSub}
       />
 
       {/* 섹션 탭바 */}

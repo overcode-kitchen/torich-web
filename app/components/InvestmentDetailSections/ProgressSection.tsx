@@ -3,7 +3,6 @@
 import { formatCurrency } from '@/lib/utils'
 import { formatKoreanDate, formatYearMonth, formatDuration } from '@/app/utils/date'
 import { DetailHero } from '@/app/components/Common/DetailHero'
-import { DetailProgressCard } from '@/app/components/Common/DetailProgressCard'
 
 interface ProgressSectionProps {
   progress?: number | null
@@ -40,23 +39,23 @@ export function ProgressSection({
     )
   }
 
-  // 목표형: 회색 진행률 박스 + 총 납입액 히어로
+  // 목표형: 총 납입액 히어로 하나에 기간 진행 바를 종속시킨다.
+  // 바는 '시간' 진행(시작~만기)이라 % 텍스트 대신 양 끝 날짜만 앵커로 두어
+  // "돈 진행률"로 오독되지 않게 한다.
   if (progress === null || progress === undefined) return null
 
   return (
-    <>
-      <DetailProgressCard
-        percent={progress}
-        completed={completed}
-        startLabel={formatKoreanDate(startDate)}
-        endLabel={formatKoreanDate(endDate)}
-        ariaLabel="적립 진행률"
-      />
-      <DetailHero
-        className="pt-4"
-        label="총 납입액"
-        amount={formatCurrency(totalPaidPrincipal)}
-      />
-    </>
+    <DetailHero
+      label="총 납입액"
+      amount={formatCurrency(totalPaidPrincipal)}
+      progress={{
+        percent: progress,
+        completed,
+        startLabel: formatKoreanDate(startDate),
+        endLabel: formatKoreanDate(endDate),
+        ariaLabel: '적립 진행률',
+      }}
+      sub={completed ? <span className="font-semibold text-success">🎉 목표를 달성했어요</span> : undefined}
+    />
   )
 }
