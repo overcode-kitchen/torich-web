@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useRef, useState, ReactNode } from 'react'
+import { scrollToDetailSection } from '@/app/utils/scrollToDetailSection'
 
 export type TabType = 'overview' | 'info' | 'history'
 
@@ -35,25 +36,13 @@ export function InvestmentTabProvider({
 
   const handleTabClick = (tab: TabType) => {
     setActiveTab(tab)
-    const container = scrollContainerRef.current
-    if (!container) return
-
     const target =
       tab === 'overview'
         ? overviewRef.current
         : tab === 'info'
           ? infoRef.current
           : historyRef.current
-
-    if (!target) return
-
-    const headerAndTabsHeight = 52 + 40
-    const containerRect = container.getBoundingClientRect()
-    const targetRect = target.getBoundingClientRect()
-    const currentScrollTop = container.scrollTop
-    const offset = targetRect.top - containerRect.top + currentScrollTop - headerAndTabsHeight
-
-    container.scrollTo({ top: offset, behavior: 'smooth' })
+    scrollToDetailSection(scrollContainerRef.current, target)
   }
 
   const value = {

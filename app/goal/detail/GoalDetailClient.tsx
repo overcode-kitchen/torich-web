@@ -19,6 +19,7 @@ import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLi
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useScrollHeader } from '@/app/hooks/ui/useScrollHeader'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { scrollToDetailSection } from '@/app/utils/scrollToDetailSection'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import { amountBucket, daysBetween, track } from '@/app/lib/analytics'
 import { Button } from '@/components/ui/button'
@@ -93,15 +94,8 @@ export default function GoalDetailClient() {
 
   function handleTabClick(tab: string): void {
     setActiveTab(tab)
-    const container = scrollContainerRef.current
     const target = tab === 'info' ? infoRef.current : linkedRef.current
-    if (!container || !target) return
-    const headerAndTabsHeight = 52 + 40
-    const containerRect = container.getBoundingClientRect()
-    const targetRect = target.getBoundingClientRect()
-    const offset =
-      targetRect.top - containerRect.top + container.scrollTop - headerAndTabsHeight
-    container.scrollTo({ top: offset, behavior: 'smooth' })
+    scrollToDetailSection(scrollContainerRef.current, target)
   }
 
   async function confirmArchive(): Promise<void> {
