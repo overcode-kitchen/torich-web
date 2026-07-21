@@ -146,9 +146,28 @@ Deno.serve(async (req) => {
 
     const completedRecordIds = new Set((completed || []).map((c) => c.record_id))
 
-    // 4. 미완료 record만 유지
+    // 4. 어제 "미루기" 처리된 (record_id, payment_date) 조회
+    // 미루기는 payment_history에 행을 남기지 않으므로, 이걸 빼지 않으면 사용자가 스스로
+    // 미룬 회차에 대해 "놓치셨어요" 재알림이 날아간다 (미루기 기능의 의도와 정면 충돌).
+    const { data: postponed, error: postponedError } = await supabase
+      .from('postponed_payments')
+      .select('record_id')
+      .eq('payment_date', yesterdayStr)
+      .in('record_id', recordIds)
+
+    if (postponedError) {
+      console.error('Error fetching postponed_payments:', postponedError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch postponed_payments' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const postponedRecordIds = new Set((postponed || []).map((p) => p.record_id))
+
+    // 5. 완료도 미룸도 아닌 record만 유지
     const missedRecords = recordsWithYesterdayDue.filter(
-      (r) => !completedRecordIds.has(r.id)
+      (r) => !completedRecordIds.has(r.id) && !postponedRecordIds.has(r.id)
     )
 
     if (missedRecords.length === 0) {
