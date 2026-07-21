@@ -50,6 +50,40 @@
 
 `loggingBehavior` 도 동일하게 `'production'` 으로 유지된 채 머지되어야 한다. `'debug'` 로 커밋 금지.
 
+## 앱 빌드 환경변수 — `.env.local`이 `.env.production`을 이긴다 (CRITICAL)
+
+`NEXT_PUBLIC_*` 값은 **빌드 시점에 번들에 문자열로 구워진다.** 잘못된 값이 들어가면 배포 후 앱에서만 드러나고, 재빌드·재심사 외에는 되돌릴 방법이 없다.
+
+Next의 우선순위는 아래와 같다. **위쪽이 이긴다.**
+
+| 순위 | 출처 |
+|---|---|
+| 1 | 쉘 환경변수 (`FOO=bar npm run build:app`) |
+| 2 | `.env.production.local` |
+| 3 | **`.env.local`** |
+| 4 | `.env.production` |
+| 5 | `.env` |
+
+`.env.local`이 `.env.production`보다 **위**라는 게 핵심이다. `.env.production`에 운영 값을 넣어도, **같은 키가 `.env.local`에도 있으면 `.env.local`이 구워진다.** `.env.local`에 없는 키(예: GA ID)만 `.env.production` 값이 실제로 쓰인다.
+
+`.env.local`의 `NEXT_PUBLIC_API_URL`은 로컬 개발용 `http://localhost:3000`으로 두는 게 보통이므로, 이 키가 정확히 위 함정에 해당한다.
+
+### 릴리즈·심사 빌드는 쉘 환경변수로 넘긴다 (권장)
+
+`.env.local`을 고쳤다 되돌리는 방식은 되돌리기를 잊는 순간 로컬 주소가 새어 나간다. 우선순위 1위인 쉘 환경변수를 쓰면 파일을 건드리지 않는다.
+
+```bash
+NEXT_PUBLIC_API_URL=https://torich.vercel.app npm run build:app
+```
+
+`scripts/verify-app-build-env.mjs`가 빌드 전에 해석된 값과 **출처 파일**을 출력하고, 로컬 주소(`localhost`·루프백·사설 IP)면 빌드를 중단한다. 실기기 로컬 테스트 목적이라면 `ALLOW_LOCAL_API_URL=1`로만 우회한다.
+
+빌드 후 번들을 직접 확인하는 게 최종 관문이다.
+
+```bash
+grep -ro "localhost:3000" out/ | wc -l   # 반드시 0
+```
+
 ## macOS 한글 경로 + CocoaPods UTF-8
 
 작업 경로에 한글이 포함되어 있을 경우 (예: `Team/overcord-kitchen/...`) `pod install` 단계에서 `Encoding::CompatibilityError` 가 발생한다. `~/.zshrc` 에 아래를 영구 등록한다.
@@ -110,6 +144,8 @@ app/foo/[id]/
 - [ ] `server-routes.backup/` 폴더가 워킹 트리에 남아 있지 않은가
 - [ ] `git status` 에 `app/api/*`, `app/auth/*` 가 deleted로 떠 있지 않은가
 - [ ] `capacitor.config.ts` 의 `server.url` 이 주석 처리 + `loggingBehavior: 'production'` 인가
+- [ ] `grep -ro "localhost:3000" out/ | wc -l` 이 **0** 인가 (아카이빙 직전 필수)
+- [ ] `[build:app] NEXT_PUBLIC_API_URL = ...` 출력의 값과 출처가 운영 기준으로 찍혔는가
 
 ---
 
