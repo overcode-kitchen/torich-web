@@ -5,7 +5,8 @@ import { differenceInMonths } from 'date-fns'
 import { calculateSavingsMaturity } from '@/app/utils/savingsMaturity'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import { usePaymentPagination } from '@/app/hooks/payment/usePaymentPagination'
-import { getPaymentHistoryFromStart, toggleMonthPayments } from '@/app/utils/payment-history'
+import { getPaymentHistoryFromStart } from '@/app/utils/payment-history'
+import { useMonthToggleUndo } from '@/app/hooks/payment/useMonthToggleUndo'
 import { getStartDate } from '@/app/types/investment'
 import { calculateEndDate, getElapsedMonths } from '@/app/utils/date'
 import type { SavingsMaturityResult } from '@/app/utils/savingsMaturity'
@@ -55,6 +56,12 @@ export interface UseSavingsCashDetailReturn {
   onMarkAllRetroactive: (yearMonths: string[]) => Promise<void>
   /** 자동 기록 한 줄(그 달 회차 전체) 토글 → 상세에서 완료 되돌리기 */
   onToggleAuto: (yearMonth: string, currentCompleted: boolean) => Promise<void>
+  /** 하단 되돌리기 토스트 노출 여부 */
+  pendingUndo: boolean
+  /** 되돌리기 토스트 좌측 문구 */
+  undoLabel: string | undefined
+  /** 방금 토글한 회차 되돌리기 */
+  handleUndo: () => Promise<void>
 }
 
 /**
@@ -73,6 +80,9 @@ export function useSavingsCashDetail(
     toggleRetroactivePayment,
     markAllRetroactivePaid,
   } = usePaymentHistory()
+
+  // 월 회차 토글 + 하단 되돌리기 토스트 (홈과 동일한 UndoToastSection 사용)
+  const monthUndo = useMonthToggleUndo(togglePayment)
 
   const maturity = useMemo(
     () => (item.record_type === 'savings' ? calculateSavingsMaturity(item) : null),
@@ -150,7 +160,7 @@ export function useSavingsCashDetail(
   const onMarkAllRetroactive = (yearMonths: string[]) =>
     markAllRetroactivePaid(item.id, yearMonths)
   const onToggleAuto = (yearMonth: string, currentCompleted: boolean) =>
-    toggleMonthPayments(togglePayment, completedPayments.get(item.id), item, yearMonth, currentCompleted)
+    monthUndo.onToggleAuto(item, completedPayments.get(item.id), yearMonth, currentCompleted)
 
   const handleDelete = async (): Promise<void> => {
     try {
@@ -181,5 +191,8 @@ export function useSavingsCashDetail(
     onToggleRetroactive,
     onMarkAllRetroactive,
     onToggleAuto,
+    pendingUndo: monthUndo.pendingUndo,
+    undoLabel: monthUndo.undoLabel,
+    handleUndo: monthUndo.handleUndo,
   }
 }
