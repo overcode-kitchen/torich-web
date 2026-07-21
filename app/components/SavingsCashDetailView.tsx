@@ -22,7 +22,6 @@ import {
 } from '@/app/contexts/InvestmentTabContext'
 import { useSavingsCashDetail } from '@/app/hooks/investment/detail/useSavingsCashDetail'
 import { getRecordAvatar } from '@/app/utils/recordAvatar'
-import { formatInvestmentSubtitle } from '@/app/utils/investmentSubtitle'
 import { useNotificationToggle } from '@/app/hooks/notification/useNotificationToggle'
 import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
 import { cn } from '@/lib/utils'
@@ -157,7 +156,6 @@ function SavingsCashDetailViewInner({
             isHabitMode={detail.isHabitMode}
             elapsedMonths={detail.elapsedMonths}
             totalPaidPrincipal={detail.totalPaidPrincipal}
-            contextLine={formatInvestmentSubtitle(item)}
           />
         </section>
 
