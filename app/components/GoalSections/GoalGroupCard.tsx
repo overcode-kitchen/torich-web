@@ -7,6 +7,7 @@ import { AddRecordDrawer } from './AddRecordDrawer'
 import { resolvePurposeIcon } from '@/app/constants/goal'
 import { dDayLabel } from '@/app/utils/goal-format'
 import { nextSettlementDDay, type GoalStatus } from '@/app/utils/goal-status'
+import type { MonthlyRecordStatus } from '@/app/hooks/payment/useMonthlyPaymentStatus'
 import type { Investment } from '@/app/types/investment'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 
@@ -17,7 +18,8 @@ export interface GoalGroupCardProps {
   fallbackName?: string
   progress?: GoalProgress
   records: Investment[]
-  isPaid: (recordId: string) => boolean
+  /** record -> 이번 달 회차 진행 상태(completed/total, 다음 회차) */
+  getStatus: (record: Investment) => MonthlyRecordStatus
   /** 이번 달 미룸 여부 */
   isPostponed: (recordId: string) => boolean
   onTogglePaid: (record: Investment) => void
@@ -48,7 +50,7 @@ export function GoalGroupCard({
   fallbackName,
   progress,
   records,
-  isPaid,
+  getStatus,
   isPostponed,
   onTogglePaid,
   onTogglePostpone,
@@ -136,7 +138,7 @@ export function GoalGroupCard({
                 <GoalGroupItemRow
                   key={record.id}
                   record={record}
-                  isPaid={isPaid(record.id)}
+                  status={getStatus(record)}
                   isPostponed={isPostponed(record.id)}
                   onTogglePaid={onTogglePaid}
                   onTogglePostpone={onTogglePostpone}

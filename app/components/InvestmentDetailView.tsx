@@ -22,6 +22,8 @@ import { InvestmentDetailProvider } from '@/app/components/InvestmentDetailSecti
 import { RetroactiveOnboardingSheet } from '@/app/components/InvestmentDetailSections/RetroactiveOnboardingSheet'
 import { useRetroactiveOnboarding } from '@/app/hooks/investment/detail/useRetroactiveOnboarding'
 import { useShareModeSync } from '@/app/hooks/investment/detail/useShareModeSync'
+import { useMonthToggleUndo } from '@/app/hooks/payment/useMonthToggleUndo'
+import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import { cn } from '@/lib/utils'
 
 interface InvestmentDetailViewProps {
@@ -51,9 +53,13 @@ function InternalInvestmentDetailView({
   const {
     completedPayments,
     retroactivePayments,
+    togglePayment,
     toggleRetroactivePayment,
     markAllRetroactivePaid,
   } = usePaymentHistory()
+
+  // 월 회차 토글 + 하단 되돌리기 토스트 (홈과 동일한 UndoToastSection 사용)
+  const monthUndo = useMonthToggleUndo(togglePayment)
 
   // Global notification setting (read-only)
   const { notificationOn: isGlobalNotificationOn } = useGlobalNotification()
@@ -87,6 +93,8 @@ function InternalInvestmentDetailView({
     retroactivePayments,
     onToggleRetroactive: toggleRetroactivePayment,
     onMarkAllRetroactive: markAllRetroactivePaid,
+    onToggleAuto: (recordId, yearMonth, currentCompleted) =>
+      monthUndo.onToggleAuto(item, completedPayments.get(recordId), yearMonth, currentCompleted),
   })
 
   // 수정 모드 진입 시 초기화
@@ -207,6 +215,13 @@ function InternalInvestmentDetailView({
           isDeleting={isDeleting}
         />
       </SubPageScaffold>
+
+      {/* 월 회차 되돌리기 토스트 (하단) */}
+      <UndoToastSection
+        pendingUndo={monthUndo.pendingUndo}
+        handleUndo={() => void monthUndo.handleUndo()}
+        label={monthUndo.undoLabel}
+      />
 
       {/* 소급 안내 시트 (과거 시작일로 등록 후 진입 시) */}
       <RetroactiveOnboardingSheet

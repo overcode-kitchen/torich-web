@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { Plus } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { GoalGroupCard } from './GoalGroupCard'
+import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import EmptyState from '@/app/components/DashboardSections/EmptyState'
 import { useGoalGroups } from '@/app/hooks/goal/data/useGoalGroups'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
@@ -27,7 +28,8 @@ export interface GoalGroupSectionProps {
 export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
   const router = useRouter()
   const { groups, unassignedRecords, isLoading, userId, refetch } = useGoalGroups(records)
-  const { isCompleted, isPostponed, toggle, togglePostpone } = useMonthlyPaymentStatus()
+  const { getStatus, isPostponed, toggle, togglePostpone, pendingUndo, handleUndo } =
+    useMonthlyPaymentStatus()
   const { archiveGoal } = useGoalUpdate(userId)
 
   async function handleArchive(goalId: string): Promise<void> {
@@ -52,7 +54,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           progress={progress}
           records={groupRecords}
           status={status}
-          isPaid={isCompleted}
+          getStatus={getStatus}
           isPostponed={isPostponed}
           onTogglePaid={toggle}
           onTogglePostpone={togglePostpone}
@@ -69,7 +71,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           goal={null}
           fallbackName="목적 미지정"
           records={unassignedRecords}
-          isPaid={isCompleted}
+          getStatus={getStatus}
           isPostponed={isPostponed}
           onTogglePaid={toggle}
           onTogglePostpone={togglePostpone}
@@ -88,6 +90,12 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
         <Plus className="h-5 w-5" weight="bold" />
         목적 만들기
       </Button>
+
+      <UndoToastSection
+        pendingUndo={!!pendingUndo}
+        handleUndo={() => void handleUndo()}
+        label={pendingUndo?.label}
+      />
     </div>
   )
 }
