@@ -63,7 +63,7 @@ export function DetailHero({ label, amount, context, progress, sub, children, cl
             className="bg-border-subtle-lighter"
           />
           {(progress.startLabel || progress.endLabel) && (
-            <div className="mt-2 flex justify-between text-xs font-medium text-foreground-muted tabular-nums">
+            <div className="mt-2 flex justify-between text-xs font-medium text-muted-foreground tabular-nums">
               <span>{progress.startLabel}</span>
               <span>{progress.endLabel}</span>
             </div>
