@@ -22,7 +22,7 @@ export function ProgressBar({ percent, completed = false, label = '진행률', c
 
   return (
     <div
-      className={cn('w-full h-2.5 bg-surface-hover rounded-full overflow-hidden', className)}
+      className={cn('w-full h-1.5 bg-surface-hover rounded-full overflow-hidden', className)}
       role="progressbar"
       aria-label={label}
       aria-valuenow={clamped}

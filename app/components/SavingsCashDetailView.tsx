@@ -13,14 +13,15 @@ import {
 import { SavingsCashInfoSection } from '@/app/components/SavingsCashDetailSections/SavingsCashInfoSection'
 import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
-import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailSections/InvestmentDetailOverview'
+import { DetailHeaderTitle } from '@/app/components/Common/DetailHeaderTitle'
 import { DetailTabs } from '@/app/components/Common/DetailTabs'
 import {
   InvestmentTabProvider,
   useInvestmentTabContext,
 } from '@/app/contexts/InvestmentTabContext'
 import { useSavingsCashDetail } from '@/app/hooks/investment/detail/useSavingsCashDetail'
-import { useScrollHeader } from '@/app/hooks/ui/useScrollHeader'
+import { getRecordAvatar } from '@/app/utils/recordAvatar'
+import { formatInvestmentSubtitle } from '@/app/utils/investmentSubtitle'
 import { useNotificationToggle } from '@/app/hooks/notification/useNotificationToggle'
 import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
 import { cn } from '@/lib/utils'
@@ -61,13 +62,11 @@ function SavingsCashDetailViewInner({
     handleTabClick,
     scrollContainerRef,
     overviewRef,
-    titleRef,
     infoRef,
     historyRef,
   } = useInvestmentTabContext()
 
-  // 제목이 스크롤로 사라지면 헤더 중앙에 스티키 제목을 띄운다(주식 상세와 동일 규약).
-  const { showStickyTitle } = useScrollHeader(titleRef)
+  const headerAvatar = getRecordAvatar(item, 'sm')
 
   const hasHistory =
     detail.paymentHistory.length > 0 || detail.retroactivePaymentHistory.length > 0
@@ -84,11 +83,22 @@ function SavingsCashDetailViewInner({
         surfaceClassName="bg-background"
         scrollContainerRef={scrollContainerRef}
         centerSlot={
-          showStickyTitle ? (
-            <h1 className="truncate text-center text-base font-semibold tracking-tight text-foreground">
-              {item.title}
-            </h1>
-          ) : undefined
+          <DetailHeaderTitle
+            title={item.title}
+            onClick={() => handleFieldTap('title')}
+            leading={
+              <span
+                className={cn(
+                  'flex shrink-0 items-center justify-center rounded-full font-semibold',
+                  headerAvatar.sizeClassName,
+                  headerAvatar.className,
+                )}
+                aria-hidden
+              >
+                {headerAvatar.label}
+              </span>
+            }
+          />
         }
         actions={
           <div className="flex items-center">
@@ -135,25 +145,20 @@ function SavingsCashDetailViewInner({
           </div>
         }
       >
-        {/* 폭 제약·가운데 정렬은 SubPageScaffold 본문 컨테이너가 담당한다(중복 max-width 제거). */}
-        <InvestmentDetailOverview
-          item={item}
-          isEditMode={false}
-          completed={detail.completed}
-          overviewRef={overviewRef}
-          titleRef={titleRef}
-          onTitleClick={() => handleFieldTap('title')}
-        />
-
-        <ProgressSection
-          progress={detail.progress}
-          completed={detail.completed}
-          startDate={detail.startDate}
-          endDate={detail.endDate}
-          isHabitMode={detail.isHabitMode}
-          elapsedMonths={detail.elapsedMonths}
-          totalPaidPrincipal={detail.totalPaidPrincipal}
-        />
+        {/* 이름은 앱바에 상주(centerSlot)하고, 본문 최상단은 총 납입액 히어로 하나로 유지한다.
+            "현재 N원씩 적립 중"은 히어로 아래 보조 줄로 종속. 폭 제약은 스캐폴드 본문 컨테이너가 담당. */}
+        <section ref={overviewRef}>
+          <ProgressSection
+            progress={detail.progress}
+            completed={detail.completed}
+            startDate={detail.startDate}
+            endDate={detail.endDate}
+            isHabitMode={detail.isHabitMode}
+            elapsedMonths={detail.elapsedMonths}
+            totalPaidPrincipal={detail.totalPaidPrincipal}
+            contextLine={formatInvestmentSubtitle(item)}
+          />
+        </section>
 
         {hasHistory && (
           <DetailTabs

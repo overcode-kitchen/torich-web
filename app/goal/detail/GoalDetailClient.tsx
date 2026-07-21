@@ -7,7 +7,7 @@ import { CircleNotch, DotsThreeVertical } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 import { DetailHero } from '@/app/components/Common/DetailHero'
-import { DetailTitleBlock } from '@/app/components/Common/DetailTitleBlock'
+import { DetailHeaderTitle } from '@/app/components/Common/DetailHeaderTitle'
 import { DetailTabs } from '@/app/components/Common/DetailTabs'
 import { GoalInfoSection } from '@/app/components/GoalDetailSections/GoalInfoSection'
 import { LinkedRecordsSection } from '@/app/components/GoalDetailSections/LinkedRecordsSection'
@@ -17,7 +17,6 @@ import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useGoalDelete } from '@/app/hooks/goal/data/useGoalDelete'
 import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLink'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
-import { useScrollHeader } from '@/app/hooks/ui/useScrollHeader'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { scrollToDetailSection } from '@/app/utils/scrollToDetailSection'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
@@ -43,7 +42,6 @@ export default function GoalDetailClient() {
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>('info')
   const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const titleRef = useRef<HTMLElement>(null)
   const infoRef = useRef<HTMLDivElement>(null)
   const linkedRef = useRef<HTMLDivElement>(null)
   const { goBack } = useFlowBack({
@@ -71,10 +69,6 @@ export default function GoalDetailClient() {
   const { updateGoal, archiveGoal, isUpdating } = useGoalUpdate(userId)
   const { deleteGoal, isDeleting } = useGoalDelete(userId)
   const { linkRecordToGoal, isLinking } = useInvestmentGoalLink(userId)
-
-  // 제목이 스크롤로 사라지면 헤더 중앙에 스티키 제목을 띄운다(주식 상세와 동일 규약).
-  // 목적 상세는 로딩 분기 뒤에야 제목이 렌더되므로, 데이터 준비 시점에 옵저버를 붙이도록 enabled를 넘긴다.
-  const { showStickyTitle } = useScrollHeader(titleRef, !isLoading && !!goal && !!progress)
 
   useEffect(() => {
     if (!goal || !progress) return
@@ -211,40 +205,27 @@ export default function GoalDetailClient() {
       actions={headerActions}
       scrollContainerRef={scrollContainerRef}
       centerSlot={
-        showStickyTitle ? (
-          <h1 className="truncate text-center text-base font-semibold tracking-tight text-foreground">
-            {goal.name}
-          </h1>
-        ) : undefined
-      }
-    >
-      {/* 아이콘 + 제목 + 메모 */}
-      <section ref={titleRef} className="pt-6 pb-5 space-y-3">
-        <DetailTitleBlock
-          titleWrap="wrap"
+        <DetailHeaderTitle
+          title={goal.name}
           leading={
             icon ? (
               <Image
                 src={icon.src}
                 alt=""
-                width={40}
-                height={40}
-                className="h-10 w-10 shrink-0 object-contain"
+                width={24}
+                height={24}
+                className="h-6 w-6 shrink-0 object-contain"
               />
             ) : undefined
           }
-          title={goal.name}
         />
-        {goal.memo?.trim() && (
-          <p className="text-sm text-foreground-muted whitespace-pre-line break-words">
-            {goal.memo}
-          </p>
-        )}
-      </section>
-
-      {/* 히어로 숫자("모은 금액")를 유일한 주인공으로 세우고, 진행 바(모은/목표 금액)를
-          별도 카드 대신 히어로에 종속시킨다. 투자 상세("총 납입액")와 동일 규격. */}
+      }
+    >
+      {/* 이름·아이콘은 앱바(centerSlot)에 상주하고, 본문 최상단은 "모은 금액" 히어로 하나로
+          유지한다. 진행 바(모은/목표 금액)를 별도 카드 대신 히어로에 종속시킨다.
+          투자 상세("총 납입액")와 동일 규격. */}
       <DetailHero
+        className="pt-6"
         label="모은 금액"
         amount={formatCurrency(progress.currentValue)}
         progress={
@@ -262,6 +243,13 @@ export default function GoalDetailClient() {
         }
         sub={heroSub}
       />
+
+      {/* 메모: 이름 블록을 앱바로 올린 뒤, 목적 설명은 히어로 아래 보조 줄로 종속시킨다. */}
+      {goal.memo?.trim() && (
+        <p className="-mt-2 mb-2 text-sm text-foreground-muted whitespace-pre-line break-words">
+          {goal.memo}
+        </p>
+      )}
 
       {/* 섹션 탭바 */}
       <DetailTabs

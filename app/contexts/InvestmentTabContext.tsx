@@ -12,7 +12,6 @@ interface InvestmentTabContextType {
   overviewRef: React.RefObject<HTMLElement | null>
   infoRef: React.RefObject<HTMLElement | null>
   historyRef: React.RefObject<HTMLElement | null>
-  titleRef: React.RefObject<HTMLDivElement | null>
   handleTabClick: (tab: TabType) => void
 }
 
@@ -32,7 +31,6 @@ export function InvestmentTabProvider({
   const overviewRef = useRef<HTMLElement>(null)
   const infoRef = useRef<HTMLElement>(null)
   const historyRef = useRef<HTMLElement>(null)
-  const titleRef = useRef<HTMLDivElement>(null)
 
   const handleTabClick = (tab: TabType) => {
     setActiveTab(tab)
@@ -52,7 +50,6 @@ export function InvestmentTabProvider({
     overviewRef,
     infoRef,
     historyRef,
-    titleRef,
     handleTabClick,
   }
 
