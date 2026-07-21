@@ -53,7 +53,7 @@ export interface MonthlyPaymentStatus {
   getStatus: (record: Investment) => MonthlyRecordStatus
   /** recordId -> 이번 달 미룸 여부 */
   isPostponed: (recordId: string) => boolean
-  /** 다음 도래 회차 완료(전부 완료 상태면 마지막 회차 취소) */
+  /** 다음 도래 회차 완료(전부 완료 상태면 이번 달 회차 전체 취소 → 처음으로) */
   toggle: (record: Investment) => Promise<void>
   /** 이번 달 미룸 토글 */
   togglePostpone: (record: Investment) => Promise<void>
@@ -131,9 +131,12 @@ export function useMonthlyPaymentStatus(): MonthlyPaymentStatus {
       const days = monthlyInstallmentDays(record.investment_days, year, month)
       const status = getStatus(record)
       if (status.isFullyPaid) {
-        // 전부 완료 상태에서 탭 = 마지막(가장 늦은) 회차를 취소한다.
-        const lastDay = days[days.length - 1]
-        await togglePayment(record.id, ymd(year, month, lastDay), true)
+        // 전부 완료 상태에서 탭 = 이번 달 회차를 통째로 취소해 '처음(미완료)'으로 되돌린다.
+        // 10일 → 20일 → 30일 → 완료됨 → (탭) 처음, 으로 한 바퀴 도는 로테이션.
+        // (예전엔 마지막 회차만 취소해 완료됨 ⇄ 마지막회차 두 상태만 왕복 → 답답)
+        for (const d of days) {
+          await togglePayment(record.id, ymd(year, month, d), true)
+        }
         hapticLightImpact()
         return
       }

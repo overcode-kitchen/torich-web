@@ -174,7 +174,7 @@ export function GoalGroupItemRow({
                   ev.stopPropagation()
                   onTogglePaid(record)
                 }}
-                aria-label={isMulti ? '이번 달 마지막 회차 완료 취소' : '이번 달 납입 완료 취소'}
+                aria-label={isMulti ? '이번 달 납입 전체 취소' : '이번 달 납입 완료 취소'}
               >
                 <Check className="h-3.5 w-3.5" weight="bold" />
                 완료
