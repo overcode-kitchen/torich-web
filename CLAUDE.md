@@ -46,9 +46,9 @@
   ```bash
   mv server-routes.backup/api app/api && mv server-routes.backup/auth app/auth && rm -rf server-routes.backup
   ```
-- **`capacitor.config.ts`의 `server.url` 커밋 금지**: 주석 해제된 `server.url`이 배포되면 운영 앱이 로컬 서버를 바라본다. PR 머지 전 diff 필수 확인.
-
-`loggingBehavior` 도 동일하게 `'production'` 으로 유지된 채 머지되어야 한다. `'debug'` 로 커밋 금지.
+- **`server.url`은 환경변수로만 설정한다**: 주석 해제된 `server.url`이 배포되면 운영 앱이 개발자 맥을 바라봐 전체 사용자가 앱을 못 쓴다. 그래서 `capacitor.config.ts`는 개발 주소를 **파일에 적지 않고** `CAP_SERVER_URL`로 받는다. 변수를 설정하지 않으면 `server: {}` + `loggingBehavior: 'production'`이 되므로, 파일에 개발 주소가 남아 커밋될 수 없다.
+  - 실기기 라이브 리로드: `npm run dev:app` (터미널 1) + `npm run sync:app` (터미널 2). 맥의 LAN IP는 `scripts/lan-ip.sh`가 자동 감지한다.
+  - `capacitor.config.ts`를 직접 고쳐 주소를 적는 방식은 쓰지 않는다.
 
 ## 앱 빌드 환경변수 — `.env.local`이 `.env.production`을 이긴다 (CRITICAL)
 
