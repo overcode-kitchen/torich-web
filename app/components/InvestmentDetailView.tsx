@@ -22,6 +22,7 @@ import { InvestmentDetailProvider } from '@/app/components/InvestmentDetailSecti
 import { RetroactiveOnboardingSheet } from '@/app/components/InvestmentDetailSections/RetroactiveOnboardingSheet'
 import { useRetroactiveOnboarding } from '@/app/hooks/investment/detail/useRetroactiveOnboarding'
 import { useShareModeSync } from '@/app/hooks/investment/detail/useShareModeSync'
+import { toggleMonthPayments } from '@/app/utils/payment-history'
 import { cn } from '@/lib/utils'
 
 interface InvestmentDetailViewProps {
@@ -51,6 +52,7 @@ function InternalInvestmentDetailView({
   const {
     completedPayments,
     retroactivePayments,
+    togglePayment,
     toggleRetroactivePayment,
     markAllRetroactivePaid,
   } = usePaymentHistory()
@@ -87,6 +89,8 @@ function InternalInvestmentDetailView({
     retroactivePayments,
     onToggleRetroactive: toggleRetroactivePayment,
     onMarkAllRetroactive: markAllRetroactivePaid,
+    onToggleAuto: (recordId, yearMonth, currentCompleted) =>
+      toggleMonthPayments(togglePayment, completedPayments.get(recordId), item, yearMonth, currentCompleted),
   })
 
   // 수정 모드 진입 시 초기화

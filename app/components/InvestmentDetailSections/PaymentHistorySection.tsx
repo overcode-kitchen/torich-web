@@ -37,6 +37,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
     loadMore = props.loadMore,
     onToggleRetroactive,
     onMarkAllRetroactive,
+    onToggleAuto,
   } = investmentData || {}
 
   const { historyRef } = props
@@ -130,8 +131,14 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             item={item}
             rows={paymentHistory}
             variant="auto"
+            onToggleAuto={onToggleAuto}
             capturedByMonth={capturedByMonth}
           />
+          {onToggleAuto && (
+            <p className="px-1 pt-1 text-xs text-foreground-muted">
+              완료된 달을 탭하면 그 달 납입을 되돌릴 수 있어요.
+            </p>
+          )}
           {hasMorePaymentHistory && (
             <button
               type="button"

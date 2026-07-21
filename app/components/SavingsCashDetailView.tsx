@@ -189,6 +189,7 @@ function SavingsCashDetailViewInner({
               loadMore={detail.loadMore}
               onToggleRetroactive={detail.onToggleRetroactive}
               onMarkAllRetroactive={detail.onMarkAllRetroactive}
+              onToggleAuto={detail.onToggleAuto}
               historyRef={historyRef}
             />
           )}

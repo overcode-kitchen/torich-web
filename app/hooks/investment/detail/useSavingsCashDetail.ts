@@ -5,7 +5,7 @@ import { differenceInMonths } from 'date-fns'
 import { calculateSavingsMaturity } from '@/app/utils/savingsMaturity'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import { usePaymentPagination } from '@/app/hooks/payment/usePaymentPagination'
-import { getPaymentHistoryFromStart } from '@/app/utils/payment-history'
+import { getPaymentHistoryFromStart, toggleMonthPayments } from '@/app/utils/payment-history'
 import { getStartDate } from '@/app/types/investment'
 import { calculateEndDate, getElapsedMonths } from '@/app/utils/date'
 import type { SavingsMaturityResult } from '@/app/utils/savingsMaturity'
@@ -53,6 +53,8 @@ export interface UseSavingsCashDetailReturn {
   onToggleRetroactive: (yearMonth: string, currentCompleted: boolean) => void
   /** 소급 기록 일괄 완료 */
   onMarkAllRetroactive: (yearMonths: string[]) => Promise<void>
+  /** 자동 기록 한 줄(그 달 회차 전체) 토글 → 상세에서 완료 되돌리기 */
+  onToggleAuto: (yearMonth: string, currentCompleted: boolean) => Promise<void>
 }
 
 /**
@@ -67,6 +69,7 @@ export function useSavingsCashDetail(
   const {
     completedPayments,
     retroactivePayments,
+    togglePayment,
     toggleRetroactivePayment,
     markAllRetroactivePaid,
   } = usePaymentHistory()
@@ -146,6 +149,8 @@ export function useSavingsCashDetail(
     toggleRetroactivePayment(item.id, yearMonth, currentCompleted)
   const onMarkAllRetroactive = (yearMonths: string[]) =>
     markAllRetroactivePaid(item.id, yearMonths)
+  const onToggleAuto = (yearMonth: string, currentCompleted: boolean) =>
+    toggleMonthPayments(togglePayment, completedPayments.get(item.id), item, yearMonth, currentCompleted)
 
   const handleDelete = async (): Promise<void> => {
     try {
@@ -175,5 +180,6 @@ export function useSavingsCashDetail(
     loadMore,
     onToggleRetroactive,
     onMarkAllRetroactive,
+    onToggleAuto,
   }
 }
