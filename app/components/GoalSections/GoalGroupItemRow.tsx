@@ -8,12 +8,13 @@ import { getRecordAvatar } from '@/app/utils/recordAvatar'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
+import type { MonthlyRecordStatus } from '@/app/hooks/payment/useMonthlyPaymentStatus'
 import type { Investment } from '@/app/types/investment'
 
 export interface GoalGroupItemRowProps {
   record: Investment
-  /** 이번 달 납입 완료 여부 */
-  isPaid: boolean
+  /** 이번 달 회차 진행 상태(completed/total, 다음 회차) */
+  status: MonthlyRecordStatus
   /** 이번 달 미룸 여부 */
   isPostponed: boolean
   /** 이번 달 납입 완료 토글 */
@@ -37,7 +38,7 @@ export interface GoalGroupItemRowProps {
  */
 export function GoalGroupItemRow({
   record,
-  isPaid,
+  status,
   isPostponed,
   onTogglePaid,
   onTogglePostpone,
@@ -46,6 +47,9 @@ export function GoalGroupItemRow({
   frozen = false,
 }: GoalGroupItemRowProps) {
   const { deleteInvestment } = useInvestmentsContext()
+  const { total, completed, nextPendingDay, isFullyPaid } = status
+  // 회차가 2개 이상인 항목만 "N일 완료" 라벨과 이번 달 진행(x/N)을 노출한다(1회차는 종전 그대로).
+  const isMulti = total > 1
   const amountLabel =
     record.unit_type === 'shares' && record.monthly_shares
       ? `${record.monthly_shares}주`
@@ -55,10 +59,10 @@ export function GoalGroupItemRow({
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
   const isSettled = !!record.settled_at
 
-  // 미완료·미룸아님·정산끝아님이면 스와이프에 "미루기"를 함께 노출한다.
+  // 아직 한 회차도 완료하지 않았고·미룸아님·정산끝아님이면 스와이프에 "미루기"를 함께 노출한다.
   // 납입일 도래 여부와 무관하게 노출 — 사용자가 이번 달 납입을 미리 미룰 수 있어야 한다.
-  // 완료(기간 종료)된 목적의 항목은 월 납입 사이클이 무의미하므로 미루기도 접는다.
-  const showPostponeInSwipe = !isPaid && !isPostponed && !isSettled && !frozen
+  // 이미 한 회차라도 완료했거나(진행 중), 완료(기간 종료)된 목적의 항목은 미루기를 접는다.
+  const showPostponeInSwipe = completed === 0 && !isPostponed && !isSettled && !frozen
   const swipe = useSwipeToDelete({
     onDelete: async () => {
       await deleteInvestment(record.id)
@@ -161,8 +165,8 @@ export function GoalGroupItemRow({
             ) : frozen ? (
               // 완료된 목적의 항목: 이번 달 납입 토글 비활성 (지난 내역 → 금액만 표시)
               null
-            ) : isPaid ? (
-              // 완료 상태: 초록 pill. 탭하면 미완료로 되돌린다.
+            ) : isFullyPaid ? (
+              // 전부 완료: 초록 pill. 탭하면 마지막 회차를 취소한다.
               <button
                 type="button"
                 className="inline-flex shrink-0 items-center gap-1 rounded-md bg-brand-accent-bg px-2.5 py-1 text-xs font-medium text-brand-accent-text"
@@ -170,13 +174,13 @@ export function GoalGroupItemRow({
                   ev.stopPropagation()
                   onTogglePaid(record)
                 }}
-                aria-label="이번 달 납입 완료 취소"
+                aria-label={isMulti ? '이번 달 마지막 회차 완료 취소' : '이번 달 납입 완료 취소'}
               >
                 <Check className="h-3.5 w-3.5" weight="bold" />
                 완료
               </button>
-            ) : isPostponed ? (
-              // 미룸 상태: 중립 회색 pill. 탭하면 미룸을 해제한다.
+            ) : completed === 0 && isPostponed ? (
+              // 미룸 상태(아직 한 회차도 완료 안 함): 중립 회색 pill. 탭하면 미룸을 해제한다.
               <button
                 type="button"
                 className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-xs font-medium text-foreground-soft"
@@ -189,7 +193,8 @@ export function GoalGroupItemRow({
                 미룸
               </button>
             ) : (
-              // 대기 상태: 프라이머리 "완료" 버튼 하나. 미루기는 좌측 스와이프로 이동.
+              // 대기·진행 중: 다음 도래 회차를 완료하는 프라이머리 버튼.
+              // 회차가 여럿이면 대상 날짜를 라벨에 명시("10일 완료" → 완료하면 "20일 완료"로 진행이 드러남).
               <Button
                 type="button"
                 variant="default"
@@ -199,9 +204,9 @@ export function GoalGroupItemRow({
                   ev.stopPropagation()
                   onTogglePaid(record)
                 }}
-                aria-label="이번 달 납입 완료"
+                aria-label={isMulti ? `${nextPendingDay}일 납입 완료` : '이번 달 납입 완료'}
               >
-                완료
+                {isMulti ? `${nextPendingDay}일 완료` : '완료'}
               </Button>
             )}
           </div>
