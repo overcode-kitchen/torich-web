@@ -43,6 +43,18 @@ export function useInvestmentsDelete(
           // 알림 취소 실패해도 record 삭제는 진행
         }
 
+        // 이 record에 딸린 납입 기록(payment_history)을 먼저 지운다.
+        // payment_history_record_id_fkey 에 ON DELETE CASCADE가 없으면
+        // 납입 기록이 있는(=완료된) 항목의 records 삭제가 FK 위반으로 실패한다.
+        // → records 삭제 전에 정리해, 완료된 적립 항목도 정상 삭제되게 한다.
+        // (postponed_payments는 FK가 ON DELETE CASCADE라 자동 정리된다.)
+        const { error: paymentError } = await supabase
+          .from('payment_history')
+          .delete()
+          .eq('record_id', id)
+          .eq('user_id', userId)
+        if (paymentError) throw paymentError
+
         const result: RecordDeleteResult = await supabase.from('records').delete().eq('id', id)
         if (result.error) throw result.error
       } catch (error) {
