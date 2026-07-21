@@ -3,11 +3,14 @@
 import { useRef, useState, useCallback } from 'react'
 
 const SWIPE_THRESHOLD = 40
-const SWIPE_REVEAL_WIDTH = 80
+/** 액션 버튼 1개 폭(px). 노출 폭 = actionCount * 이 값. */
+const ACTION_WIDTH = 80
 
 interface UseSwipeToDeleteOptions {
   onDelete: () => Promise<void>
   enabled?: boolean
+  /** 스와이프로 노출되는 액션 버튼 개수(예: 미루기+삭제면 2). 기본 1. */
+  actionCount?: number
 }
 
 export interface UseSwipeToDeleteReturn {
@@ -28,7 +31,10 @@ export interface UseSwipeToDeleteReturn {
 export function useSwipeToDelete({
   onDelete,
   enabled = true,
+  actionCount = 1,
 }: UseSwipeToDeleteOptions): UseSwipeToDeleteReturn {
+  const revealWidth = Math.max(1, actionCount) * ACTION_WIDTH
+
   const touchStartXRef = useRef<number>(0)
   const touchStartYRef = useRef<number>(0)
   const isHorizontalRef = useRef<boolean | null>(null)
@@ -76,11 +82,11 @@ export function useSwipeToDelete({
 
       e.preventDefault()
 
-      const base = isRevealed ? -SWIPE_REVEAL_WIDTH : 0
+      const base = isRevealed ? -revealWidth : 0
       const next = base + deltaX
-      setTranslateX(Math.max(-SWIPE_REVEAL_WIDTH, Math.min(0, next)))
+      setTranslateX(Math.max(-revealWidth, Math.min(0, next)))
     },
-    [enabled, isDragging, isRevealed],
+    [enabled, isDragging, isRevealed, revealWidth],
   )
 
   const onTouchEnd = useCallback(() => {
@@ -88,13 +94,13 @@ export function useSwipeToDelete({
     setIsDragging(false)
 
     if (translateX < -SWIPE_THRESHOLD) {
-      setTranslateX(-SWIPE_REVEAL_WIDTH)
+      setTranslateX(-revealWidth)
       setIsRevealed(true)
     } else {
       setTranslateX(0)
       setIsRevealed(false)
     }
-  }, [enabled, translateX])
+  }, [enabled, translateX, revealWidth])
 
   const onDeleteButtonClick = useCallback(() => {
     setIsDeleteModalOpen(true)

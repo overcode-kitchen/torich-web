@@ -3,6 +3,7 @@
 // 기본 알림 시간/사전 알림 변경 시 해당 유저의 기존 pending 알림을 새 설정으로 재예약합니다.
 //
 // Webhook: user_settings, Update. Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference -- Deno ambient 타입 선언은 import로 대체 불가
 /// <reference path="../../../types/supabase-deno.d.ts" />
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -103,7 +104,7 @@ Deno.serve(async (req) => {
 
     const { data: records, error: recordsError } = await supabase
       .from('records')
-      .select('id, user_id, title, start_date, period_years, investment_days, notification_enabled, monthly_amount, unit_type, monthly_shares')
+      .select('id, user_id, title, start_date, period_years, investment_days, notification_enabled, monthly_amount, unit_type, monthly_shares, record_type')
       .eq('user_id', userId)
       .eq('notification_enabled', true)
 
@@ -124,6 +125,7 @@ Deno.serve(async (req) => {
       investment_days: number[]
       notification_enabled?: boolean
       monthly_amount?: number
+      record_type?: 'investment' | 'savings' | 'cash'
     }>
 
     const validRecords = recordsList.filter(
@@ -201,6 +203,7 @@ Deno.serve(async (req) => {
         investment_days: r.investment_days,
         notification_enabled: r.notification_enabled,
         monthly_amount: r.monthly_amount,
+        record_type: r.record_type,
       }
       const rows = buildNotificationRows(
         scheduleRecord,

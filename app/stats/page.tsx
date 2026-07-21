@@ -7,21 +7,22 @@ import { useStatsCalculations } from '@/app/hooks/investment/calculations/useSta
 import { useChartData } from '@/app/hooks/chart/useChartData'
 import { useStatsPageUI } from '@/app/hooks/stats/useStatsPageUI'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { usePostponedPayments } from '@/app/hooks/payment/usePostponedPayments'
+import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import StatsView from '@/app/components/StatsSections/StatsView'
 import { track } from '@/app/lib/analytics'
 
 export default function StatsPage() {
   const { user, records, activeRecords, isLoading, router } = useStatsData()
-  const { completedPayments, isLoading: historyLoading } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, capturedAmounts, isLoading: historyLoading } = usePaymentHistory()
+  // 미룸 회차 — 통계 분모(예정)에서 제외 (홈 체크리스트·캘린더와 동일 기준)
+  const { postponedPayments } = usePostponedPayments()
+  // '이미 모은 돈'(goal.external_amount) 합산용 — 자산 누적과 목적 진척의 금액 기준을 맞춘다
+  const { goals } = useGoals(user?.id)
 
   const {
-    selectedYear,
-    showCashHoldSheet,
     showContributionSheet,
     hasRecords,
-    setSelectedYear,
-    handleShowCashHold,
-    handleCloseCashHold,
     handleShowContribution,
     handleCloseContribution,
   } = useStatsPageUI({ recordsLength: records.length })
@@ -44,22 +45,20 @@ export default function StatsPage() {
   }, [])
 
   const {
-    totalExpectedAsset,
+    totalPaidPrincipal,
     totalMonthlyPayment,
-    hasMaturedInvestments,
-    maturedItems,
     thisMonth,
     goalStats,
     habitStats,
-    calculateFutureValue,
-  } = useStatsCalculations({ records, activeRecords, completedPayments, selectedYear })
+  } = useStatsCalculations({ records, activeRecords, completedPayments, retroactivePayments, postponedPayments, capturedAmounts, goals })
 
   const {
-    monthlyRates,
     periodCompletionRate,
     chartData,
     chartBarColor,
-  } = useChartData({ activeRecords, completedPayments, isCustomRange, effectiveMonths, customDateRange })
+    chartEmphasisColor,
+    consistency,
+  } = useChartData({ activeRecords, completedPayments, postponedPayments, isCustomRange, effectiveMonths, customDateRange })
 
   if (!isLoading && !user) {
     router.replace('/login')
@@ -72,16 +71,16 @@ export default function StatsPage() {
       user={user}
       data={{
         records,
+        activeRecords,
         hasRecords,
       }}
+      payment={{
+        completedPayments,
+        retroactivePayments,
+      }}
       ui={{
-        selectedYear,
-        setSelectedYear,
-        showCashHoldSheet,
-        handleCloseCashHold,
         showContributionSheet,
         handleCloseContribution,
-        handleShowCashHold,
         handleShowContribution,
       }}
       filter={{
@@ -93,19 +92,18 @@ export default function StatsPage() {
         handleCustomPeriod,
       }}
       calculations={{
-        totalExpectedAsset,
+        totalPaidPrincipal,
         totalMonthlyPayment,
-        hasMaturedInvestments,
-        maturedItems,
         thisMonth,
         goalStats,
         habitStats,
-        calculateFutureValue,
       }}
       chart={{
         periodCompletionRate,
         chartData,
         chartBarColor,
+        chartEmphasisColor,
+        consistency,
       }}
     />
   )

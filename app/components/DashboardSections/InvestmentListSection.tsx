@@ -25,7 +25,6 @@ export interface InvestmentListSectionProps {
   onSortChange: (sort: SortBy) => void
   onItemClick: (item: Investment) => void
   onDelete?: (id: string) => Promise<void>
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
   listExpanded?: boolean
   onListExpandToggle?: () => void
   hasMoreList?: boolean
@@ -42,7 +41,6 @@ export default function InvestmentListSection({
   onSortChange,
   onItemClick,
   onDelete,
-  calculateFutureValue,
   listExpanded,
   onListExpandToggle,
   hasMoreList,
@@ -102,7 +100,7 @@ export default function InvestmentListSection({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
-              {sortBy === 'TOTAL_VALUE' && '평가금액 순'}
+              {sortBy === 'TOTAL_VALUE' && '납입액 순'}
               {sortBy === 'MONTHLY_PAYMENT' && '월 투자액 순'}
               {sortBy === 'NAME' && '이름 순'}
               {sortBy === 'NEXT_PAYMENT' && '다음 투자일 순'}
@@ -110,7 +108,7 @@ export default function InvestmentListSection({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[140px]">
-            <DropdownMenuItem onClick={() => onSortChange('TOTAL_VALUE')}>평가금액 순</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSortChange('TOTAL_VALUE')}>납입액 순</DropdownMenuItem>
             <DropdownMenuItem onClick={() => onSortChange('MONTHLY_PAYMENT')}>월 투자액 순</DropdownMenuItem>
             <DropdownMenuItem onClick={() => onSortChange('NAME')}>이름 순</DropdownMenuItem>
             <DropdownMenuItem onClick={() => onSortChange('NEXT_PAYMENT')}>다음 투자일 순</DropdownMenuItem>
@@ -127,7 +125,6 @@ export default function InvestmentListSection({
                 item={item}
                 onClick={() => onItemClick(item)}
                 onDelete={onDelete}
-                calculateFutureValue={calculateFutureValue}
               />
             ))}
             {showMoreButton && (

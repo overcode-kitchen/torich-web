@@ -26,32 +26,44 @@ export default function CalendarPage() {
     currentMonth,
     calendarDays,
     selectedDate,
+    slideDirection,
+    isPickerOpen,
     goToPrevMonth,
     goToNextMonth,
+    goToMonth,
+    goToToday,
+    isTodaySelected,
+    openPicker,
+    closePicker,
     selectDate,
     clearSelection,
+    scrollTick,
     year,
     month,
   } = useCalendar()
 
-  // 납입 완료 훅
+  // 납입 완료/미룸 훅
   const {
     isEventCompleted,
+    isEventPostponed,
     handleComplete,
+    handleUncomplete,
+    handlePostpone,
+    handleUnpostpone,
     handleUndo,
     pendingUndo,
   } = usePaymentCompletion()
 
-  // 캘린더 이벤트 훅
+  // 캘린더 이벤트 훅 — 월 전체 이벤트와 일자별 상태
   const {
-    selectedEvents,
+    eventsForMonth,
     getDayStatus,
   } = useCalendarEvents({
     records,
     year,
     month,
-    selectedDate,
     isEventCompleted,
+    isEventPostponed,
   })
 
   const isLoading = authLoading || recordsLoading
@@ -65,16 +77,31 @@ export default function CalendarPage() {
     <CalendarView
       isLoading={isLoading}
       currentMonth={currentMonth}
+      year={year}
+      month={month}
       calendarDays={calendarDays}
       selectedDate={selectedDate}
+      slideDirection={slideDirection}
+      isPickerOpen={isPickerOpen}
       goToPrevMonth={goToPrevMonth}
       goToNextMonth={goToNextMonth}
+      goToMonth={goToMonth}
+      goToToday={goToToday}
+      isTodaySelected={isTodaySelected}
+      openPicker={openPicker}
+      closePicker={closePicker}
       selectDate={selectDate}
       clearSelection={clearSelection}
+      scrollTick={scrollTick}
       getDayStatus={getDayStatus}
-      selectedEvents={selectedEvents}
+      eventsForMonth={eventsForMonth}
+      records={records}
       isEventCompleted={isEventCompleted}
+      isEventPostponed={isEventPostponed}
       handleComplete={handleComplete}
+      handleUncomplete={handleUncomplete}
+      handlePostpone={handlePostpone}
+      handleUnpostpone={handleUnpostpone}
       pendingUndo={!!pendingUndo}
       handleUndo={handleUndo}
     />

@@ -7,13 +7,17 @@ import type { Goal, GoalUpdateInput } from '@/app/types/goal'
 export interface UseGoalUpdateReturn {
   updateGoal: (id: string, patch: GoalUpdateInput) => Promise<Goal | null>
   archiveGoal: (id: string) => Promise<void>
+  unarchiveGoal: (id: string) => Promise<void>
   isUpdating: boolean
 }
 
 /**
- * 목적 수정 + archive(정리) 처리.
- * archive는 archive_goal RPC를 호출해 goals.archived_at SET과
- * records.goal_id NULL을 단일 트랜잭션 내에서 원자적으로 실행한다.
+ * 목적 수정 + 보관(archive)/복원(unarchive) 처리.
+ *
+ * 보관은 goals.archived_at 을 SET 하기만 하며 묶인 투자(records.goal_id)는
+ * 그대로 유지한다 → 복원 시 목적·투자 연결이 온전히 되살아난다. (완료 목적 정리용)
+ * 투자 연결까지 끊는 파괴적 정리가 필요하면 archive_goal RPC / useGoalDelete 를 쓴다.
+ * (구버전 앱은 여전히 archive_goal RPC 를 호출하므로 RPC 는 DB 에 유지된다.)
  */
 export function useGoalUpdate(userId: string | undefined): UseGoalUpdateReturn {
   const supabase = useMemo(() => createClient(), [])
@@ -43,22 +47,21 @@ export function useGoalUpdate(userId: string | undefined): UseGoalUpdateReturn {
     [userId, supabase],
   )
 
+  // 보관: archived_at 만 SET. 투자 연결은 유지해 복원 시 온전히 되살아난다.
   const archiveGoal = useCallback(
     async (id: string): Promise<void> => {
-      if (!userId) return
-      setIsUpdating(true)
-      try {
-        const { error } = await supabase.rpc('archive_goal', { p_goal_id: id })
-        if (error) throw error
-      } catch (e) {
-        console.error('archiveGoal failed:', e)
-        throw e
-      } finally {
-        setIsUpdating(false)
-      }
+      await updateGoal(id, { archived_at: new Date().toISOString() })
     },
-    [userId, supabase],
+    [updateGoal],
   )
 
-  return { updateGoal, archiveGoal, isUpdating }
+  // 복원: 보관 해제. 유지돼 있던 투자 연결이 그대로 다시 노출된다.
+  const unarchiveGoal = useCallback(
+    async (id: string): Promise<void> => {
+      await updateGoal(id, { archived_at: null })
+    },
+    [updateGoal],
+  )
+
+  return { updateGoal, archiveGoal, unarchiveGoal, isUpdating }
 }

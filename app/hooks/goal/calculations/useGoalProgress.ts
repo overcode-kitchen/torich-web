@@ -4,7 +4,9 @@ import { useMemo } from 'react'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 import type { Investment } from '@/app/types/investment'
 import { getStartDate } from '@/app/types/investment'
-import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { PaymentHistoryMap, CapturedAmountsMap } from '@/app/hooks/payment/usePaymentHistory'
+import { calculateSavingsMaturity } from '@/app/utils/savingsMaturity'
+import { getRecordRealizedPrincipal } from '@/app/utils/realized-principal'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -20,24 +22,31 @@ function monthsBetween(from: Date, to: Date): number {
   return yearDiff * 12 + monthDiff + dayAdjust
 }
 
-function paidCount(
-  recordId: string,
-  auto: PaymentHistoryMap,
-  retro: PaymentHistoryMap,
-): number {
-  return (auto.get(recordId)?.size ?? 0) + (retro.get(recordId)?.size ?? 0)
-}
-
-/** 묶인 투자들의 실제 납입 원금 합 (auto + retroactive payment_history) */
-function sumPaidPrincipal(
+/**
+ * 묶인 record들의 실현된(이미 확정된) 금액 합.
+ * - 미정산(settled_at == null): 실제 납입 원금 합 (payment_history 기준)
+ * - 정산(settled_at != null) + 적금: 만기 총액(원금+이자) 사용 — 케이스 B 처리의 핵심
+ * - 정산됐는데 만기 계산 불가하면 안전하게 원금만 합산
+ *
+ * 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
+ */
+function sumRealizedAmount(
   records: Investment[],
   auto: PaymentHistoryMap,
   retro: PaymentHistoryMap,
+  captured: CapturedAmountsMap,
 ): number {
   let total = 0
   for (const r of records) {
-    if (!r.monthly_amount || r.monthly_amount <= 0) continue
-    total += paidCount(r.id, auto, retro) * r.monthly_amount
+    if (r.settled_at && r.record_type === 'savings') {
+      const maturity = calculateSavingsMaturity(r)
+      if (maturity) {
+        total += maturity.total
+        continue
+      }
+    }
+    // 매수 시점 실제 금액으로 합산(캡처 없는 건만 현재 금액 폴백) → 금액 수정 시 과거 불변
+    total += getRecordRealizedPrincipal(r, auto, retro, captured)
   }
   return total
 }
@@ -54,6 +63,8 @@ function sumFuturePrincipal(
   let total = 0
   for (const r of records) {
     if (!r.monthly_amount || r.monthly_amount <= 0) continue
+    // 정산된 record는 미래 적립이 없다 (이미 만기 결산됨)
+    if (r.settled_at) continue
 
     // 투자 만기까지 남은 개월수 계산 (적립형은 무제한)
     const periodMonths = (r.period_years ?? 0) * 12
@@ -74,29 +85,33 @@ function calculateGoalProgress(
   linkedRecords: Investment[],
   auto: PaymentHistoryMap,
   retro: PaymentHistoryMap,
+  captured: CapturedAmountsMap,
 ): GoalProgress {
   const today = new Date()
   const targetDate = goal.target_date ? new Date(goal.target_date) : null
 
-  const paidPrincipal = sumPaidPrincipal(linkedRecords, auto, retro)
-  const currentValue = goal.external_amount + paidPrincipal
+  const realizedAmount = sumRealizedAmount(linkedRecords, auto, retro, captured)
+  const currentValue = goal.external_amount + realizedAmount
 
   const projectedValue =
     targetDate !== null
       ? goal.external_amount +
-        paidPrincipal +
+        realizedAmount +
         sumFuturePrincipal(linkedRecords, today, targetDate)
       : null
 
-  const safeTarget = goal.target_amount > 0 ? goal.target_amount : 1
-  const progressPercent = Math.round((currentValue / safeTarget) * 100)
+  // 목표 금액이 없는 목적은 진행률·완료 판정을 하지 않는다.
+  const hasTarget = goal.target_amount > 0
+  const progressPercent = hasTarget
+    ? Math.round((currentValue / goal.target_amount) * 100)
+    : null
   const projectedProgressPercent =
-    projectedValue !== null
-      ? Math.round((projectedValue / safeTarget) * 100)
+    hasTarget && projectedValue !== null
+      ? Math.round((projectedValue / goal.target_amount) * 100)
       : null
 
   const dDay = targetDate ? diffDays(today, targetDate) : null
-  const isCompleted = currentValue >= goal.target_amount
+  const isCompleted = hasTarget && currentValue >= goal.target_amount
 
   return {
     goalId: goal.id,
@@ -110,6 +125,7 @@ function calculateGoalProgress(
 }
 
 const EMPTY_MAP: PaymentHistoryMap = new Map()
+const EMPTY_CAPTURED: CapturedAmountsMap = new Map()
 
 /**
  * 단일 목적의 진척도 계산.
@@ -122,6 +138,7 @@ export function useGoalProgress(
   records: Investment[],
   completedPayments: PaymentHistoryMap = EMPTY_MAP,
   retroactivePayments: PaymentHistoryMap = EMPTY_MAP,
+  capturedAmounts: CapturedAmountsMap = EMPTY_CAPTURED,
 ): GoalProgress | null {
   return useMemo(() => {
     if (!goal) return null
@@ -131,8 +148,9 @@ export function useGoalProgress(
       linked,
       completedPayments,
       retroactivePayments,
+      capturedAmounts,
     )
-  }, [goal, records, completedPayments, retroactivePayments])
+  }, [goal, records, completedPayments, retroactivePayments, capturedAmounts])
 }
 
 /**
@@ -143,6 +161,7 @@ export function useGoalsProgress(
   records: Investment[],
   completedPayments: PaymentHistoryMap = EMPTY_MAP,
   retroactivePayments: PaymentHistoryMap = EMPTY_MAP,
+  capturedAmounts: CapturedAmountsMap = EMPTY_CAPTURED,
 ): Map<string, GoalProgress> {
   return useMemo(() => {
     const map = new Map<string, GoalProgress>()
@@ -155,9 +174,10 @@ export function useGoalsProgress(
           linked,
           completedPayments,
           retroactivePayments,
+          capturedAmounts,
         ),
       )
     }
     return map
-  }, [goals, records, completedPayments, retroactivePayments])
+  }, [goals, records, completedPayments, retroactivePayments, capturedAmounts])
 }

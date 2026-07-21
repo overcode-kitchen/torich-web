@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { formatSmartDate } from '@/app/utils/date'
 import type { Investment } from '@/app/types/investment'
 
 export interface PaymentHistoryRow {
@@ -23,6 +24,8 @@ interface PaymentHistoryTableProps {
   rows: PaymentHistoryRow[]
   variant: 'auto' | 'retroactive'
   onToggleRetroactive?: (yearMonth: string, currentCompleted: boolean) => void
+  /** 월(YYYY-MM) → 그 달 매수 시점 실제 납입액(원). 없는 달은 현재 monthly_amount로 폴백 */
+  capturedByMonth?: Map<string, number>
 }
 
 export function PaymentHistoryTable({
@@ -30,6 +33,7 @@ export function PaymentHistoryTable({
   rows,
   variant,
   onToggleRetroactive,
+  capturedByMonth,
 }: PaymentHistoryTableProps) {
   const isRetro = variant === 'retroactive'
   const canToggle = isRetro && !!onToggleRetroactive
@@ -38,10 +42,22 @@ export function PaymentHistoryTable({
     if (isRetro) return <span className="text-foreground-subtle">-</span>
     if (!item.investment_days || item.investment_days.length === 0) return '-'
     const [y, m] = yearMonth.split('-')
+    const year = parseInt(y, 10)
+    const month = parseInt(m, 10)
     return [...item.investment_days]
       .sort((a, b) => a - b)
-      .map((d) => `${y}.${m}.${String(d).padStart(2, '0')}`)
+      .map((d) => formatSmartDate(new Date(year, month - 1, d)))
       .join(', ')
+  }
+
+  const renderMonthLabel = (yearMonth: string) => {
+    const [y, m] = yearMonth.split('-')
+    const month = parseInt(m, 10)
+    const thisYear = new Date().getFullYear()
+    if (parseInt(y, 10) === thisYear) {
+      return `${month}월`
+    }
+    return `${y.slice(-2)}.${month}월`
   }
 
   return (
@@ -80,7 +96,7 @@ export function PaymentHistoryTable({
                   isRetro ? 'text-foreground-muted' : 'text-foreground'
                 )}
               >
-                {yearMonth.replace('-', '.')}
+                {renderMonthLabel(yearMonth)}
                 {isRetro && (
                   <span className="ml-1 text-[11px] text-foreground-subtle">(소급)</span>
                 )}
@@ -94,7 +110,7 @@ export function PaymentHistoryTable({
                   isRetro ? 'text-foreground-subtle' : 'text-foreground-muted'
                 )}
               >
-                {formatCurrency(item.monthly_amount)}
+                {formatCurrency(capturedByMonth?.get(yearMonth) ?? item.monthly_amount)}
               </TableCell>
               <TableCell className="text-sm">
                 {renderStatus(completed, isRetro, canToggle)}
@@ -124,11 +140,11 @@ function renderStatus(completed: boolean, isRetro: boolean, canToggle: boolean) 
   }
 
   return completed ? (
-    <span className="text-green-600 font-medium" title="해당 월 납입 완료됨">
+    <span className="text-success font-medium" title="해당 월 납입 완료됨">
       ✓ 완료됨
     </span>
   ) : (
-    <span className="text-red-500 font-medium" title="해당 월 납입 미완료">
+    <span className="text-destructive font-medium" title="해당 월 납입 미완료">
       ✗ 미완료
     </span>
   )

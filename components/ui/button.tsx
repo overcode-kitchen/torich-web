@@ -21,6 +21,9 @@ const buttonVariants = cva(
         /** 리스트 인라인 보조 — 보더 없음, 연한 면 (다가오는 투자 완료 등) */
         soft:
           "border-0 bg-surface text-muted-foreground shadow-none hover:bg-surface-hover hover:text-foreground-muted dark:bg-muted/20 dark:text-foreground-soft dark:hover:bg-muted/30 dark:hover:text-foreground",
+        /** 그린 토널 — 연한 브랜드 배경 + 진한 브랜드 텍스트. --brand-accent-* 는 라이트/다크 모두 정의됨 */
+        tonal:
+          "border-0 bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] shadow-none hover:bg-[var(--brand-accent-border)]",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

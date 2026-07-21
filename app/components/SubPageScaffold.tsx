@@ -2,7 +2,6 @@
 
 import type { ReactNode } from 'react'
 import { ArrowLeft } from '@phosphor-icons/react'
-import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +14,12 @@ export interface SubPageScaffoldProps {
   surfaceClassName?: string
   /** 헤더 우측 액션 영역 (예: 더보기 메뉴) */
   actions?: ReactNode
+  /** 헤더 중앙 슬롯 (예: 스크롤 시 나타나는 스티키 제목) */
+  centerSlot?: ReactNode
+  /** 본문 스크롤 컨테이너 ref (탭바 스크롤 점프 등에 사용) */
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>
+  /** 진입 시 아래에서 스르륵 올라오는 페이드-인 애니메이션 (서랍을 당겨 들어오는 화면 등) */
+  enterAnimation?: boolean
 }
 
 /**
@@ -27,16 +32,24 @@ export default function SubPageScaffold({
   contentClassName,
   surfaceClassName = 'bg-surface',
   actions,
+  centerSlot,
+  scrollContainerRef,
+  enterAnimation = false,
 }: SubPageScaffoldProps) {
-  const isNativeApp = useIsNativeApp()
-
-  const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
-  const contentPaddingTop = isNativeApp
-    ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px + 8px)'
-    : '56px'
+  // env(safe-area-inset-top)는 웹에서 0으로 계산되므로 웹=0px/56px, 앱=노치+헤더로 동일 수식이
+  // 양쪽을 모두 커버한다. isNativeApp 분기를 두면 서버(false)·클라(true) 렌더가 달라져 하이드레이션
+  // 불일치가 나므로, JS 분기 없이 CSS env로만 처리한다. (헤더 바 48px + 간격 8px = 콘텐츠 상단 여백)
+  const headerSafeTop = 'env(safe-area-inset-top, 0px)'
+  const contentPaddingTop = 'calc(env(safe-area-inset-top, 0px) + 48px + 8px)'
 
   return (
-    <div className={cn('flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden', surfaceClassName)}>
+    <div
+      className={cn(
+        'flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden',
+        surfaceClassName,
+        enterAnimation && 'animate-page-in',
+      )}
+    >
       {/* Settings와 동일한 '본문 시작' 높이 — 고정 헤더와 겹치지 않게 스페이서 */}
       <div className="shrink-0" style={{ height: contentPaddingTop }} aria-hidden />
 
@@ -45,21 +58,23 @@ export default function SubPageScaffold({
         style={{ paddingTop: headerSafeTop }}
       >
         <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto pl-4 pr-2">
-          <div className="h-12 min-h-[48px] max-h-[48px] flex items-center justify-between shrink-0">
+          <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
             <button
               type="button"
               onClick={onBack}
-              className="p-2 -ml-1 text-foreground-soft hover:text-foreground transition-colors"
+              className="p-2 -ml-1 shrink-0 text-foreground-soft hover:text-foreground transition-colors"
               aria-label="뒤로가기"
             >
               <ArrowLeft className="w-6 h-6" weight="regular" />
             </button>
-            {actions && <div className="flex items-center">{actions}</div>}
+            <div className="min-w-0 flex-1 px-2">{centerSlot}</div>
+            {actions && <div className="flex items-center shrink-0">{actions}</div>}
           </div>
         </div>
       </header>
 
       <div
+        ref={scrollContainerRef}
         className="flex min-h-0 flex-1 flex-col overflow-y-auto"
         style={{ paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM }}
       >

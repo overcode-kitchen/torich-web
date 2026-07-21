@@ -9,6 +9,7 @@ export type UseInvestmentsReturn = {
   isUpdating: boolean
   setRecords: Dispatch<SetStateAction<Investment[]>>
   refetch: () => Promise<void>
+  addInvestment: (record: Investment) => void
   updateInvestment: (id: string, data: Partial<Investment>) => Promise<void>
   deleteInvestment: (id: string) => Promise<void>
 }

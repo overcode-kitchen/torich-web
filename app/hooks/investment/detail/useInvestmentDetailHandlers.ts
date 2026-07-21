@@ -11,7 +11,6 @@ interface UseInvestmentDetailHandlersProps {
   item: Investment
   onUpdate: (data: { monthly_amount: number; period_years: number | null; annual_rate: number; investment_days?: number[] }) => Promise<void>
   onDelete: () => Promise<void>
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
   isEditMode: boolean
   setIsEditMode: (value: boolean) => void
   setIsDaysPickerOpen: (value: boolean) => void
@@ -25,7 +24,6 @@ export function useInvestmentDetailHandlers({
   item,
   onUpdate,
   onDelete,
-  calculateFutureValue,
   isEditMode,
   setIsEditMode,
   setIsDaysPickerOpen,
@@ -38,7 +36,6 @@ export function useInvestmentDetailHandlers({
   const investmentData = useInvestmentData({
     item,
     isEditMode,
-    calculateFutureValue,
     completedPayments,
     retroactivePayments,
     onToggleRetroactive,
@@ -62,11 +59,11 @@ export function useInvestmentDetailHandlers({
     const periodYearsToSave: number | null = isHabit ? null : parsedPeriod
 
     if (monthlyAmountInWon <= 0 || annualRate <= 0) {
-      alert('모든 값을 올바르게 입력해주세요.')
+      toastError('모든 값을 올바르게 입력해주세요.')
       return
     }
     if (!isHabit && parsedPeriod <= 0) {
-      alert('목표 기간을 입력하거나 "목표 기간 없이 적립하기"를 선택해주세요.')
+      toastError('목표 기간을 입력하거나 "목표 기간 없이 적립하기"를 선택해주세요.')
       return
     }
 

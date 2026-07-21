@@ -28,10 +28,13 @@ export function useFlowBack({ rootPath, enableHistoryFallback = true }: UseFlowB
     const { history, location, document } = window
 
     const hasHistory = history.length > 1
-    const sameOriginReferrer =
-      document.referrer && document.referrer.startsWith(location.origin)
+    // SPA(router.push) 이동은 document.referrer를 갱신하지 않고,
+    // Capacitor 앱에선 referrer가 빈 문자열이라 'sameOrigin' 검사로는 SPA 진입을 잡지 못한다.
+    // 외부 사이트에서 들어온 경우만 차단하고, 그 외(빈 referrer 포함)는 history로 판단한다.
+    const externalReferrer =
+      !!document.referrer && !document.referrer.startsWith(location.origin)
 
-    if (enableHistoryFallback && hasHistory && sameOriginReferrer) {
+    if (enableHistoryFallback && hasHistory && !externalReferrer) {
       router.back()
     } else {
       router.replace(rootPath)

@@ -40,7 +40,11 @@ export function getPaymentHistory(
     const days = investment_days && investment_days.length > 0 ? investment_days : []
     const daysInMonth = new Date(year, month, 0).getDate()
 
-    const paymentDaysInMonth = days.filter((day) => day <= daysInMonth)
+    // 31일 등 그 달에 없는 날은 말일로 당겨 납입일로 본다 (예: 6월이면 30일).
+    // 그래야 홈 토글이 기록하는 날짜와 완료 판정이 일치한다.
+    const paymentDaysInMonth = Array.from(
+      new Set(days.map((day) => Math.min(day, daysInMonth)))
+    )
     const paymentDatesInRange = paymentDaysInMonth.filter((day) => {
       const paymentDate = new Date(year, month - 1, day)
       if (startDate && paymentDate < startDate) return false
@@ -129,7 +133,10 @@ export function getPaymentHistoryFromStart(
         : false
     } else {
       const daysInMonth = new Date(year, month, 0).getDate()
-      const paymentDaysInMonth = days.filter((d) => d <= daysInMonth)
+      // 31일 등 그 달에 없는 날은 말일로 당겨 납입일로 본다 (홈 토글과 동일 기준).
+      const paymentDaysInMonth = Array.from(
+        new Set(days.map((d) => Math.min(d, daysInMonth)))
+      )
       const paymentDatesInRange = paymentDaysInMonth.filter((day) => {
         const paymentDate = new Date(year, month - 1, day)
         if (paymentDate < startDate) return false

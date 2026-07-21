@@ -8,7 +8,7 @@ const BRAND_STORY_UNDO_TOAST_DURATION_MS = 5000
 interface UseHomePageUIProps {
   userId?: string
   records: Investment[]
-  checkAndUpdate: () => Promise<boolean>
+  checkAndUpdate: (signal?: AbortSignal) => Promise<boolean>
   refetch: () => void
 }
 
@@ -37,11 +37,16 @@ export function useHomePageUI({ userId, records, checkAndUpdate, refetch }: UseH
     }
   }, [])
 
-  useEffect((): void => {
+  useEffect(() => {
     if (!userId || records.length === 0) return
-    void checkAndUpdate().then((updated: boolean) => {
-      if (updated) void refetch()
+    // 언마운트/재실행 시 진행 중인 백그라운드 갱신 요청을 취소한다.
+    // (취소를 안 하면 개발 중 Fast Refresh 등으로 요청이 끊기며 "Failed to fetch"가 나고,
+    //  이게 예전엔 네트워크 에러 토스트로 반복 노출됐다.)
+    const controller = new AbortController()
+    void checkAndUpdate(controller.signal).then((updated: boolean) => {
+      if (updated && !controller.signal.aborted) void refetch()
     })
+    return () => controller.abort()
   }, [userId, records.length, checkAndUpdate, refetch])
 
   useEffect(() => {

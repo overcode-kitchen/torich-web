@@ -1,12 +1,8 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import type { Investment } from '@/app/types/investment'
-import { useDashboardUI } from '@/app/hooks/ui/useDashboardUI'
-import { useUpcomingInvestments } from '@/app/hooks/upcoming/useUpcomingInvestments'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
-import { track } from '@/app/lib/analytics'
 import Header from './DashboardSections/Header'
 import NotificationInbox from './DashboardSections/NotificationInbox'
 import DashboardContent from './DashboardSections/DashboardContent'
@@ -14,25 +10,12 @@ import DashboardContent from './DashboardSections/DashboardContent'
 /** 메인 앱바 우측 알림함 아이콘. 추후 노출 시 true로 변경 */
 const SHOW_NOTIFICATION_INBOX = false
 
-type FilterStatus = 'ALL' | 'ACTIVE' | 'ENDED'
-type SortBy = 'TOTAL_VALUE' | 'MONTHLY_PAYMENT' | 'NAME' | 'NEXT_PAYMENT'
-
 export interface DashboardProps {
   records: Investment[]
-  filteredRecords: Investment[]
-  activeRecords: Investment[]
   totalMonthlyPayment: number
-
-  filterStatus: FilterStatus
-  onFilterChange: (status: FilterStatus) => void
-  sortBy: SortBy
-  onSortChange: (sort: SortBy) => void
 
   showMonthlyAmount: boolean
   onToggleMonthlyAmount: () => void
-
-  onItemClick: (item: Investment) => void
-  onDelete?: (id: string) => Promise<void>
 
   showBrandStoryCard: boolean
   onCloseBrandStoryCard: () => void
@@ -41,23 +24,13 @@ export interface DashboardProps {
   isBrandStoryOpen: boolean
   onOpenBrandStory: () => void
   onCloseBrandStory: () => void
-
-  calculateFutureValue: (monthlyAmount: number, T: number, P: number, R: number) => number
 }
 
 export default function Dashboard({
   records,
-  filteredRecords,
-  activeRecords,
   totalMonthlyPayment,
-  filterStatus,
-  onFilterChange,
-  sortBy,
-  onSortChange,
   showMonthlyAmount,
   onToggleMonthlyAmount,
-  onItemClick,
-  onDelete,
   showBrandStoryCard,
   onCloseBrandStoryCard,
   pendingBrandStoryUndo,
@@ -65,23 +38,8 @@ export default function Dashboard({
   isBrandStoryOpen,
   onOpenBrandStory,
   onCloseBrandStory,
-  calculateFutureValue,
 }: DashboardProps) {
-  const router = useRouter()
-  const upcomingInvestmentsData = useUpcomingInvestments(activeRecords)
   const isNativeApp = useIsNativeApp()
-
-  const {
-    listExpanded,
-    displayRecords,
-    hasMoreList,
-    remainingListCount,
-    toggleListExpansion,
-  } = useDashboardUI({
-    filteredRecords,
-    filterStatus,
-    sortBy,
-  })
 
   const headerSafeTop = isNativeApp ? 'max(env(safe-area-inset-top, 0px), 44px)' : '0px'
   const contentPaddingTop = isNativeApp
@@ -109,36 +67,21 @@ export default function Dashboard({
             rightSlot={SHOW_NOTIFICATION_INBOX ? <NotificationInbox /> : undefined}
           />
         </div>
+        {/* 스크롤 콘텐츠가 헤더 아래로 자연스럽게 사라지도록 하단 페이드 */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-full h-6"
+          style={{
+            background:
+              'linear-gradient(to bottom, var(--surface) 0%, color-mix(in srgb, var(--surface) 60%, transparent) 50%, transparent 100%)',
+          }}
+        />
       </header>
 
       <DashboardContent
         data={{
           records,
-          filteredRecords,
-          activeRecords,
           totalMonthlyPayment,
-          upcomingInvestments: upcomingInvestmentsData,
-        }}
-        ui={{
-          onAddClick: () => {
-            track('investment_add_click', { entry_point: 'dashboard' })
-            router.push('/add')
-          },
-        }}
-        filter={{
-          filterStatus,
-          onFilterChange,
-          sortBy,
-          onSortChange,
-        }}
-        list={{
-          listExpanded,
-          displayRecords,
-          hasMoreList,
-          remainingListCount,
-          toggleListExpansion,
-          onItemClick,
-          onDelete,
         }}
         brandStory={{
           showBrandStoryCard,
@@ -152,9 +95,6 @@ export default function Dashboard({
         settings={{
           showMonthlyAmount,
           onToggleMonthlyAmount,
-        }}
-        calculations={{
-          calculateFutureValue,
         }}
       />
     </main>

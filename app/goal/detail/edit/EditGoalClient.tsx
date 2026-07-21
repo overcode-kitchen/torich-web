@@ -1,36 +1,88 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
+import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
 import { GoalFormSection } from '@/app/components/GoalFormSections/GoalFormSection'
+import MaturityMismatchConfirmModal from '@/app/components/Common/MaturityMismatchConfirmModal'
+import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialog'
 import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
+import { detectMaturityMismatch } from '@/app/utils/goal-status'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
-import type { Goal } from '@/app/types/goal'
+import type { Goal, GoalCreateInput } from '@/app/types/goal'
 
 interface EditFormProps {
   goal: Goal
   userId: string | undefined
-  onCancel: () => void
+  onExit: () => void
 }
 
-function EditForm({ goal, userId, onCancel }: EditFormProps) {
+function EditForm({ goal, userId, onExit }: EditFormProps) {
   const router = useRouter()
   const { values, setField, isValid, toCreateInput } = useGoalForm(goal)
   const { updateGoal, isUpdating } = useGoalUpdate(userId)
+  const { records } = useInvestmentsContext()
+  const [confirmOpen, setConfirmOpen] = useState<boolean>(false)
+  const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
 
-  async function handleSubmit(): Promise<void> {
-    const updated = await updateGoal(goal.id, toCreateInput())
+  // 변경사항이 있으면 뒤로가기·취소 시 이탈 확인을 띄운다.
+  const [initialSnapshot] = useState<string>(() => JSON.stringify(values))
+  const isDirty = JSON.stringify(values) !== initialSnapshot
+
+  const requestExit = (): void => {
+    if (isDirty) {
+      setExitDialogOpen(true)
+      return
+    }
+    onExit()
+  }
+
+  // 케이스 A 사전 안내: 새 종료일이 묶인 적금 만기보다 빠른지 검사.
+  // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
+  const linkedRecords = useMemo(
+    () => records.filter((r) => r.goal_id === goal.id),
+    [records, goal.id],
+  )
+  const mismatch = useMemo(
+    () => detectMaturityMismatch(values.target_date, linkedRecords),
+    [values.target_date, linkedRecords],
+  )
+
+  async function doSubmit(override?: Partial<GoalCreateInput>): Promise<void> {
+    const payload = { ...toCreateInput(), ...override }
+    const updated = await updateGoal(goal.id, payload)
     if (updated) router.replace(`/goal/detail?id=${goal.id}`)
   }
 
+  function handleSubmit(): void {
+    if (mismatch) {
+      setConfirmOpen(true)
+      return
+    }
+    void doSubmit()
+  }
+
+  function handleProceed(): void {
+    setConfirmOpen(false)
+    void doSubmit()
+  }
+
+  function handleAlignDate(): void {
+    if (!mismatch) return
+    setField('target_date', mismatch.recordMaturityDate)
+    setConfirmOpen(false)
+    void doSubmit({ target_date: mismatch.recordMaturityDate })
+  }
+
   return (
-    <>
+    <SubPageScaffold onBack={requestExit} contentClassName="py-6">
       <div className="mb-8">
         <h1 className="text-xl font-bold text-foreground mb-3">목적 다듬기</h1>
         <p className="text-sm text-foreground-subtle">
@@ -46,30 +98,46 @@ function EditForm({ goal, userId, onCancel }: EditFormProps) {
       />
 
       <div className="flex flex-col gap-3 pt-8">
-        <button
-          onClick={() => void handleSubmit()}
-          disabled={!isValid || isUpdating}
-          className="w-full bg-surface-dark text-white font-medium rounded-xl py-4 hover:bg-surface-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {isUpdating ? (
-            <>
-              <CircleNotch className="w-5 h-5 animate-spin" />
-              <span>저장 중...</span>
-            </>
-          ) : (
-            '저장하기'
-          )}
-        </button>
+        <PrimaryCTAButton
+          label="저장하기"
+          onClick={handleSubmit}
+          disabled={!isValid}
+          loading={isUpdating}
+          loadingLabel="저장 중..."
+        />
         <button
           type="button"
-          onClick={onCancel}
+          onClick={requestExit}
           disabled={isUpdating}
           className="w-full text-sm text-foreground-subtle py-2 hover:text-foreground transition-colors disabled:opacity-50"
         >
           취소
         </button>
       </div>
-    </>
+
+      {mismatch && (
+        <MaturityMismatchConfirmModal
+          isOpen={confirmOpen}
+          goalName={values.name.trim() || goal.name}
+          goalTargetDate={values.target_date ?? ''}
+          recordTitle={mismatch.recordTitle}
+          recordMaturityDate={mismatch.recordMaturityDate}
+          onProceed={handleProceed}
+          onAlignDate={handleAlignDate}
+          onCancel={() => setConfirmOpen(false)}
+          isProcessing={isUpdating}
+        />
+      )}
+
+      <ExitConfirmDialog
+        isOpen={exitDialogOpen}
+        onClose={() => setExitDialogOpen(false)}
+        onConfirm={() => {
+          setExitDialogOpen(false)
+          onExit()
+        }}
+      />
+    </SubPageScaffold>
   )
 }
 
@@ -115,9 +183,5 @@ export default function EditGoalClient() {
     )
   }
 
-  return (
-    <SubPageScaffold onBack={goBack} contentClassName="py-6">
-      <EditForm goal={goal} userId={userId} onCancel={goBack} />
-    </SubPageScaffold>
-  )
+  return <EditForm goal={goal} userId={userId} onExit={goBack} />
 }

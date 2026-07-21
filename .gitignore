@@ -27,8 +27,12 @@
 # OMC (oh-my-claudecode) local state
 .omc/
 
-# Claude Code local state
-.claude/
+# Claude Code — 팀 공유 설정/훅/커맨드는 추적하고, 개인 로컬 설정은 제외
+.claude/*
+!.claude/commands/
+!.claude/settings.json
+!.claude/hooks/
+.claude/settings.local.json
 
 # Supabase CLI local cache
 supabase/.temp/

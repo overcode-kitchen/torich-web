@@ -55,8 +55,6 @@ export interface UseAddInvestmentFormReturn {
   setIsManualModalOpen: (open: boolean) => void
   manualStockName: string
   setManualStockName: (name: string) => void
-  manualRate: string
-  setManualRate: (rate: string) => void
   isManualInput: boolean
   setIsManualInput: (manual: boolean) => void
   handleManualConfirm: (callbacks: { onConfirm: (name: string, rate: number) => void }) => void
@@ -71,7 +69,7 @@ export interface UseAddInvestmentFormReturn {
   handleRateChange: (value: string) => void
 
   // 폼 제출
-  handleSubmit: (e: React.FormEvent) => Promise<void>
+  handleSubmit: () => Promise<void>
 
   // 유틸리티
   handleMarketChange: (newMarket: 'KR' | 'US') => void

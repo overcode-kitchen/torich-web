@@ -1,24 +1,27 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { useRateUpdate } from '@/app/hooks/stock/useRateUpdate'
+import { useAutoSettleMaturedRecords } from '@/app/hooks/investment/useAutoSettleMaturedRecords'
 import { useInvestmentFilter } from '@/app/hooks/investment/filter/useInvestmentFilter'
 import { useHomePageUI } from '@/app/hooks/ui/useHomePageUI'
 import HomeView from '@/app/components/HomeView'
-import { calculateSimulatedValue } from '@/app/utils/finance'
 
 export default function Home() {
   const { user, isLoading: authLoading } = useAuth()
   const supabase = createClient()
-  const { records, isLoading: dataLoading, deleteInvestment, refetch } = useInvestmentsContext()
+  const { records, isLoading: dataLoading, refetch } = useInvestmentsContext()
   const userId = user?.id
   const { isUpdating: isUpdatingRates, checkAndUpdate } = useRateUpdate(userId)
-  const { filterStatus, setFilterStatus, sortBy, setSortBy, filteredRecords, activeRecords, totalMonthlyPayment } = useInvestmentFilter(records, calculateSimulatedValue)
+  const { totalMonthlyPayment } = useInvestmentFilter(records)
+
+  // 만기 도달 + 미정산 예적금을 자동 정산하고 비차단 토스트로 안내한다.
+  // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
+  useAutoSettleMaturedRecords()
 
   const [showMonthlyAmount, setShowMonthlyAmount] = useState<boolean>(true)
 
@@ -72,8 +75,7 @@ export default function Home() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [refetch])
 
-  const router = useRouter()
-  const { isBrandStoryOpen, setIsBrandStoryOpen, showBrandStoryCard, setShowBrandStoryCard, pendingBrandStoryUndo, dismissBrandStoryCard, undoBrandStoryDismiss } = useHomePageUI({ userId: user?.id, records, checkAndUpdate, refetch })
+  const { isBrandStoryOpen, setIsBrandStoryOpen, showBrandStoryCard, pendingBrandStoryUndo, dismissBrandStoryCard, undoBrandStoryDismiss } = useHomePageUI({ userId: user?.id, records, checkAndUpdate, refetch })
 
   return (
     <HomeView
@@ -81,17 +83,9 @@ export default function Home() {
       isUpdatingRates={isUpdatingRates}
       user={user}
       records={records}
-      filteredRecords={filteredRecords}
-      activeRecords={activeRecords}
       totalMonthlyPayment={totalMonthlyPayment}
-      filterStatus={filterStatus}
-      setFilterStatus={setFilterStatus}
-      sortBy={sortBy}
-      setSortBy={setSortBy}
       showMonthlyAmount={showMonthlyAmount}
       onToggleMonthlyAmount={toggleMonthlyAmount}
-      onItemClick={(item) => router.push(`/investment?id=${item.id}`)}
-      onDeleteInvestment={deleteInvestment}
       onRefresh={async () => {
         await refetch()
         if (userId) await checkAndUpdate()
@@ -99,11 +93,9 @@ export default function Home() {
       isBrandStoryOpen={isBrandStoryOpen}
       setIsBrandStoryOpen={setIsBrandStoryOpen}
       showBrandStoryCard={showBrandStoryCard}
-      setShowBrandStoryCard={setShowBrandStoryCard}
       pendingBrandStoryUndo={pendingBrandStoryUndo}
       onCloseBrandStoryCard={dismissBrandStoryCard}
       onUndoBrandStory={undoBrandStoryDismiss}
-      calculateSimulatedValue={calculateSimulatedValue}
     />
   )
 }

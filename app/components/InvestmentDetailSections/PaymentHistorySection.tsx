@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
+import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { buildCapturedByMonth } from '@/app/utils/realized-principal'
 import type { PaymentHistorySectionProps as OriginalPaymentHistorySectionProps } from './types'
 import { PaymentHistoryTable } from './PaymentHistoryTable'
 import BulkCompleteRetroactiveModal from './BulkCompleteRetroactiveModal'
@@ -11,12 +13,19 @@ interface PaymentHistorySectionProps extends Partial<OriginalPaymentHistorySecti
 }
 
 export function PaymentHistorySection(props: PaymentHistorySectionProps) {
-  let contextValue: any = null
+  // 컨텍스트(상세 화면) 안에서도, props로 직접 주입되는 경로에서도 렌더된다.
+  // useInvestmentDetailContext는 useContext를 항상 호출한 뒤 미제공 시 throw만 하므로
+  // 훅 호출 순서는 매 렌더 동일하다(rules-of-hooks는 과잉 탐지라 이 줄만 예외 처리).
+  let contextValue: ReturnType<typeof useInvestmentDetailContext> | null = null
   try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     contextValue = useInvestmentDetailContext()
-  } catch (e) {
-    // Context missing, will rely on props
+  } catch {
+    // 컨텍스트 미제공 → props에 의존
   }
+
+  // 각 납입의 매수 시점 실제 금액(원) — 표에서 행별 금액을 현재 금액이 아닌 그때 금액으로 표시
+  const { capturedAmounts } = usePaymentHistory()
 
   const item = props.item || contextValue?.item
   const investmentData = props.paymentHistory !== undefined ? props : contextValue?.investmentData
@@ -34,6 +43,11 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
 
   const [showBulkConfirm, setShowBulkConfirm] = useState(false)
   const [isBulkPending, setIsBulkPending] = useState(false)
+
+  const capturedByMonth = useMemo(
+    () => buildCapturedByMonth(capturedAmounts.get(item?.id ?? '')),
+    [capturedAmounts, item?.id],
+  )
 
   if (!item || !paymentHistory) return null
 
@@ -59,7 +73,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
   }
 
   return (
-    <section ref={historyRef} className="py-6 space-y-6">
+    <section ref={historyRef} className="py-8 space-y-6">
       <h3 className="text-lg font-semibold tracking-tight text-foreground">
         월별 납입 기록
       </h3>
@@ -70,7 +84,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             <p className="text-sm font-medium text-foreground-muted">
               소급 기록
             </p>
-            <p className="text-xs text-foreground-subtle">
+            <p className="text-xs text-foreground-muted">
               앱 등록 이전 기간
             </p>
           </div>
@@ -79,9 +93,10 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             rows={retroactivePaymentHistory!}
             variant="retroactive"
             onToggleRetroactive={onToggleRetroactive}
+            capturedByMonth={capturedByMonth}
           />
           <div className="flex items-center justify-between gap-2 px-1 pt-1">
-            <p className="text-xs text-foreground-subtle">
+            <p className="text-xs text-foreground-muted">
               {onToggleRetroactive
                 ? '탭해서 당시 납입 여부를 기록할 수 있어요.'
                 : '앱 시작 전 기간은 자동 추적되지 않아요.'}
@@ -106,7 +121,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
               <p className="text-sm font-medium text-foreground">
                 자동 추적
               </p>
-              <p className="text-xs text-foreground-subtle">
+              <p className="text-xs text-foreground-muted">
                 앱 등록 이후
               </p>
             </div>
@@ -115,6 +130,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             item={item}
             rows={paymentHistory}
             variant="auto"
+            capturedByMonth={capturedByMonth}
           />
           {hasMorePaymentHistory && (
             <button

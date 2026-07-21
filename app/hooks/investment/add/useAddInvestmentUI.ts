@@ -56,8 +56,8 @@ export function useAddInvestmentUI({
   const [startDate, setStartDate] = useState<Date>(() => new Date())
   const [investmentDays, setInvestmentDays] = useState<number[]>([])
 
-  // 매수 단위 (금액/주수)
-  const [unitType, setUnitType] = useState<InvestmentUnitType>('amount')
+  // 매수 단위 (금액/주수) — 투자 디폴트는 '주수'. 사용자가 토글로 '만원'으로 전환 가능.
+  const [unitType, setUnitType] = useState<InvestmentUnitType>('shares')
   const [monthlyShares, setMonthlyShares] = useState<string>('')
 
   // 정수만 허용 (소수점·기호 차단)

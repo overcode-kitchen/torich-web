@@ -6,7 +6,8 @@ import { CircleNotch } from '@phosphor-icons/react'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import InvestmentDetailView from '@/app/components/InvestmentDetailView'
-import { calculateSimulatedValue } from '@/app/utils/finance'
+import SavingsCashDetailView from '@/app/components/SavingsCashDetailView'
+import { getRecordType } from '@/app/types/investment'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { useIsNativeApp } from '@/app/hooks/platform/useIsNativeApp'
 
@@ -72,6 +73,20 @@ function InvestmentDetail() {
     )
   }
 
+  // 예적금·현금은 종목·차트가 없으므로 전용 상세 화면으로 분기한다.
+  if (getRecordType(item) !== 'investment') {
+    return (
+      <SavingsCashDetailView
+        item={item}
+        onBack={goBack}
+        onDelete={async () => {
+          await deleteInvestment(item.id)
+          router.replace('/')
+        }}
+      />
+    )
+  }
+
   return (
     <InvestmentDetailView
       item={item}
@@ -83,7 +98,6 @@ function InvestmentDetail() {
         await deleteInvestment(item.id)
         router.replace('/')
       }}
-      calculateFutureValue={calculateSimulatedValue}
     />
   )
 }

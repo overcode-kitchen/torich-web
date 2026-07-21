@@ -37,12 +37,13 @@ export default function GoalSection({ records }: GoalSectionProps) {
 
   const { goals, isLoading, refetch } = useGoals(userId)
   const { archiveGoal } = useGoalUpdate(userId)
-  const { completedPayments, retroactivePayments } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistory()
   const progressMap = useGoalsProgress(
     goals,
     records,
     completedPayments,
     retroactivePayments,
+    capturedAmounts,
   )
 
   async function handleDelete(id: string): Promise<void> {
@@ -59,6 +60,9 @@ export default function GoalSection({ records }: GoalSectionProps) {
   if (isLoading) return null
 
   if (goals.length === 0) {
+    // 목적·투자가 모두 없는 신규 사용자에겐 아래 EmptyState가 목적 만들기를
+    // 안내하므로, 여기서는 아무것도 그리지 않아 CTA 중복을 막는다.
+    if (records.length === 0) return null
     return <GoalEmptyCTA onCreate={() => handleCreate('dashboard_empty')} />
   }
 
@@ -68,6 +72,7 @@ export default function GoalSection({ records }: GoalSectionProps) {
       progressMap={progressMap}
       onCreate={() => handleCreate('dashboard_carousel')}
       onSelect={(id) => router.push(`/goal/detail?id=${id}`)}
+      onAddRecord={(id) => router.push(`/add?goalId=${id}`)}
       onDelete={handleDelete}
     />
   )

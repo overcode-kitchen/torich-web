@@ -1,0 +1,94 @@
+'use client'
+
+import { useCallback, useMemo, useState } from 'react'
+
+export type GroupId = 'A' | 'B' | 'C'
+
+/**
+ * 편집 모드에서 ?field=XXX 으로 진입한 필드가 속한 그룹을 결정하는 매핑.
+ * (SavingsCashDetailView에서 정보 행 탭 → /add?editId=&field= 진입 시 사용)
+ */
+const FIELD_TO_GROUP: Record<string, GroupId> = {
+  recordType: 'A',
+  market: 'A',
+  stockName: 'A',
+  title: 'A',
+  monthlyAmount: 'B',
+  period: 'B',
+  interestRate: 'B',
+  maturityDate: 'B',
+  startDate: 'C',
+  investmentDays: 'C',
+}
+
+const GROUP_ORDER: GroupId[] = ['A', 'B', 'C']
+
+export interface UseAddItemFlowProps {
+  /** editId가 있고 initialField가 주어지면 해당 필드 그룹으로 즉시 진입 */
+  editId?: string | null
+  initialField?: string | null
+}
+
+export interface UseAddItemFlowReturn {
+  currentGroup: GroupId
+  isAtFirstGroup: boolean
+  isAtLastGroup: boolean
+  progress: number
+  goNextGroup: () => void
+  goPrevGroup: () => void
+  goToGroup: (group: GroupId) => void
+}
+
+/**
+ * 적립 항목 추가/편집 플로우의 그룹 단위 step state hook.
+ * - 그룹 내 필드는 각 Group 컴포넌트가 입력값 충족 여부로 자체 노출 (자동 progressive disclosure)
+ * - 다음/저장 버튼은 그룹 경계 전환과 최종 제출에만 사용
+ * - 그룹 전환 시 iOS 키보드 잔류 방지를 위해 document.activeElement.blur() 호출
+ */
+export function useAddItemFlow({
+  editId,
+  initialField,
+}: UseAddItemFlowProps): UseAddItemFlowReturn {
+  const initialGroup = useMemo<GroupId>(() => {
+    if (editId && initialField && FIELD_TO_GROUP[initialField]) {
+      return FIELD_TO_GROUP[initialField]
+    }
+    return 'A'
+  }, [editId, initialField])
+
+  const [currentGroup, setCurrentGroup] = useState<GroupId>(initialGroup)
+
+  const dismissKeyboard = useCallback((): void => {
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+  }, [])
+
+  const goNextGroup = useCallback((): void => {
+    dismissKeyboard()
+    const idx = GROUP_ORDER.indexOf(currentGroup)
+    if (idx < GROUP_ORDER.length - 1) setCurrentGroup(GROUP_ORDER[idx + 1])
+  }, [currentGroup, dismissKeyboard])
+
+  const goPrevGroup = useCallback((): void => {
+    const idx = GROUP_ORDER.indexOf(currentGroup)
+    if (idx > 0) setCurrentGroup(GROUP_ORDER[idx - 1])
+  }, [currentGroup])
+
+  const goToGroup = useCallback((g: GroupId): void => setCurrentGroup(g), [])
+
+  const isAtFirstGroup = currentGroup === 'A'
+  const isAtLastGroup = currentGroup === 'C'
+  const progress =
+    currentGroup === 'A' ? 1 / 3 : currentGroup === 'B' ? 2 / 3 : 1
+
+  return {
+    currentGroup,
+    isAtFirstGroup,
+    isAtLastGroup,
+    progress,
+    goNextGroup,
+    goPrevGroup,
+    goToGroup,
+  }
+}

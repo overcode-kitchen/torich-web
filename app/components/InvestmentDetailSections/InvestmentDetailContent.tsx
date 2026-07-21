@@ -1,20 +1,17 @@
 'use client'
 
 import React from 'react'
-import { Investment } from '@/app/types/investment'
 import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
 import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSection'
-import { SimulationSection } from '@/app/components/InvestmentDetailSections/SimulationSection'
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
-import { InvestmentDetailOverview } from '@/app/components/InvestmentDetailSections/InvestmentDetailOverview'
 import { InvestmentDetailActions } from '@/app/components/InvestmentDetailSections/InvestmentDetailActions'
-import type { RateSuggestion } from '@/app/components/InvestmentEditSections/InvestmentEditSheet'
+import { DetailTabs } from '@/app/components/Common/DetailTabs'
+import { formatInvestmentSubtitle } from '@/app/utils/investmentSubtitle'
 
 import { useInvestmentDetailContext } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 import { useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
-import { APP_HEADER_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
 
 export function InvestmentDetailContent() {
     const {
@@ -29,7 +26,6 @@ export function InvestmentDetailContent() {
         activeTab,
         handleTabClick,
         overviewRef,
-        titleRef,
         infoRef,
         historyRef,
     } = useInvestmentTabContext()
@@ -43,67 +39,35 @@ export function InvestmentDetailContent() {
     })
 
     return (
-        <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-6 pb-12">
-            <InvestmentDetailOverview
-                item={item}
-                isEditMode={isEditMode}
-                nextPaymentDate={investmentData.nextPaymentDate}
-                completed={investmentData.completed}
-                overviewRef={overviewRef}
-                titleRef={titleRef}
-            />
-
-            {/* 전역 섹션 탭바 - 스크롤 전체 기준으로 헤더 바로 아래에 고정 */}
-            <div
-                className="sticky z-40 -mx-6 px-6 bg-background border-b border-border-subtle-lighter"
-                style={{ top: APP_HEADER_TOTAL_HEIGHT }}
-            >
-                <div className="flex gap-6">
-                    <button
-                        type="button"
-                        onClick={() => handleTabClick('overview')}
-                        className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'overview'
-                            ? 'border-foreground text-foreground'
-                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                            }`}
-                    >
-                        개요
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleTabClick('info')}
-                        className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'info'
-                            ? 'border-foreground text-foreground'
-                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                            }`}
-                    >
-                        투자 정보
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => handleTabClick('history')}
-                        className={`py-3 text-sm font-medium transition-colors border-b-2 ${activeTab === 'history'
-                            ? 'border-foreground text-foreground'
-                            : 'border-transparent text-foreground-subtle hover:text-foreground-soft'
-                            }`}
-                    >
-                        납입 기록
-                    </button>
-                </div>
-            </div>
-
-            {/* 진행률 / 적립형 요약 - 수정 모드에서는 숨김 */}
+        // 폭 제약·가운데 정렬은 SubPageScaffold 본문 컨테이너가 담당한다(중복 max-width 제거).
+        <div className="px-6 pb-12">
+            {/* 이름은 앱바에 상주(InvestmentDetailView centerSlot)하고, 본문 최상단은
+                총 납입액 히어로 하나로 유지한다. 종목명 요약은 히어로 아래 보조 줄로 종속. */}
             {!isEditMode && (
-                <ProgressSection />
+                <section ref={overviewRef}>
+                    <ProgressSection
+                        progress={investmentData.progress}
+                        completed={investmentData.completed}
+                        startDate={investmentData.startDate}
+                        endDate={investmentData.endDate}
+                        isHabitMode={investmentData.isHabitMode}
+                        elapsedMonths={investmentData.elapsedMonths}
+                        totalPaidPrincipal={investmentData.totalPaidPrincipal}
+                        contextLine={formatInvestmentSubtitle(item)}
+                    />
+                </section>
             )}
 
-            {/* 적립형 전용: 시뮬레이션 섹션 */}
-            {!isEditMode && investmentData.isHabitMode && (
-                <SimulationSection
-                    isEditMode={isEditMode}
-                    onConvertToGoal={() => ui.setIsEditMode(true)}
-                />
-            )}
+            {/* 섹션 탭바 - 스크롤 전체 기준으로 헤더 바로 아래에 고정 */}
+            <DetailTabs
+                tabs={[
+                    { key: 'info', label: '투자 정보' },
+                    { key: 'history', label: '납입 기록' },
+                ]}
+                activeTab={activeTab}
+                onTabClick={(tab) => handleTabClick(tab as typeof activeTab)}
+                bleedClassName="-mx-6 px-6"
+            />
 
             <div className="divide-y divide-border-subtle-lighter">
                 <InfoSection infoRef={infoRef} />

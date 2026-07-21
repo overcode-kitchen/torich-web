@@ -1,5 +1,8 @@
 import { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
-import { isPaymentCompleted } from './payment-completion'
+import { PostponedPaymentsMap } from '@/app/hooks/payment/usePostponedPayments'
+import { isPaymentCompleted, isRecordPostponedInMonth } from './payment-completion'
+
+const EMPTY_POSTPONED: PostponedPaymentsMap = new Map()
 
 export interface PaymentEvent {
   investmentId: string
@@ -83,7 +86,8 @@ export function getThisMonthStats(
     start_date?: string | null
     created_at: string
   }>,
-  completedPayments: PaymentHistoryMap
+  completedPayments: PaymentHistoryMap,
+  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED
 ): { totalPayment: number; completedPayment: number; progress: number; remainingPayment: number } {
   const today = new Date()
   const year = today.getFullYear()
@@ -94,6 +98,8 @@ export function getThisMonthStats(
   let completedPayment = 0
 
   for (const e of events) {
+    // 미룬 회차는 '이번 달 할 일'에서 빠진 것 → 예정(분모)에서 제외
+    if (isRecordPostponedInMonth(postponedPayments, e.investmentId, e.year, e.month)) continue
     totalPayment += e.monthlyAmount
     if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
       completedPayment += e.monthlyAmount
@@ -104,6 +110,33 @@ export function getThisMonthStats(
   const remainingPayment = totalPayment - completedPayment
 
   return { totalPayment, completedPayment, progress, remainingPayment }
+}
+
+/**
+ * 특정 연/월의 완료 납입 금액 합계 (회전 인사이트의 "지난달 대비" 계산용)
+ */
+export function getCompletedPaymentForMonth(
+  investments: Array<{
+    id: string
+    title: string
+    monthly_amount: number
+    investment_days?: number[] | null
+    period_years: number | null
+    start_date?: string | null
+    created_at: string
+  }>,
+  completedPayments: PaymentHistoryMap,
+  year: number,
+  month: number
+): number {
+  const events = getPaymentEventsForMonth(investments, year, month)
+  let sum = 0
+  for (const e of events) {
+    if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
+      sum += e.monthlyAmount
+    }
+  }
+  return sum
 }
 
 /**
@@ -155,7 +188,8 @@ export function getMonthlyCompletionRates(
     created_at: string
   }>,
   completedPayments: PaymentHistoryMap,
-  monthsBack: number
+  monthsBack: number,
+  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED
 ): Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> {
   const today = new Date()
   const results: Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> = []
@@ -168,17 +202,21 @@ export function getMonthlyCompletionRates(
     const monthLabel = `${month}월`
 
     const events = getPaymentEventsForMonth(investments, year, month)
+    let total = 0
     let completed = 0
     for (const e of events) {
+      // 미룬 회차는 예정(분모)에서 제외 — 완료율·스트릭을 깎지 않게
+      if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) continue
+      total++
       if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         completed++
       }
     }
-    const rate = events.length > 0 ? Math.round((completed / events.length) * 100) : 0
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 0
     results.push({
       yearMonth,
       monthLabel,
-      total: events.length,
+      total,
       completed,
       rate,
     })
@@ -201,13 +239,14 @@ export function getMonthlyCompletionRatesForRange(
   }>,
   completedPayments: PaymentHistoryMap,
   fromDate: Date,
-  toDate: Date
+  toDate: Date,
+  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED
 ): Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> {
   const results: Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> = []
   const from = new Date(fromDate.getFullYear(), fromDate.getMonth(), 1)
   const to = new Date(toDate.getFullYear(), toDate.getMonth(), 1)
 
-  let current = new Date(from)
+  const current = new Date(from)
   while (current <= to) {
     const year = current.getFullYear()
     const month = current.getMonth() + 1
@@ -215,18 +254,108 @@ export function getMonthlyCompletionRatesForRange(
     const monthLabel = `${month}월`
 
     const events = getPaymentEventsForMonth(investments, year, month)
+    let total = 0
     let completed = 0
     for (const e of events) {
+      // 미룬 회차는 예정(분모)에서 제외
+      if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) continue
+      total++
       if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
         completed++
       }
     }
-    const rate = events.length > 0 ? Math.round((completed / events.length) * 100) : 0
-    results.push({ yearMonth, monthLabel, total: events.length, completed, rate })
+    const rate = total > 0 ? Math.round((completed / total) * 100) : 0
+    results.push({ yearMonth, monthLabel, total, completed, rate })
 
     current.setMonth(current.getMonth() + 1)
   }
   return results
+}
+
+export interface MonthlyPaymentDelta {
+  thisMonthSum: number
+  lastMonthSum: number
+  deltaAmount: number
+  hasComparison: boolean
+}
+
+/**
+ * 이번 달 vs 지난 달 납입금 합산 차이.
+ * IMPORTANT: 호출자는 반드시 activeRecords (terminated 투자 제외)를 전달해야 한다.
+ * auto는 event-based pipeline (`getPaymentEventsForMonth + isPaymentCompleted`),
+ * retroactive는 YYYY-MM- prefix-count.
+ * 의존: usePaymentHistory.ts의 retroactive 엔트리 포맷 `${yearMonth}-01` (record-month 당 최대 1개).
+ */
+export function getMonthlyPaymentDelta(
+  activeRecords: Array<{
+    id: string
+    title: string
+    monthly_amount: number
+    investment_days?: number[] | null
+    period_years: number | null
+    start_date?: string | null
+    created_at: string
+  }>,
+  completedPayments: PaymentHistoryMap,
+  retroactivePayments: PaymentHistoryMap,
+  today: Date = new Date()
+): MonthlyPaymentDelta {
+  const thisYear = today.getFullYear()
+  const thisMonth = today.getMonth() + 1
+  const lastDate = new Date(thisYear, thisMonth - 2, 1)
+  const lastYear = lastDate.getFullYear()
+  const lastMonth = lastDate.getMonth() + 1
+
+  const sumForMonth = (year: number, month: number): number => {
+    const events = getPaymentEventsForMonth(activeRecords, year, month)
+    let auto = 0
+    for (const e of events) {
+      if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
+        auto += e.monthlyAmount
+      }
+    }
+    const prefix = `${year}-${String(month).padStart(2, '0')}-`
+    let retro = 0
+    for (const r of activeRecords) {
+      const dates = retroactivePayments.get(r.id)
+      if (!dates) continue
+      let hit = false
+      for (const d of dates) {
+        if (d.startsWith(prefix)) {
+          hit = true
+          break
+        }
+      }
+      if (hit) retro += r.monthly_amount
+    }
+    return auto + retro
+  }
+
+  const thisMonthSum = sumForMonth(thisYear, thisMonth)
+  const lastMonthSum = sumForMonth(lastYear, lastMonth)
+
+  const lastEvents = getPaymentEventsForMonth(activeRecords, lastYear, lastMonth)
+  const lastPrefix = `${lastYear}-${String(lastMonth).padStart(2, '0')}-`
+  let hasLastRetro = false
+  for (const r of activeRecords) {
+    const dates = retroactivePayments.get(r.id)
+    if (!dates) continue
+    for (const d of dates) {
+      if (d.startsWith(lastPrefix)) {
+        hasLastRetro = true
+        break
+      }
+    }
+    if (hasLastRetro) break
+  }
+  const hasComparison = lastEvents.length > 0 || hasLastRetro
+
+  return {
+    thisMonthSum,
+    lastMonthSum,
+    deltaAmount: thisMonthSum - lastMonthSum,
+    hasComparison,
+  }
 }
 
 /**
@@ -250,7 +379,7 @@ export function getPeriodTotalPaidForRange(
   const to = new Date(toDate.getFullYear(), toDate.getMonth(), 1)
   let total = 0
 
-  let current = new Date(from)
+  const current = new Date(from)
   while (current <= to) {
     const year = current.getFullYear()
     const month = current.getMonth() + 1

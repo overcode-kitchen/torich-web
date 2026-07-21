@@ -1,22 +1,36 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { CircleNotch } from '@phosphor-icons/react'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
-import { GoalFormSection } from '@/app/components/GoalFormSections/GoalFormSection'
-import { GOAL_PRESET_NAMES } from '@/app/constants/goal'
+import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
+import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialog'
+import GoalFlowHeader from '@/app/components/GoalFormSections/GoalFlowHeader'
+import GoalStepName from '@/app/components/GoalFormSections/GoalStepName'
+import GoalStepAmount from '@/app/components/GoalFormSections/GoalStepAmount'
+import GoalStepDate from '@/app/components/GoalFormSections/GoalStepDate'
+import { GOAL_PRESETS, GOAL_PRESET_NAMES } from '@/app/constants/goal'
 import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
+import { useGoalFlow } from '@/app/hooks/goal/add/useGoalFlow'
 import { useGoalCreate } from '@/app/hooks/goal/data/useGoalCreate'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { amountBucket, track } from '@/app/lib/analytics'
 import { createClient } from '@/utils/supabase/client'
 
-export default function NewGoalPage() {
+const STEP_COMPONENTS = {
+  A: GoalStepName,
+  B: GoalStepAmount,
+  C: GoalStepDate,
+} as const
+
+function NewGoalContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [userId, setUserId] = useState<string | undefined>(undefined)
-  const { values, setField, isValid, toCreateInput } = useGoalForm()
+  const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
+  const { values, setField, toCreateInput } = useGoalForm()
   const { createGoal, isCreating } = useGoalCreate(userId)
+  const flow = useGoalFlow()
   const { goBack } = useFlowBack({
     rootPath: '/',
     enableHistoryFallback: true,
@@ -29,7 +43,23 @@ export default function NewGoalPage() {
     })
   }, [])
 
-  async function handleSubmit(): Promise<void> {
+  // 빈 화면 예시 칩에서 넘어온 경우 목적 이름·이모지를 미리 채운다.
+  useEffect(() => {
+    const preset = searchParams.get('preset')
+    if (!preset) return
+    const matched = GOAL_PRESETS.find((p) => p.name === preset)
+    if (!matched) return
+    setField('name', matched.name)
+    setField('emoji', matched.iconKey)
+  }, [searchParams, setField])
+
+  const canAdvance = useMemo<boolean>(() => {
+    if (flow.currentStep === 'A') return values.name.trim().length > 0
+    if (flow.currentStep === 'B') return Number(values.target_amount) > 0
+    return true
+  }, [flow.currentStep, values.name, values.target_amount])
+
+  const handleSubmit = useCallback(async (): Promise<void> => {
     const goal = await createGoal(toCreateInput())
     if (!goal) return
     const trimmedName = values.name.trim()
@@ -41,43 +71,73 @@ export default function NewGoalPage() {
         ? trimmedName
         : 'custom',
     })
-    router.replace(`/goal/${goal.id}`)
-  }
+    router.replace('/')
+  }, [createGoal, router, toCreateInput, values])
+
+  const handleAction = useCallback((): void => {
+    if (isCreating) return
+    if (flow.isAtLastStep) {
+      void handleSubmit()
+      return
+    }
+    flow.goNextStep()
+  }, [flow, handleSubmit, isCreating])
+
+  const handleBack = useCallback((): void => {
+    if (flow.isAtFirstStep) {
+      setExitDialogOpen(true)
+      return
+    }
+    flow.goPrevStep()
+  }, [flow])
 
   return (
-    <SubPageScaffold onBack={goBack} contentClassName="py-6">
-      <div className="mb-8">
-        <h1 className="text-xl font-bold text-foreground mb-3">
-          새 목적 만들기
-        </h1>
-        <p className="text-sm text-foreground-subtle whitespace-pre-line">
-          결혼자금·내 집 마련 같은 큰 목표를{'\n'}한 곳에서 모아 관리해요.
-        </p>
+    <>
+      <SubPageScaffold onBack={handleBack} contentClassName="py-6 pb-40">
+        <GoalFlowHeader currentStep={flow.currentStep} />
+        {(() => {
+          const StepComponent = STEP_COMPONENTS[flow.currentStep]
+          return (
+            <StepComponent
+              values={values}
+              setField={setField}
+              disabled={isCreating}
+            />
+          )
+        })()}
+      </SubPageScaffold>
+
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface/95 backdrop-blur"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
+      >
+        <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-2xl px-4 pt-4">
+          <PrimaryCTAButton
+            label={flow.isAtLastStep ? '저장하기' : '다음으로'}
+            onClick={handleAction}
+            disabled={!canAdvance}
+            loading={isCreating}
+            loadingLabel="저장 중..."
+          />
+        </div>
       </div>
 
-      <GoalFormSection
-        values={values}
-        setField={setField}
-        disabled={isCreating}
-        showOptionalFields={false}
+      <ExitConfirmDialog
+        isOpen={exitDialogOpen}
+        onClose={() => setExitDialogOpen(false)}
+        onConfirm={() => {
+          setExitDialogOpen(false)
+          goBack()
+        }}
       />
+    </>
+  )
+}
 
-      <div className="flex flex-col gap-3 pt-8">
-        <button
-          onClick={() => void handleSubmit()}
-          disabled={!isValid || isCreating}
-          className="w-full bg-surface-dark text-white font-medium rounded-xl py-4 hover:bg-surface-dark-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {isCreating ? (
-            <>
-              <CircleNotch className="w-5 h-5 animate-spin" />
-              <span>만드는 중...</span>
-            </>
-          ) : (
-            '목적 만들기'
-          )}
-        </button>
-      </div>
-    </SubPageScaffold>
+export default function NewGoalPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewGoalContent />
+    </Suspense>
   )
 }

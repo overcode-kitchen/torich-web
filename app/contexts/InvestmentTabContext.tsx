@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useRef, useState, ReactNode } from 'react'
+import { scrollToDetailSection } from '@/app/utils/scrollToDetailSection'
 
 export type TabType = 'overview' | 'info' | 'history'
 
@@ -11,7 +12,6 @@ interface InvestmentTabContextType {
   overviewRef: React.RefObject<HTMLElement | null>
   infoRef: React.RefObject<HTMLElement | null>
   historyRef: React.RefObject<HTMLElement | null>
-  titleRef: React.RefObject<HTMLDivElement | null>
   handleTabClick: (tab: TabType) => void
 }
 
@@ -31,29 +31,16 @@ export function InvestmentTabProvider({
   const overviewRef = useRef<HTMLElement>(null)
   const infoRef = useRef<HTMLElement>(null)
   const historyRef = useRef<HTMLElement>(null)
-  const titleRef = useRef<HTMLDivElement>(null)
 
   const handleTabClick = (tab: TabType) => {
     setActiveTab(tab)
-    const container = scrollContainerRef.current
-    if (!container) return
-
     const target =
       tab === 'overview'
         ? overviewRef.current
         : tab === 'info'
           ? infoRef.current
           : historyRef.current
-
-    if (!target) return
-
-    const headerAndTabsHeight = 52 + 40
-    const containerRect = container.getBoundingClientRect()
-    const targetRect = target.getBoundingClientRect()
-    const currentScrollTop = container.scrollTop
-    const offset = targetRect.top - containerRect.top + currentScrollTop - headerAndTabsHeight
-
-    container.scrollTo({ top: offset, behavior: 'smooth' })
+    scrollToDetailSection(scrollContainerRef.current, target)
   }
 
   const value = {
@@ -63,7 +50,6 @@ export function InvestmentTabProvider({
     overviewRef,
     infoRef,
     historyRef,
-    titleRef,
     handleTabClick,
   }
 

@@ -28,8 +28,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'demo-2',
-    title: '목표까지 절반을 넘었어요 🎉',
-    body: '“내 집 마련” 목표 달성률이 52%를 돌파했어요. 지금 속도 그대로만 가도 충분해요.',
+    title: '목적까지 절반을 넘었어요 🎉',
+    body: '“내 집 마련” 목적 달성률이 52%를 돌파했어요. 지금 속도 그대로만 가도 충분해요.',
     createdAt: minutesAgo(60),
   },
   {

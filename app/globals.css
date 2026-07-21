@@ -1,6 +1,13 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css");
 @import "tailwindcss";
 @import "tw-animate-css";
+
+@font-face {
+  font-family: 'Pretendard';
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+  src: url('/fonts/PretendardVariable.woff2') format('woff2-variations');
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -10,8 +17,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Pretendard, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -29,6 +36,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -58,6 +66,7 @@
   --color-brand-accent-bg: var(--brand-accent-bg);
   --color-brand-accent-text: var(--brand-accent-text);
   --color-brand-accent-border: var(--brand-accent-border);
+  --color-field-bg: var(--field-bg);
   --color-chart-profit: var(--chart-profit);
   --color-chart-principal: var(--chart-principal);
 
@@ -162,6 +171,8 @@
   --accent: var(--palette-coolgray-100);
   --accent-foreground: var(--palette-coolgray-900);
   --destructive: var(--palette-destructive);
+  /* 성공/달성 상태 텍스트용 진한 그린 — 흰 배경에서 WCAG AA(4.58:1). brand-600(text)은 대비 미달이라 텍스트엔 이 토큰 사용 */
+  --success: var(--palette-brand-700);
   --border: var(--palette-coolgray-200);
   --input: var(--palette-coolgray-200);
   --ring: var(--palette-brand-600);
@@ -199,6 +210,8 @@
   --brand-accent-bg: var(--palette-brand-50);
   --brand-accent-text: var(--palette-brand-700);
   --brand-accent-border: var(--palette-brand-200);
+  /* 입력칸 배경: 라이트=흰색에 가까운 아주 옅은 회색(경계는 약한 보더가 담당) */
+  --field-bg: hsl(210, 9%, 97%);
   /* 차트 색상 */
   --chart-profit: var(--palette-brand-500);
   --chart-principal: var(--palette-brand-100);
@@ -243,6 +256,8 @@
   --accent: var(--palette-coolgray-600);
   --accent-foreground: var(--palette-coolgray-25);
   --destructive: var(--palette-destructive);
+  /* 다크 배경에서는 밝은 그린이 잘 읽힘 (brand-400) */
+  --success: var(--palette-brand-400);
   --border: var(--palette-coolgray-500);
   --input: var(--palette-coolgray-500);
   --ring: var(--palette-brand-600);
@@ -280,6 +295,8 @@
   --brand-accent-bg: var(--palette-brand-200);
   --brand-accent-text: var(--palette-brand-600);
   --brand-accent-border: var(--palette-brand-300);
+  /* 입력칸 배경: 다크=중립 다크 서피스 (밝은 민트는 눈부셔서 제외, text-foreground 대비 확보) */
+  --field-bg: var(--palette-coolgray-800);
   /* 차트 색상 - 다크모드에서도 밝은 색상 유지 */
   --chart-profit: var(--palette-brand-500);
   --chart-principal: var(--palette-brand-200);
@@ -294,8 +311,31 @@
   *::-webkit-scrollbar {
     display: none;
   }
+  /* viewport-fit=cover: safe-area(상태바)·오버스크롤 영역은 문서 루트(html) 배경이 칠한다.
+     기본 흰색이면 고정 헤더가 없는 화면(예: 통계)에서 상태바가 흰색으로 비치므로 surface로 맞춘다. */
+  html {
+    background-color: var(--surface);
+  }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-surface text-foreground font-sans;
+  }
+}
+
+/* 회전 인사이트 서브라인 — 아래에서 위로 슬라이드+페이드 (토스풍) */
+@keyframes insight-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .animate-insight {
+    animation: insight-slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
@@ -324,6 +364,62 @@
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: var(--palette-coolgray-200);
     background-clip: content-box;
+  }
+}
+
+/* 적립 항목 추가 손잡이 넛지: 5초에 한 번 살짝 튀어 관심을 끈다 (띠용띠용) */
+@layer utilities {
+  .animate-handle-nudge {
+    animation: handle-nudge 5s ease-in-out infinite;
+  }
+}
+
+@keyframes handle-nudge {
+  0%,
+  72% {
+    transform: translateY(0);
+  }
+  79% {
+    transform: translateY(5px);
+  }
+  86% {
+    transform: translateY(0);
+  }
+  92% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-handle-nudge {
+    animation: none;
+  }
+}
+
+/* 서랍을 당겨 진입하는 화면이 아래에서 스르륵 올라오며 페이드-인 (라우트 즉시 교체의 "휙!" 완화) */
+@layer utilities {
+  .animate-page-in {
+    animation: page-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-in {
+    animation: none;
   }
 }
 

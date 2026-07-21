@@ -26,6 +26,33 @@ export interface ScheduleRecord {
   unit_type?: 'amount' | 'shares'
   /** 주수 모드일 때 월 매수 주수 */
   monthly_shares?: number | null
+  /**
+   * 적립 항목 유형. 푸시 문구를 유형에 맞게 분기한다.
+   * - investment: "매수일/매수" (주식·ETF)
+   * - savings: "납입일/납입" (예적금)
+   * - cash: "저축일/저축" (현금·기타)
+   * 누락 시 'investment'로 폴백(기존 행 호환).
+   */
+  record_type?: 'investment' | 'savings' | 'cash'
+}
+
+/**
+ * record_type별 알림 문구 용어.
+ * dateNoun: 제목·본문에서 날짜를 가리키는 명사 ("매수일" 등)
+ * actionNoun: 본문에서 행동을 가리키는 명사 ("매수" 등)
+ * 누락·미지정 시 'investment'(매수)로 폴백한다.
+ */
+export function getNotificationTerms(
+  recordType?: string
+): { dateNoun: string; actionNoun: string } {
+  switch (recordType) {
+    case 'savings':
+      return { dateNoun: '납입일', actionNoun: '납입' }
+    case 'cash':
+      return { dateNoun: '저축일', actionNoun: '저축' }
+    default:
+      return { dateNoun: '매수일', actionNoun: '매수' }
+  }
 }
 
 /**
@@ -98,7 +125,7 @@ export function generatePaymentDates(
   const start = new Date(startDate)
   const effectivePeriodYears = periodYears && periodYears > 0 ? periodYears : HABIT_DEFAULT_YEARS
   const end = addYears(start, effectivePeriodYears)
-  let current = new Date(start)
+  const current = new Date(start)
 
   while (current < end) {
     const year = current.getFullYear()
@@ -194,15 +221,16 @@ export function buildNotificationRows(
   existingScheduledAts: Set<string>,
   now: Date
 ): ScheduledNotificationRow[] {
-  const { id: recordId, user_id: userId, title, start_date, period_years, investment_days, monthly_amount, unit_type, monthly_shares } = record
+  const { id: recordId, user_id: userId, title, start_date, period_years, investment_days, monthly_amount, unit_type, monthly_shares, record_type } = record
   const paymentDates = generatePaymentDates(start_date, period_years, investment_days)
   const preDays = parsePreReminderToDays(userSettings.notification_pre_reminder)
   const rows: ScheduledNotificationRow[] = []
 
   const isShareMode = unit_type === 'shares' && typeof monthly_shares === 'number' && monthly_shares > 0
+  const { dateNoun, actionNoun } = getNotificationTerms(record_type)
 
   const pushTitle =
-    preDays === 0 ? `오늘 "${title}" 매수일이에요` : `"${title}" 매수일이 ${preDays}일 남았어요`
+    preDays === 0 ? `오늘 "${title}" ${dateNoun}이에요` : `"${title}" ${dateNoun}이 ${preDays}일 남았어요`
 
   for (const paymentDate of paymentDates) {
     const paymentDateStr = paymentDate.toISOString().split('T')[0]
@@ -224,9 +252,9 @@ export function buildNotificationRows(
       : typeof monthly_amount === 'number' ? formatAmountForPush(monthly_amount) : ''
     const bodyText = amountText
       ? preDays === 0
-        ? `오늘 ${paymentDateFormatted}이 매수일이에요. ${amountText} 매수 잊지 마세요!`
-        : `${preDays}일 뒤인 ${paymentDateFormatted}에 ${amountText} 매수 예정이에요`
-      : `${paymentDateFormatted} 매수일을 확인해 주세요`
+        ? `오늘 ${paymentDateFormatted}이 ${dateNoun}이에요. ${amountText} ${actionNoun} 잊지 마세요!`
+        : `${preDays}일 뒤인 ${paymentDateFormatted}에 ${amountText} ${actionNoun} 예정이에요`
+      : `${paymentDateFormatted} ${dateNoun}을 확인해 주세요`
 
     for (const t of tokens) {
       rows.push({

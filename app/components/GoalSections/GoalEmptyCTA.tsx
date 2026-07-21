@@ -33,7 +33,7 @@ export function GoalEmptyCTA({ onCreate }: GoalEmptyCTAProps) {
         </button>
       </div>
       <p className="text-sm text-muted-foreground text-center">
-        결혼·내 집 마련 같은 목표를 모아두세요.
+        결혼·내 집 마련 같은 목적을 모아두세요.
       </p>
     </section>
   )

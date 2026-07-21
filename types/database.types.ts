@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       goals: {
@@ -131,6 +106,38 @@ export type Database = {
           },
         ]
       }
+      postponed_payments: {
+        Row: {
+          created_at: string
+          id: string
+          payment_date: string
+          record_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payment_date: string
+          record_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payment_date?: string
+          record_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "postponed_payments_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       records: {
         Row: {
           annual_rate: number
@@ -138,14 +145,18 @@ export type Database = {
           final_amount: number
           goal_id: string | null
           id: string
+          interest_rate: number | null
           investment_days: number[] | null
           is_custom_rate: boolean | null
           market: string | null
+          maturity_date: string | null
           monthly_amount: number
           monthly_shares: number | null
           notification_enabled: boolean | null
           period_years: number | null
           rate_updated_at: string | null
+          record_type: string
+          settled_at: string | null
           start_date: string | null
           symbol: string | null
           title: string
@@ -159,14 +170,18 @@ export type Database = {
           final_amount: number
           goal_id?: string | null
           id?: string
+          interest_rate?: number | null
           investment_days?: number[] | null
           is_custom_rate?: boolean | null
           market?: string | null
+          maturity_date?: string | null
           monthly_amount: number
           monthly_shares?: number | null
           notification_enabled?: boolean | null
           period_years?: number | null
           rate_updated_at?: string | null
+          record_type?: string
+          settled_at?: string | null
           start_date?: string | null
           symbol?: string | null
           title: string
@@ -180,14 +195,18 @@ export type Database = {
           final_amount?: number
           goal_id?: string | null
           id?: string
+          interest_rate?: number | null
           investment_days?: number[] | null
           is_custom_rate?: boolean | null
           market?: string | null
+          maturity_date?: string | null
           monthly_amount?: number
           monthly_shares?: number | null
           notification_enabled?: boolean | null
           period_years?: number | null
           rate_updated_at?: string | null
+          record_type?: string
+          settled_at?: string | null
           start_date?: string | null
           symbol?: string | null
           title?: string
@@ -514,9 +533,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
