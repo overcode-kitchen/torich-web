@@ -1,4 +1,5 @@
 import type { InvestmentUnitType } from '@/app/types/investment'
+import type { SearchResult, StockDetail } from './useStockSearch'
 
 export interface UseAddInvestmentFormReturn {
   // 기본 폼 상태
@@ -31,13 +32,13 @@ export interface UseAddInvestmentFormReturn {
 
   // 주식 검색 관련
   isSearching: boolean
-  searchResults: any[]
+  searchResults: SearchResult[]
   searchFetchFailed: boolean
   retrySearch: () => void
   showDropdown: boolean
   setShowDropdown: (show: boolean) => void
-  selectedStock: any
-  setSelectedStock: (stock: any) => void
+  selectedStock: StockDetail | null
+  setSelectedStock: (stock: StockDetail | null) => void
   market: 'KR' | 'US'
   setMarket: (market: 'KR' | 'US') => void
   annualRate: number
@@ -47,7 +48,7 @@ export interface UseAddInvestmentFormReturn {
   isRateLoading: boolean
   rateFetchFailed: boolean
   setRateFetchFailed: (failed: boolean) => void
-  handleSelectStock: (stock: any) => Promise<void>
+  handleSelectStock: (stock: SearchResult) => Promise<void>
   resetSearch: () => void
 
   // 수동 입력 관련

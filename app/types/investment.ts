@@ -28,7 +28,6 @@ export interface Investment {
    */
   period_years: number | null
   annual_rate: number
-  expected_amount?: string
   created_at: string
   start_date?: string | null // 투자 시작일 (없으면 created_at 사용)
   investment_days?: number[] | null // 매월 투자하는 날짜들 (예: [5, 25] = 매월 5일, 25일)

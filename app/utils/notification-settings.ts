@@ -1,5 +1,5 @@
 import type { PreReminderOption, NotificationSettingsState } from '@/app/hooks/types/useNotificationSettings'
-import type { TablesInsert } from '@/types/database.types'
+import type { Tables, TablesInsert } from '@/types/database.types'
 
 export const defaultNotificationSettings: NotificationSettingsState = {
   defaultTime: '09:00',
@@ -12,7 +12,7 @@ export const defaultNotificationSettings: NotificationSettingsState = {
 /**
  * DB 데이터를 NotificationSettingsState로 변환
  */
-export function mapDbDataToSettings(data: any): NotificationSettingsState {
+export function mapDbDataToSettings(data: Tables<'user_settings'>): NotificationSettingsState {
   return {
     defaultTime: data.notification_default_time || defaultNotificationSettings.defaultTime,
     preReminder: (data.notification_pre_reminder as PreReminderOption) || defaultNotificationSettings.preReminder,

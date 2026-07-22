@@ -89,9 +89,11 @@ export function InfoSection({ infoRef }: InfoSectionProps) {
           />
         )}
 
+        {/* investment_days는 nullable이다. 적립일을 하나도 고르지 않고 저장하면 null이 되는데,
+            InvestmentDaysField가 .length를 바로 읽어 크래시한다. 빈 배열이면 "없음" 상태로 정상 렌더된다. */}
         <InvestmentDaysField
           isEditMode={isEditMode}
-          investmentDays={isEditMode ? editInvestmentDays : item.investment_days}
+          investmentDays={isEditMode ? editInvestmentDays : (item.investment_days ?? [])}
           onToggleDay={(day) => setEditInvestmentDays((prev: number[]) => prev.filter((d) => d !== day))}
           onOpenDaysPicker={() => setIsDaysPickerOpen(true)}
         />

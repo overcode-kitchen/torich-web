@@ -3,6 +3,7 @@
  */
 
 import type { InvestmentUnitType } from '@/app/types/investment'
+import type { StockDetail } from '@/app/hooks/types/useStockSearch'
 
 interface FormatInvestmentDataParams {
   stockName: string
@@ -15,7 +16,7 @@ interface FormatInvestmentDataParams {
   annualRate: number
   isManualInput: boolean
   originalSystemRate: number | null
-  selectedStock: any
+  selectedStock: StockDetail | null
   market?: 'KR' | 'US'
   /** 매수 단위 모드 (디폴트 'amount') */
   unitType?: InvestmentUnitType
@@ -79,7 +80,7 @@ export function determineIsCustomRate(
  */
 export function determineStockSymbol(
   isManualInput: boolean,
-  selectedStock: any
+  selectedStock: StockDetail | null
 ): string | null {
   return !isManualInput && selectedStock?.symbol ? selectedStock.symbol : null
 }

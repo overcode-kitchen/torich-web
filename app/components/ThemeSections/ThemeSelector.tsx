@@ -1,6 +1,6 @@
 'use client'
 
-import { Sun, Moon, Devices, CaretDown } from '@phosphor-icons/react'
+import { Sun, Moon, Devices, CaretDown, type Icon } from '@phosphor-icons/react'
 import { type Theme } from './ThemeProvider'
 import {
   DropdownMenu,
@@ -14,7 +14,7 @@ interface ThemeSelectorProps {
   setTheme: (theme: Theme) => void
 }
 
-const THEME_OPTIONS: Array<{ value: Theme; label: string; description: string; icon: React.ComponentType<any> }> = [
+const THEME_OPTIONS: Array<{ value: Theme; label: string; description: string; icon: Icon }> = [
   { value: 'light', label: '라이트', description: '밝은 화면', icon: Sun },
   { value: 'dark', label: '다크', description: '어두운 화면', icon: Moon },
   { value: 'system', label: '시스템', description: '기기 설정 따름', icon: Devices },
