@@ -3,9 +3,10 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
+import type { Investment } from '@/app/types/investment'
 
 export interface MonthlyAmountCardProps {
-  records: any[]
+  records: Investment[]
   totalMonthlyPayment: number
   showMonthlyAmount: boolean
   onToggleMonthlyAmount: () => void

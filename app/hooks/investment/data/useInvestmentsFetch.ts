@@ -13,7 +13,7 @@ export interface UseInvestmentsFetchReturn {
 
 export function useInvestmentsFetch(
   userId: string | undefined,
-  setRecords: (records: any[]) => void
+  setRecords: (records: Investment[]) => void
 ): UseInvestmentsFetchReturn {
   const supabase = useMemo(() => createClient(), [])
   const [isLoading, setIsLoading] = useState<boolean>(false)

@@ -5,6 +5,31 @@ import { createClient } from '@/utils/supabase/client'
 import type { Investment } from '@/app/types/investment'
 import type { RecordUpdateResult } from '../../types/useInvestments'
 
+/**
+ * DB `records` 테이블에 실제로 존재하는, 수정 가능한 컬럼 목록.
+ *
+ * `satisfies` 덕분에 스키마가 바뀌어 Investment에서 컬럼이 사라지면
+ * 런타임이 아니라 **컴파일 단계에서** 걸린다. 예전에는 이 배열이 그냥
+ * string[] 이라 오타나 삭제된 컬럼을 아무도 잡지 못했다.
+ */
+const UPDATABLE_COLUMNS = [
+  'title', 'symbol', 'monthly_amount', 'period_years',
+  'annual_rate', 'start_date',
+  'investment_days', 'is_custom_rate', 'notification_enabled',
+  'goal_id',
+  'record_type', 'interest_rate', 'maturity_date',
+  'unit_type', 'monthly_shares',
+] as const satisfies readonly (keyof Investment)[]
+
+/** 키별로 좁혀진 타입을 유지한 채 복사한다. 제네릭이라 캐스팅이 필요 없다. */
+function copyIfPresent<K extends keyof Investment>(
+  target: Partial<Investment>,
+  source: Partial<Investment>,
+  key: K,
+): void {
+  if (source[key] !== undefined) target[key] = source[key]
+}
+
 export interface UseInvestmentsUpdateReturn {
   updateInvestment: (id: string, data: Partial<Investment>) => Promise<void>
   isUpdating: boolean
@@ -30,23 +55,10 @@ export function useInvestmentsUpdate(
         current.map((r: Investment): Investment => (r.id === id ? { ...r, ...data } : r)),
       )
 
-      // Filter data to only include known columns
-      const validColumns = [
-        'title', 'symbol', 'monthly_amount', 'period_years',
-        'annual_rate', 'expected_amount', 'start_date',
-        'investment_days', 'is_custom_rate', 'notification_enabled',
-        'goal_id',
-        'record_type', 'interest_rate', 'maturity_date',
-        'unit_type', 'monthly_shares',
-      ]
-
-      const updateData: any = {}
-      Object.keys(data).forEach(key => {
-        if (validColumns.includes(key)) {
-          // @ts-ignore
-          updateData[key] = data[key]
-        }
-      })
+      const updateData: Partial<Investment> = {}
+      for (const key of UPDATABLE_COLUMNS) {
+        copyIfPresent(updateData, data, key)
+      }
 
       console.log('Update attempt:', { id, userId, updateData })
 
