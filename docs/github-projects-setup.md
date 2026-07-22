@@ -46,26 +46,29 @@ Organization 레벨에 만든다. 저장소 레벨 프로젝트는 나중에 저
 
 ## 5. 뷰 2개
 
-- **기본 뷰(Board)**: `Group by: Status`, `Filter: milestone:v1.2.1` — 이번 배포에 집중
+- **기본 뷰(Board)**: `Group by: Status`, `Filter: milestone:"<지금 준비 중인 버전>"` — 이번 배포에 집중. 릴리스할 때마다 이 필터의 버전만 바꾼다
 - **두 번째 뷰(Table)**: `Filter: -milestone:*` 로 이름 `백로그` — 마일스톤 없는 것만. 여기 쌓인 걸 다음 버전 계획 때 끌어온다
 
 ---
 
 ## 이미 세팅된 것 (CLI로 완료됨)
 
-- 라벨 6개: `feat` `fix` `refactor` `docs` `app-update-required` `hotfix`
+- 라벨 4개: `feat` `fix` `refactor` `docs` (커밋 type과 동일)
 - 이슈 템플릿: `.github/ISSUE_TEMPLATE/feature.yml`, `bug.yml`
-- 마일스톤 `v1.2.1` (**due date는 배포 예정일로 직접 설정할 것** — [milestones](https://github.com/overcode-kitchen/torich-web/milestones))
+- 마일스톤 `v1.3.0` — **due date는 배포 예정일로 직접 설정할 것** ([milestones](https://github.com/overcode-kitchen/torich-web/milestones)). patch 마일스톤(`v1.2.1` 등)은 급한 수정이 실제로 생겼을 때 만든다
 - `.github/workflows/ci.yml` — PR 시 타입 체크 + 린트
-- `.github/workflows/release.yml` — `v*` 태그 push 시 릴리스 노트 생성 + 마일스톤 close
+- `.github/workflows/release.yml` — `v*` 태그 push 시 릴리스 노트 생성 + back-merge 검사 + 마일스톤 close
 - `.github/release.yml` — 릴리스 노트 라벨별 분류 규칙
 
 ## 추천 저장소 설정
 
-**Settings → General**
+**Settings → General → Pull Requests**
 
-- Merge button: **Squash merge만 허용**. 2인 팀에서 개인 브랜치의 중간 커밋까지 `integration`에 남길 이유가 없다.
-- **Automatically delete head branches** 켜기.
+- ☑️ **Allow squash merging** — 개인 브랜치 → `integration` 용. 중간 커밋을 남기지 않는다
+- ☑️ **Allow merge commits** — `integration` → `main`, `hotfix/*` → `main` 용
+- ☑️ **Automatically delete head branches**
+
+> ⚠️ **Squash만 허용하면 안 된다.** `integration` → `main` 을 squash로 머지하면 `main` 에 원본과 다른 새 커밋 하나가 생겨 두 브랜치가 영구히 갈라진다. 다음 릴리스마다 back-merge 충돌이 나고, `release.yml` 의 누락 검사도 계속 걸린다. **브랜치 간 머지(`integration`·`hotfix` → `main`)는 반드시 merge commit으로 한다.**
 
 **Settings → Rules → Rulesets** (선택)
 

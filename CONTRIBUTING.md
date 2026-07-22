@@ -6,13 +6,40 @@
 
 ## 브랜치 전략
 
-| 브랜치 | 역할 |
-|--------|------|
-| `main` | 운영 배포 전용. 안정성 최우선. |
-| `integration` | 통합 개발 브랜치. 기능 통합과 안정화. |
-| `develop/<이름>` | 개인 작업 브랜치 (예: `develop/suni`, `develop/hansol`). |
+브랜치 두 개의 뜻만 기억하면 된다.
 
-**흐름**: 개인 브랜치 → `integration` 으로 PR → 안정화 후 `main` 으로 머지.
+| 브랜치 | 뜻 |
+|--------|------|
+| `main` | **지금 앱스토어에 있는 것** |
+| `integration` | **다음에 낼 것** |
+| `develop/<이름>` | 개인 작업 브랜치 (`develop/suni`, `develop/hansol`) |
+| `hotfix/<버전>` | 급한 수정 (`hotfix/1.2.1`) |
+
+```
+평소     :  develop/<이름> ──▶ integration ──▶ main  + 태그 v1.3.0
+급할 때  :  main ──▶ hotfix/1.2.1 ──▶ main  + 태그 v1.2.1 ──▶ integration에 합치기
+```
+
+### 규칙은 하나 — 급한 수정은 `main`에서 시작하고, 끝나면 `integration`에 합친다
+
+- **`main`에서 시작하는 이유**: `integration`에는 아직 안 내보낼 다음 버전 기능이 섞여 있다. 거기서 잘라 배포하면 검증 안 된 기능이 딸려 나간다.
+- **`integration`에 합치는 이유**: 안 하면 다음 배포에서 그 버그가 되살아난다.
+
+```bash
+git checkout integration && git pull && git merge origin/main && git push origin integration
+```
+
+합치기를 빠뜨렸는지는 `.github/workflows/release.yml` 이 릴리스마다 자동으로 검사한다. 누락되면 이슈가 자동으로 생기므로 외울 필요는 없다.
+
+### 1.3.0 만드는 중에 1.2.1 급한 수정이 생겼을 때
+
+1. 하던 작업은 개인 브랜치에 커밋해두고 둔다 (`git stash` 도 됨)
+2. `git checkout main && git pull && git checkout -b hotfix/1.2.1`
+3. 고쳐서 `main` 으로 PR → 머지 → 버전 올리고 태그 `v1.2.1` push
+4. 위의 합치기 명령 실행
+5. 하던 작업으로 돌아간다
+
+`v1.2.1` 을 배포해도 `v1.3.0` 마일스톤은 그대로 굴러간다. 4번에서 충돌이 나면 `integration` 쪽 최신 코드를 살리되, 이 수정이 고친 동작이 남아 있는지만 확인한다.
 
 ### `main` 머지 원칙
 
@@ -27,28 +54,36 @@
 
 | 개념 | 도구 |
 |---|---|
-| 배포 버전 (`v1.2.1`) + 배포 예정일 | **Milestone** (due date = 배포일) |
+| 앱 버전 (`v1.3.0`) + 배포 예정일 | **Milestone** (due date = 배포일) |
 | 그 버전에 넣을 작업 | 해당 마일스톤에 붙은 **Issue** |
 | 담당자 | Issue Assignee (직접 self-assign) |
 | 신규 / 진행중 / 완료 | **Projects 보드**의 Status |
 
 보드 최초 세팅 방법은 [docs/github-projects-setup.md](docs/github-projects-setup.md) 참고 (1회성).
 
+### 버전 규칙
+
+| 버전 | 언제 | 어디서 만드나 |
+|---|---|---|
+| `1.2.1` (patch) | 급한 수정 | `main` |
+| `1.3.0` (minor) | 새 기능·개선 | `integration` |
+
+**마일스톤 = 앱 버전이다.** 마일스톤 두 개가 동시에 열려 있는 게 정상이고, 이슈를 만들 때 **"지금 나가야 하나"** 만 판단하면 알아서 갈린다.
+
+버전 값은 세 군데를 함께 올린다.
+
+| 위치 | 예시 | 규칙 |
+|---|---|---|
+| `package.json` 의 `version` | `1.2.1` | **단일 소스** |
+| `MARKETING_VERSION` (`ios/App/App.xcodeproj/project.pbxproj`) | `1.2.1` | package.json과 항상 동일 |
+| `CURRENT_PROJECT_VERSION` (같은 파일) | `4` | **버전과 무관하게 심사 제출할 때마다 +1.** 되돌리면 안 됨 |
+
 ### 이슈 작성
 
 - 제목은 커밋 컨벤션과 동일하게: `fix(stats): 손실이 차트에서 0으로 표시됨`
-- 템플릿 2종(기능 / 버그)이 자동으로 뜨고, type 라벨도 자동으로 붙는다.
-- **배포 버전이 정해진 작업은 마일스톤을 지정한다.** 언젠가 해야 하지만 아직 버전을 못 박을 수 없는 것(리스크가 커서 검증 기간이 필요한 리팩터링 등)은 마일스톤을 비워둔다 — 보드의 `백로그` 뷰가 그것만 모아 보여주고, 다음 버전 계획 때 여기서 끌어온다.
-
-#### 라벨 6개
-
-| 라벨 | 용도 |
-|---|---|
-| `feat` `fix` `refactor` `docs` | 작업 종류 (커밋 type과 동일) |
-| `app-update-required` | **iOS 앱 재빌드·심사가 필요한 변경.** 웹 배포만으로 반영되지 않는 것 |
-| `hotfix` | 마일스톤 무시하고 즉시 배포 |
-
-`app-update-required`가 이 저장소에서 가장 중요한 라벨이다. 마일스톤에 이 라벨이 하나라도 있으면 그 릴리스는 앱 심사가 필요한 배포이고, 없으면 웹만 배포하면 끝난다. 릴리스 노트 상단에도 자동으로 표시된다.
+- 템플릿 2종(기능 / 버그)이 자동으로 뜨고, 라벨도 자동으로 붙는다.
+- **라벨은 `feat` `fix` `refactor` `docs` 4개뿐이고, 커밋 type과 같다.** 그 외 정보는 마일스톤이 말해준다.
+- 지금 나갈 게 정해진 작업은 마일스톤을 지정한다. 언젠가 해야 하지만 버전을 못 박을 수 없는 것은 비워둔다 — 보드의 `백로그` 뷰가 모아 보여주고, 다음 버전 계획 때 끌어온다.
 
 ### 한 사이클
 
@@ -58,7 +93,7 @@
   → develop/<이름> 에서 작업
   → integration 으로 PR (본문에 "Closes #42")
   → 머지 → Status: 배포대기
-  → 릴리스: integration → main 머지 후 v1.2.1 태그 push
+  → 릴리스: integration → main 머지 후 v1.3.0 태그 push
   → 이슈 자동 close + 마일스톤 자동 close
 ```
 
@@ -66,17 +101,20 @@
 
 ### 릴리스
 
-1. 마일스톤의 열린 이슈를 정리한다 (남은 건 다음 마일스톤으로 이동).
-2. `integration` → `main` PR 머지.
-3. `package.json`의 `version`을 올리고 태그를 붙여 push한다. **버전 번호의 단일 소스는 `package.json`이고, 마일스톤명·태그명을 여기에 맞춘다.**
+1. 마일스톤의 열린 이슈를 정리한다 (남은 건 다음 마일스톤 또는 백로그로).
+2. `main` 으로 PR 머지 — 기능이면 `integration` 에서, 급한 수정이면 `hotfix/*` 에서.
+3. 버전 3군데를 올려 커밋하고 태그를 push한다.
 
    ```bash
-   git checkout main && git pull && git tag v1.2.1 && git push origin v1.2.1
+   git checkout main && git pull && git tag v1.3.0 && git push origin v1.3.0
    ```
 
-4. `.github/workflows/release.yml`이 릴리스 노트 생성 + 앱 업데이트 필요 여부 표시 + 마일스톤 close를 처리한다.
-5. `app-update-required`가 있었다면 iOS 아카이빙·심사를 진행한다 ([CLAUDE.md의 빌드 함정 섹션](CLAUDE.md) 확인 필수).
-6. 다음 버전 마일스톤을 만든다.
+4. `release.yml` 이 릴리스 노트 생성 + 합치기 누락 검사 + 마일스톤 close를 처리한다.
+5. **급한 수정이었다면 `integration` 에 합친다** (위 [규칙](#규칙은-하나--급한-수정은-main에서-시작하고-끝나면-integration에-합친다) 참고).
+6. iOS 아카이빙·심사 ([CLAUDE.md의 빌드 함정 섹션](CLAUDE.md) 확인 필수).
+7. 다음 마일스톤을 만든다.
+
+> 심사에 며칠 걸린다. 급한 장애일수록 **서버에서 우회할 수 있는지 먼저 검토**하는 게 빠를 때가 많다.
 
 ---
 

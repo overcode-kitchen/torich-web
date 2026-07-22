@@ -24,14 +24,3 @@ body:
         - [ ]
     validations:
       required: true
-
-  - type: checkboxes
-    id: impact
-    attributes:
-      label: 영향 범위
-      description: 하나라도 체크되면 `app-update-required` 라벨을 붙인다. 그 릴리스는 앱 심사가 필요하다.
-      options:
-        - label: iOS 네이티브 코드 · Capacitor 플러그인 · 권한 변경
-        - label: 라우팅 경로 신규 추가/변경 (정적 export 산출물에 영향)
-        - label: Supabase 스키마 변경 (마이그레이션 필요)
-        - label: Edge Function 변경 (별도 배포 필요)
