@@ -90,14 +90,15 @@ git checkout integration && git pull && git merge origin/main && git push origin
 ```
 이슈 생성 (마일스톤 + type 라벨)
   → self-assign, Status: 진행중
-  → develop/<이름> 에서 작업
-  → integration 으로 PR (본문에 "Closes #42")
-  → 머지 → Status: 배포대기
+  → develop/<이름> 에서 작업 — 커밋 메시지에 "Closes #42"
+  → integration 으로 PR → 머지 → Status: 배포대기 (자동)
   → 릴리스: integration → main 머지 후 v1.3.0 태그 push
-  → 이슈 자동 close + 마일스톤 자동 close
+  → 이슈 자동 close → Status: 완료 (자동)
 ```
 
-> `Closes #42`는 **기본 브랜치(`main`)에 머지될 때만** 이슈를 닫는다. `integration` 머지로는 닫히지 않는데, 이게 의도한 동작이다 — integration 머지는 "코드는 들어갔지만 사용자에게는 아직 안 나간" 상태이고, 보드의 `배포대기`가 정확히 그 상태다. 다음 릴리스에 무엇이 나가는지가 이 컬럼에 그대로 보인다.
+> **`Closes #42` 는 커밋 메시지에 쓴다.** 깃헙은 PR의 base가 기본 브랜치(`main`)일 때만 닫기 링크를 만든다. `integration` 대상 PR에서는 본문에 써도 단순 언급으로만 남는다. 커밋 메시지에 쓰면 `main` 머지 때 이슈가 닫히고, 보드 이동도 [board.yml](.github/workflows/board.yml)이 커밋 메시지를 파싱해 처리한다.
+
+> `integration` 머지로 이슈가 닫히지 않는 건 의도한 동작이다 — "코드는 들어갔지만 사용자에게는 아직 안 나간" 상태이고, 보드의 `배포대기`가 정확히 그 상태다. 다음 릴리스에 무엇이 나가는지가 이 컬럼에 그대로 보인다.
 
 ### 릴리스
 
