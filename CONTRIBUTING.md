@@ -21,6 +21,65 @@
 
 ---
 
+## 이슈 · 릴리스 관리
+
+기획/디자인/프론트 경계 없이 2명이 움직이므로, 도구는 **Issue · Milestone · Projects 보드 하나**로 끝낸다.
+
+| 개념 | 도구 |
+|---|---|
+| 배포 버전 (`v1.2.1`) + 배포 예정일 | **Milestone** (due date = 배포일) |
+| 그 버전에 넣을 작업 | 해당 마일스톤에 붙은 **Issue** |
+| 담당자 | Issue Assignee (직접 self-assign) |
+| 신규 / 진행중 / 완료 | **Projects 보드**의 Status |
+
+보드 최초 세팅 방법은 [docs/github-projects-setup.md](docs/github-projects-setup.md) 참고 (1회성).
+
+### 이슈 작성
+
+- 제목은 커밋 컨벤션과 동일하게: `fix(stats): 손실이 차트에서 0으로 표시됨`
+- 템플릿 2종(기능 / 버그)이 자동으로 뜨고, type 라벨도 자동으로 붙는다.
+- **배포 버전이 정해진 작업은 마일스톤을 지정한다.** 언젠가 해야 하지만 아직 버전을 못 박을 수 없는 것(리스크가 커서 검증 기간이 필요한 리팩터링 등)은 마일스톤을 비워둔다 — 보드의 `백로그` 뷰가 그것만 모아 보여주고, 다음 버전 계획 때 여기서 끌어온다.
+
+#### 라벨 6개
+
+| 라벨 | 용도 |
+|---|---|
+| `feat` `fix` `refactor` `docs` | 작업 종류 (커밋 type과 동일) |
+| `app-update-required` | **iOS 앱 재빌드·심사가 필요한 변경.** 웹 배포만으로 반영되지 않는 것 |
+| `hotfix` | 마일스톤 무시하고 즉시 배포 |
+
+`app-update-required`가 이 저장소에서 가장 중요한 라벨이다. 마일스톤에 이 라벨이 하나라도 있으면 그 릴리스는 앱 심사가 필요한 배포이고, 없으면 웹만 배포하면 끝난다. 릴리스 노트 상단에도 자동으로 표시된다.
+
+### 한 사이클
+
+```
+이슈 생성 (마일스톤 + type 라벨)
+  → self-assign, Status: 진행중
+  → develop/<이름> 에서 작업
+  → integration 으로 PR (본문에 "Closes #42")
+  → 머지 → Status: 배포대기
+  → 릴리스: integration → main 머지 후 v1.2.1 태그 push
+  → 이슈 자동 close + 마일스톤 자동 close
+```
+
+> `Closes #42`는 **기본 브랜치(`main`)에 머지될 때만** 이슈를 닫는다. `integration` 머지로는 닫히지 않는데, 이게 의도한 동작이다 — integration 머지는 "코드는 들어갔지만 사용자에게는 아직 안 나간" 상태이고, 보드의 `배포대기`가 정확히 그 상태다. 다음 릴리스에 무엇이 나가는지가 이 컬럼에 그대로 보인다.
+
+### 릴리스
+
+1. 마일스톤의 열린 이슈를 정리한다 (남은 건 다음 마일스톤으로 이동).
+2. `integration` → `main` PR 머지.
+3. `package.json`의 `version`을 올리고 태그를 붙여 push한다. **버전 번호의 단일 소스는 `package.json`이고, 마일스톤명·태그명을 여기에 맞춘다.**
+
+   ```bash
+   git checkout main && git pull && git tag v1.2.1 && git push origin v1.2.1
+   ```
+
+4. `.github/workflows/release.yml`이 릴리스 노트 생성 + 앱 업데이트 필요 여부 표시 + 마일스톤 close를 처리한다.
+5. `app-update-required`가 있었다면 iOS 아카이빙·심사를 진행한다 ([CLAUDE.md의 빌드 함정 섹션](CLAUDE.md) 확인 필수).
+6. 다음 버전 마일스톤을 만든다.
+
+---
+
 ## 마이그레이션 작업 협업 규칙
 
 두 명 이상이 동시에 마이그레이션을 작성하면 적용 순서 충돌이 발생합니다.

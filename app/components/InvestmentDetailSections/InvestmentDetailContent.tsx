@@ -6,7 +6,6 @@ import { InfoSection } from '@/app/components/InvestmentDetailSections/InfoSecti
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
 import { InvestmentDetailActions } from '@/app/components/InvestmentDetailSections/InvestmentDetailActions'
 import { DetailTabs } from '@/app/components/Common/DetailTabs'
-import { formatInvestmentSubtitle } from '@/app/utils/investmentSubtitle'
 
 import { useInvestmentDetailContext } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 import { useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
@@ -15,7 +14,6 @@ import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPic
 
 export function InvestmentDetailContent() {
     const {
-        item,
         isEditMode,
         investmentData,
         ui,
@@ -53,7 +51,6 @@ export function InvestmentDetailContent() {
                         isHabitMode={investmentData.isHabitMode}
                         elapsedMonths={investmentData.elapsedMonths}
                         totalPaidPrincipal={investmentData.totalPaidPrincipal}
-                        contextLine={formatInvestmentSubtitle(item)}
                     />
                 </section>
             )}

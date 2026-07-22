@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useCallback } from 'react'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
 const SWIPE_THRESHOLD = 40
 /** 액션 버튼 1개 폭(px). 노출 폭 = actionCount * 이 값. */
@@ -110,6 +111,10 @@ export function useSwipeToDelete({
     setIsSubmitting(true)
     try {
       await onDelete()
+    } catch {
+      // 삭제 실패 시 낙관적 UI가 롤백되어 항목이 되살아난다.
+      // 토스트가 없으면 "삭제했는데 그대로"로 보여 원인 파악이 어렵다(상세 화면과 동일하게 알린다).
+      toastError(TOAST_MESSAGES.deleteFailed)
     } finally {
       setIsSubmitting(false)
       setIsDeleteModalOpen(false)

@@ -9,6 +9,7 @@ export interface UseInvestmentDataProps {
   retroactivePayments?: PaymentHistoryMap
   onToggleRetroactive?: (recordId: string, yearMonth: string, currentCompleted: boolean) => Promise<void>
   onMarkAllRetroactive?: (recordId: string, yearMonths: string[]) => Promise<void>
+  onToggleAuto?: (recordId: string, yearMonth: string, currentCompleted: boolean) => Promise<void>
 }
 
 export interface UseInvestmentDataReturn {
@@ -57,4 +58,6 @@ export interface UseInvestmentDataReturn {
   onToggleRetroactive?: (yearMonth: string, currentCompleted: boolean) => void
   // 소급 일괄 완료 처리 (미기록 월 모두)
   onMarkAllRetroactive?: (yearMonths: string[]) => Promise<void>
+  // 자동 기록 한 줄(그 달 회차 전체) 토글 → 상세에서 완료 되돌리기
+  onToggleAuto?: (yearMonth: string, currentCompleted: boolean) => void
 }

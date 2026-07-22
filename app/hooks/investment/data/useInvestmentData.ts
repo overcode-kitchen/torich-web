@@ -14,6 +14,7 @@ export function useInvestmentData({
   retroactivePayments,
   onToggleRetroactive,
   onMarkAllRetroactive,
+  onToggleAuto,
 }: UseInvestmentDataProps): UseInvestmentDataReturn {
   // 알림 훅
   const { notificationOn, toggleNotification } = useNotificationToggle(item.id)
@@ -63,6 +64,11 @@ export function useInvestmentData({
     ? (yearMonths: string[]) => onMarkAllRetroactive(item.id, yearMonths)
     : undefined
 
+  const handleToggleAuto = onToggleAuto
+    ? (yearMonth: string, currentCompleted: boolean) =>
+        onToggleAuto(item.id, yearMonth, currentCompleted)
+    : undefined
+
   return {
     notificationOn,
     toggleNotification,
@@ -74,5 +80,6 @@ export function useInvestmentData({
     loadMore,
     onToggleRetroactive: handleToggleRetroactive,
     onMarkAllRetroactive: handleMarkAllRetroactive,
+    onToggleAuto: handleToggleAuto,
   }
 }

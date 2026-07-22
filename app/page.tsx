@@ -5,7 +5,6 @@ import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
-import { useRateUpdate } from '@/app/hooks/stock/useRateUpdate'
 import { useAutoSettleMaturedRecords } from '@/app/hooks/investment/useAutoSettleMaturedRecords'
 import { useInvestmentFilter } from '@/app/hooks/investment/filter/useInvestmentFilter'
 import { useHomePageUI } from '@/app/hooks/ui/useHomePageUI'
@@ -16,7 +15,6 @@ export default function Home() {
   const supabase = createClient()
   const { records, isLoading: dataLoading, refetch } = useInvestmentsContext()
   const userId = user?.id
-  const { isUpdating: isUpdatingRates, checkAndUpdate } = useRateUpdate(userId)
   const { totalMonthlyPayment } = useInvestmentFilter(records)
 
   // 만기 도달 + 미정산 예적금을 자동 정산하고 비차단 토스트로 안내한다.
@@ -75,12 +73,11 @@ export default function Home() {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [refetch])
 
-  const { isBrandStoryOpen, setIsBrandStoryOpen, showBrandStoryCard, pendingBrandStoryUndo, dismissBrandStoryCard, undoBrandStoryDismiss } = useHomePageUI({ userId: user?.id, records, checkAndUpdate, refetch })
+  const { isBrandStoryOpen, setIsBrandStoryOpen, showBrandStoryCard, pendingBrandStoryUndo, dismissBrandStoryCard, undoBrandStoryDismiss } = useHomePageUI()
 
   return (
     <HomeView
       isLoading={authLoading || dataLoading}
-      isUpdatingRates={isUpdatingRates}
       user={user}
       records={records}
       totalMonthlyPayment={totalMonthlyPayment}
@@ -88,7 +85,6 @@ export default function Home() {
       onToggleMonthlyAmount={toggleMonthlyAmount}
       onRefresh={async () => {
         await refetch()
-        if (userId) await checkAndUpdate()
       }}
       isBrandStoryOpen={isBrandStoryOpen}
       setIsBrandStoryOpen={setIsBrandStoryOpen}

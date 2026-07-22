@@ -11,7 +11,6 @@ import type { User } from '@supabase/supabase-js'
 
 interface HomeViewProps {
     isLoading: boolean
-    isUpdatingRates: boolean
     user: User | null
 
     // Data
@@ -36,7 +35,6 @@ interface HomeViewProps {
 
 export default function HomeView({
     isLoading,
-    isUpdatingRates,
     user,
     records,
     totalMonthlyPayment,
@@ -53,7 +51,7 @@ export default function HomeView({
     const isNativeApp = useIsNativeApp()
     const { pullDistance, isRefreshing, threshold } = usePullToRefresh({
         onRefresh,
-        disabled: isLoading || isUpdatingRates || !user,
+        disabled: isLoading || !user,
     })
     const indicatorTopOffset = isNativeApp
         ? 'calc(max(env(safe-area-inset-top, 0px), 44px) + 48px)'
@@ -67,15 +65,6 @@ export default function HomeView({
         return (
             <main className="min-h-screen bg-surface flex items-center justify-center">
                 <CircleNotch className="w-8 h-8 animate-spin text-brand-600" />
-            </main>
-        )
-    }
-
-    if (isUpdatingRates && hasNoRecords) {
-        return (
-            <main className="min-h-screen bg-surface flex flex-col items-center justify-center gap-4">
-                <CircleNotch className="w-10 h-10 animate-spin text-brand-600" />
-                <p className="text-foreground-muted text-sm">최신 데이터 반영 중...</p>
             </main>
         )
     }

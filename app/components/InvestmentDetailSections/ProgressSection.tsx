@@ -12,8 +12,6 @@ interface ProgressSectionProps {
   isHabitMode?: boolean
   elapsedMonths?: number
   totalPaidPrincipal?: number
-  /** 금액 히어로 아래 보조 줄 (예: "현재 10만원씩 투자 중"). 이름 블록을 앱바로 올린 뒤 맥락 유지용. */
-  contextLine?: string | null
 }
 
 export function ProgressSection({
@@ -24,7 +22,6 @@ export function ProgressSection({
   isHabitMode = false,
   elapsedMonths = 0,
   totalPaidPrincipal = 0,
-  contextLine,
 }: ProgressSectionProps) {
   if (startDate === undefined) return null
 
@@ -37,7 +34,6 @@ export function ProgressSection({
       <DetailHero
         label="총 납입액"
         amount={formatCurrency(totalPaidPrincipal)}
-        context={contextLine}
         sub={`🔥 ${elapsedText} · ${formatYearMonth(startDate)}부터`}
       />
     )
@@ -52,7 +48,6 @@ export function ProgressSection({
     <DetailHero
       label="총 납입액"
       amount={formatCurrency(totalPaidPrincipal)}
-      context={contextLine}
       progress={{
         percent: progress,
         completed,
