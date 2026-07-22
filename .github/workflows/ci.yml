@@ -1,0 +1,53 @@
+name: CI
+
+# 2인 팀이라 사람 리뷰가 느슨해지기 쉽다. 최소한 "깨진 채로 integration에 들어가는 것"은 막는다.
+# next build는 NEXT_PUBLIC_SUPABASE_* 등 빌드 시점 환경변수를 요구하므로 여기서 돌리지 않는다.
+# (전체 빌드 검증이 필요해지면 GitHub Secrets 등록 후 job을 추가한다.)
+on:
+  pull_request:
+    branches: [integration, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: 타입 체크
+        run: pnpm exec tsc --noEmit
+
+      # 기존 코드에 린트 에러가 남아 있어(2026-07 기준 39건) 전체 린트를 걸면
+      # 첫 PR부터 빨간불이 되어 CI를 아무도 안 보게 된다.
+      # 그래서 "이번 PR이 건드린 파일"만 검사한다 — 새로 들어오는 코드는 깨끗하게,
+      # 기존 부채는 그 파일을 손댈 때 자연스럽게 갚는 방식.
+      - name: 린트 (변경된 파일만)
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "+refs/heads/${BASE}:refs/remotes/origin/${BASE}"
+          files=$(git diff --name-only --diff-filter=ACMR "origin/${BASE}...HEAD" -- '*.ts' '*.tsx')
+          if [ -z "$files" ]; then
+            echo "린트 대상 변경 파일 없음"
+            exit 0
+          fi
+          echo "$files"
+          # shellcheck disable=SC2086
+          pnpm exec eslint $files

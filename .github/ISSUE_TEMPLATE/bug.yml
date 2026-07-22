@@ -1,0 +1,51 @@
+name: 버그
+description: 의도와 다르게 동작하는 것
+title: "fix(scope): "
+labels: ["fix"]
+body:
+  - type: dropdown
+    id: env
+    attributes:
+      label: 발생 환경
+      description: iOS 앱에서만 나면 수정 반영에 앱 업데이트가 필요하다.
+      options:
+        - 웹 (브라우저)
+        - iOS 앱
+        - 둘 다
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 앱 버전 / 기기
+      description: iOS 앱에서 발생한 경우만. 설정 화면 하단에서 확인.
+      placeholder: "1.2.0 / iPhone 15 Pro, iOS 18.5"
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: 재현 방법
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대한 동작 / 실제 동작
+      placeholder: |
+        기대: 손실이 음수 영역에 표시된다
+        실제: 0으로 표시된다
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: severity
+    attributes:
+      label: 심각도
+      options:
+        - label: 운영 중인 사용자 데이터가 잘못 저장/표시된다 → `hotfix` 라벨을 붙이고 마일스톤 없이 즉시 처리

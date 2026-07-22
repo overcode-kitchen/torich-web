@@ -1,0 +1,75 @@
+name: Release
+
+# main에 v1.2.1 형태의 태그를 push하면 실행된다.
+#   1) 머지된 PR 목록으로 릴리스 노트 자동 생성
+#   2) 같은 이름의 마일스톤에서 app-update-required 이슈를 뽑아 상단에 고정
+#      → 이 릴리스가 앱 심사가 필요한 배포인지 릴리스 페이지에서 바로 보인다
+#   3) 마일스톤 close
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 릴리스 생성
+        run: gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag
+
+      - name: 앱 업데이트 필요 여부를 노트 상단에 고정
+        run: |
+          set -euo pipefail
+
+          apps=$(gh issue list --repo "$GITHUB_REPOSITORY" \
+            --milestone "$TAG" --label app-update-required --state all --limit 100 \
+            --json number,title --jq '.[] | "- #\(.number) \(.title)"' || true)
+
+          {
+            if [ -n "$apps" ]; then
+              echo "## ⚠️ 앱 업데이트 필요"
+              echo
+              echo "이 릴리스는 iOS 앱 재빌드·심사가 필요하다. 웹만 배포하면 아래 항목은 반영되지 않는다."
+              echo
+              echo "$apps"
+            else
+              echo "## ✅ 웹 배포만으로 반영"
+              echo
+              echo "앱 재빌드 불필요. 구버전 앱에서도 안전하다."
+            fi
+            echo
+            echo "---"
+            echo
+            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body
+          } > notes.md
+
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file notes.md
+
+      - name: 마일스톤 close
+        run: |
+          set -euo pipefail
+          number=$(gh api "repos/$GITHUB_REPOSITORY/milestones?state=open&per_page=100" \
+            --jq "map(select(.title == \"$TAG\")) | .[0].number // empty")
+
+          if [ -z "$number" ]; then
+            echo "::notice::$TAG 이름의 열린 마일스톤이 없어 건너뛴다."
+            exit 0
+          fi
+
+          open=$(gh api "repos/$GITHUB_REPOSITORY/milestones/$number" --jq .open_issues)
+          if [ "$open" -gt 0 ]; then
+            echo "::warning::마일스톤 $TAG 에 열린 이슈가 $open 개 남아 있다. 다음 마일스톤으로 옮길 것."
+          fi
+
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/milestones/$number" -f state=closed --silent
+          echo "마일스톤 $TAG close 완료"
