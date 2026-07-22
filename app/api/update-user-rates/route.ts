@@ -110,19 +110,33 @@ function calculateFinalAmount(monthlyAmount: number, periodYears: number, annual
   return Math.round(finalAmount)
 }
 
-// Supabase에서 종목 심볼 조회 (title로 검색)
-async function getSymbolFromTitle(supabase: SupabaseClient, title: string): Promise<string | null> {
-  const { data, error } = await supabase
-    .from('stocks')
-    .select('symbol')
-    .eq('name', title)
-    .single()
+// 갱신 대상 레코드 (select 컬럼과 짝을 이룬다)
+interface NeedsUpdateRecord {
+  id: string
+  title: string
+  symbol: string | null
+  monthly_amount: number
+  period_years: number | null
+}
 
-  if (error || !data) {
-    return null
-  }
-
-  return data.symbol
+// 갱신 대상 레코드 쿼리 — GET(체크)과 POST(실행)가 반드시 같은 조건을 보게 한 곳에 모은다.
+// 두 곳에 복붙돼 있던 시절, 조건이 어긋나면 "체크는 갱신 필요라는데 실행은 0건 처리"가 되어
+// 홈 진입마다 전체 갱신이 무한 재시도됐다.
+// symbol이 없는 레코드(예적금·현금)는 애초에 시세 조회 대상이 아니므로 제외한다.
+function selectNeedsUpdateRecords(
+  supabase: SupabaseClient,
+  userId: string,
+  columns: string,
+  lastMonthEndISO: string,
+  options?: { count: 'exact' }
+) {
+  return supabase
+    .from('records')
+    .select(columns, options)
+    .eq('user_id', userId)
+    .eq('is_custom_rate', false)
+    .not('symbol', 'is', null)
+    .or(`rate_updated_at.is.null,rate_updated_at.lt.${lastMonthEndISO}`)
 }
 
 // 지난달 말일 계산 (KST 기준) - ISO 형식 문자열로 반환
@@ -151,21 +165,20 @@ export async function POST(request: Request) {
 
     const lastMonthEndISO = getLastMonthEndISO()
 
-    // 1. 갱신이 필요한 레코드만 조회 (레코드 레벨에서 체크)
-    // - is_custom_rate가 false이고
-    // - rate_updated_at이 null이거나, rate_updated_at < 지난달 말일
-    const { data: records, error: fetchError } = await supabase
-      .from('records')
-      .select('id, title, symbol, monthly_amount, period_years')
-      .eq('user_id', userId)
-      .eq('is_custom_rate', false)
-      .or(`rate_updated_at.is.null,rate_updated_at.lt.${lastMonthEndISO}`)
+    // 1. 갱신이 필요한 레코드만 조회 (조건은 selectNeedsUpdateRecords 단일 출처)
+    const { data, error: fetchError } = await selectNeedsUpdateRecords(
+      supabase,
+      userId,
+      'id, title, symbol, monthly_amount, period_years',
+      lastMonthEndISO
+    )
+    const records = (data ?? []) as unknown as NeedsUpdateRecord[]
 
     if (fetchError) {
       throw new Error(`레코드 조회 실패: ${fetchError.message}`)
     }
 
-    if (!records || records.length === 0) {
+    if (records.length === 0) {
       return NextResponse.json({
         success: true,
         updated: false,
@@ -177,16 +190,18 @@ export async function POST(request: Request) {
 
     console.log(`[Update Rates] 사용자 ${userId} | 갱신 필요 레코드: ${records.length}개`)
 
-    // 4. 종목별로 중복 제거 (symbol 우선, 없으면 title 기준)
-    const stockMap = new Map<string, { title: string; symbol: string | null; recordIds: string[] }>()
+    // 4. 종목(symbol) 단위로 중복 제거 — 같은 종목을 여러 번 조회하지 않기 위해
+    const stockMap = new Map<string, { title: string; symbol: string; recordIds: string[] }>()
     for (const record of records) {
-      const key = record.symbol || record.title
+      // 조회 조건에 symbol not null이 걸려 있어 여기서 심볼은 항상 존재한다.
+      const key = record.symbol
+      if (!key) continue
       if (stockMap.has(key)) {
         stockMap.get(key)!.recordIds.push(record.id)
       } else {
         stockMap.set(key, {
           title: record.title,
-          symbol: record.symbol,
+          symbol: key,
           recordIds: [record.id]
         })
       }
@@ -200,24 +215,21 @@ export async function POST(request: Request) {
     const updateResults: { title: string; newRate: number | null }[] = []
 
     for (const stock of uniqueStocks) {
-      // 심볼 획득 (저장된 symbol 우선, 없으면 title로 검색)
-      let symbol = stock.symbol
-      if (!symbol) {
-        symbol = await getSymbolFromTitle(supabase, stock.title)
-      }
-
-      if (!symbol) {
-        console.log(`[Update Rates] ${stock.title} | 심볼 조회 실패, 건너뜀`)
-        updateResults.push({ title: stock.title, newRate: null })
-        continue
-      }
+      const symbol = stock.symbol
 
       // CAGR 계산
       const newRate = await calculateCAGR(symbol)
       updateResults.push({ title: stock.title, newRate })
 
       if (newRate === null) {
-        console.log(`[Update Rates] ${stock.title} (${symbol}) | CAGR 계산 실패`)
+        // 상장폐지·오타 심볼처럼 이번 달 안에 저절로 풀리지 않는 실패다.
+        // 수익률은 건드리지 않되 갱신 시각만 찍어, 홈 진입마다 같은 종목으로
+        // Yahoo를 다시 때리는 무한 재시도를 끊는다. 다음 달에 다시 시도된다.
+        console.log(`[Update Rates] ${stock.title} (${symbol}) | CAGR 계산 실패, 이번 달 재시도 중단`)
+        await supabase
+          .from('records')
+          .update({ rate_updated_at: new Date().toISOString() })
+          .in('id', stock.recordIds)
         continue
       }
 
@@ -287,13 +299,14 @@ export async function GET(request: Request) {
 
     const lastMonthEndISO = getLastMonthEndISO()
 
-    // 갱신이 필요한 레코드가 있는지 확인
-    const { data: needsUpdateRecords, count, error } = await supabase
-      .from('records')
-      .select('id, title, is_custom_rate, rate_updated_at', { count: 'exact' })
-      .eq('user_id', userId)
-      .eq('is_custom_rate', false)
-      .or(`rate_updated_at.is.null,rate_updated_at.lt.${lastMonthEndISO}`)
+    // 갱신이 필요한 레코드가 있는지 확인 (조건은 POST와 동일한 단일 출처)
+    const { data: needsUpdateRecords, count, error } = await selectNeedsUpdateRecords(
+      supabase,
+      userId,
+      'id, title, symbol, rate_updated_at',
+      lastMonthEndISO,
+      { count: 'exact' }
+    )
 
     console.log(`[Update Rates Check] 갱신 필요 레코드:`, needsUpdateRecords)
 
