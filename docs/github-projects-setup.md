@@ -26,17 +26,36 @@ Organization 레벨에 만든다. 저장소 레벨 프로젝트는 나중에 저
 
 `배포대기`가 이 팀에 꼭 필요한 컬럼이다. 다음 릴리스에 무엇이 나가는지가 이 컬럼 그대로다.
 
-## 3. 자동화 토글 3개
+## 3. 자동화 토글
 
-보드 우측 상단 `···` → **Workflows**. 아래 3개만 켜고 나머지는 끈 채로 둔다.
+보드 우측 상단 `···` → **Workflows**. 아래 2개만 켜고 나머지는 끈다.
 
 | Workflow | 설정 |
 |---|---|
 | **Item added to project** | Status → `신규` |
-| **Pull request merged** | Status → `배포대기` |
-| **Issue closed** | Status → `완료` |
+| **Item closed** | Status → `완료` |
 
-여기에 GitHub Actions를 쓰지 말 것. 내장 워크플로로 충분하고, Actions로 하면 토큰 권한 관리가 따라붙는다.
+> 🚫 **`Pull request merged`는 켜지 말 것.** 이 내장 워크플로는 **보드에 올라온 PR 카드**의 상태를 바꾼다. 우리 보드는 이슈만 올리므로(PR까지 올리면 2인 팀에 카드가 두 배가 된다) 발동할 대상이 없다. 켜두면 "동작하고 있다"고 착각하게 된다.
+
+`진행중` → `배포대기` 이동은 [.github/workflows/board.yml](../.github/workflows/board.yml)이 처리한다. "연결된 이슈를 옮기는" 내장 워크플로가 없어서 직접 만들었다. 아래 토큰 설정이 필요하다.
+
+### `PROJECT_TOKEN` 시크릿 (board.yml 동작에 필수)
+
+`GITHUB_TOKEN`은 **조직 Projects에 쓸 수 없다.** 별도 PAT가 필요하다.
+
+1. <https://github.com/settings/personal-access-tokens/new> → **Fine-grained token**
+   - Resource owner: **overcode-kitchen** (개인 계정이 아니다)
+   - Expiration: 1년
+   - **Organization permissions** → **Projects: Read and write**
+   - Repository permissions는 건드리지 않아도 된다
+2. 조직 승인이 필요하다는 안내가 뜨면 Owner가 승인한다
+3. <https://github.com/overcode-kitchen/torich-web/settings/secrets/actions> → **New repository secret**
+   - Name: `PROJECT_TOKEN`
+   - Secret: 발급받은 토큰
+
+토큰이 없어도 CI는 실패하지 않는다. 경고만 남기고 넘어가므로, 만료됐을 때 배포가 막히지는 않는다 (대신 카드가 안 움직인다).
+
+> ⚠️ **`Closes #N`은 커밋 메시지에 쓴다.** 깃헙은 PR의 base가 기본 브랜치(`main`)일 때만 닫기 링크를 만든다. `integration` 대상 PR에서 `Closes #N`은 단순 언급으로만 남아 링크가 생기지 않는다. `board.yml`은 그래서 제목·본문·커밋 메시지를 직접 파싱하고, `main` 머지 시 이슈가 닫히는 것도 **커밋 메시지**가 담당한다.
 
 ## 4. 이슈 자동 등록
 
@@ -66,7 +85,11 @@ Organization 레벨에 만든다. 저장소 레벨 프로젝트는 나중에 저
 
 - ☑️ **Allow squash merging** — 개인 브랜치 → `integration` 용. 중간 커밋을 남기지 않는다
 - ☑️ **Allow merge commits** — `integration` → `main`, `hotfix/*` → `main` 용
-- ☑️ **Automatically delete head branches**
+- ☐ **Automatically delete head branches** — **꺼 둔다**
+
+> 🚫 **auto-delete를 켜면 안 된다.** 이 저장소의 브랜치는 대부분 **장기 브랜치**다. `develop/<이름>` 은 이슈마다 새로 파는 게 아니라 계속 쓰고, `integration` 도 마찬가지다. 그런데 auto-delete는 머지된 PR의 head를 예외 없이 지운다. 즉 `develop/suni` 를 머지하면 그 브랜치가 사라지고, `integration` → `main` 을 머지하면 **`integration` 자체가 사라진다.** (실제로 한 번 겪었고 `main` 기준으로 복구했다.)
+>
+> 대신 `hotfix/*` 처럼 진짜 일회용 브랜치만 머지 후 손으로 지운다. 브랜치가 4~5개뿐이라 이 편이 관리가 쉽다.
 
 > ⚠️ **Squash만 허용하면 안 된다.** `integration` → `main` 을 squash로 머지하면 `main` 에 원본과 다른 새 커밋 하나가 생겨 두 브랜치가 영구히 갈라진다. 다음 릴리스마다 back-merge 충돌이 나고, `release.yml` 의 누락 검사도 계속 걸린다. **브랜치 간 머지(`integration`·`hotfix` → `main`)는 반드시 merge commit으로 한다.**
 
