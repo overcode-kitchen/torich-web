@@ -46,7 +46,7 @@ Organization 레벨에 만든다. 저장소 레벨 프로젝트는 나중에 저
 
 ## 5. 뷰 2개
 
-- **기본 뷰(Board)**: `Group by: Status`, `Filter: milestone:v1.2.1` — 이번 배포에 집중
+- **기본 뷰(Board)**: `Group by: Status`, `Filter: milestone:"<지금 준비 중인 버전>"` — 이번 배포에 집중. 릴리스할 때마다 이 필터의 버전만 바꾼다
 - **두 번째 뷰(Table)**: `Filter: -milestone:*` 로 이름 `백로그` — 마일스톤 없는 것만. 여기 쌓인 걸 다음 버전 계획 때 끌어온다
 
 ---
@@ -55,7 +55,7 @@ Organization 레벨에 만든다. 저장소 레벨 프로젝트는 나중에 저
 
 - 라벨 4개: `feat` `fix` `refactor` `docs` (커밋 type과 동일)
 - 이슈 템플릿: `.github/ISSUE_TEMPLATE/feature.yml`, `bug.yml`
-- 마일스톤 `v1.2.1`(핫픽스 트랙) · `v1.3.0`(기능 트랙) — **due date는 배포 예정일로 직접 설정할 것** ([milestones](https://github.com/overcode-kitchen/torich-web/milestones))
+- 마일스톤 `v1.3.0` — **due date는 배포 예정일로 직접 설정할 것** ([milestones](https://github.com/overcode-kitchen/torich-web/milestones)). patch 마일스톤(`v1.2.1` 등)은 급한 수정이 실제로 생겼을 때 만든다
 - `.github/workflows/ci.yml` — PR 시 타입 체크 + 린트
 - `.github/workflows/release.yml` — `v*` 태그 push 시 릴리스 노트 생성 + back-merge 검사 + 마일스톤 close
 - `.github/release.yml` — 릴리스 노트 라벨별 분류 규칙
