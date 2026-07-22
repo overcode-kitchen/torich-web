@@ -1,9 +1,13 @@
 'use client'
 
 import Image from 'next/image'
+import { useState } from 'react'
 import { Archive } from '@phosphor-icons/react'
 import { GoalGroupItemRow } from './GoalGroupItemRow'
 import { AddRecordDrawer } from './AddRecordDrawer'
+import GoalActionSheet from './GoalActionSheet'
+import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
+import { useLongPress } from '@/app/hooks/ui/useLongPress'
 import { resolvePurposeIcon } from '@/app/constants/goal'
 import { dDayLabel } from '@/app/utils/goal-format'
 import { nextSettlementDDay, type GoalStatus } from '@/app/utils/goal-status'
@@ -32,6 +36,12 @@ export interface GoalGroupCardProps {
   onAddRecord?: (goalId: string) => void
   /** 완료 목적을 보관함으로 옮긴다. 전달되고 status가 'completed'일 때만 보관 배너 노출. */
   onArchive?: (goalId: string) => void
+  /** 헤더 롱프레스 → 액션 시트 "수정하기". 목적 수정 페이지로 이동. */
+  onEditGoal?: (goalId: string) => void
+  /** 헤더 롱프레스 → 액션 시트 "삭제하기" 확인 후 영구 삭제. */
+  onDeleteGoal?: (goalId: string) => Promise<void>
+  /** 삭제 진행 중 여부(확인 모달 버튼 로딩 표시용). */
+  isDeleting?: boolean
   /** 파생 상태. 'pending_settlement'일 때 헤더에 "정산 대기" 배지 노출. */
   status?: GoalStatus
   /** 최상단 카드 등에서 손잡이에 관심 유도 넛지(띠용띠용)를 켠다. */
@@ -58,6 +68,9 @@ export function GoalGroupCard({
   onSelectGoal,
   onAddRecord,
   onArchive,
+  onEditGoal,
+  onDeleteGoal,
+  isDeleting = false,
   status,
   nudge = false,
 }: GoalGroupCardProps) {
@@ -72,6 +85,25 @@ export function GoalGroupCard({
   const settlementLabel = isPendingSettlement
     ? dDayLabel(nextSettlementDDay(records, new Date()))
     : ''
+
+  // 헤더 롱프레스 → 수정/보관/삭제 액션 시트. 관리 콜백이 하나라도 있을 때만 켠다.
+  const canManage = !!goal && (!!onEditGoal || !!onArchive || !!onDeleteGoal)
+  const [menuOpen, setMenuOpen] = useState<boolean>(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false)
+
+  const longPress = useLongPress({
+    onLongPress: () => setMenuOpen(true),
+    onClick: () => {
+      if (goal && onSelectGoal) onSelectGoal(goal.id)
+    },
+    enabled: canManage,
+  })
+
+  async function handleConfirmDelete(): Promise<void> {
+    if (!goal || !onDeleteGoal) return
+    await onDeleteGoal(goal.id)
+    setDeleteModalOpen(false)
+  }
 
   const HeaderInner = (
     <>
@@ -119,12 +151,20 @@ export function GoalGroupCard({
     <div className="relative">
       <section className="relative z-10 overflow-hidden rounded-3xl bg-card">
         <div className="p-6 pb-4">
-          {goal && onSelectGoal ? (
+          {goal && (onSelectGoal || canManage) ? (
             <button
               type="button"
-              onClick={() => onSelectGoal(goal.id)}
-              className="mb-2 flex w-full items-center gap-1 text-left"
-              aria-label={`${name} 목적 상세 보기`}
+              className={`mb-2 flex w-full items-center gap-1 text-left${
+                canManage ? ' select-none [-webkit-touch-callout:none]' : ''
+              }`}
+              aria-label={
+                canManage
+                  ? `${name} 목적 상세 보기 (길게 눌러 수정·삭제)`
+                  : `${name} 목적 상세 보기`
+              }
+              {...(canManage
+                ? longPress
+                : { onClick: () => onSelectGoal?.(goal.id) })}
             >
               {HeaderInner}
             </button>
@@ -179,6 +219,45 @@ export function GoalGroupCard({
           onAddRecord={onAddRecord}
           nudge={nudge}
         />
+      )}
+
+      {goal && canManage && (
+        <>
+          <GoalActionSheet
+            isOpen={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            goalName={name}
+            onEdit={() => {
+              setMenuOpen(false)
+              onEditGoal?.(goal.id)
+            }}
+            onArchive={
+              // 보관은 완료(기간 종료 포함)된 목적만. 하단 보관 버튼과 동일 조건.
+              onArchive && isCompletedGoal
+                ? () => {
+                    setMenuOpen(false)
+                    onArchive(goal.id)
+                  }
+                : undefined
+            }
+            onDelete={() => {
+              setMenuOpen(false)
+              setDeleteModalOpen(true)
+            }}
+          />
+          <DeleteConfirmModal
+            isOpen={deleteModalOpen}
+            onClose={() => {
+              if (!isDeleting) setDeleteModalOpen(false)
+            }}
+            onConfirm={handleConfirmDelete}
+            isDeleting={isDeleting}
+            title="목적을 삭제할까요?"
+            description="목적이 영구 삭제됩니다. 연결된 적립 항목은 삭제되지 않고 '목적 미지정'으로 남아요."
+            confirmLabel="삭제"
+            confirmingLabel="삭제 중..."
+          />
+        </>
       )}
     </div>
   )

@@ -8,8 +8,10 @@ import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSec
 import EmptyState from '@/app/components/DashboardSections/EmptyState'
 import { useGoalGroups } from '@/app/hooks/goal/data/useGoalGroups'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
+import { useGoalDelete } from '@/app/hooks/goal/data/useGoalDelete'
 import { useMonthlyPaymentStatus } from '@/app/hooks/payment/useMonthlyPaymentStatus'
 import { track } from '@/app/lib/analytics'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import type { Investment } from '@/app/types/investment'
 
 export interface GoalGroupSectionProps {
@@ -31,11 +33,25 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
   const { getStatus, isPostponed, toggle, togglePostpone, pendingUndo, handleUndo } =
     useMonthlyPaymentStatus()
   const { archiveGoal } = useGoalUpdate(userId)
+  const { deleteGoal, isDeleting } = useGoalDelete(userId)
 
   async function handleArchive(goalId: string): Promise<void> {
     await archiveGoal(goalId)
     track('goal_archive', { entry_point: 'home_card' })
     await refetch()
+  }
+
+  async function handleDelete(goalId: string): Promise<void> {
+    try {
+      await deleteGoal(goalId)
+      track('goal_delete', { entry_point: 'home_card' })
+      await refetch()
+    } catch {
+      // 실패 시 카드는 그대로 남는다. 원인을 알 수 있게 토스트로 알리고,
+      // re-throw해 확인 모달이 닫히지 않게 한다(사용자가 다시 시도 가능).
+      toastError(TOAST_MESSAGES.deleteFailed)
+      throw new Error('goal delete failed')
+    }
   }
 
   if (isLoading) return null
@@ -62,6 +78,9 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           onSelectGoal={(id) => router.push(`/goal/detail?id=${id}`)}
           onAddRecord={(id) => router.push(`/add?goalId=${id}`)}
           onArchive={(id) => void handleArchive(id)}
+          onEditGoal={(id) => router.push(`/goal/detail/edit?id=${id}`)}
+          onDeleteGoal={handleDelete}
+          isDeleting={isDeleting}
           nudge={groups.length > 1 && index === 0}
         />
       ))}
