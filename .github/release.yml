@@ -2,10 +2,6 @@
 # PR에 라벨이 없으면 "기타"로 들어간다.
 changelog:
   categories:
-    - title: ⚠️ 앱 업데이트 필요
-      labels: [app-update-required]
-    - title: 🚑 핫픽스
-      labels: [hotfix]
     - title: ✨ 기능
       labels: [feat]
     - title: 🐛 버그 수정

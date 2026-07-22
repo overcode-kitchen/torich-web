@@ -1,10 +1,13 @@
 name: Release
 
-# main에 v1.2.1 형태의 태그를 push하면 실행된다.
+# main에 v1.2.1 / v1.3.0 형태의 태그를 push하면 실행된다.
 #   1) 머지된 PR 목록으로 릴리스 노트 자동 생성
-#   2) 같은 이름의 마일스톤에서 app-update-required 이슈를 뽑아 상단에 고정
-#      → 이 릴리스가 앱 심사가 필요한 배포인지 릴리스 페이지에서 바로 보인다
+#   2) main → integration 합치기(back-merge) 누락을 검사해, 빠졌으면 이슈를 자동 생성
 #   3) 마일스톤 close
+#
+# 2번이 이 워크플로의 핵심이다. 핫픽스는 main에서 분기하므로, integration으로
+# 합치지 않으면 다음 릴리스에서 그 버그가 그대로 부활한다.
+# 사람이 기억할 일이 아니라서 자동으로 검사한다.
 on:
   push:
     tags: ['v*']
@@ -27,33 +30,54 @@ jobs:
       - name: 릴리스 생성
         run: gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag
 
-      - name: 앱 업데이트 필요 여부를 노트 상단에 고정
+      - name: main → integration 합치기 누락 검사
         run: |
           set -euo pipefail
 
-          apps=$(gh issue list --repo "$GITHUB_REPOSITORY" \
-            --milestone "$TAG" --label app-update-required --state all --limit 100 \
-            --json number,title --jq '.[] | "- #\(.number) \(.title)"' || true)
+          git fetch --no-tags origin +refs/heads/integration:refs/remotes/origin/integration
+
+          # `git log integration..TAG` 를 쓰면 안 된다. integration → main 머지로 생긴
+          # 머지 커밋은 integration에 존재할 수 없어서 매 릴리스마다 거짓 경고가 뜬다.
+          # git cherry는 머지 커밋을 제외하고, 체리픽되어 SHA만 다른 커밋도
+          # 동일 패치로 인식해 '-' 로 표시한다. 진짜 누락인 '+' 만 본다.
+          missing=$(git cherry -v origin/integration "$TAG" | grep '^+' | cut -c3- | head -50 || true)
+
+          if [ -z "$missing" ]; then
+            echo "정상. integration이 $TAG 를 모두 포함한다."
+            exit 0
+          fi
+
+          count=$(echo "$missing" | wc -l | tr -d ' ')
+          echo "::warning::$TAG 의 커밋 $count 개가 integration에 없다."
+
+          title="chore(release): $TAG 를 integration에 합쳐야 함"
+          # 같은 제목의 이슈가 이미 있으면 중복 생성하지 않는다.
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            echo "이미 이슈 #$existing 로 등록되어 있다."
+            exit 0
+          fi
 
           {
-            if [ -n "$apps" ]; then
-              echo "## ⚠️ 앱 업데이트 필요"
-              echo
-              echo "이 릴리스는 iOS 앱 재빌드·심사가 필요하다. 웹만 배포하면 아래 항목은 반영되지 않는다."
-              echo
-              echo "$apps"
-            else
-              echo "## ✅ 웹 배포만으로 반영"
-              echo
-              echo "앱 재빌드 불필요. 구버전 앱에서도 안전하다."
-            fi
+            echo "\`$TAG\` 로 배포된 커밋 $count 개가 \`integration\` 에 없다."
             echo
-            echo "---"
+            echo "이대로 두면 **다음 배포에서 이 수정이 사라진다.** 사용자에게는 고쳤다던 버그가 재발하는 것으로 보인다."
             echo
-            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body
-          } > notes.md
+            echo '```bash'
+            echo "git checkout integration && git pull && git merge origin/main && git push origin integration"
+            echo '```'
+            echo
+            echo "### 누락 커밋"
+            echo
+            echo '```'
+            echo "$missing"
+            echo '```'
+            echo
+            echo "충돌이 나면 integration 쪽 최신 코드를 살리되, 이 수정이 고친 동작이 남아 있는지 확인한다."
+          } > body.md
 
-          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file notes.md
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file body.md --label fix
 
       - name: 마일스톤 close
         run: |
