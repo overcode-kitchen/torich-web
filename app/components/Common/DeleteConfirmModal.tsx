@@ -1,5 +1,7 @@
 'use client'
 
+import { createPortal } from 'react-dom'
+
 interface DeleteConfirmModalProps {
   isOpen: boolean
   onClose: () => void
@@ -26,14 +28,19 @@ export default function DeleteConfirmModal({
   confirmLabel = '삭제',
   confirmingLabel = '삭제 중...',
 }: DeleteConfirmModalProps) {
-  if (!isOpen) return null
+  // 정적 export(prerender) 단계엔 document가 없다. 모든 호출부가 isOpen=false로 시작하므로
+  // 이 가드로 하이드레이션 불일치 없이 서버 렌더만 건너뛴다.
+  if (!isOpen || typeof document === 'undefined') return null
 
   const confirmClasses =
     tone === 'primary'
       ? 'bg-primary text-primary-foreground hover:bg-primary/90'
       : 'bg-destructive text-white hover:bg-destructive/90'
 
-  return (
+  // body로 포털한다. 이 모달은 목적 카드(`relative z-10`)처럼 스태킹 컨텍스트를 만드는
+  // 조상 안에서 렌더되는 경우가 많아, 그대로 두면 z-[60]이 그 컨텍스트에 갇혀
+  // 헤더(z-30)·다른 카드 뒤로 dim이 깔리고 바깥 영역에 터치가 새어 나간다.
+  return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
       {/* 오버레이 */}
       <div 
@@ -75,6 +82,7 @@ export default function DeleteConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
