@@ -40,6 +40,8 @@ export interface Investment {
   monthly_shares?: number | null
   // 묶인 목적(Goal)의 ID. 없으면 null. 구버전 앱은 컬럼을 몰라도 정상 동작.
   goal_id?: string | null
+  // 목적 카드 내 수동 드래그 순서. NULL이면 created_at 폴백 정렬 뒤로. 구버전 앱 호환 위해 optional.
+  sort_order?: number | null
   // 적립 항목 유형. DB DEFAULT 'investment'라 SELECT 결과는 항상 채워짐.
   record_type: RecordType
   // 예적금 약정 연이율(%). 예적금 외 유형은 null.

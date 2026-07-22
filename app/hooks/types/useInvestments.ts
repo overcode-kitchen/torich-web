@@ -12,6 +12,8 @@ export type UseInvestmentsReturn = {
   addInvestment: (record: Investment) => void
   updateInvestment: (id: string, data: Partial<Investment>) => Promise<void>
   deleteInvestment: (id: string) => Promise<void>
+  /** 적립 항목 순서 저장(드래그 정렬). orderedIds 인덱스를 sort_order로 반영. */
+  reorderInvestments: (orderedIds: string[]) => Promise<void>
 }
 
 export type RecordsSelectResult = {

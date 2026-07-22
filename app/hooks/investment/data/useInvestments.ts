@@ -5,6 +5,7 @@ import type { Investment } from '@/app/types/investment'
 import { useInvestmentsFetch } from './useInvestmentsFetch'
 import { useInvestmentsUpdate } from './useInvestmentsUpdate'
 import { useInvestmentsDelete } from './useInvestmentsDelete'
+import { useInvestmentsReorder } from './useInvestmentsReorder'
 import type { UseInvestmentsReturn } from '../../types/useInvestments'
 
 export const useInvestments = (userId?: string): UseInvestmentsReturn => {
@@ -13,6 +14,7 @@ export const useInvestments = (userId?: string): UseInvestmentsReturn => {
   const fetch = useInvestmentsFetch(userId, setRecords)
   const update = useInvestmentsUpdate(userId, records, setRecords)
   const deleteOp = useInvestmentsDelete(userId, records, setRecords)
+  const reorder = useInvestmentsReorder(userId, records, setRecords)
 
   const addInvestment = useCallback((record: Investment): void => {
     setRecords((prev) => [...prev, record])
@@ -32,5 +34,6 @@ export const useInvestments = (userId?: string): UseInvestmentsReturn => {
     addInvestment,
     updateInvestment: update.updateInvestment,
     deleteInvestment: deleteOp.deleteInvestment,
+    reorderInvestments: reorder.reorderInvestments,
   }
 }

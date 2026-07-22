@@ -1,16 +1,33 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
-import { Archive } from '@phosphor-icons/react'
+import { useRef, useState } from 'react'
+import { Archive, DotsThreeVertical } from '@phosphor-icons/react'
+import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+  restrictToVerticalAxis,
+  restrictToParentElement,
+} from '@dnd-kit/modifiers'
 import { GoalGroupItemRow } from './GoalGroupItemRow'
 import { AddRecordDrawer } from './AddRecordDrawer'
 import GoalActionSheet from './GoalActionSheet'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
-import { useLongPress } from '@/app/hooks/ui/useLongPress'
+import {
+  Sortable,
+  useReorderSensors,
+  type SortableRenderProps,
+} from '@/app/components/Common/DragSortable'
+import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { resolvePurposeIcon } from '@/app/constants/goal'
 import { dDayLabel } from '@/app/utils/goal-format'
 import { nextSettlementDDay, type GoalStatus } from '@/app/utils/goal-status'
+import { track } from '@/app/lib/analytics'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import type { MonthlyRecordStatus } from '@/app/hooks/payment/useMonthlyPaymentStatus'
 import type { Investment } from '@/app/types/investment'
 import type { Goal, GoalProgress } from '@/app/types/goal'
@@ -46,6 +63,10 @@ export interface GoalGroupCardProps {
   status?: GoalStatus
   /** 최상단 카드 등에서 손잡이에 관심 유도 넛지(띠용띠용)를 켠다. */
   nudge?: boolean
+  /** 홈 목적 정렬 드래그 손잡이(카드 헤더에 스프레드). 미지정 카드엔 미전달. */
+  dragHandle?: SortableRenderProps['handle']
+  /** 이 카드가 드래그 중인지 여부(스타일 훅). */
+  isDragging?: boolean
 }
 
 /**
@@ -73,6 +94,8 @@ export function GoalGroupCard({
   isDeleting = false,
   status,
   nudge = false,
+  dragHandle,
+  isDragging = false,
 }: GoalGroupCardProps) {
   const name = goal?.name ?? fallbackName ?? '목적 미지정'
   const dDay = dDayLabel(progress?.dDay ?? null)
@@ -86,18 +109,33 @@ export function GoalGroupCard({
     ? dDayLabel(nextSettlementDDay(records, new Date()))
     : ''
 
-  // 헤더 롱프레스 → 수정/보관/삭제 액션 시트. 관리 콜백이 하나라도 있을 때만 켠다.
+  // 헤더 "…" 버튼 → 수정/보관/삭제 액션 시트. 관리 콜백이 하나라도 있을 때만 켠다.
+  // (헤더 롱프레스는 이제 목적 순서 드래그에 배정됨)
   const canManage = !!goal && (!!onEditGoal || !!onArchive || !!onDeleteGoal)
   const [menuOpen, setMenuOpen] = useState<boolean>(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false)
 
-  const longPress = useLongPress({
-    onLongPress: () => setMenuOpen(true),
-    onClick: () => {
-      if (goal && onSelectGoal) onSelectGoal(goal.id)
-    },
-    enabled: canManage,
-  })
+  // 카드 내 적립 항목 드래그 정렬.
+  const { reorderInvestments } = useInvestmentsContext()
+  const recordSensors = useReorderSensors()
+  // 항목 드래그 직후 뒤따르는 click(행 탭 → 상세 이동)을 삼키기 위한 플래그.
+  const rowDraggingRef = useRef<boolean>(false)
+  const canReorderRecords = records.length > 1
+
+  function handleRecordDragEnd(event: DragEndEvent): void {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const ids = records.map((r) => r.id)
+    const oldIndex = ids.indexOf(String(active.id))
+    const newIndex = ids.indexOf(String(over.id))
+    if (oldIndex < 0 || newIndex < 0) return
+    const newIds = arrayMove(ids, oldIndex, newIndex)
+    track('record_reorder', { count: newIds.length })
+    // reorderInvestments가 낙관적 반영 + 실패 시 롤백까지 처리한다.
+    void reorderInvestments(newIds).catch(() => {
+      toastError(TOAST_MESSAGES.updateSaveFailed)
+    })
+  }
 
   async function handleConfirmDelete(): Promise<void> {
     if (!goal || !onDeleteGoal) return
@@ -149,45 +187,109 @@ export function GoalGroupCard({
 
   return (
     <div className="relative">
-      <section className="relative z-10 overflow-hidden rounded-3xl bg-card">
+      <section
+        className={`relative z-10 overflow-hidden rounded-3xl bg-card${
+          isDragging ? ' shadow-xl' : ''
+        }`}
+      >
         <div className="p-6 pb-4">
-          {goal && (onSelectGoal || canManage) ? (
-            <button
-              type="button"
-              className={`mb-2 flex w-full items-center gap-1 text-left${
-                canManage ? ' select-none [-webkit-touch-callout:none]' : ''
-              }`}
-              aria-label={
-                canManage
-                  ? `${name} 목적 상세 보기 (길게 눌러 수정·삭제)`
-                  : `${name} 목적 상세 보기`
-              }
-              {...(canManage
-                ? longPress
-                : { onClick: () => onSelectGoal?.(goal.id) })}
-            >
-              {HeaderInner}
-            </button>
+          {goal ? (
+            <div className="mb-2 flex w-full items-center gap-1">
+              <button
+                type="button"
+                ref={dragHandle?.ref}
+                {...dragHandle?.attributes}
+                {...dragHandle?.listeners}
+                onClick={() => onSelectGoal?.(goal.id)}
+                className="flex min-w-0 flex-1 items-center gap-1 text-left select-none [-webkit-touch-callout:none]"
+                aria-label={`${name} 목적 상세 보기${
+                  dragHandle ? ' (길게 눌러 순서 변경)' : ''
+                }`}
+              >
+                {HeaderInner}
+              </button>
+              {canManage && (
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(true)}
+                  aria-label={`${name} 메뉴 열기`}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-foreground-subtle transition-colors hover:bg-surface-hover"
+                >
+                  <DotsThreeVertical className="h-5 w-5" weight="bold" />
+                </button>
+              )}
+            </div>
           ) : (
             <div className="mb-2 flex w-full items-center gap-1">{HeaderInner}</div>
           )}
 
           {records.length > 0 ? (
-            <div>
-              {records.map((record, idx) => (
-                <GoalGroupItemRow
-                  key={record.id}
-                  record={record}
-                  status={getStatus(record)}
-                  isPostponed={isPostponed(record.id)}
-                  onTogglePaid={onTogglePaid}
-                  onTogglePostpone={onTogglePostpone}
-                  onSelect={onSelectRecord}
-                  isLast={idx === records.length - 1}
-                  frozen={isCompletedGoal}
-                />
-              ))}
-            </div>
+            canReorderRecords ? (
+              <DndContext
+                sensors={recordSensors}
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                onDragStart={() => {
+                  rowDraggingRef.current = true
+                }}
+                onDragCancel={() => {
+                  rowDraggingRef.current = false
+                }}
+                onDragEnd={(event) => {
+                  handleRecordDragEnd(event)
+                  setTimeout(() => {
+                    rowDraggingRef.current = false
+                  }, 0)
+                }}
+              >
+                <SortableContext
+                  items={records.map((r) => r.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div>
+                    {records.map((record, idx) => (
+                      <Sortable key={record.id} id={record.id}>
+                        {({ setNodeRef, style, isDragging: rowDragging, handle }) => (
+                          <div ref={setNodeRef} style={style}>
+                            <GoalGroupItemRow
+                              record={record}
+                              status={getStatus(record)}
+                              isPostponed={isPostponed(record.id)}
+                              onTogglePaid={onTogglePaid}
+                              onTogglePostpone={onTogglePostpone}
+                              onSelect={(id) => {
+                                if (rowDraggingRef.current) return
+                                onSelectRecord(id)
+                              }}
+                              isLast={idx === records.length - 1}
+                              frozen={isCompletedGoal}
+                              dragHandle={handle}
+                              sortableDragging={rowDragging}
+                            />
+                          </div>
+                        )}
+                      </Sortable>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            ) : (
+              <div>
+                {records.map((record, idx) => (
+                  <GoalGroupItemRow
+                    key={record.id}
+                    record={record}
+                    status={getStatus(record)}
+                    isPostponed={isPostponed(record.id)}
+                    onTogglePaid={onTogglePaid}
+                    onTogglePostpone={onTogglePostpone}
+                    onSelect={onSelectRecord}
+                    isLast={idx === records.length - 1}
+                    frozen={isCompletedGoal}
+                  />
+                ))}
+              </div>
+            )
           ) : (
             <p className="py-4 text-center text-sm text-muted-foreground">
               아직 적립 항목이 없어요
