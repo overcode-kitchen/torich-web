@@ -46,24 +46,42 @@ owner="${GITHUB_REPOSITORY%/*}"
 repo="${GITHUB_REPOSITORY#*/}"
 
 # --- 라벨 동기화 -------------------------------------------------------------
-# 보드보다 먼저 처리한다. 라벨은 저장소 권한(GITHUB_TOKEN 계열)만 있으면 되므로,
+# 보드보다 먼저 처리한다. 라벨은 저장소 권한만 있으면 되므로,
 # Projects 권한 문제로 아래가 실패하더라도 리스트에서는 상태가 보인다.
+#
+# ⚠️ 토큰이 다르다. PROJECT_TOKEN은 조직 Projects 권한만 가지고 발급했기 때문에
+#    gh issue edit(저장소 Issues 쓰기)은 통하지 않는다. Actions가 자동으로 주는
+#    GITHUB_TOKEN을 REPO_TOKEN으로 받아 라벨에만 쓴다.
+LABEL_TOKEN="${REPO_TOKEN:-$GH_TOKEN}"
+
 sync_labels() {
-  local number="$1" keep="$2" remove=""
+  local number="$1" keep="$2" args="" current=""
+
+  [ -n "$keep" ] && args="--add-label $keep"
+
+  # 붙어 있지도 않은 라벨을 떼려 하면 gh가 에러를 내므로, 실제로 붙은 것만 뗀다.
+  current=$(GH_TOKEN="$LABEL_TOKEN" gh issue view "$number" --repo "$GITHUB_REPOSITORY" \
+    --json labels --jq '[.labels[].name] | join(",")' 2>/dev/null || echo "")
 
   for l in $STATUS_LABELS; do
     [ "$l" = "$keep" ] && continue
-    remove="$remove --remove-label $l"
+    case ",$current," in
+      *",$l,"*) args="$args --remove-label $l" ;;
+    esac
   done
 
-  # 붙어 있지 않은 라벨을 떼려 하면 gh가 에러를 내므로 무시한다.
-  if [ -n "$keep" ]; then
-    # shellcheck disable=SC2086
-    gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --add-label "$keep" $remove >/dev/null 2>&1 || \
-      gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --add-label "$keep" >/dev/null 2>&1 || true
+  if [ -z "$args" ]; then
+    echo "#$number 라벨 그대로 (${keep:-없음})"
+    return 0
+  fi
+
+  # 실패를 삼키지 않는다. 조용히 넘어가면 보드만 바뀌고 라벨은 안 바뀐 채로
+  # 워크플로가 초록불이 되어, 어긋난 걸 아무도 모른다.
+  # shellcheck disable=SC2086
+  if GH_TOKEN="$LABEL_TOKEN" gh issue edit "$number" --repo "$GITHUB_REPOSITORY" $args >/dev/null 2>&1; then
+    echo "#$number 라벨 → ${keep:-(없음)}"
   else
-    # shellcheck disable=SC2086
-    gh issue edit "$number" --repo "$GITHUB_REPOSITORY" $remove >/dev/null 2>&1 || true
+    echo "::warning::#$number 라벨 수정 실패. 워크플로가 REPO_TOKEN(=GITHUB_TOKEN)을 넘기는지, permissions에 issues:write가 있는지 확인할 것."
   fi
 }
 
@@ -74,7 +92,6 @@ esac
 
 for number in $ISSUES; do
   sync_labels "$number" "$keep_label"
-  echo "#$number 라벨 → ${keep_label:-(없음)}"
 done
 
 # 완료는 보드 이동을 내장 워크플로가 처리한다. 라벨만 정리하고 끝낸다.
