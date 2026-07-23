@@ -9,6 +9,23 @@
 - **scope**: 변경 도메인·화면 (`home` `goal` `stats` `investment` `faq` `calendar` `layout` `navigation` 등)
 - **예시**: `fix(stats): 손실 데이터가 차트에서 음수 영역으로 표시되도록 수정함`
 
+### 이슈 연동 (필수)
+이슈를 GitHub로 관리하므로, **모든 커밋 메시지 마지막 줄에 반드시 `Closes #N` 트레일러를 붙인다.** 전체 협업 흐름은 [docs/workflow.md](docs/workflow.md)가 기준이며, 여기는 커밋 규칙 요약이다.
+
+- 형식: 제목(+본문) 뒤에 **빈 줄 하나**를 두고, 마지막 줄에 `Closes #N`
+- **PR 본문이 아니라 커밋 메시지에 쓴다.** PR base가 `integration`이라 본문에 쓰면 단순 텍스트로만 남는다.
+- 여러 이슈: `Closes #12, Closes #15`
+- 커밋과 연결된 이슈가 없으면 커밋하지 않고 **먼저 이슈를 만든다.**
+- 동작: squash로 `integration`에 머지되면 `board.yml`이 카드를 `배포대기`로 옮기고, `main` 배포 때 `release.yml`이 이슈를 닫는다. (즉시 닫히지 않음)
+- 전체 예시:
+  ```
+  feat(goal): 목적 카드를 길게 눌러 순서를 바꾸는 기능을 추가함
+
+  Closes #42
+  ```
+- 이슈는 `overcode-kitchen/torich-web` 레포에서, 진행 현황은 조직 프로젝트 보드(`overcode-kitchen/projects/2`)에서 관리한다.
+- **로컬 강제 장치**: `commit-msg` husky 훅(`.husky/commit-msg`)이 트레일러 없는 커밋을 거부한다. `pnpm install` 시 자동 설치되며, 머지/리버트 커밋은 예외. 부득이할 때만 `git commit --no-verify`로 우회한다.
+
 ---
 
 # 운영 컨텍스트 (반드시 인지)
