@@ -21,15 +21,16 @@ export default function ExpectedAssetSection({
       <div className="flex items-center gap-1 mb-2">
         <h2 className="text-sm font-semibold text-foreground-muted">지금까지 모은 돈</h2>
       </div>
-      {/* 원금 숫자에 '이번 달 얼마나 더 쌓였나' 모멘텀을 나란히 붙여, 정적인 총액이 아니라
-          지금도 쌓이는 돈으로 읽히게 한다. 이번 달 완료 적립액이라 실제 데이터 기반이다. */}
+      {/* 원금 숫자에 '이번 달 얼마나 넣었나' 모멘텀을 나란히 붙여, 정적 총액이 아니라 지금도
+          쌓이는 돈으로 읽히게 한다. 이번 달 완료 적립액이라 실제 데이터 기반.
+          '+금액'·초록색은 '수익'으로 오해되므로 쓰지 않고, 카드 문구("넣은 돈")와 같은 '넣었어요'로 맞춘다. */}
       <div className="mb-1 flex items-baseline gap-2 flex-wrap">
         <p className="text-xl font-bold tracking-tight text-foreground tabular-nums">
           {formatCurrency(totalPaidPrincipal)}
         </p>
         {thisMonthAdded > 0 && (
-          <span className="text-xs font-semibold text-primary tabular-nums">
-            이번 달 +{formatCurrency(thisMonthAdded)}
+          <span className="text-xs text-muted-foreground tabular-nums">
+            이번 달 <span className="font-semibold text-foreground">{formatCurrency(thisMonthAdded)}</span> 넣었어요
           </span>
         )}
       </div>
