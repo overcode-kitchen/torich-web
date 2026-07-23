@@ -74,8 +74,10 @@ export default function StatsView({
     calculations,
     chart,
 }: StatsViewProps) {
+    // "이번 달 투자 내역"은 지금 매달 납입 중인 것만 — 배지(totalMonthlyPayment)와 같은 기준(activeRecords)으로
+    // 맞춰야 총액·비중이 어긋나지 않는다. 기간 종료된 기록은 제외 (#28).
     const { contributionItems } = useMonthlyContribution({
-        items: data.records,
+        items: data.activeRecords,
         totalAmount: calculations.totalMonthlyPayment,
     })
 
