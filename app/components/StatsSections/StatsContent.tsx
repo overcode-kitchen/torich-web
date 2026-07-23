@@ -131,7 +131,6 @@ export default function StatsContent({
             <ExpectedAssetSection
                 totalPaidPrincipal={totalPaidPrincipal}
                 totalMonthlyPayment={totalMonthlyPayment}
-                thisMonthAdded={thisMonth.completedPayment}
                 onShowContribution={handleShowContribution}
             />
             <Link
