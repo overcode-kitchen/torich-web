@@ -43,8 +43,9 @@ export interface HabitStats {
 }
 
 export interface UseStatsCalculationsReturn {
-  /** 지금까지 모은 누적 납입 원금 (월 납입액 × 경과 개월 합산) */
+  /** 지금까지 모은 돈 = 실제 납입 원금 누적(payment_history 기준) + 목적에 직접 입력한 '이미 모은 돈'. 완료분 포함 */
   totalPaidPrincipal: number
+  /** 현재 매달 납입 중인 금액 합 (진행 중 기록만; 기간 종료분 제외) */
   totalMonthlyPayment: number
   thisMonth: {
     totalPayment: number
@@ -77,9 +78,12 @@ export function useStatsCalculations({
       0,
     )
     const externalTotal = goals.reduce((sum, g) => sum + (g.external_amount ?? 0), 0)
-    const totalMonthlyPayment = records.reduce((sum, record) => sum + record.monthly_amount, 0)
+    // "월 N씩 적립 중"·"이번 달 투자 내역" = 지금 매달 넣고 있는 금액.
+    // 기간이 끝난(완료) 기록은 더 이상 납입하지 않으므로 activeRecords만 합산한다.
+    // (totalPaidPrincipal은 완료분까지 누적하는 게 맞아 records 전체를 쓰는 것과 대비된다)
+    const totalMonthlyPayment = activeRecords.reduce((sum, record) => sum + record.monthly_amount, 0)
     return { totalPaidPrincipal: realizedPrincipal + externalTotal, totalMonthlyPayment }
-  }, [records, completedPayments, retroactivePayments, capturedAmounts, goals])
+  }, [records, activeRecords, completedPayments, retroactivePayments, capturedAmounts, goals])
 
   const thisMonth = useMemo(() => getThisMonthStats(activeRecords, completedPayments, postponedPayments), [activeRecords, completedPayments, postponedPayments])
 
