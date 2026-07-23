@@ -12,17 +12,18 @@
 |---|---|---|
 | **1. 이슈 등록** | 템플릿 채우기 + 마일스톤 지정 | 보드에 `신규`로 등록 |
 | **2. 담당자 채택** | 스스로 assign + 카드를 `진행중`으로 | — |
-| **3. 작업** | `develop/<이름>`에서 커밋 (`Closes #N`) | — |
+| **3. 작업** | 이슈 브랜치(`type/#-설명`)에서 커밋 (`Closes #N`) | — |
 | **4. PR** | `integration`으로 PR 생성 | 타입 체크 + 린트 |
 | **5. 머지** | **Squash merge** | 카드 → `배포대기` |
 | **6. 배포** | `main`으로 **Merge commit** + 버전·태그 | 릴리스 노트 / 마일스톤 닫기 / 이슈 닫기 / 카드 → `완료` |
 
-브랜치는 두 개만 기억하면 된다.
+오래 사는 브랜치는 둘뿐이다. **실제 작업은 이슈마다 판 브랜치**에서 하고, 그 브랜치는 `integration`에서 딴다.
 
 | 브랜치 | 뜻 |
 |---|---|
 | `main` | **지금 앱스토어에 있는 것** |
-| `integration` | **다음에 낼 것** |
+| `integration` | **다음에 낼 것 (이슈 브랜치는 여기서 판다)** |
+| `type/#-설명` | **이슈 하나짜리 작업 브랜치 (일회용)** |
 
 ---
 
@@ -56,12 +57,23 @@
 
 ## 3. 작업
 
-개인 브랜치에서 한다. 이슈마다 새로 파지 않고 **자기 브랜치를 계속 쓴다.**
+**이슈마다 새 브랜치를 판다.** `integration`에서 최신을 받아 딴다.
+
+이름은 `type/이슈번호-설명` — prefix는 커밋 type과 같고, 이슈번호로 추적하며, 설명은 짧게 붙인다.
 
 ```bash
-git checkout develop/suni && git pull
-git merge origin/integration        # 남이 머지한 것 받아오기
+git checkout integration && git pull
+git checkout -b fix/58-chart-loss   # type/이슈번호-설명
 ```
+
+| 브랜치 이름 | 뜻 |
+|---|---|
+| `feat/42-goal-reorder` | 기능 이슈 #42 |
+| `fix/58-chart-loss` | 버그 이슈 #58 |
+| `chore/17-husky-branch-hook` | 잡무 이슈 #17 |
+
+> 작업이 길어져 `integration`에 남이 머지한 게 쌓이면 `git merge origin/integration`으로 받아온다.
+> 이슈 브랜치가 아닌 `main`·`integration`·`develop/*`에서 커밋하면 `commit-msg` 훅이 **경고**를 띄운다(커밋은 통과).
 
 커밋 메시지 규칙은 `type(scope): 한글 설명 + ~함/~음`이고, **마지막 줄에 `Closes #N`을 넣는다.**
 
@@ -76,7 +88,7 @@ Closes #42
 ## 4. PR 올리기
 
 ```bash
-git push origin develop/suni
+git push -u origin fix/58-chart-loss
 ```
 
 **base를 `integration`으로** 지정해 PR을 만든다. PR 템플릿이 자동으로 뜨니 채운다.
@@ -93,7 +105,7 @@ git push origin develop/suni
 
 이슈는 아직 **닫히지 않는다.** 코드는 들어갔지만 사용자에게는 안 나갔기 때문이고, `배포대기`가 정확히 그 상태다. **다음 배포에 뭐가 나가는지가 이 컬럼 그대로다.**
 
-> 머지해도 `develop/<이름>` 브랜치는 지워지지 않는다. 계속 쓰는 브랜치라 그렇게 설정해 뒀다.
+> 머지가 끝난 이슈 브랜치는 **지운다** (GitHub 머지 화면의 "Delete branch"). 일회용이다.
 
 ## 6. 배포
 
@@ -161,13 +173,13 @@ git checkout integration && git pull && git merge origin/main && git push origin
 
 | 무엇을 → 어디로 | 방식 | 이유 |
 |---|---|---|
-| `develop/<이름>` → `integration` | **Squash** | 중간 커밋을 남기지 않는다 |
+| 이슈 브랜치(`type/#-설명`) → `integration` | **Squash** | 중간 커밋을 남기지 않는다 |
 | `integration` → `main` | **Merge commit** | Squash하면 두 브랜치가 영구히 갈라진다 |
 | `hotfix/*` → `main` | **Merge commit** | 위와 같음 |
 
-### 3. 브랜치를 지우지 않는다
+### 3. 이슈 브랜치는 머지 후 지운다
 
-`develop/<이름>`과 `integration`은 **계속 쓰는 브랜치**다. 그래서 "머지 후 자동 삭제"를 꺼 뒀다. `hotfix/*`처럼 진짜 일회용만 머지 후 손으로 지운다.
+작업 브랜치(`type/#-설명`)와 `hotfix/*`는 **일회용**이다. 머지되면 지운다. 오래 남는 건 `main`·`integration` 둘뿐이다.
 
 ---
 
