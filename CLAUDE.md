@@ -3,6 +3,36 @@
 ## Language
 - Always respond in Korean (한국어로 응답)
 
+## 작업 절차 (코드를 고치기 전에 읽는다)
+
+이 저장소는 팀원 전원이 Claude CLI로 작업한다. **코드 변경은 아래 순서를 벗어나지 않는다.**
+상세 배경은 [docs/workflow.md](docs/workflow.md), 여기는 실행 순서만 적는다.
+
+1. **이슈부터.** 연결할 이슈가 없으면 코드를 건드리기 전에 먼저 만든다.
+   마일스톤은 "지금 나가야 하나?"로 고른다 — 다음 배포면 진행 중인 버전(`v1.3.0` 등), 언젠가면 비워둔다.
+2. **담당자를 지정한다** (`gh issue edit <N> --add-assignee @me`).
+   이걸 해야 보드가 `진행중`으로 바뀌고 `진행중` 라벨이 붙는다. **빠뜨리면 남들이 뭘 잡았는지 알 수 없다.**
+3. **브랜치를 판다.** `integration`에서 분기하고 이름은 `type/이슈번호-설명`.
+   ```bash
+   git checkout integration && git pull && git checkout -b fix/58-chart-loss
+   ```
+   `main`·`integration`에서 바로 커밋하지 않는다 (`commit-msg` 훅이 경고한다).
+4. **커밋한다.** 마지막 줄에 `Closes #N` — 아래 [이슈 연동](#이슈-연동-필수) 참고.
+5. **PR을 만든다.** base는 반드시 `integration`.
+6. **머지는 담당자가 정한다.** 지시받으면 수행하고, 아니면 PR 링크와 CI 결과를 보고하고 멈춘다.
+   머지할 때는 **CI 통과를 확인한 뒤 Squash merge**로 한다 (이슈 브랜치 → `integration`).
+
+> 머지 이후는 전부 자동이다. `board.yml`이 카드를 `배포대기`로 옮기고 라벨을 바꾸며,
+> `main` 배포 때 `release.yml`이 이슈를 닫는다. 사람이 보드를 손댈 일은 없다.
+>
+> 단 **`main`으로 가는 머지(배포)는 다르다.** 버전 3곳과 태그가 함께 가야 하고
+> Merge commit이어야 하므로, 배포 절차([docs/workflow.md](docs/workflow.md))를 따른다.
+
+### 급한 수정만 예외
+운영 장애는 `integration`이 아니라 **`main`에서** `hotfix/<버전>`을 딴다. `integration`에는 아직 안 내보낼 기능이 섞여 있기 때문이다. `main` 머지 후 반드시 `integration`에 합친다.
+
+---
+
 ## Commit Convention
 형식: `type(scope): 한글 설명 + 평서 종결형 어미(~함/~음)`. 외부 파일을 참조하지 않는, 이 저장소의 단일 기준.
 - **type**: `feat` `fix` `style` `refactor` `chore` `docs`
