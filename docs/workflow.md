@@ -11,11 +11,23 @@
 | 단계 | 사람이 하는 일 | 자동으로 되는 일 |
 |---|---|---|
 | **1. 이슈 등록** | 템플릿 채우기 + 마일스톤 지정 | 보드에 `신규`로 등록 |
-| **2. 담당자 채택** | 스스로 assign + 카드를 `진행중`으로 | — |
+| **2. 담당자 채택** | 스스로 assign | 카드 → `진행중` + `진행중` 라벨 |
 | **3. 작업** | 이슈 브랜치(`type/#-설명`)에서 커밋 (`Closes #N`) | — |
 | **4. PR** | `integration`으로 PR 생성 | 타입 체크 + 린트 |
-| **5. 머지** | **Squash merge** | 카드 → `배포대기` |
+| **5. 머지** | **Squash merge** | 카드 → `배포대기` + `배포대기` 라벨 |
 | **6. 배포** | `main`으로 **Merge commit** + 버전·태그 | 릴리스 노트 / 마일스톤 닫기 / 이슈 닫기 / 카드 → `완료` |
+
+### 상태는 라벨로도 보인다
+
+보드 Status는 Projects 안에서만 보이고 [Issues 리스트](https://github.com/overcode-kitchen/torich-web/issues)에는 나오지 않는다. 그래서 같은 정보를 라벨로 복사해 둔다.
+
+| 라벨 | 뜻 |
+|---|---|
+| (없음) | `신규` — 아직 아무도 안 잡음 |
+| `진행중` (노랑) | 담당자가 작업 중 |
+| `배포대기` (파랑) | `integration` 머지 완료, 배포를 기다림 |
+
+**손으로 붙이지 않는다.** assign·PR 머지·이슈 닫힘 시점에 [board.yml](../.github/workflows/board.yml)이 보드와 라벨을 함께 바꾼다. 리스트에서 `label:배포대기`로 필터하면 다음 배포에 나갈 것만 볼 수 있다.
 
 오래 사는 브랜치는 둘뿐이다. **실제 작업은 이슈마다 판 브랜치**에서 하고, 그 브랜치는 `integration`에서 딴다.
 
@@ -50,10 +62,11 @@
 
 올라온 이슈를 보고 **본인이 판단해서 가져간다.** 배정해주는 사람은 없다.
 
-1. 이슈 우측 **Assignees**에서 자기 자신 선택
-2. [보드](https://github.com/orgs/overcode-kitchen/projects/2)에서 그 카드를 **`진행중`으로 드래그**
+이슈 우측 **Assignees**에서 자기 자신을 선택하면 끝이다.
 
-> 이 두 가지만 수동이다. "누가 뭘 하고 있는지"를 나타내는 정보라 자동화할 근거가 없다.
+**자동**: 카드가 `진행중`으로 옮겨지고 `진행중` 라벨이 붙는다. 담당자를 다시 떼면 `신규`로 되돌아간다.
+
+> 이미 `배포대기`까지 간 이슈는 담당자를 붙여도 되돌아가지 않는다.
 
 ## 3. 작업
 
@@ -188,6 +201,7 @@ git checkout integration && git pull && git merge origin/main && git push origin
 | 증상 | 확인할 곳 |
 |---|---|
 | PR 머지했는데 카드가 `배포대기`로 안 감 | 커밋 메시지에 `Closes #N`이 있나 → [Actions의 Board 워크플로 로그](https://github.com/overcode-kitchen/torich-web/actions/workflows/board.yml) |
+| 상태 라벨과 보드 Status가 어긋남 | 보드에서 카드를 직접 드래그하면 라벨은 따라가지 않는다. **상태 변경은 assign·머지로 하고**, 어긋났으면 담당자를 뗐다 붙여 맞춘다 |
 | 위 로그에 `PROJECT_TOKEN 시크릿이 없어` 경고 | 토큰 만료. [발급 절차](github-projects-setup.md#project_token-시크릿-boardyml-동작에-필수) |
 | 새 이슈가 보드에 안 올라옴 | 보드 `···` → Workflows → **Auto-add to project**가 켜져 있나 |
 | 배포했는데 이슈가 안 닫힘 | 커밋 메시지의 `Closes #N`이 `main`까지 갔나 (`git log main --grep "Closes #N"`) |

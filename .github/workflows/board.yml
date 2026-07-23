@@ -1,54 +1,54 @@
 name: Board
 
-# PR이 integration에 머지되면, 그 PR이 닫기로 한 이슈들을 보드의 "배포대기"로 옮긴다.
+# 보드 Status와 이슈 라벨을 함께 맞춘다.
 #
-# 왜 Action이 필요한가:
-#   Projects 내장 워크플로의 "Pull request merged"는 보드에 올라온 **PR 카드**의 상태만 바꾼다.
-#   우리 보드는 이슈만 올리므로(PR까지 올리면 2인 팀에 카드가 두 배가 된다) 발동할 대상이 없다.
-#   "연결된 이슈를 옮기는" 내장 워크플로는 존재하지 않아서 직접 처리한다.
+# 보드 Status는 Projects 안에서만 보이고 저장소 Issues 리스트에는 나오지 않는다.
+# 그래서 같은 정보를 라벨(`진행중`·`배포대기`)로도 복사해, 리스트에서도 상태가 보이게 한다.
+# 라벨은 손으로 붙이지 않는다. 아래 세 시점에 스크립트가 양쪽을 함께 바꾼다.
 #
-# main 머지는 여기서 다루지 않는다. 그때는 `Closes #N`이 이슈를 닫고,
-# Projects 내장 워크플로 "Item closed"가 완료로 옮긴다.
+#   담당자 지정  → 진행중   (신규일 때만. 이미 배포대기인 걸 되돌리지 않는다)
+#   담당자 해제  → 신규     (담당자가 아무도 없을 때만)
+#   PR 머지      → 배포대기 (integration 대상)
+#   이슈 닫힘    → 라벨 제거 (보드 '완료' 이동은 Projects 내장 워크플로가 처리)
+#
+# 왜 PR 머지에 Action이 필요한가:
+#   Projects 내장 "Pull request merged"는 보드에 올라온 **PR 카드**의 상태만 바꾼다.
+#   우리 보드는 이슈만 올리므로 발동할 대상이 없고, "연결된 이슈를 옮기는" 내장
+#   워크플로는 존재하지 않는다.
 on:
   pull_request:
     types: [closed]
     branches: [integration]
+  issues:
+    types: [assigned, unassigned, closed]
+
+# GITHUB_TOKEN은 조직 Projects에 쓸 수 없어 별도 PAT를 쓴다.
+# 발급 방법은 docs/github-projects-setup.md 참고.
+env:
+  GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+  PROJECT_OWNER: overcode-kitchen
+  PROJECT_NUMBER: '2'
 
 jobs:
-  move:
-    if: github.event.pull_request.merged == true
+  # PR이 머지되면, 그 PR이 닫기로 한 이슈들을 배포대기로.
+  merged:
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
-      # GITHUB_TOKEN은 조직 Projects에 쓸 수 없어 별도 PAT가 필요하다.
-      # 설정 방법은 docs/github-projects-setup.md 참고.
-      GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
-      PROJECT_OWNER: overcode-kitchen
-      PROJECT_NUMBER: '2'
-      TARGET_STATUS: 배포대기
       PR_NUMBER: ${{ github.event.pull_request.number }}
-      # 스크립트에 직접 보간하면 PR 제목/본문이 셸 명령으로 실행될 수 있다. 반드시 env로 받는다.
+      # 스크립트에 직접 보간하면 PR 제목·본문이 셸 명령으로 실행될 수 있다. 반드시 env로 받는다.
       PR_TITLE: ${{ github.event.pull_request.title }}
       PR_BODY: ${{ github.event.pull_request.body }}
     steps:
-      - name: 연결된 이슈를 배포대기로 이동
+      - uses: actions/checkout@v5
+      - name: 연결된 이슈를 배포대기로
         run: |
           set -euo pipefail
 
-          # 보드 한 칸 때문에 CI가 빨개지면 안 된다. 토큰이 없으면 경고만 남기고 넘어간다.
-          if [ -z "${GH_TOKEN:-}" ]; then
-            echo "::warning::PROJECT_TOKEN 시크릿이 없어 보드 이동을 건너뛴다."
-            exit 0
-          fi
-
-          owner="${GITHUB_REPOSITORY%/*}"
-          repo="${GITHUB_REPOSITORY#*/}"
-
-          # 1. 이 PR이 닫기로 한 이슈 번호를 직접 파싱한다.
-          #
-          #    GraphQL의 closingIssuesReferences는 쓸 수 없다. 깃헙은 PR의 base가
-          #    기본 브랜치(main)일 때만 닫기 링크를 만들기 때문에, integration 대상
-          #    PR에서 "Closes #N"은 단순 언급(CrossReferencedEvent)으로만 남는다.
-          #    제목·본문·커밋 메시지를 모두 훑어 어디에 썼든 잡히게 한다.
+          # GraphQL의 closingIssuesReferences는 쓸 수 없다. 깃헙은 PR의 base가
+          # 기본 브랜치(main)일 때만 닫기 링크를 만들기 때문에, integration 대상
+          # PR에서 "Closes #N"은 단순 언급으로만 남는다.
+          # 제목·본문·커밋 메시지를 모두 훑어 어디에 썼든 잡히게 한다.
           text=$(
             printf '%s\n%s\n' "$PR_TITLE" "${PR_BODY:-}"
             gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" --paginate --jq '.[].commit.message'
@@ -58,56 +58,38 @@ jobs:
             | grep -oE '[0-9]+' | sort -u || true)
 
           if [ -z "$numbers" ]; then
-            echo "닫기 키워드가 없다. 커밋 메시지나 PR 본문에 'Closes #N' 을 쓰면 자동으로 옮겨진다."
-            exit 0
-          fi
-          echo "대상 이슈: $(echo "$numbers" | tr '\n' ' ')"
-
-          # 2. Status 필드와 대상 옵션 ID를 이름으로 찾는다.
-          #    ID를 하드코딩하면 보드를 손볼 때마다 조용히 깨진다.
-          meta=$(gh api graphql -f query='
-            query($owner:String!,$number:Int!){
-              organization(login:$owner){
-                projectV2(number:$number){
-                  id
-                  field(name:"Status"){
-                    ... on ProjectV2SingleSelectField { id options { id name } }
-                  }
-                }
-              }
-            }' -f owner="$PROJECT_OWNER" -F number="$PROJECT_NUMBER")
-
-          project_id=$(echo "$meta" | jq -r '.data.organization.projectV2.id // empty')
-          field_id=$(echo "$meta" | jq -r '.data.organization.projectV2.field.id // empty')
-          option_id=$(echo "$meta" | jq -r --arg n "$TARGET_STATUS" \
-            '.data.organization.projectV2.field.options[]? | select(.name==$n) | .id')
-
-          if [ -z "$project_id" ] || [ -z "$option_id" ]; then
-            echo "::warning::보드에서 '$TARGET_STATUS' 상태를 찾지 못했다. 컬럼 이름을 바꿨다면 이 워크플로의 TARGET_STATUS도 함께 바꿀 것."
+            echo "닫기 키워드가 없다. 커밋 메시지에 'Closes #N' 을 쓰면 자동으로 옮겨진다."
             exit 0
           fi
 
-          # 3. 각 이슈의 보드 카드를 찾아 상태를 바꾼다.
-          for number in $numbers; do
-            item_id=$(gh api graphql -f query='
-              query($owner:String!,$repo:String!,$n:Int!){
-                repository(owner:$owner,name:$repo){
-                  issue(number:$n){ projectItems(first:20){ nodes{ id project{ id } } } }
-                }
-              }' -f owner="$owner" -f repo="$repo" -F n="$number" \
-              --jq ".data.repository.issue.projectItems.nodes[]? | select(.project.id==\"$project_id\") | .id" || true)
+          bash .github/scripts/sync-issue-status.sh 배포대기 $numbers
 
-            if [ -z "$item_id" ]; then
-              echo "#$number 는 보드에 없어 건너뛴다."
-              continue
-            fi
+  # 담당자를 붙이면 진행중으로. 카드 드래그를 대신한다.
+  assigned:
+    if: github.event_name == 'issues' && github.event.action == 'assigned'
+    runs-on: ubuntu-latest
+    env:
+      ONLY_FROM: 신규   # 이미 배포대기인 이슈에 담당자를 붙였다고 되돌리지 않는다
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash .github/scripts/sync-issue-status.sh 진행중 ${{ github.event.issue.number }}
 
-            gh api graphql --silent -f query='
-              mutation($p:ID!,$i:ID!,$f:ID!,$o:String!){
-                updateProjectV2ItemFieldValue(
-                  input:{projectId:$p, itemId:$i, fieldId:$f, value:{singleSelectOptionId:$o}}
-                ){ projectV2Item{ id } }
-              }' -f p="$project_id" -f i="$item_id" -f f="$field_id" -f o="$option_id"
+  # 담당자가 아무도 없어지면 신규로 되돌린다.
+  unassigned:
+    if: >-
+      github.event_name == 'issues' && github.event.action == 'unassigned'
+      && github.event.issue.assignees[0] == null
+    runs-on: ubuntu-latest
+    env:
+      ONLY_FROM: 진행중   # 배포대기까지 간 것은 담당자를 떼도 그대로 둔다
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash .github/scripts/sync-issue-status.sh 신규 ${{ github.event.issue.number }}
 
-            echo "#$number → $TARGET_STATUS"
-          done
+  # 이슈가 닫히면 상태 라벨을 떼어낸다. 보드 '완료' 이동은 내장 워크플로가 처리한다.
+  closed:
+    if: github.event_name == 'issues' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash .github/scripts/sync-issue-status.sh 완료 ${{ github.event.issue.number }}
