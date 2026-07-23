@@ -5,12 +5,15 @@ interface ExpectedAssetSectionProps {
   totalPaidPrincipal: number
   /** 현재 매달 납입 중인 금액 합(원) — 0이면 "적립 중" 배지를 숨긴다 */
   totalMonthlyPayment: number
+  /** 이번 달 실제로 완료한 적립액(원) — 0보다 크면 "이번 달 +N" 모멘텀을 붙인다 */
+  thisMonthAdded: number
   onShowContribution: () => void
 }
 
 export default function ExpectedAssetSection({
   totalPaidPrincipal,
   totalMonthlyPayment,
+  thisMonthAdded,
   onShowContribution,
 }: ExpectedAssetSectionProps) {
   return (
@@ -18,10 +21,17 @@ export default function ExpectedAssetSection({
       <div className="flex items-center gap-1 mb-2">
         <h2 className="text-sm font-semibold text-foreground-muted">지금까지 모은 돈</h2>
       </div>
-      <div className="mb-1">
+      {/* 원금 숫자에 '이번 달 얼마나 더 쌓였나' 모멘텀을 나란히 붙여, 정적인 총액이 아니라
+          지금도 쌓이는 돈으로 읽히게 한다. 이번 달 완료 적립액이라 실제 데이터 기반이다. */}
+      <div className="mb-1 flex items-baseline gap-2 flex-wrap">
         <p className="text-xl font-bold tracking-tight text-foreground tabular-nums">
           {formatCurrency(totalPaidPrincipal)}
         </p>
+        {thisMonthAdded > 0 && (
+          <span className="text-xs font-semibold text-primary tabular-nums">
+            이번 달 +{formatCurrency(thisMonthAdded)}
+          </span>
+        )}
       </div>
       {/* 집계 기준 안내(#28) — 이 숫자가 '불어난 값'이 아니라 '내가 넣은 돈'임을 대조로 짚어준다.
           납입 원금·평가액 같은 용어 대신 벌었는지/넣었는지 대비로 바로 이해되게 한다. */}
