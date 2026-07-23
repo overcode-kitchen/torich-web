@@ -11,6 +11,8 @@
 #
 # 환경변수:
 #   GH_TOKEN          (필수) 조직 Projects 읽기 권한이 있는 PAT
+#   REPO_TOKEN        (권장) 저장소 Issues 쓰기 권한이 있는 토큰. 라벨 수정에만 쓴다.
+#                     PROJECT_TOKEN은 조직 Projects 권한만 있어 gh issue edit이 통하지 않는다.
 #   PROJECT_OWNER     조직명 (기본 overcode-kitchen)
 #   PROJECT_NUMBER    프로젝트 번호 (기본 2)
 #   DRY_RUN           1이면 바꾸지 않고 차이만 출력한다
@@ -18,6 +20,7 @@ set -euo pipefail
 
 : "${PROJECT_OWNER:=overcode-kitchen}"
 : "${PROJECT_NUMBER:=2}"
+LABEL_TOKEN="${REPO_TOKEN:-${GH_TOKEN:-}}"
 
 if [ -z "${GH_TOKEN:-}" ]; then
   echo "::warning::PROJECT_TOKEN 시크릿이 없어 동기화를 건너뛴다."
@@ -85,8 +88,8 @@ while IFS=$'\t' read -r number board labels; do
   done
 
   # shellcheck disable=SC2086
-  gh issue edit "$number" --repo "$GITHUB_REPOSITORY" $args >/dev/null 2>&1 || \
-    echo "::warning::#$number 라벨 수정 실패"
+  GH_TOKEN="$LABEL_TOKEN" gh issue edit "$number" --repo "$GITHUB_REPOSITORY" $args >/dev/null 2>&1 || \
+    echo "::warning::#$number 라벨 수정 실패. REPO_TOKEN(=GITHUB_TOKEN)이 넘어오는지, permissions에 issues:write가 있는지 확인할 것."
 done <<< "$items"
 
 if [ "$changed" -eq 0 ]; then

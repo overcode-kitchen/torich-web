@@ -34,10 +34,17 @@ on:
     - cron: '*/10 * * * *'
   workflow_dispatch:   # 기다리기 싫을 때 수동 실행
 
-# GITHUB_TOKEN은 조직 Projects에 쓸 수 없어 별도 PAT를 쓴다.
+# 토큰이 두 개다. 하나로는 안 된다.
+#   PROJECT_TOKEN  조직 Projects 읽기·쓰기 (보드 카드 이동). GITHUB_TOKEN으로는 불가.
+#   GITHUB_TOKEN   저장소 Issues 쓰기 (라벨 수정). PROJECT_TOKEN은 조직 Projects
+#                  권한만 가지고 발급했으므로 gh issue edit이 통하지 않는다.
 # 발급 방법은 docs/github-projects-setup.md 참고.
+permissions:
+  issues: write
+
 env:
   GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+  REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   PROJECT_OWNER: overcode-kitchen
   PROJECT_NUMBER: '2'
 
