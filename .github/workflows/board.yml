@@ -6,21 +6,33 @@ name: Board
 # 그래서 같은 정보를 라벨(`진행중`·`배포대기`)로도 복사해, 리스트에서도 상태가 보이게 한다.
 # 라벨은 손으로 붙이지 않는다. 아래 세 시점에 스크립트가 양쪽을 함께 바꾼다.
 #
-#   담당자 지정  → 진행중   (신규일 때만. 이미 배포대기인 걸 되돌리지 않는다)
-#   담당자 해제  → 신규     (담당자가 아무도 없을 때만)
-#   PR 머지      → 배포대기 (integration 대상)
-#   이슈 닫힘    → 라벨 제거 (보드 '완료' 이동은 Projects 내장 워크플로가 처리)
+#   담당자 지정      → 진행중   (신규일 때만. 이미 배포대기인 걸 되돌리지 않는다)
+#   이슈 브랜치 생성 → 진행중   (브랜치 이름 type/이슈번호-설명 에서 번호를 읽는다)
+#   담당자 해제      → 신규     (담당자가 아무도 없을 때만)
+#   PR 머지          → 배포대기 (integration 대상)
+#   이슈 닫힘        → 라벨 제거 (보드 '완료' 이동은 Projects 내장 워크플로가 처리)
+#   10분마다         → 보드를 읽어 라벨을 맞춤 (아래 sync 잡)
 #
 # 왜 PR 머지에 Action이 필요한가:
 #   Projects 내장 "Pull request merged"는 보드에 올라온 **PR 카드**의 상태만 바꾼다.
 #   우리 보드는 이슈만 올리므로 발동할 대상이 없고, "연결된 이슈를 옮기는" 내장
 #   워크플로는 존재하지 않는다.
+#
+# 왜 주기 동기화(sync)가 필요한가:
+#   보드에서 카드를 드래그하거나 이슈 사이드바에서 Status를 바꿔도 GitHub은
+#   저장소 워크플로에 알려주지 않는다. Projects v2의 항목 변경은 Actions 트리거로
+#   존재하지 않기 때문이다(organization 웹훅으로만 나간다).
+#   그래서 이벤트가 없는 그 경로는 주기적으로 훑어 따라잡는다.
 on:
   pull_request:
     types: [closed]
     branches: [integration]
   issues:
     types: [assigned, unassigned, closed]
+  create:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:   # 기다리기 싫을 때 수동 실행
 
 # GITHUB_TOKEN은 조직 Projects에 쓸 수 없어 별도 PAT를 쓴다.
 # 발급 방법은 docs/github-projects-setup.md 참고.
@@ -93,3 +105,37 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: bash .github/scripts/sync-issue-status.sh 완료 ${{ github.event.issue.number }}
+
+  # 이슈 브랜치를 만들면 진행중으로. assign을 깜빡해도 작업 시작이 잡힌다.
+  branch:
+    if: github.event_name == 'create' && github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    env:
+      # 스크립트에 직접 보간하면 브랜치 이름이 셸 명령으로 실행될 수 있다.
+      BRANCH: ${{ github.event.ref }}
+      ONLY_FROM: 신규
+    steps:
+      - uses: actions/checkout@v5
+      - name: 브랜치 이름에서 이슈 번호를 읽어 진행중으로
+        run: |
+          set -euo pipefail
+          # type/이슈번호-설명 → 이슈번호. 이 형식이 아니면 조용히 넘어간다.
+          number=$(printf '%s' "$BRANCH" \
+            | grep -oE '^(feat|fix|style|refactor|chore|docs)/[0-9]+' \
+            | grep -oE '[0-9]+' || true)
+
+          if [ -z "$number" ]; then
+            echo "'$BRANCH' 는 이슈 브랜치 형식(type/이슈번호-설명)이 아니라 건너뛴다."
+            exit 0
+          fi
+
+          bash .github/scripts/sync-issue-status.sh 진행중 "$number"
+
+  # 이벤트가 없는 경로(보드 드래그, 이슈 사이드바에서 Status 변경)를 따라잡는다.
+  # 보드가 항상 기준이고, 라벨이 보드를 따라간다.
+  sync:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: bash .github/scripts/sync-labels-from-board.sh

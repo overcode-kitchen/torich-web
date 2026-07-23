@@ -27,7 +27,18 @@
 | `진행중` (노랑) | 담당자가 작업 중 |
 | `배포대기` (파랑) | `integration` 머지 완료, 배포를 기다림 |
 
-**손으로 붙이지 않는다.** assign·PR 머지·이슈 닫힘 시점에 [board.yml](../.github/workflows/board.yml)이 보드와 라벨을 함께 바꾼다. 리스트에서 `label:배포대기`로 필터하면 다음 배포에 나갈 것만 볼 수 있다.
+**손으로 붙이지 않는다.** [board.yml](../.github/workflows/board.yml)이 보드와 라벨을 함께 바꾼다. 리스트에서 `label:배포대기`로 필터하면 다음 배포에 나갈 것만 볼 수 있다.
+
+| 무엇을 하면 | 언제 반영되나 |
+|---|---|
+| 담당자 지정·해제 | 즉시 |
+| **이슈 브랜치 생성** (`fix/58-...`) | 즉시 — 브랜치 이름의 번호를 읽는다 |
+| PR 머지 · 이슈 닫힘 | 즉시 |
+| **보드에서 드래그 / 이슈 사이드바에서 Status 변경** | **최대 10분** |
+
+마지막 줄만 느린 이유가 있다. GitHub은 **보드 카드를 옮겨도 저장소 워크플로에 알려주지 않는다** — Projects v2의 항목 변경은 Actions 트리거로 존재하지 않는다. 그래서 10분마다 보드를 훑어 라벨을 맞춘다. 기다리기 싫으면 [Board 워크플로](https://github.com/overcode-kitchen/torich-web/actions/workflows/board.yml)에서 **Run workflow**를 누르면 즉시 돈다.
+
+> 어느 경로로 바꾸든 결국 맞춰지므로 편한 방법을 쓰면 된다. **보드가 항상 기준이고 라벨이 따라간다.**
 
 오래 사는 브랜치는 둘뿐이다. **실제 작업은 이슈마다 판 브랜치**에서 하고, 그 브랜치는 `integration`에서 딴다.
 
@@ -201,7 +212,8 @@ git checkout integration && git pull && git merge origin/main && git push origin
 | 증상 | 확인할 곳 |
 |---|---|
 | PR 머지했는데 카드가 `배포대기`로 안 감 | 커밋 메시지에 `Closes #N`이 있나 → [Actions의 Board 워크플로 로그](https://github.com/overcode-kitchen/torich-web/actions/workflows/board.yml) |
-| 상태 라벨과 보드 Status가 어긋남 | 보드에서 카드를 직접 드래그하면 라벨은 따라가지 않는다. **상태 변경은 assign·머지로 하고**, 어긋났으면 담당자를 뗐다 붙여 맞춘다 |
+| 상태 라벨과 보드 Status가 어긋남 | 보드 드래그·사이드바 변경은 **10분 주기 동기화**로 반영된다. 급하면 [Board 워크플로](https://github.com/overcode-kitchen/torich-web/actions/workflows/board.yml) → **Run workflow** |
+| 작업 중인데 `진행중`이 안 붙음 | **담당자가 비어 있는지 확인.** 작업을 시작하면 self-assign 하는 게 규칙이다 (브랜치를 `type/이슈번호-설명`으로 파도 자동으로 붙는다) |
 | 위 로그에 `PROJECT_TOKEN 시크릿이 없어` 경고 | 토큰 만료. [발급 절차](github-projects-setup.md#project_token-시크릿-boardyml-동작에-필수) |
 | 새 이슈가 보드에 안 올라옴 | 보드 `···` → Workflows → **Auto-add to project**가 켜져 있나 |
 | 배포했는데 이슈가 안 닫힘 | 커밋 메시지의 `Closes #N`이 `main`까지 갔나 (`git log main --grep "Closes #N"`) |
