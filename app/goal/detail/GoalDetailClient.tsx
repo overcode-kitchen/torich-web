@@ -19,6 +19,7 @@ import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLi
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { scrollToDetailSection } from '@/app/utils/scrollToDetailSection'
+import { deriveGoalStatus } from '@/app/utils/goal-status'
 import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
 import { amountBucket, daysBetween, track } from '@/app/lib/analytics'
 import { Button } from '@/components/ui/button'
@@ -69,6 +70,17 @@ export default function GoalDetailClient() {
   const { updateGoal, archiveGoal, isUpdating } = useGoalUpdate(userId)
   const { deleteGoal, isDeleting } = useGoalDelete(userId)
   const { linkRecordToGoal, isLinking } = useInvestmentGoalLink(userId)
+
+  // 보관은 완료(기간 종료 포함)된 목적만 가능하다. 홈 카드와 동일한 파생 상태 기준.
+  const isCompletedGoal =
+    goal && progress
+      ? deriveGoalStatus({
+          goal,
+          linkedRecords: records,
+          accumulatedAmount: progress.currentValue,
+          now: new Date(),
+        }) === 'completed'
+      : false
 
   useEffect(() => {
     if (!goal || !progress) return
@@ -180,12 +192,14 @@ export default function GoalDetailClient() {
         <DropdownMenuItem onSelect={() => router.push(`/goal/detail/edit?id=${goal.id}`)}>
           수정하기
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={() => setShowArchiveModal(true)}
-          disabled={isUpdating}
-        >
-          보관하기
-        </DropdownMenuItem>
+        {isCompletedGoal && (
+          <DropdownMenuItem
+            onSelect={() => setShowArchiveModal(true)}
+            disabled={isUpdating}
+          >
+            보관하기
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onSelect={() => setShowDeleteModal(true)}
           disabled={isDeleting}

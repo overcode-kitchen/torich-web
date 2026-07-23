@@ -51,7 +51,8 @@ export default function DateSelectSheet({
   emptyLabel = '선택 안 함',
   pastYears = 0,
 }: DateSelectSheetProps) {
-  const currentYear = new Date().getFullYear()
+  const today = new Date()
+  const currentYear = today.getFullYear()
   const selectedYear = selectedDate?.getFullYear() ?? currentYear
   // 휠 연도 범위: 과거 선택값·pastYears(과거 시작일 등)를 포괄하고, 장기 목표를 위해 +30년까지 노출.
   const startYear = Math.min(currentYear - pastYears, selectedYear)
@@ -106,21 +107,28 @@ export default function DateSelectSheet({
           <div className={cn('flex items-center gap-1', pickerOpen && 'invisible')}>
             <button
               type="button"
+              onClick={() => setMonth(new Date(currentYear, today.getMonth(), 1))}
+              className="flex h-11 items-center rounded-xl px-3 text-sm font-medium text-foreground-subtle hover:bg-surface transition-colors"
+            >
+              오늘
+            </button>
+            <button
+              type="button"
               onClick={() => setMonth((m) => shiftMonth(m, -1))}
               disabled={atStart}
-              className="p-1.5 rounded-lg text-foreground-subtle hover:bg-surface disabled:opacity-30 transition-colors"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-foreground-subtle hover:bg-surface disabled:opacity-30 transition-colors"
               aria-label="이전 달"
             >
-              <CaretLeft className="w-4 h-4" />
+              <CaretLeft className="w-6 h-6" />
             </button>
             <button
               type="button"
               onClick={() => setMonth((m) => shiftMonth(m, 1))}
               disabled={atEnd}
-              className="p-1.5 rounded-lg text-foreground-subtle hover:bg-surface disabled:opacity-30 transition-colors"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-foreground-subtle hover:bg-surface disabled:opacity-30 transition-colors"
               aria-label="다음 달"
             >
-              <CaretRight className="w-4 h-4" />
+              <CaretRight className="w-6 h-6" />
             </button>
           </div>
         </div>
@@ -179,7 +187,10 @@ export default function DateSelectSheet({
           </ScrollArea>
         )}
 
-        <div className="flex items-center justify-between px-6 py-4 border-t border-border-subtle shrink-0">
+        <div
+          className="flex items-center justify-between px-6 pt-4 border-t border-border-subtle shrink-0"
+          style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
+        >
           {onClear ? (
             <button
               type="button"

@@ -25,6 +25,7 @@ export type Database = {
           memo: string | null
           name: string
           notification_enabled: boolean
+          sort_order: number | null
           target_amount: number
           target_date: string | null
           updated_at: string
@@ -40,6 +41,7 @@ export type Database = {
           memo?: string | null
           name: string
           notification_enabled?: boolean
+          sort_order?: number | null
           target_amount: number
           target_date?: string | null
           updated_at?: string
@@ -55,6 +57,7 @@ export type Database = {
           memo?: string | null
           name?: string
           notification_enabled?: boolean
+          sort_order?: number | null
           target_amount?: number
           target_date?: string | null
           updated_at?: string
@@ -157,6 +160,7 @@ export type Database = {
           rate_updated_at: string | null
           record_type: string
           settled_at: string | null
+          sort_order: number | null
           start_date: string | null
           symbol: string | null
           title: string
@@ -182,6 +186,7 @@ export type Database = {
           rate_updated_at?: string | null
           record_type?: string
           settled_at?: string | null
+          sort_order?: number | null
           start_date?: string | null
           symbol?: string | null
           title: string
@@ -207,6 +212,7 @@ export type Database = {
           rate_updated_at?: string | null
           record_type?: string
           settled_at?: string | null
+          sort_order?: number | null
           start_date?: string | null
           symbol?: string | null
           title?: string

@@ -27,6 +27,8 @@ export interface UseGoalGroupsReturn {
   userId: string | undefined
   /** 목적 목록 재조회 (보관 후 홈 카드 갱신용) */
   refetch: () => Promise<void>
+  /** 목적 목록 로컬 갱신 (드래그 순서 변경 낙관적 반영용) */
+  setGoals: React.Dispatch<React.SetStateAction<Goal[]>>
 }
 
 /**
@@ -45,7 +47,7 @@ export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
     })
   }, [])
 
-  const { goals, isLoading: goalsLoading, refetch } = useGoals(userId)
+  const { goals, isLoading: goalsLoading, refetch, setGoals } = useGoals(userId)
   const { completedPayments, retroactivePayments, capturedAmounts, isLoading: paymentsLoading } =
     usePaymentHistory()
   const progressMap = useGoalsProgress(
@@ -87,5 +89,6 @@ export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
     isLoading: goalsLoading || paymentsLoading,
     userId,
     refetch,
+    setGoals,
   }
 }

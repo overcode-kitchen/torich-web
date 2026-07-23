@@ -8,6 +8,7 @@ import { getRecordAvatar } from '@/app/utils/recordAvatar'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
+import type { SortableRenderProps } from '@/app/components/Common/DragSortable'
 import type { MonthlyRecordStatus } from '@/app/hooks/payment/useMonthlyPaymentStatus'
 import type { Investment } from '@/app/types/investment'
 
@@ -27,6 +28,10 @@ export interface GoalGroupItemRowProps {
   isLast?: boolean
   /** 묶인 목적이 완료(기간 종료)면 이번 달 납입 토글·미루기를 비활성(정적)으로 만든다. */
   frozen?: boolean
+  /** 드래그 손잡이(행 본문에 스프레드). 정렬 활성 카드에서만 전달. */
+  dragHandle?: SortableRenderProps['handle']
+  /** 이 행이 드래그 중인지. 드래그 중엔 스와이프 제스처를 억제한다. */
+  sortableDragging?: boolean
 }
 
 /**
@@ -45,6 +50,8 @@ export function GoalGroupItemRow({
   onSelect,
   isLast = false,
   frozen = false,
+  dragHandle,
+  sortableDragging = false,
 }: GoalGroupItemRowProps) {
   const { deleteInvestment } = useInvestmentsContext()
   const { total, completed, nextPendingDay, isFullyPaid } = status
@@ -74,9 +81,10 @@ export function GoalGroupItemRow({
     <>
       <div
         className="relative overflow-hidden bg-card"
-        onTouchStart={swipe.onTouchStart}
-        onTouchMove={swipe.onTouchMove}
-        onTouchEnd={swipe.onTouchEnd}
+        // 드래그(롱프레스) 중엔 스와이프를 억제해 두 제스처가 겹치지 않게 한다.
+        onTouchStart={sortableDragging ? undefined : swipe.onTouchStart}
+        onTouchMove={sortableDragging ? undefined : swipe.onTouchMove}
+        onTouchEnd={sortableDragging ? undefined : swipe.onTouchEnd}
       >
         {/* 스와이프 액션: 훅의 노출 폭은 액션당 80px 슬롯. 버튼은 68px + 여백으로 슬롯 안에 띄운다. */}
         {showPostponeInSwipe && (
@@ -106,6 +114,9 @@ export function GoalGroupItemRow({
         <div
           role="button"
           tabIndex={0}
+          ref={dragHandle?.ref}
+          {...dragHandle?.attributes}
+          {...dragHandle?.listeners}
           onClick={() => {
             if (swipe.isRevealed) {
               swipe.close()
@@ -120,7 +131,7 @@ export function GoalGroupItemRow({
             }
           }}
           onContextMenu={(ev) => ev.preventDefault()}
-          aria-label={`${record.title} 상세 보기`}
+          aria-label={`${record.title} 상세 보기${dragHandle ? ' (길게 눌러 순서 변경)' : ''}`}
           className="relative flex cursor-pointer select-none items-center justify-between gap-3 bg-card py-2.5 transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           style={{
             transform: `translateX(${swipe.translateX}px)`,

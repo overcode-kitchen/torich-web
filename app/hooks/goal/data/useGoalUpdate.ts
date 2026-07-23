@@ -8,6 +8,8 @@ export interface UseGoalUpdateReturn {
   updateGoal: (id: string, patch: GoalUpdateInput) => Promise<Goal | null>
   archiveGoal: (id: string) => Promise<void>
   unarchiveGoal: (id: string) => Promise<void>
+  /** 드래그로 바뀐 목적 순서를 저장한다. orderedIds 인덱스를 sort_order로 일괄 반영. */
+  reorderGoals: (orderedIds: string[]) => Promise<void>
   isUpdating: boolean
 }
 
@@ -63,5 +65,33 @@ export function useGoalUpdate(userId: string | undefined): UseGoalUpdateReturn {
     [updateGoal],
   )
 
-  return { updateGoal, archiveGoal, unarchiveGoal, isUpdating }
+  // 순서 저장: orderedIds 순서대로 sort_order = 0,1,2... 를 일괄 UPDATE.
+  // updateGoal(단건 + select)보다 가볍게, 여러 행을 병렬 UPDATE 한다.
+  const reorderGoals = useCallback(
+    async (orderedIds: string[]): Promise<void> => {
+      if (!userId || orderedIds.length === 0) return
+      setIsUpdating(true)
+      try {
+        const results = await Promise.all(
+          orderedIds.map((id, index) =>
+            supabase
+              .from('goals')
+              .update({ sort_order: index })
+              .eq('id', id)
+              .eq('user_id', userId),
+          ),
+        )
+        const failed = results.find((r) => r.error)
+        if (failed?.error) throw failed.error
+      } catch (e) {
+        console.error('useGoalUpdate reorder failed:', e)
+        throw e
+      } finally {
+        setIsUpdating(false)
+      }
+    },
+    [userId, supabase],
+  )
+
+  return { updateGoal, archiveGoal, unarchiveGoal, reorderGoals, isUpdating }
 }
