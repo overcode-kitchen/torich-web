@@ -19,9 +19,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      # 버전은 package.json의 packageManager 필드를 따른다.
+      # 여기에 version을 적으면 둘이 충돌해 ERR_PNPM_BAD_PM_VERSION이 난다.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - uses: actions/setup-node@v5
         with:
