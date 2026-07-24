@@ -65,7 +65,7 @@
 | 운영 장애라 지금 당장 | patch 버전 — [급한 수정](#급한-수정이-생겼을-때) 참고 |
 | 언젠가는 해야 하는데 버전은 미정 | **비워둔다** → 보드 `백로그` 뷰에 쌓인다 |
 
-> 라벨은 템플릿이 알아서 붙인다. `feat` `fix` `refactor` `docs` 4개뿐이고 커밋 type과 같다.
+> 라벨은 템플릿이 알아서 붙인다. 작업 종류는 커밋 type과 1:1이다 — `feat` `fix` `refactor` `docs` `chore` `style`.
 
 **자동**: 이슈를 만들면 보드에 `신규`로 올라간다. 손으로 추가할 필요 없다.
 
@@ -97,7 +97,7 @@ git checkout -b fix/58-chart-loss   # type/이슈번호-설명
 | `chore/17-husky-branch-hook` | 잡무 이슈 #17 |
 
 > 작업이 길어져 `integration`에 남이 머지한 게 쌓이면 `git merge origin/integration`으로 받아온다.
-> 이슈 브랜치가 아닌 `main`·`integration`·`develop/*`에서 커밋하면 `commit-msg` 훅이 **경고**를 띄운다(커밋은 통과).
+> 이슈 브랜치가 아닌 곳(`main`·`integration` 등)에서 커밋하면 `commit-msg` 훅이 **경고**를 띄운다(커밋은 통과).
 
 커밋 메시지 규칙은 `type(scope): 한글 설명 + ~함/~음`이고, **마지막 줄에 `Closes #N`을 넣는다.**
 
