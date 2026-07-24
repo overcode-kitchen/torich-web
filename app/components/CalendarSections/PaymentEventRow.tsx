@@ -6,7 +6,7 @@ import type { Investment } from '@/app/types/investment'
 import { Button } from '@/components/ui/button'
 import { formatMonthlyContribution } from '@/app/utils/investment-display'
 import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
-import { getRecordAvatar } from '@/app/utils/recordAvatar'
+import { RecordAvatar } from '@/app/components/Common/RecordAvatar'
 
 interface PaymentEventRowProps {
   event: PaymentEvent
@@ -36,16 +36,6 @@ export function PaymentEventRow({
   const contribution = investment ? formatMonthlyContribution(investment).main : null
   // 완료/미룸은 둘 다 "해소된" 상태로 보고 아바타·제목을 흐리게 표시한다.
   const isResolved = isCompleted || isPostponed
-  // 홈 탭과 동일한 아바타 규칙(투자=초록/파랑, 예적금·현금=중립)을 공유해
-  // 같은 항목이 탭에 따라 다른 아이콘으로 보이지 않도록 한다.
-  const avatarLabel = investment
-    ? getRecordAvatar(investment).label
-    : getInvestmentAvatarLabel(event.title)
-  const avatarClassName = isResolved
-    ? 'bg-surface-hover text-foreground-subtle'
-    : investment
-      ? getRecordAvatar(investment).className
-      : 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)]'
 
   return (
     <div
@@ -64,11 +54,16 @@ export function PaymentEventRow({
       aria-label={`${event.title} 상세 보기`}
     >
       <div className="flex items-center gap-2 min-w-0">
-        <div
-          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${avatarClassName}`}
-        >
-          {avatarLabel}
-        </div>
+        {/* 홈 탭과 동일한 아바타 규칙(투자=초록/파랑, 예적금·현금=중립)을 공유해
+            같은 항목이 탭에 따라 다른 아이콘으로 보이지 않도록 한다.
+            완료·미룸(isResolved) 상태면 회색으로 강제한다. */}
+        <RecordAvatar
+          record={investment ?? undefined}
+          label={investment ? undefined : getInvestmentAvatarLabel(event.title)}
+          bgClassName={isResolved ? 'bg-surface-hover' : investment ? undefined : 'bg-[var(--brand-accent-bg)]'}
+          textClassName={isResolved ? 'text-foreground-subtle' : investment ? undefined : 'text-[var(--brand-accent-text)]'}
+          size="sm"
+        />
         <div className="min-w-0">
           <p
             className={`text-base font-semibold truncate ${

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import { formatPaymentDateShort } from '@/app/utils/date'
-import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
+import { RecordAvatar } from '@/app/components/Common/RecordAvatar'
 import type { DisplayItem } from '@/app/hooks/upcoming/useUpcomingInvestments'
 
 interface UpcomingInvestmentsListProps {
@@ -54,16 +54,7 @@ export default function UpcomingInvestmentsList({
                                 {/* InvestmentItem과 동일: 1줄 = 아바타+종목명, 2줄 = pl-2 보조 */}
                                 <div className="flex min-w-0 flex-col gap-1.5">
                                     <div className="flex min-w-0 items-center gap-2">
-                                        <div
-                                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
-                                                inv.market === 'US'
-                                                    ? 'bg-blue-100 text-blue-600'
-                                                    : 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)]'
-                                            }`}
-                                            aria-hidden
-                                        >
-                                            {getInvestmentAvatarLabel(inv.title)}
-                                        </div>
+                                        <RecordAvatar record={inv} size="sm" />
                                         <h3 className="min-w-0 truncate text-base font-semibold text-foreground">
                                             {inv.title}
                                         </h3>

@@ -21,7 +21,7 @@ import {
   useInvestmentTabContext,
 } from '@/app/contexts/InvestmentTabContext'
 import { useSavingsCashDetail } from '@/app/hooks/investment/detail/useSavingsCashDetail'
-import { getRecordAvatar } from '@/app/utils/recordAvatar'
+import { RecordAvatar } from '@/app/components/Common/RecordAvatar'
 import { useNotificationToggle } from '@/app/hooks/notification/useNotificationToggle'
 import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
 import { cn } from '@/lib/utils'
@@ -66,8 +66,6 @@ function SavingsCashDetailViewInner({
     historyRef,
   } = useInvestmentTabContext()
 
-  const headerAvatar = getRecordAvatar(item, 'sm')
-
   const hasHistory =
     detail.paymentHistory.length > 0 || detail.retroactivePaymentHistory.length > 0
 
@@ -86,18 +84,7 @@ function SavingsCashDetailViewInner({
           <DetailHeaderTitle
             title={item.title}
             onClick={() => handleFieldTap('title')}
-            leading={
-              <span
-                className={cn(
-                  'flex shrink-0 items-center justify-center rounded-full font-semibold',
-                  headerAvatar.sizeClassName,
-                  headerAvatar.className,
-                )}
-                aria-hidden
-              >
-                {headerAvatar.label}
-              </span>
-            }
+            leading={<RecordAvatar record={item} size="sm" />}
           />
         }
         actions={
