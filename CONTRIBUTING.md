@@ -137,7 +137,7 @@ git checkout integration && git pull && git merge origin/main && git push origin
 | `SUPABASE_SERVICE_ROLE_KEY` | 서비스 Role Key (서버 전용) |
 | `NEXT_PUBLIC_FIREBASE_*` | Firebase 설정 |
 | `NEXT_PUBLIC_GA_ID` | Google Analytics 측정 ID |
-| `NEXT_PUBLIC_API_URL` | `npm run build:app` 빌드 시 필수 |
+| `NEXT_PUBLIC_API_URL` | `pnpm build:app` 빌드 시 필수 |
 
 ---
 

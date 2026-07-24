@@ -24,8 +24,8 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · Supabase · Capacitor
 ## 시작하기
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 [http://localhost:3000](http://localhost:3000) 으로 접속.
@@ -46,8 +46,8 @@ NEXT_PUBLIC_API_URL=        # build:app 빌드 시 필수
 ## 빌드
 
 ```bash
-npm run build       # 웹용 (Next.js 일반 빌드)
-npm run build:app   # iOS 앱용 (정적 export → Capacitor)
+pnpm build       # 웹용 (Next.js 일반 빌드)
+pnpm build:app   # iOS 앱용 (정적 export → Capacitor)
 ```
 
 `build:app` 은 빌드 중 `app/api`, `app/auth` 폴더를 임시 백업 후 정적 export 를 수행합니다. 빌드가 중단된 경우 [CLAUDE.md](CLAUDE.md) 의 "빌드 복구" 섹션을 참고하세요.

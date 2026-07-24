@@ -94,7 +94,7 @@
   mv server-routes.backup/api app/api && mv server-routes.backup/auth app/auth && rm -rf server-routes.backup
   ```
 - **`server.url`은 환경변수로만 설정한다**: 주석 해제된 `server.url`이 배포되면 운영 앱이 개발자 맥을 바라봐 전체 사용자가 앱을 못 쓴다. 그래서 `capacitor.config.ts`는 개발 주소를 **파일에 적지 않고** `CAP_SERVER_URL`로 받는다. 변수를 설정하지 않으면 `server: {}` + `loggingBehavior: 'production'`이 되므로, 파일에 개발 주소가 남아 커밋될 수 없다.
-  - 실기기 라이브 리로드: `npm run dev:app` (터미널 1) + `npm run sync:app` (터미널 2). 맥의 LAN IP는 `scripts/lan-ip.sh`가 자동 감지한다.
+  - 실기기 라이브 리로드: `pnpm dev:app` (터미널 1) + `pnpm sync:app` (터미널 2). 맥의 LAN IP는 `scripts/lan-ip.sh`가 자동 감지한다.
   - `capacitor.config.ts`를 직접 고쳐 주소를 적는 방식은 쓰지 않는다.
 
 ## 앱 빌드 환경변수 — `.env.local`이 `.env.production`을 이긴다 (CRITICAL)
@@ -105,7 +105,7 @@ Next의 우선순위는 아래와 같다. **위쪽이 이긴다.**
 
 | 순위 | 출처 |
 |---|---|
-| 1 | 쉘 환경변수 (`FOO=bar npm run build:app`) |
+| 1 | 쉘 환경변수 (`FOO=bar pnpm build:app`) |
 | 2 | `.env.production.local` |
 | 3 | **`.env.local`** |
 | 4 | `.env.production` |
@@ -120,7 +120,7 @@ Next의 우선순위는 아래와 같다. **위쪽이 이긴다.**
 `.env.local`을 고쳤다 되돌리는 방식은 되돌리기를 잊는 순간 로컬 주소가 새어 나간다. 우선순위 1위인 쉘 환경변수를 쓰면 파일을 건드리지 않는다.
 
 ```bash
-NEXT_PUBLIC_API_URL=https://torich.vercel.app npm run build:app
+NEXT_PUBLIC_API_URL=https://torich.vercel.app pnpm build:app
 ```
 
 `scripts/verify-app-build-env.mjs`가 빌드 전에 해석된 값과 **출처 파일**을 출력하고, 로컬 주소(`localhost`·루프백·사설 IP)면 빌드를 중단한다. 실기기 로컬 테스트 목적이라면 `ALLOW_LOCAL_API_URL=1`로만 우회한다.
@@ -178,7 +178,7 @@ app/foo/[id]/
 2. 식별자 값 집합을 빌드 시점에 모두 알 수 있는가?
    - YES → `[param]` + `generateStaticParams` 로 전체 명시
    - NO → **반드시 정적 경로 + query param 패턴** (`/foo/detail?id=xxx`)
-3. `router.push` / `router.replace` / `<Link>` 의 모든 대상 경로가 빌드 산출물(`out/`)에 존재하는지 확인 ( `npm run build:app` 후 `ls out/` 검증)
+3. `router.push` / `router.replace` / `<Link>` 의 모든 대상 경로가 빌드 산출물(`out/`)에 존재하는지 확인 ( `pnpm build:app` 후 `ls out/` 검증)
 
 ## 기존 동적 라우트를 query param으로 전환할 때
 
@@ -187,7 +187,7 @@ app/foo/[id]/
 ## 머지 전 라우팅 점검 체크리스트
 
 - [ ] 새로 추가/수정한 페이지가 `app/**/[*]/` 형태인가? → 정적 경로 + query param으로 대체 가능한지 재검토
-- [ ] `npm run build:app` 산출물 `out/` 에 모든 진입 경로의 HTML이 존재하는가
+- [ ] `pnpm build:app` 산출물 `out/` 에 모든 진입 경로의 HTML이 존재하는가
 - [ ] `server-routes.backup/` 폴더가 워킹 트리에 남아 있지 않은가
 - [ ] `git status` 에 `app/api/*`, `app/auth/*` 가 deleted로 떠 있지 않은가
 - [ ] `capacitor.config.ts` 의 `server.url` 이 주석 처리 + `loggingBehavior: 'production'` 인가

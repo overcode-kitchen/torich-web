@@ -2,10 +2,12 @@
   "name": "tickle-moa",
   "version": "1.2.0",
   "private": true,
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
+    "preinstall": "node scripts/only-pnpm.mjs",
     "dev": "next dev",
     "dev:app": "NEXT_PUBLIC_API_URL=http://$(sh scripts/lan-ip.sh):3000 next dev",
-    "sync:app": "CAP_SERVER_URL=http://$(sh scripts/lan-ip.sh):3000 npx cap sync ios",
+    "sync:app": "CAP_SERVER_URL=http://$(sh scripts/lan-ip.sh):3000 pnpm exec cap sync ios",
     "build": "next build",
     "build:app": "node scripts/verify-app-build-env.mjs && ([ -d ./server-routes.backup/api ] && mv ./server-routes.backup/api app/ || true) && ([ -d ./server-routes.backup/auth ] && mv ./server-routes.backup/auth app/ || true) && rm -rf ./server-routes.backup && mkdir -p ./server-routes.backup && ([ -d app/api ] && mv app/api ./server-routes.backup/ || true) && ([ -d app/auth ] && mv app/auth ./server-routes.backup/ || true) && BUILD_TARGET=app next build && ([ -d ./server-routes.backup/api ] && mv ./server-routes.backup/api app/ || true) && ([ -d ./server-routes.backup/auth ] && mv ./server-routes.backup/auth app/ || true) && rm -rf ./server-routes.backup",
     "start": "next start",
