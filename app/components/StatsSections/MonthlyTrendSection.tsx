@@ -10,10 +10,125 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LabelList } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts'
 import type { DateRange } from 'react-day-picker'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
+
+// ── 통나무 막대(모듈 쌓기) ────────────────────────────────────────────────
+// 부품(모듈)을 아래에서부터 세로로 쌓아 긴 통나무를 만들고, rate(%) 높이에서
+// 윗부분을 잘라 정확한 수치를 표현한다. 이미지를 '늘리지' 않고 '잘라 보여서' 결이
+// 망가지지 않는다. 부품 PNG는 디자이너 리소스가 오면 파일만 교체하면 된다.
+const WOOD_BASE = '/icons/3d/wood'
+// 부품 PNG는 몸통(기둥)이 canvas 중앙에 있고 좌우로 투명 여백(가지·옹이가 튀어나올 자리)이 있다.
+// canvas 종횡비(H/W)와 '몸통 폭 ÷ canvas 폭' 비율을 알면, 몸통을 막대 폭에 정확히 맞추고
+// 가지·옹이는 옆으로 넘치게(가로 클립 없이) 그릴 수 있다. 아래 값은 현재 리소스 실측치.
+const WOOD_CANVAS_AR = 398 / 541 // canvas 종횡비(H/W)
+const WOOD_CORE_FRAC = 317 / 541 // 몸통 폭 ÷ canvas 폭 — 이 부분이 막대 폭과 일치하게 렌더
+const WOOD_MODULES = {
+  body: `${WOOD_BASE}/wooden%20pole_01.png`, // 민무늬
+  crack: `${WOOD_BASE}/wooden%20pole_02.png`, // 결/갈라짐
+  knot: `${WOOD_BASE}/wooden%20pole_03.png`, // 옹이
+  branch: `${WOOD_BASE}/wooden%20pole_04.png`, // 가지+옹이
+} as const
+
+// 막대별 부품 배치는 index로 '고정'한다(랜덤 금지 — 다시 그릴 때 모양이 바뀌면 어지럽다).
+// 맨 아래는 항상 민무늬, 위로 갈수록 가지·옹이를 가끔 섞어 조합마다 다르게 보이게.
+function woodSequence(index: number, count: number): string[] {
+  let h = (index * 2654435761 + 40503) >>> 0
+  const next = () => ((h = (h * 1103515245 + 12345) >>> 0), h % 100)
+  const seq: string[] = []
+  // count-2 = 윗부분에서 잘리는(보이는) 맨 위 칸. 맨 아래(0)와 이 칸은 민무늬로 둬야
+  // 바닥은 안정적이고 윗면은 깔끔하게 잘린다. 가지·옹이는 그 사이 중간 칸에만.
+  const topVisible = count - 2
+  for (let i = 0; i < count; i++) {
+    if (i === 0 || i === topVisible) {
+      seq.push(WOOD_MODULES.body)
+      continue
+    }
+    const r = next()
+    if (r < 26) seq.push(WOOD_MODULES.branch)
+    else if (r < 54) seq.push(WOOD_MODULES.knot)
+    else if (r < 74) seq.push(WOOD_MODULES.crack)
+    else seq.push(WOOD_MODULES.body)
+  }
+  return seq
+}
+
+interface WoodBarShapeProps {
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  index?: number
+  selectedIndex: number | null
+  emphasisColor: string
+}
+
+/** recharts <Bar shape> 커스텀 렌더 — 한 막대를 통나무 부품 스택으로 그린다. */
+function WoodBarShape({
+  x = 0,
+  y = 0,
+  width = 0,
+  height = 0,
+  index = 0,
+  selectedIndex,
+  emphasisColor,
+}: WoodBarShapeProps) {
+  if (height <= 0 || width <= 0) return null
+  // 몸통(기둥)이 막대 폭(width)과 정확히 일치하도록 canvas 전체를 확대해서 그린다.
+  // → canvas 좌우 여백(가지·옹이)은 막대 밖으로 자연스럽게 넘친다(가로 클립 안 함).
+  const renderW = width / WOOD_CORE_FRAC // 몸통이 width가 되도록 canvas를 그릴 폭
+  const renderX = x + width / 2 - renderW / 2 // 몸통 중심을 막대 중심에 정렬
+  const boxH = renderW * WOOD_CANVAS_AR // 부품 한 칸 높이(가로=세로 동일 배율 → 왜곡 없음)
+  const bottom = y + height
+  const count = Math.ceil(height / boxH) + 1
+  const seq = woodSequence(index, count)
+  const clipId = `wood-clip-${index}`
+  const isSelected = selectedIndex === index
+
+  const modules = []
+  for (let i = 0; i < count; i++) {
+    modules.push(
+      <image
+        key={i}
+        href={seq[i]}
+        x={renderX}
+        y={bottom - (i + 1) * boxH}
+        width={renderW}
+        height={boxH}
+        preserveAspectRatio="none"
+      />,
+    )
+  }
+  return (
+    <g>
+      {/* 세로만 클립(위 잘라 % 표현, 아래는 축에 맞춤). 가로는 클립 안 해 가지가 살아있음 */}
+      <clipPath id={clipId}>
+        <rect x={renderX} y={y} width={renderW} height={height} />
+      </clipPath>
+      <g clipPath={`url(#${clipId})`}>
+        {modules}
+        {/* 선택 강조 — 나뭇결을 가리지 않게 밝게 띄우는 얇은 워시 */}
+        {isSelected && (
+          <rect x={x} y={y} width={width} height={height} fill="#ffffff" opacity={0.14} />
+        )}
+      </g>
+      {isSelected && (
+        <rect
+          x={x - 1}
+          y={y - 1}
+          width={width + 2}
+          height={height + 2}
+          fill="none"
+          stroke={emphasisColor}
+          strokeWidth={2}
+          rx={3}
+        />
+      )}
+    </g>
+  )
+}
 
 interface MonthlyTrendSectionProps {
   // 기간 필터
@@ -46,7 +161,6 @@ export default function MonthlyTrendSection({
   handleCustomPeriod,
   periodCompletionRate,
   chartData,
-  chartBarColor,
   chartEmphasisColor,
   consistency,
 }: MonthlyTrendSectionProps) {
@@ -133,9 +247,16 @@ export default function MonthlyTrendSection({
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} width={28} />
                 <Bar
                   dataKey="rate"
-                  radius={[4, 4, 0, 0]}
+                  barSize={22}
                   isAnimationActive={false}
                   onClick={(_, index) => setSelectedIndex((prev) => (prev === index ? null : index))}
+                  shape={(props: unknown) => (
+                    <WoodBarShape
+                      {...(props as WoodBarShapeProps)}
+                      selectedIndex={selectedIndex}
+                      emphasisColor={chartEmphasisColor}
+                    />
+                  )}
                 >
                   <LabelList
                     dataKey="rate"
@@ -161,18 +282,6 @@ export default function MonthlyTrendSection({
                       )
                     }}
                   />
-                  {chartData.map((_, i) => {
-                    // 강조는 '선택된 달'만 — 미선택일 땐 전부 중립.
-                    // (강조색이 '이번 달'과 '선택한 달' 두 의미로 혼동되지 않게, 탭하면 색이 바뀌어 피드백도 생기게)
-                    const isHighlighted = selectedIndex !== null && i === selectedIndex
-                    return (
-                      <Cell
-                        key={i}
-                        fill={isHighlighted ? chartEmphasisColor : chartBarColor}
-                        cursor="pointer"
-                      />
-                    )
-                  })}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
