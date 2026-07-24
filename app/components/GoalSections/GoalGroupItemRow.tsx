@@ -4,7 +4,7 @@ import { Check, Clock, TrashSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import { formatInvestmentDays } from '@/app/types/investment'
-import { getRecordAvatar } from '@/app/utils/recordAvatar'
+import { RecordAvatar } from '@/app/components/Common/RecordAvatar'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
@@ -61,7 +61,6 @@ export function GoalGroupItemRow({
     record.unit_type === 'shares' && record.monthly_shares
       ? `${record.monthly_shares}주`
       : formatCurrency(record.monthly_amount)
-  const avatar = getRecordAvatar(record)
   // 만기 정산이 끝난 적금: 더 이상 월 납입 없음 → "완료" 버튼 대신 "만기 완료" 배지.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
   const isSettled = !!record.settled_at
@@ -143,12 +142,7 @@ export function GoalGroupItemRow({
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 flex-col gap-1.5">
               <div className="flex min-w-0 items-center gap-2">
-                <div
-                  className={`flex shrink-0 items-center justify-center rounded-full font-semibold ${avatar.sizeClassName} ${avatar.className}`}
-                  aria-hidden
-                >
-                  {avatar.label}
-                </div>
+                <RecordAvatar record={record} size="sm" />
                 <h4 className="min-w-0 truncate text-base font-semibold text-foreground">
                   {record.title}
                 </h4>
