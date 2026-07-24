@@ -16,13 +16,15 @@
 |--------|------|
 | `main` | **지금 앱스토어에 있는 것** |
 | `integration` | **다음에 낼 것** |
-| `develop/<이름>` | 개인 작업 브랜치 (`develop/suni`, `develop/hansol`) |
-| `hotfix/<버전>` | 급한 수정 (`hotfix/1.2.1`) |
+| `type/이슈번호-설명` | 이슈 하나짜리 작업 브랜치 (`fix/58-chart-loss`). **머지하면 지운다** |
+| `hotfix/<버전>` | 급한 수정 (`hotfix/1.2.1`). 머지하면 지운다 |
 
 ```
-평소     :  develop/<이름> ──▶ integration ──▶ main  + 태그 v1.3.0
+평소     :  type/이슈번호-설명 ──▶ integration ──▶ main  + 태그 v1.3.0
 급할 때  :  main ──▶ hotfix/1.2.1 ──▶ main  + 태그 v1.2.1 ──▶ integration에 합치기
 ```
+
+오래 사는 브랜치는 `main`·`integration` 둘뿐이다. 작업 브랜치는 이슈마다 새로 판다 — 이슈 하나당 브랜치 하나라 PR 범위가 명확해지고, 브랜치 이름의 번호로 [board.yml](.github/workflows/board.yml)이 카드를 `진행중`으로 옮긴다.
 
 ### 규칙은 하나 — 급한 수정은 `main`에서 시작하고, 끝나면 `integration`에 합친다
 
@@ -37,7 +39,7 @@ git checkout integration && git pull && git merge origin/main && git push origin
 
 ### 1.3.0 만드는 중에 1.2.1 급한 수정이 생겼을 때
 
-1. 하던 작업은 개인 브랜치에 커밋해두고 둔다 (`git stash` 도 됨)
+1. 하던 작업은 작업 브랜치에 커밋해두고 둔다 (`git stash` 도 됨)
 2. `git checkout main && git pull && git checkout -b hotfix/1.2.1`
 3. 고쳐서 `main` 으로 PR → 머지 → 버전 올리고 태그 `v1.2.1` push
 4. 위의 합치기 명령 실행
@@ -86,7 +88,8 @@ git checkout integration && git pull && git merge origin/main && git push origin
 
 - 제목은 커밋 컨벤션과 동일하게: `fix(stats): 손실이 차트에서 0으로 표시됨`
 - 템플릿 2종(기능 / 버그)이 자동으로 뜨고, 라벨도 자동으로 붙는다.
-- **라벨은 `feat` `fix` `refactor` `docs` 4개뿐이고, 커밋 type과 같다.** 그 외 정보는 마일스톤이 말해준다.
+- **작업 종류 라벨은 커밋 type과 1:1이다** — `feat` `fix` `refactor` `docs` `chore` `style`. 템플릿이 알아서 붙인다.
+- **`진행중`·`배포대기` 라벨은 손대지 않는다.** 보드 Status를 복사한 것이고 [board.yml](.github/workflows/board.yml)이 자동으로 붙였다 뗀다.
 - 지금 나갈 게 정해진 작업은 마일스톤을 지정한다. 언젠가 해야 하지만 버전을 못 박을 수 없는 것은 비워둔다 — 보드의 `백로그` 뷰가 모아 보여주고, 다음 버전 계획 때 끌어온다.
 
 ### 한 사이클 · 릴리스 절차
@@ -128,15 +131,26 @@ git checkout integration && git pull && git merge origin/main && git push origin
 
 ## 로컬 환경
 
-`.env.local` 의 키는 `.env.example` 을 기준으로 통일합니다. "내 로컬에서만 되는 상태" 를 만들지 않습니다.
+키 구성은 [`.env.example`](.env.example) 을 기준으로 통일합니다. "내 로컬에서만 되는 상태" 를 만들지 않습니다.
+
+**파일은 두 개를 만듭니다.** 키 구성은 같고 값만 다릅니다.
+
+```bash
+cp .env.example .env.development.local    # pnpm dev 에서만 읽힘
+cp .env.example .env.production           # pnpm build:app 에서만 읽힘
+```
+
+> 🚫 **`.env.local` 은 만들지 마세요.**
+> dev·build 양쪽에서 읽히고 `.env.production` 보다 **우선**하기 때문에, 개발용 값이 앱 번들에 조용히 구워집니다. 빌드는 성공하고 경고도 없어서 **앱스토어에 올린 뒤에야 드러납니다.** 이 저장소에서 실제로 두 번 발생했습니다 (잘못된 API 주소가 구워짐, Dev GA 속성으로 운영 데이터 유입).
+> 자세한 우선순위는 [CLAUDE.md의 "앱 빌드 환경변수" 섹션](CLAUDE.md) 참고.
 
 | 변수 | 설명 |
 |------|------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Anon Key |
-| `SUPABASE_SERVICE_ROLE_KEY` | 서비스 Role Key (서버 전용) |
+| `SUPABASE_SERVICE_ROLE_KEY` | 서비스 Role Key (서버 전용). `.env.production` 에서는 비워둡니다 |
 | `NEXT_PUBLIC_FIREBASE_*` | Firebase 설정 |
-| `NEXT_PUBLIC_GA_ID` | Google Analytics 측정 ID |
+| `NEXT_PUBLIC_GA_ID` | Google Analytics 측정 ID (dev/prod 속성 분리) |
 | `NEXT_PUBLIC_API_URL` | `pnpm build:app` 빌드 시 필수 |
 
 ---

@@ -19,9 +19,11 @@
 
 Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · Supabase · Capacitor (iOS).
 
-자세한 내용은 [docs/TECH_STACK.md](docs/TECH_STACK.md) 참고.
+자세한 내용은 [docs/coding-style.md](docs/coding-style.md) 참고.
 
 ## 시작하기
+
+pnpm 전용 저장소입니다. 없다면 `npm install -g pnpm@10` 으로 설치하세요.
 
 ```bash
 pnpm install
@@ -32,16 +34,16 @@ pnpm dev
 
 ### 환경변수
 
-`.env.local` 에 아래 키들이 필요합니다.
+[`.env.example`](.env.example) 을 복사해 만듭니다. 키 구성은 같고 값만 다릅니다.
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_GA_ID=
-NEXT_PUBLIC_API_URL=        # build:app 빌드 시 필수
+cp .env.example .env.development.local    # pnpm dev 에서만 읽힘
+cp .env.example .env.production           # pnpm build:app 에서만 읽힘
 ```
+
+> 🚫 **`.env.local` 은 만들지 마세요.** dev·build 양쪽에서 읽히고 `.env.production` 보다 우선해, 개발용 값이 앱 번들에 조용히 구워집니다. 경고 없이 빌드가 성공하므로 앱스토어에 올린 뒤에야 드러납니다. 이유와 우선순위는 [`.env.example`](.env.example) 상단에 적혀 있습니다.
+
+각 키의 설명은 [`.env.example`](.env.example) 에 있습니다.
 
 ## 빌드
 
@@ -56,10 +58,11 @@ pnpm build:app   # iOS 앱용 (정적 export → Capacitor)
 
 | 문서 | 내용 |
 |------|------|
+| [docs/workflow.md](docs/workflow.md) | **협업 흐름** — 이슈 등록부터 배포까지, 사람이 하는 일과 자동인 일 *(처음이라면 여기부터)* |
 | [docs/service-analysis.md](docs/service-analysis.md) | **서비스 전체 분석** — 아키텍처·데이터모델·도메인·인프라 마스터 개요 |
 | [CLAUDE.md](CLAUDE.md) | 아키텍처/디자인 시스템 규칙, Supabase 호환성 룰 (AI/개발자 공통) |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | 브랜치 전략, 협업 규칙, 배포 프로세스 |
-| [docs/TECH_STACK.md](docs/TECH_STACK.md) | 기술 스택 상세 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 협업 규칙의 배경과 예외 (브랜치 전략, 환경 설정, 마이그레이션) |
+| [docs/coding-style.md](docs/coding-style.md) | 기술 스택 제약·코딩 스타일·경로 규칙 |
 | [docs/oauth-setup.md](docs/oauth-setup.md) | OAuth (Google/Apple) 설정 및 트러블슈팅 |
 | [docs/notification-infra.md](docs/notification-infra.md) | 알림 웹훅 + pg_cron 인프라 |
 | [docs/ga4-events.md](docs/ga4-events.md) | GA4 이벤트 설계 — "왜 이걸 측정하나" (개발자·PM) |
