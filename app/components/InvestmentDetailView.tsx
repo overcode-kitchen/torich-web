@@ -6,7 +6,7 @@ import { Bell, BellSlash, DotsThreeVertical } from '@phosphor-icons/react'
 import { Investment } from '@/app/types/investment'
 import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
 import { DetailHeaderTitle } from '@/app/components/Common/DetailHeaderTitle'
-import { RecordAvatar } from '@/app/components/Common/RecordAvatar'
+import { getRecordAvatar } from '@/app/utils/recordAvatar'
 import { useInvestmentDetailUI } from '@/app/hooks/investment/detail/useInvestmentDetailUI'
 import { useInvestmentDetailHandlers } from '@/app/hooks/investment/detail/useInvestmentDetailHandlers'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
@@ -46,6 +46,8 @@ function InternalInvestmentDetailView({
 
   // Context (스크롤 컨테이너 ref만 필요. 탭 ref는 InvestmentDetailContent가 직접 사용)
   const { scrollContainerRef } = useInvestmentTabContext()
+
+  const headerAvatar = getRecordAvatar(item, 'sm')
 
   // Payment History Hook
   const {
@@ -188,7 +190,18 @@ function InternalInvestmentDetailView({
         centerSlot={
           <DetailHeaderTitle
             title={item.title}
-            leading={<RecordAvatar record={item} size="sm" />}
+            leading={
+              <span
+                className={cn(
+                  'flex shrink-0 items-center justify-center rounded-full font-semibold',
+                  headerAvatar.sizeClassName,
+                  headerAvatar.className,
+                )}
+                aria-hidden
+              >
+                {headerAvatar.label}
+              </span>
+            }
           />
         }
       >
