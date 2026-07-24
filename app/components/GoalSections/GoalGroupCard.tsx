@@ -6,6 +6,7 @@ import { GoalGroupItemRow } from './GoalGroupItemRow'
 import { AddRecordDrawer } from './AddRecordDrawer'
 import { resolvePurposeIcon } from '@/app/constants/goal'
 import { dDayLabel } from '@/app/utils/goal-format'
+import { DDayBadge } from '@/app/components/Common/DDayBadge'
 import { nextSettlementDDay, type GoalStatus } from '@/app/utils/goal-status'
 import type { MonthlyRecordStatus } from '@/app/hooks/payment/useMonthlyPaymentStatus'
 import type { Investment } from '@/app/types/investment'
@@ -100,11 +101,7 @@ export function GoalGroupCard({
               정산 대기{settlementLabel && ` · ${settlementLabel}`}
             </span>
           )}
-          {!isPendingSettlement && dDay && (
-            <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-[11px] font-semibold text-foreground-soft tabular-nums">
-              {dDay}
-            </span>
-          )}
+          {!isPendingSettlement && dDay && <DDayBadge label={dDay} />}
           {percent !== null && (
             <span className="shrink-0 text-sm font-semibold text-foreground tabular-nums">
               {percent}%
