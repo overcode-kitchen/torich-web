@@ -60,3 +60,7 @@ server-routes.backup/
 
 **/GoogleService-Info.plist
 supabase/.temp/
+
+# pnpm 전용 저장소. npm으로 설치하면 lockfile이 어긋나 CI가 깨진다.
+package-lock.json
+yarn.lock
