@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { formatCurrency } from '@/lib/utils'
 
 interface ExpectedAssetSectionProps {
@@ -15,7 +16,15 @@ export default function ExpectedAssetSection({
 }: ExpectedAssetSectionProps) {
   return (
     <section className="bg-card rounded-2xl p-5 mb-4 relative">
-      <div className="flex items-center gap-1 mb-2">
+      <div className="flex items-center gap-1.5 mb-2">
+        <Image
+          src="/icons/3d/coin-stack.png"
+          alt=""
+          width={24}
+          height={24}
+          className="w-6 h-6 shrink-0"
+          aria-hidden
+        />
         <h2 className="text-sm font-semibold text-foreground-muted">지금까지 모은 돈</h2>
       </div>
       <div className="mb-1">
