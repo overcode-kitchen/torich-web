@@ -3,8 +3,8 @@
 import { TrashSimple } from '@phosphor-icons/react'
 import { Investment, getStartDate, formatInvestmentDays, isHabitMode } from '@/app/types/investment'
 import { formatMonthlyContribution } from '@/app/utils/investment-display'
+import { getInvestmentAvatarLabel } from '@/app/utils/investmentAvatarLabel'
 import { isCompleted } from '@/app/utils/date'
-import { RecordAvatar } from '@/app/components/Common/RecordAvatar'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
 
@@ -77,7 +77,13 @@ export default function InvestmentItem({
             <div className="flex flex-col gap-1.5 min-w-0">
               {/* 1줄: 아바타 + 종목명 */}
               <div className="flex items-center gap-2 min-w-0">
-                <RecordAvatar record={item} size="sm" />
+                <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                  item.market === 'US'
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)]'
+                }`}>
+                  {getInvestmentAvatarLabel(item.title)}
+                </div>
                 <h3 className="text-base font-semibold text-foreground truncate">
                   {item.title}
                 </h3>
