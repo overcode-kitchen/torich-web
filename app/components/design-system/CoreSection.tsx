@@ -167,7 +167,7 @@ export function CoreSection() {
                         <NameLabel
                             label="카드 · 컨텐츠"
                             token="card-content"
-                            usage="홈 내 투자 목록, UpcomingInvestments, 빈 상태, auth-code-error"
+                            usage="홈 목적 그룹 카드, 빈 상태, auth-code-error"
                         />
                         <div className="rounded-3xl bg-white p-6 shadow-sm">
                             <h3 className="text-2xl font-semibold tracking-tight mb-2">카드 제목입니다.</h3>

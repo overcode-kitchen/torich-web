@@ -6,7 +6,7 @@ import { isPaymentCompleted, isRecordPostponedInMonth } from '@/app/utils/paymen
 import { calculateEndDate, getElapsedMonths } from '@/app/utils/date'
 import { getRecordRealizedPrincipal } from '@/app/utils/realized-principal'
 import type { Goal } from '@/app/types/goal'
-import type { PaymentHistoryMap, CapturedAmountsMap } from '../../payment/usePaymentHistory'
+import type { PaymentHistoryMap, CapturedAmountsMap } from '@/app/types/payment'
 import type { PostponedPaymentsMap } from '../../payment/usePostponedPayments'
 
 const EMPTY_CAPTURED: CapturedAmountsMap = new Map()

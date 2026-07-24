@@ -1,5 +1,5 @@
 import type { Investment } from '@/app/types/investment'
-import type { PaymentHistoryMap, CapturedAmountsMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { PaymentHistoryMap, CapturedAmountsMap } from '@/app/types/payment'
 
 const EMPTY_CAPTURED: CapturedAmountsMap = new Map()
 

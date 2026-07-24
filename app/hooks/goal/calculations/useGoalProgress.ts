@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 import type { Investment } from '@/app/types/investment'
 import { getStartDate } from '@/app/types/investment'
-import type { PaymentHistoryMap, CapturedAmountsMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { PaymentHistoryMap, CapturedAmountsMap } from '@/app/types/payment'
 import { calculateSavingsMaturity } from '@/app/utils/savingsMaturity'
 import { getRecordRealizedPrincipal } from '@/app/utils/realized-principal'
 

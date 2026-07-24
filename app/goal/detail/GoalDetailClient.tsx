@@ -20,7 +20,7 @@ import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { scrollToDetailSection } from '@/app/utils/scrollToDetailSection'
 import { deriveGoalStatus } from '@/app/utils/goal-status'
-import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { amountBucket, daysBetween, track } from '@/app/lib/analytics'
 import { Button } from '@/components/ui/button'
 import {
@@ -59,7 +59,7 @@ export default function GoalDetailClient() {
 
   const { goal, records, unlinkedRecords, isLoading, refetch, setGoal } =
     useGoalDetail(goalId, userId)
-  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistoryContext()
   const progress = useGoalProgress(
     goal,
     records,

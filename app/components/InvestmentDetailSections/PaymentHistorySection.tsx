@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
-import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { buildCapturedByMonth } from '@/app/utils/realized-principal'
 import type { PaymentHistorySectionProps as OriginalPaymentHistorySectionProps } from './types'
 import { PaymentHistoryTable } from './PaymentHistoryTable'
@@ -25,7 +25,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
   }
 
   // 각 납입의 매수 시점 실제 금액(원) — 표에서 행별 금액을 현재 금액이 아닌 그때 금액으로 표시
-  const { capturedAmounts } = usePaymentHistory()
+  const { capturedAmounts } = usePaymentHistoryContext()
 
   const item = props.item || contextValue?.item
   const investmentData = props.paymentHistory !== undefined ? props : contextValue?.investmentData

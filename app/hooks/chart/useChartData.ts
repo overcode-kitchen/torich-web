@@ -5,7 +5,7 @@ import {
   getMonthlyCompletionRates,
   getMonthlyCompletionRatesForRange,
 } from '@/app/utils/stats'
-import { PaymentHistoryMap } from '../payment/usePaymentHistory'
+import type { PaymentHistoryMap } from '@/app/types/payment'
 import { PostponedPaymentsMap } from '../payment/usePostponedPayments'
 
 interface UseChartDataProps {

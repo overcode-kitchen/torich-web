@@ -5,7 +5,7 @@ import { Investment } from '@/app/types/investment'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { useInvestmentData } from '../data/useInvestmentData'
 import { useInvestmentActions } from '../../ui/useInvestmentActions'
-import { PaymentHistoryMap } from '../../payment/usePaymentHistory'
+import type { PaymentHistoryMap } from '@/app/types/payment'
 
 interface UseInvestmentDetailHandlersProps {
   item: Investment
