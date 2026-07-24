@@ -25,7 +25,36 @@ export interface RecordAvatarProps {
   bgClassName?: string
   /** 글자색 클래스 강제 지정 */
   textClassName?: string
+  /** 제자리에서 가끔 한 번씩 꿈틀거리는 애니메이션. 종목마다 다른 박자라 화면에서 뜸하게 한두 개만 움직인다. (기본 on) */
+  wiggle?: boolean
   className?: string
+}
+
+/** 문자열을 안정적인 정수 해시로. 종목마다 일정하지만 서로 다른 박자를 만든다. */
+function hashString(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0
+  }
+  return Math.abs(hash)
+}
+
+/**
+ * 종목명 해시로 꿈틀거림 박자(주기·시작 위상)를 정한다.
+ * Math.random 대신 해시라 리렌더·SSR에도 값이 안정적이고, 종목마다 서로 다른 박자가 된다.
+ * 주기를 길게(9~15s) 주고 위상을 넓게 흩뿌려, 활성 구간(≈10%)이 겹치는 일이 드물다.
+ * → 한 화면에 아바타가 여러 개여도 동시에 한두 개만 뜨문뜨문 움직인다.
+ */
+function getWiggleStyle(key: string): React.CSSProperties {
+  const seed = hashString(key)
+  const r1 = (seed % 1000) / 1000
+  const r2 = ((seed >>> 10) % 1000) / 1000
+  const duration = 9 + r1 * 6 // 9s ~ 15s (긴 정지 + 짧은 꿈틀)
+  const delay = -(r2 * duration) // 음수 지연으로 시작 위상을 전 주기에 흩뿌려 desync
+  return {
+    animationDuration: `${duration.toFixed(2)}s`,
+    animationDelay: `${delay.toFixed(2)}s`,
+  }
 }
 
 /**
@@ -39,6 +68,7 @@ export function RecordAvatar({
   label,
   bgClassName,
   textClassName,
+  wiggle = true,
   className,
 }: RecordAvatarProps) {
   const avatar = record ? getRecordAvatar(record, size) : null
@@ -48,9 +78,15 @@ export function RecordAvatar({
   const resolvedText = textClassName ?? avatar?.textClassName ?? 'text-coolgray-700'
   const sizeClassName = avatar?.sizeClassName ?? (size === 'lg' ? 'h-10 w-10 text-sm' : 'h-6 w-6 text-[11px]')
 
+  // 종목명(없으면 라벨)으로 박자를 정해 서로 다른 리듬으로 뒤뚱거리게 한다.
+  const wiggleStyle = wiggle
+    ? getWiggleStyle(`${record?.title ?? label ?? resolvedLabel}${record?.market ?? ''}`)
+    : undefined
+
   return (
     <div
-      className={cn('relative shrink-0', sizeClassName, className)}
+      className={cn('relative shrink-0', sizeClassName, wiggle && 'animate-tory-nudge', className)}
+      style={wiggleStyle}
       aria-hidden
     >
       <div className={cn('absolute inset-0', resolvedBg)} style={TORY_FACE_MASK} />
