@@ -1,5 +1,5 @@
 PODS:
-  - Capacitor (8.3.1):
+  - Capacitor (8.4.1):
     - CapacitorCordova
   - CapacitorApp (8.1.0):
     - Capacitor
@@ -7,17 +7,17 @@ PODS:
     - Capacitor
   - CapacitorCommunityAppleSignIn (7.1.0):
     - Capacitor
-  - CapacitorCordova (8.3.1)
+  - CapacitorCordova (8.4.1)
   - CapacitorDevice (8.0.2):
     - Capacitor
-  - CapacitorFirebaseMessaging (8.2.0):
+  - CapacitorFirebaseMessaging (8.3.0):
     - Capacitor
     - FirebaseMessaging (~> 12.7.0)
   - CapacitorHaptics (8.0.2):
     - Capacitor
   - CapacitorPreferences (8.0.1):
     - Capacitor
-  - CapacitorPushNotifications (8.0.3):
+  - CapacitorPushNotifications (8.1.1):
     - Capacitor
   - CapacitorShare (8.0.1):
     - Capacitor
@@ -136,16 +136,16 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/splash-screen"
 
 SPEC CHECKSUMS:
-  Capacitor: 46dbaa89c1d1cd121b9fc2dc839c1f39cc49e326
+  Capacitor: 35242afe195b1e53c58ca1b827d1b444c5e6602b
   CapacitorApp: 449ffe26375e96f8aaaee625ac6e01e5c57c8650
   CapacitorBrowser: c987c73d09d8bd3b5ec13f06338b1e14d5d2be69
   CapacitorCommunityAppleSignIn: 271cb2860576fd2961508bbfa7a82117d93eadca
-  CapacitorCordova: 9010447fe25e869705fcf525e5f490facde87608
+  CapacitorCordova: eebe6bcf807b1b06f3f48237650f96bbcd0eef09
   CapacitorDevice: 14cba6f88d1c3074cbf825fea977c8c526453ff8
-  CapacitorFirebaseMessaging: 09f9402613a755af4ef37c6ce2fd7b4c02250246
+  CapacitorFirebaseMessaging: d48c9156ee96e166416f1d910cb8de53143cea5f
   CapacitorHaptics: 296f771ecd89c7a1bd92a7b6826a7d268e2e70f5
   CapacitorPreferences: cca2021f386efb75947c850334447d9ff22b14f1
-  CapacitorPushNotifications: e4437b4ec1b2070685bf032c210f346432214c5f
+  CapacitorPushNotifications: ec08d589c226a2c0db7c032ec1bf5b044ec85f8e
   CapacitorShare: 0c58305114538568059bfc07111f22dcb9cb2a82
   CapacitorSplashScreen: 4b46c72298db552b3c57ce021ef028b6dc7f1fa7
   Firebase: 2d19a10c9a2e48ac532a4303115d3fc9b2798396
