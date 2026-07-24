@@ -9,6 +9,7 @@ import ThemeProvider from "./components/ThemeSections/ThemeProvider";
 import NotificationProvider from "@/providers/NotificationProvider";
 import { AuthProvider } from "@/app/hooks/auth/useAuth";
 import { InvestmentsProvider } from "@/app/contexts/InvestmentsContext";
+import { PaymentHistoryProvider } from "@/app/contexts/PaymentHistoryContext";
 import AuthDeepLinkHandler from "./components/AuthDeepLinkHandler";
 
 export const metadata: Metadata = {
@@ -76,8 +77,10 @@ export default function RootLayout({
             <ThemeProvider>
               <NotificationProvider>
                 <InvestmentsProvider>
-                  <AuthDeepLinkHandler />
-                  <AppLayout>{children}</AppLayout>
+                  <PaymentHistoryProvider>
+                    <AuthDeepLinkHandler />
+                    <AppLayout>{children}</AppLayout>
+                  </PaymentHistoryProvider>
                 </InvestmentsProvider>
                 <Toaster richColors position="top-center" closeButton />
               </NotificationProvider>

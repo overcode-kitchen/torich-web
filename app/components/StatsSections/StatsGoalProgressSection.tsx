@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
-import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { fmt, dDayLabel } from '@/app/utils/goal-format'
 import { DDayBadge } from '@/app/components/Common/DDayBadge'
 import type { Investment } from '@/app/types/investment'
@@ -27,7 +27,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
   }, [])
 
   const { goals } = useGoals(userId)
-  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistoryContext()
 
   const activeGoals = useMemo(
     () => goals.filter((g) => g.completed_at === null),

@@ -33,7 +33,8 @@ interface InvestmentDetailViewProps {
   onDelete: () => Promise<void>
 }
 
-import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
+import { useRefreshPaymentHistoryOnMount } from '@/app/hooks/payment/useRefreshPaymentHistoryOnMount'
 import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
 
 function InternalInvestmentDetailView({
@@ -47,14 +48,15 @@ function InternalInvestmentDetailView({
   // Context (스크롤 컨테이너 ref만 필요. 탭 ref는 InvestmentDetailContent가 직접 사용)
   const { scrollContainerRef } = useInvestmentTabContext()
 
-  // Payment History Hook
+  // Payment History (전역 상태) + 상세 진입 시 1회 갱신
   const {
     completedPayments,
     retroactivePayments,
     togglePayment,
     toggleRetroactivePayment,
     markAllRetroactivePaid,
-  } = usePaymentHistory()
+  } = usePaymentHistoryContext()
+  useRefreshPaymentHistoryOnMount()
 
   // 월 회차 토글 + 하단 되돌리기 토스트 (홈과 동일한 UndoToastSection 사용)
   const monthUndo = useMonthToggleUndo(togglePayment)

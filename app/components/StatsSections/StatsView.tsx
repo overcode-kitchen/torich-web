@@ -11,7 +11,7 @@ import {
     GoalStats,
     HabitStats,
 } from '@/app/hooks/investment/calculations/useStatsCalculations'
-import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { PaymentHistoryMap } from '@/app/types/payment'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
 import type { DateRange } from 'react-day-picker'

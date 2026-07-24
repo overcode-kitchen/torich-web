@@ -1,6 +1,6 @@
 import { Investment } from '@/app/types/investment'
 
-import { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { PaymentHistoryMap } from '@/app/types/payment'
 
 export interface UseInvestmentDataProps {
   item: Investment

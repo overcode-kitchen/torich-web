@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { PaymentEvent } from '@/app/utils/stats'
-import { usePaymentHistory } from './usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { usePostponedPayments } from './usePostponedPayments'
 import { isPaymentCompleted, isPaymentPostponed } from '@/app/utils/payment-completion'
 import { toastSuccess } from '@/app/utils/toast'
@@ -16,13 +16,10 @@ function eventDateStr(e: PaymentEvent): string {
 }
 
 export function usePaymentCompletion() {
-  const { completedPayments, togglePayment } = usePaymentHistory()
+  const { completedPayments, togglePayment } = usePaymentHistoryContext()
   const { postponedPayments, togglePostpone } = usePostponedPayments()
   const [pendingUndo, setPendingUndo] = useState<PaymentEvent | null>(null)
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const pendingUndoRef = useRef<PaymentEvent | null>(null)
-
-  pendingUndoRef.current = pendingUndo
 
   // 클린업
   useEffect(() => {
@@ -65,14 +62,16 @@ export function usePaymentCompletion() {
     }, TOAST_DURATION_MS)
   }, [togglePayment, togglePostpone, postponedPayments])
 
+  // pendingUndo를 ref로 미러링하지 않고 그대로 의존한다. ref 미러링은 렌더 중 쓰기라
+  // React Compiler에서 깨지고, 여기서는 얻는 것도 없다 — handleUndo는 onClick으로만 쓰여
+  // identity가 바뀌어도 리렌더를 유발하지 않는다. (useMonthlyPaymentStatus.handleUndo와 동일한 형태)
   const handleUndo = useCallback(async () => {
-    const p = pendingUndoRef.current
-    if (!p) return
+    if (!pendingUndo) return
 
-    const dateStr = eventDateStr(p)
+    const dateStr = eventDateStr(pendingUndo)
 
     // Toggle to false (currently true)
-    await togglePayment(p.investmentId, dateStr, true)
+    await togglePayment(pendingUndo.investmentId, dateStr, true)
 
     // 완료의 짝(되돌리기) → 저강도 물리 피드백으로 토글 해제를 손끝으로 확인
     hapticLightImpact()
@@ -83,7 +82,7 @@ export function usePaymentCompletion() {
       clearTimeout(toastTimeoutRef.current)
       toastTimeoutRef.current = null
     }
-  }, [togglePayment])
+  }, [togglePayment, pendingUndo])
 
   // 이미 완료된 항목의 '완료됨' 표기를 다시 눌렀을 때 미완료로 되돌린다.
   // (홈 토스트의 '되돌리기'와 동일한 토글이되, 토스트 상태와 무관하게 항상 동작)

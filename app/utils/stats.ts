@@ -1,4 +1,4 @@
-import { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { PaymentHistoryMap } from '@/app/types/payment'
 import { PostponedPaymentsMap } from '@/app/hooks/payment/usePostponedPayments'
 import { isPaymentCompleted, isRecordPostponedInMonth } from './payment-completion'
 
@@ -284,7 +284,7 @@ export interface MonthlyPaymentDelta {
  * IMPORTANT: 호출자는 반드시 activeRecords (terminated 투자 제외)를 전달해야 한다.
  * auto는 event-based pipeline (`getPaymentEventsForMonth + isPaymentCompleted`),
  * retroactive는 YYYY-MM- prefix-count.
- * 의존: usePaymentHistory.ts의 retroactive 엔트리 포맷 `${yearMonth}-01` (record-month 당 최대 1개).
+ * 의존: PaymentHistoryContext의 retroactive 엔트리 포맷 `${yearMonth}-01` (record-month 당 최대 1개).
  */
 export function getMonthlyPaymentDelta(
   activeRecords: Array<{

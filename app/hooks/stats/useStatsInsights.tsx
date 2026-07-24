@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { getCompletedPaymentForMonth } from '@/app/utils/stats'
 import { formatCurrency } from '@/lib/utils'
 import type { Investment } from '@/app/types/investment'
-import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { PaymentHistoryMap } from '@/app/types/payment'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 
 interface UseStatsInsightsParams {

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Investment } from '@/app/types/investment'
 import { ymd, monthlyInstallmentDays } from '@/app/utils/monthly-installments'
 import { hapticSuccess, hapticLightImpact } from '@/app/utils/haptics'
-import { usePaymentHistory } from './usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { usePostponedPayments } from './usePostponedPayments'
 
 /**
@@ -15,7 +15,8 @@ import { usePostponedPayments } from './usePostponedPayments'
  *   완료 버튼은 다음 도래(미완료) 회차 하나만 완료 처리하고, 이번 달 completed/total 진행을 노출한다.
  * - 미룸은 종전대로 record-월 단위(통계 분모 제외 기준과 동일).
  * - 완료 시 하단 '되돌리기' 배너(pendingUndo)를 띄워 방금 완료한 회차를 즉시 취소할 수 있게 한다.
- * - 새 DB 로직 없이 usePaymentHistory(togglePayment)를 그대로 재사용한다.
+ * - 새 DB 로직 없이 PaymentHistoryContext(togglePayment)를 그대로 재사용한다.
+ *   전역 상태라 여기서 완료 처리하면 같은 카드의 목적 진척률도 같은 렌더에 함께 움직인다.
  */
 
 const UNDO_TOAST_DURATION_MS = 5000
@@ -66,7 +67,7 @@ export interface MonthlyPaymentStatus {
 }
 
 export function useMonthlyPaymentStatus(): MonthlyPaymentStatus {
-  const { completedPayments, isLoading, togglePayment } = usePaymentHistory()
+  const { completedPayments, isLoading, togglePayment } = usePaymentHistoryContext()
   const { postponedPayments, togglePostpone: togglePostponeRow } = usePostponedPayments()
 
   const [pendingUndo, setPendingUndo] = useState<PendingUndo | null>(null)
