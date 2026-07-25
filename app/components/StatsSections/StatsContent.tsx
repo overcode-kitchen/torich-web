@@ -145,7 +145,7 @@ export default function StatsContent({
     // 결과(목적 진척) — 활성 목적이 없으면 컴포넌트가 스스로 null 렌더.
     const goalProgress = <StatsGoalProgressSection key="goal" records={records} />
 
-    // 결과(투자 상태 요약) — 목표형·적립형 혼재 시에만 컴포넌트가 렌더.
+    // 결과(투자 상태 요약) — 항목별 이번 달 납입 상태. 한 종류만 있어도 노출.
     const status = hasRecords ? (
         <ModeBreakdownSection key="status" goalStats={goalStats} habitStats={habitStats} />
     ) : null

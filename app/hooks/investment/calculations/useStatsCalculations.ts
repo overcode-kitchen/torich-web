@@ -1,9 +1,7 @@
 import { useMemo } from 'react'
-import { differenceInDays, startOfDay } from 'date-fns'
-import { Investment, getStartDate, isHabitMode } from '@/app/types/investment'
+import { Investment, isHabitMode } from '@/app/types/investment'
 import { getPaymentEventsForMonth, getThisMonthStats } from '@/app/utils/stats'
 import { isPaymentCompleted, isRecordPostponedInMonth } from '@/app/utils/payment-completion'
-import { calculateEndDate, getElapsedMonths } from '@/app/utils/date'
 import { getRecordRealizedPrincipal } from '@/app/utils/realized-principal'
 import type { Goal } from '@/app/types/goal'
 import type { PaymentHistoryMap, CapturedAmountsMap } from '../../payment/usePaymentHistory'
@@ -24,22 +22,116 @@ interface UseStatsCalculationsProps {
   goals: Goal[]
 }
 
+/** 한 투자 항목의 이번 달 납입 상태. */
+export type MonthPaymentStatus =
+  | { kind: 'done' } // 이번 달 예정분을 모두 냄
+  | { kind: 'due'; day: number } // 아직 예정일 전 (곧 낼 차례)
+  | { kind: 'overdue'; day: number } // 예정일이 지났는데 안 냄
+  | { kind: 'none' } // 이번 달 예정 없음(또는 미룸)
+
+/** 투자 항목 하나의 상태 — 목표형·적립형 공통. */
+export interface InvestmentItemStat {
+  id: string
+  title: string
+  /** 이번 달 납입 상태 배지용 */
+  monthStatus: MonthPaymentStatus
+  /** 지금까지 납입 완료한 개월 수 (자동+소급을 월 단위로 합산). 실제 낸 기록 기준. */
+  paidMonths: number
+  /** 목표형: 만기까지 총 납입 개월 수(=회차). 적립형은 만기가 없어 null. */
+  totalMonths: number | null
+}
+
 export interface GoalStats {
   count: number
-  /** 가장 이른 만기 (일정 기준 D-day 포함) */
-  nextMaturityItem: { id: string; title: string; endDate: Date; daysLeft: number } | null
-  /** 시간 대비 진행률이 가장 낮은 목표형 투자 */
-  lowestProgressItem: { id: string; title: string; progressPercent: number } | null
+  /** 이번 달 납입 예정이 있는 항목 수 */
+  thisMonthDueCount: number
+  /** 그중 이번 달 완료한 항목 수 */
+  thisMonthDoneCount: number
+  /** 항목별 상태 (급한 순: 미납 → 예정 → 완료 → 예정없음) */
+  items: InvestmentItemStat[]
 }
 
 export interface HabitStats {
   count: number
-  /** 적립형만: 이번 달 예정 납입 건 중 완료 건수 */
-  thisMonthCompletedCount: number
-  /** 적립형만: 이번 달 예정 납입 총 건수 */
-  thisMonthTotalCount: number
-  /** 납입 경과 개월이 가장 긴 적립형 투자 */
-  longestHabitItem: { id: string; title: string; elapsedMonths: number } | null
+  thisMonthDueCount: number
+  thisMonthDoneCount: number
+  items: InvestmentItemStat[]
+}
+
+const STATUS_ORDER: Record<MonthPaymentStatus['kind'], number> = {
+  overdue: 0,
+  due: 1,
+  done: 2,
+  none: 3,
+}
+
+/**
+ * 자동(일 단위)·소급(월 단위) 납입을 월 단위로 합쳐 완료 개월 수를 센다.
+ * 같은 달에 여러 번 낸 것은 1개월로, 소급(YYYY-MM-01)과도 스케일이 맞는다.
+ */
+function countPaidMonths(
+  id: string,
+  completed: PaymentHistoryMap,
+  retro: PaymentHistoryMap,
+): number {
+  const months = new Set<string>()
+  completed.get(id)?.forEach((d) => months.add(d.slice(0, 7)))
+  retro.get(id)?.forEach((d) => months.add(d.slice(0, 7)))
+  return months.size
+}
+
+/** 한 투자의 이번 달 납입 상태를 판정한다. */
+function computeMonthStatus(
+  record: Investment,
+  year: number,
+  month: number,
+  todayDay: number,
+  completed: PaymentHistoryMap,
+  postponed: PostponedPaymentsMap,
+): MonthPaymentStatus {
+  // 미룬 회차는 이번 달 예정에서 제외 → 상태 없음으로 본다
+  if (isRecordPostponedInMonth(postponed, record.id, year, month)) return { kind: 'none' }
+  const events = getPaymentEventsForMonth([record], year, month)
+  if (events.length === 0) return { kind: 'none' }
+  const incomplete = events.filter(
+    (e) => !isPaymentCompleted(completed, e.investmentId, e.year, e.month, e.day),
+  )
+  if (incomplete.length === 0) return { kind: 'done' }
+  const earliestDay = Math.min(...incomplete.map((e) => e.day))
+  return earliestDay < todayDay
+    ? { kind: 'overdue', day: earliestDay }
+    : { kind: 'due', day: earliestDay }
+}
+
+/** 활성 기록 → 이번 달 상태·누적 회차를 담은 항목 리스트. 급한 상태가 위로 오도록 정렬. */
+function buildItemStats(
+  records: Investment[],
+  completed: PaymentHistoryMap,
+  retro: PaymentHistoryMap,
+  postponed: PostponedPaymentsMap,
+): InvestmentItemStat[] {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1
+  const todayDay = now.getDate()
+  return records
+    .map((r) => ({
+      id: r.id,
+      title: r.title,
+      monthStatus: computeMonthStatus(r, year, month, todayDay, completed, postponed),
+      paidMonths: countPaidMonths(r.id, completed, retro),
+      totalMonths: Math.round((r.period_years ?? 0) * 12) || null,
+    }))
+    .sort((a, b) => STATUS_ORDER[a.monthStatus.kind] - STATUS_ORDER[b.monthStatus.kind])
+}
+
+/** 항목 리스트에서 이번 달 "예정 있는 항목 중 완료한 항목" 집계. */
+function summarizeItems(items: InvestmentItemStat[]) {
+  const due = items.filter((it) => it.monthStatus.kind !== 'none')
+  return {
+    thisMonthDueCount: due.length,
+    thisMonthDoneCount: due.filter((it) => it.monthStatus.kind === 'done').length,
+  }
 }
 
 export interface UseStatsCalculationsReturn {
@@ -87,106 +179,18 @@ export function useStatsCalculations({
 
   const thisMonth = useMemo(() => getThisMonthStats(activeRecords, completedPayments, postponedPayments), [activeRecords, completedPayments, postponedPayments])
 
-  // 목표형/적립형 분리 집계 (Health Check용)
+  // 목표형/적립형을 항목별로 분리 — 각 항목에 이번 달 납입 상태 + 누적 회차를 담는다.
   const goalStats = useMemo<GoalStats>(() => {
     const goalRecords = activeRecords.filter((r) => !isHabitMode(r))
-    if (goalRecords.length === 0) {
-      return { count: 0, nextMaturityItem: null, lowestProgressItem: null }
-    }
-
-    const today = startOfDay(new Date())
-
-    let lowestProgressItem: GoalStats['lowestProgressItem'] = null
-    for (const r of goalRecords) {
-      const start = getStartDate(r)
-      const elapsedMonths = Math.max(0, getElapsedMonths(start))
-      const totalMonths = (r.period_years ?? 0) * 12
-      const progressPercent =
-        totalMonths <= 0 ? 0 : Math.min(100, Math.round((elapsedMonths / totalMonths) * 100))
-      const candidate = { id: r.id, title: r.title, progressPercent }
-      if (
-        !lowestProgressItem ||
-        candidate.progressPercent < lowestProgressItem.progressPercent ||
-        (candidate.progressPercent === lowestProgressItem.progressPercent &&
-          candidate.title < lowestProgressItem.title)
-      ) {
-        lowestProgressItem = candidate
-      }
-    }
-
-    const withEnd = goalRecords
-      .map((r) => {
-        const start = getStartDate(r)
-        const end = calculateEndDate(start, r.period_years)
-        return end ? { id: r.id, title: r.title, endDate: end } : null
-      })
-      .filter((v): v is { id: string; title: string; endDate: Date } => v !== null)
-      .sort((a, b) => a.endDate.getTime() - b.endDate.getTime())
-
-    const first = withEnd[0] ?? null
-    const nextMaturityItem = first
-      ? {
-          id: first.id,
-          title: first.title,
-          endDate: first.endDate,
-          daysLeft: differenceInDays(startOfDay(first.endDate), today),
-        }
-      : null
-
-    return {
-      count: goalRecords.length,
-      nextMaturityItem,
-      lowestProgressItem,
-    }
-  }, [activeRecords])
+    const items = buildItemStats(goalRecords, completedPayments, retroactivePayments, postponedPayments)
+    return { count: goalRecords.length, ...summarizeItems(items), items }
+  }, [activeRecords, completedPayments, retroactivePayments, postponedPayments])
 
   const habitStats = useMemo<HabitStats>(() => {
     const habitRecords = activeRecords.filter((r) => isHabitMode(r))
-    if (habitRecords.length === 0) {
-      return {
-        count: 0,
-        thisMonthCompletedCount: 0,
-        thisMonthTotalCount: 0,
-        longestHabitItem: null,
-      }
-    }
-
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = now.getMonth() + 1
-    const events = getPaymentEventsForMonth(habitRecords, year, month)
-    let thisMonthTotalCount = 0
-    let thisMonthCompletedCount = 0
-    for (const e of events) {
-      // 미룬 회차는 이번 달 예정(분모)에서 제외
-      if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) continue
-      thisMonthTotalCount++
-      if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
-        thisMonthCompletedCount++
-      }
-    }
-
-    let longestHabitItem: HabitStats['longestHabitItem'] = null
-    for (const r of habitRecords) {
-      const elapsedMonths = Math.max(0, getElapsedMonths(getStartDate(r)))
-      const candidate = { id: r.id, title: r.title, elapsedMonths }
-      if (
-        !longestHabitItem ||
-        candidate.elapsedMonths > longestHabitItem.elapsedMonths ||
-        (candidate.elapsedMonths === longestHabitItem.elapsedMonths &&
-          candidate.title < longestHabitItem.title)
-      ) {
-        longestHabitItem = candidate
-      }
-    }
-
-    return {
-      count: habitRecords.length,
-      thisMonthCompletedCount,
-      thisMonthTotalCount,
-      longestHabitItem,
-    }
-  }, [activeRecords, completedPayments, postponedPayments])
+    const items = buildItemStats(habitRecords, completedPayments, retroactivePayments, postponedPayments)
+    return { count: habitRecords.length, ...summarizeItems(items), items }
+  }, [activeRecords, completedPayments, retroactivePayments, postponedPayments])
 
   return {
     totalPaidPrincipal,
