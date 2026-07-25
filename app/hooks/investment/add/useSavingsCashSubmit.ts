@@ -7,6 +7,7 @@ import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { createClient } from '@/utils/supabase/client'
 import { track, amountBucket } from '@/app/lib/analytics'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
+import { periodYearsUntil } from '@/app/utils/date'
 import type { Investment, RecordType } from '@/app/types/investment'
 
 export interface UseSavingsCashSubmitProps {
@@ -26,6 +27,8 @@ export interface UseSavingsCashSubmitProps {
   periodYears?: string
   /** 목적 만들기 흐름에서 넘어온 경우 연결할 목적 ID */
   goalId?: string
+  /** 묶인 목적의 마감일(YYYY-MM-DD). 현금 항목을 목적 마감일에 만기시킬 때 사용(예적금 제외). */
+  goalTargetDate?: string
   /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
   mode?: 'create' | 'edit'
   /** edit 모드에서 수정할 records.id */
@@ -50,6 +53,7 @@ export function useSavingsCashSubmit({
   maturityDate,
   periodYears,
   goalId,
+  goalTargetDate,
   mode = 'create',
   recordId,
 }: UseSavingsCashSubmitProps): UseSavingsCashSubmitReturn {
@@ -120,6 +124,17 @@ export function useSavingsCashSubmit({
       }
 
       // 신규 추가
+      // 목적에 연결된 '현금' 항목이고 목적 마감일이 있으면, 목적 마감일에 만기시킨다.
+      // (예적금은 자체 만기일 피커/정합성 흐름을 쓰므로 제외한다.)
+      const goalLinkedCash =
+        recordType === 'cash' && !!goalId && !!goalTargetDate
+      const goalDeadlineOverride = goalLinkedCash
+        ? {
+            maturity_date: goalTargetDate,
+            period_years: periodYearsUntil(new Date(), new Date(goalTargetDate!)),
+          }
+        : {}
+
       const supabase = createClient()
       const { data: inserted, error } = await supabase
         .from('records')
@@ -128,6 +143,7 @@ export function useSavingsCashSubmit({
           ...payload,
           notification_enabled: true,
           ...(goalId ? { goal_id: goalId } : {}),
+          ...goalDeadlineOverride,
         })
         .select('*')
         .single<Investment>()
@@ -159,6 +175,7 @@ export function useSavingsCashSubmit({
     periodYears,
     recordType,
     goalId,
+    goalTargetDate,
     mode,
     recordId,
     router,

@@ -6,6 +6,7 @@ import PeriodInput from '@/app/components/Common/PeriodInput'
 import DateSelectField from '@/app/components/Common/DateSelectField'
 import { FlowInput } from '@/app/components/Common/FlowInput'
 import ProgressiveField from './ProgressiveField'
+import { formatFullDate } from '@/app/utils/date'
 import type { RecordType } from '@/app/types/investment'
 import type { UseAddItemFormStateReturn } from '@/app/hooks/investment/add/useAddItemFormState'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
@@ -16,11 +17,30 @@ interface GroupB_HowMuchProps {
   investmentForm: UseAddInvestmentFormReturn
   /** 예적금/현금 공통 폼 */
   formState: UseAddItemFormStateReturn
+  /** 묶인 목적의 마감일(YYYY-MM-DD). 있으면 목표 기간 입력 대신 마감일 안내를 표시한다. */
+  goalDeadline?: string
 }
 
 const parseAmount = (raw: string): number => {
   const n = parseInt(raw.replace(/,/g, ''), 10)
   return Number.isFinite(n) ? n : 0
+}
+
+/**
+ * 목적 마감일에 맞춰 모으는 항목의 읽기 전용 안내.
+ * 연 단위 목표 기간 입력을 대체한다.
+ */
+function GoalDeadlineNotice({ goalDeadline }: { goalDeadline: string }) {
+  return (
+    <ProgressiveField label="언제까지 모을까요?">
+      <div className="rounded-2xl border border-border-subtle bg-surface-hover px-4 py-4 text-center">
+        <p className="text-base font-semibold text-foreground">
+          {formatFullDate(new Date(goalDeadline))}에 맞춰 모아요
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">목적 마감일에 맞춰 자동으로 설정돼요.</p>
+      </div>
+    </ProgressiveField>
+  )
 }
 
 /**
@@ -37,13 +57,22 @@ export default function GroupB_HowMuch({
   recordType,
   investmentForm,
   formState,
+  goalDeadline,
 }: GroupB_HowMuchProps) {
-  if (recordType === 'investment') return <InvestmentFields form={investmentForm} />
+  if (recordType === 'investment')
+    return <InvestmentFields form={investmentForm} goalDeadline={goalDeadline} />
+  // 예적금은 자체 만기일 피커를 쓰므로 목적 마감일 안내를 적용하지 않는다.
   if (recordType === 'savings') return <SavingsFields formState={formState} />
-  return <CashFields formState={formState} />
+  return <CashFields formState={formState} goalDeadline={goalDeadline} />
 }
 
-function InvestmentFields({ form }: { form: UseAddInvestmentFormReturn }) {
+function InvestmentFields({
+  form,
+  goalDeadline,
+}: {
+  form: UseAddInvestmentFormReturn
+  goalDeadline?: string
+}) {
   // 단위 모드(금액/주수) 전환 가능 조건: KR + 검색 선택 종목 + 수동입력 아님
   const canToggleUnit =
     form.market === 'KR' && !!form.selectedStock?.symbol && !form.isManualInput
@@ -71,17 +100,20 @@ function InvestmentFields({ form }: { form: UseAddInvestmentFormReturn }) {
         )}
       </ProgressiveField>
 
-      {amountFilled && (
-        <ProgressiveField label="얼마나 오래 투자할까요?">
-          <PeriodInput
-            value={form.period}
-            onChange={form.handlePeriodChange}
-            onAdjust={form.adjustPeriod}
-            isHabitMode={form.isHabitMode}
-            onToggleHabitMode={form.setIsHabitMode}
-          />
-        </ProgressiveField>
-      )}
+      {amountFilled &&
+        (goalDeadline ? (
+          <GoalDeadlineNotice goalDeadline={goalDeadline} />
+        ) : (
+          <ProgressiveField label="얼마나 오래 투자할까요?">
+            <PeriodInput
+              value={form.period}
+              onChange={form.handlePeriodChange}
+              onAdjust={form.adjustPeriod}
+              isHabitMode={form.isHabitMode}
+              onToggleHabitMode={form.setIsHabitMode}
+            />
+          </ProgressiveField>
+        ))}
     </div>
   )
 }
@@ -127,7 +159,13 @@ function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) 
   )
 }
 
-function CashFields({ formState }: { formState: UseAddItemFormStateReturn }) {
+function CashFields({
+  formState,
+  goalDeadline,
+}: {
+  formState: UseAddItemFormStateReturn
+  goalDeadline?: string
+}) {
   const amountFilled = parseAmount(formState.monthlyAmount) > 0
   const isHabitMode = formState.periodYears === ''
 
@@ -141,19 +179,22 @@ function CashFields({ formState }: { formState: UseAddItemFormStateReturn }) {
         />
       </ProgressiveField>
 
-      {amountFilled && (
-        <ProgressiveField label="얼마나 오래 모을까요?">
-          <PeriodInput
-            value={formState.periodYears}
-            onChange={formState.handlePeriodYearsChange}
-            onAdjust={formState.adjustPeriodYears}
-            isHabitMode={isHabitMode}
-            onToggleHabitMode={(habit) => {
-              if (habit) formState.setPeriodYearsRaw('')
-            }}
-          />
-        </ProgressiveField>
-      )}
+      {amountFilled &&
+        (goalDeadline ? (
+          <GoalDeadlineNotice goalDeadline={goalDeadline} />
+        ) : (
+          <ProgressiveField label="얼마나 오래 모을까요?">
+            <PeriodInput
+              value={formState.periodYears}
+              onChange={formState.handlePeriodYearsChange}
+              onAdjust={formState.adjustPeriodYears}
+              isHabitMode={isHabitMode}
+              onToggleHabitMode={(habit) => {
+                if (habit) formState.setPeriodYearsRaw('')
+              }}
+            />
+          </ProgressiveField>
+        ))}
     </div>
   )
 }

@@ -14,6 +14,8 @@ import type { UseAddInvestmentFormReturn } from '../../types/useAddInvestmentFor
 export interface UseAddInvestmentFormOptions {
   /** 목적 만들기 흐름에서 넘어온 경우, 생성될 투자를 이 목적에 연결한다. */
   goalId?: string
+  /** 묶인 목적의 마감일(YYYY-MM-DD). 있으면 목표 기간 대신 목적 마감일에 맞춰 저장한다. */
+  goalTargetDate?: string
   /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
   mode?: 'create' | 'edit'
   /** edit 모드에서 수정할 records.id */
@@ -66,10 +68,23 @@ export function useAddInvestmentForm(
     unitType: ui.unitType,
     monthlyShares: ui.monthlyShares,
     goalId: options?.goalId,
+    goalTargetDate: options?.goalTargetDate,
     mode: options?.mode,
     recordId: options?.recordId,
     initData: options?.initData,
   })
+
+  // 목적 마감일에 맞추는 신규 투자: 목표 기간 입력을 감추고 목적형으로 고정한다.
+  // period 입력이 없으므로 습관 모드로 두어 검증/진행 게이트를 통과시키고,
+  // 저장 시 submit 훅이 period_years/maturity_date를 목적 마감일 기준으로 덮어쓴다.
+  const goalTargetDate = options?.goalTargetDate
+  const isCreateMode = options?.mode !== 'edit'
+  useEffect(() => {
+    if (goalTargetDate && isCreateMode) {
+      ui.setIsHabitMode(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goalTargetDate, isCreateMode])
 
   // 편집 모드 프리필: 기존 record로 폼을 채운다. (record당 1회)
   // 검색종목은 selectedStock을 원본에서 복원해 저장 시 종목코드·주수 시세(=monthly_amount)가

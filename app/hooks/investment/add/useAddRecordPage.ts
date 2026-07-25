@@ -52,8 +52,23 @@ export function useAddRecordPage() {
   const flow = useAddItemFlow({ editId, initialField })
   const formState = useAddItemFormState({ initData: edit.initData })
 
+  // 묶인 목적 정보 — 신규 추가 흐름에서 목적 마감일을 폼/저장 경로로 관통시키기 위해
+  // 폼 훅 생성 이전에 계산한다. (edit 모드에는 적용하지 않는다.)
+  const { user } = useAuth()
+  const { goals } = useGoals(user?.id)
+  const { updateGoal } = useGoalUpdate(user?.id)
+  const linkedGoal: Goal | null = useMemo(
+    () => (goalId ? goals.find((g) => g.id === goalId) ?? null : null),
+    [goalId, goals],
+  )
+  // 신규 추가 + 목적 마감일이 있을 때만 "목적 마감일에 맞춰 모으기"를 적용한다.
+  const goalDeadline: string | undefined = isEditMode
+    ? undefined
+    : linkedGoal?.target_date ?? undefined
+
   const investmentForm = useAddInvestmentForm({
     goalId,
+    goalTargetDate: goalDeadline,
     mode: isEditMode ? 'edit' : 'create',
     recordId: isEditMode ? editId ?? undefined : undefined,
     initData: edit.initData,
@@ -68,6 +83,7 @@ export function useAddRecordPage() {
     maturityDate: formState.maturityDate,
     periodYears: formState.periodYears,
     goalId,
+    goalTargetDate: goalDeadline,
     mode: isEditMode ? 'edit' : 'create',
     recordId: isEditMode ? editId ?? undefined : undefined,
   })
@@ -106,13 +122,6 @@ export function useAddRecordPage() {
 
   // 케이스 A 사전 안내 — 적금 신규/수정 시 묶인 목적의 종료일이 만기보다 빠른지 검사.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
-  const { user } = useAuth()
-  const { goals } = useGoals(user?.id)
-  const { updateGoal } = useGoalUpdate(user?.id)
-  const linkedGoal: Goal | null = useMemo(
-    () => (goalId ? goals.find((g) => g.id === goalId) ?? null : null),
-    [goalId, goals],
-  )
   const [pendingMismatch, setPendingMismatch] = useState<MaturityMismatch | null>(null)
 
   const guardedOnSubmitSavingsCash = useCallback(async (): Promise<void> => {
@@ -195,6 +204,7 @@ export function useAddRecordPage() {
     recordType,
     effectiveRecordType,
     setRecordType,
+    goalDeadline,
     flow,
     formState,
     investmentForm,

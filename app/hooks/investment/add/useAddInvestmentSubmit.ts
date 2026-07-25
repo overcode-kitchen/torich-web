@@ -7,6 +7,7 @@ import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { validateInvestmentForm, validateAndHandleError } from '@/app/utils/validation'
 import { createClient } from '@/utils/supabase/client'
 import { formatInvestmentData } from '@/app/utils/investment-formatter'
+import { periodYearsUntil } from '@/app/utils/date'
 import { track, amountBucket } from '@/app/lib/analytics'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import type { Investment, InvestmentUnitType } from '@/app/types/investment'
@@ -31,6 +32,8 @@ export interface UseAddInvestmentSubmitProps {
   monthlyShares?: string
   /** 목적 만들기 흐름에서 넘어온 경우, 생성될 투자를 이 목적에 연결한다. */
   goalId?: string
+  /** 묶인 목적의 마감일(YYYY-MM-DD). goalId와 함께 있으면 이 투자를 목적 마감일에 만기시킨다. */
+  goalTargetDate?: string
   /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
   mode?: 'create' | 'edit'
   /** edit 모드에서 수정할 records.id */
@@ -60,6 +63,7 @@ export function useAddInvestmentSubmit({
   unitType,
   monthlyShares,
   goalId,
+  goalTargetDate,
   mode = 'create',
   recordId,
   initData,
@@ -144,6 +148,17 @@ export function useAddInvestmentSubmit({
       }
 
       // 신규 추가
+      // 목적에 연결되고 목적 마감일이 있으면, 이 투자를 목적 마감일에 만기시킨다.
+      // - maturity_date = 목적 마감일
+      // - period_years = 대략적 fallback(양수)로 덮어써 '목적형' 분류 유지
+      const goalLinkedToDeadline = !!goalId && !!goalTargetDate
+      const goalDeadlineOverride = goalLinkedToDeadline
+        ? {
+            maturity_date: goalTargetDate,
+            period_years: periodYearsUntil(startDate, new Date(goalTargetDate!)),
+          }
+        : {}
+
       const supabase = createClient()
       const { data: inserted, error } = await supabase
         .from('records')
@@ -152,6 +167,7 @@ export function useAddInvestmentSubmit({
           ...formattedData,
           notification_enabled: true,
           ...(goalId ? { goal_id: goalId } : {}),
+          ...goalDeadlineOverride,
         })
         .select('*')
         .single<Investment>()
@@ -200,6 +216,7 @@ export function useAddInvestmentSubmit({
     unitType,
     monthlyShares,
     goalId,
+    goalTargetDate,
     mode,
     recordId,
     userId,
