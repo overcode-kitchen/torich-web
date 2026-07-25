@@ -71,7 +71,7 @@ export default function DateSelectSheet({
         onClick={onClose}
       />
 
-      <div className="relative z-50 w-full max-w-md bg-card rounded-t-3xl shadow-xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col">
+      <div className="relative z-50 w-full max-w-md bg-card rounded-t-3xl shadow-xl animate-in slide-in-from-bottom duration-300 max-h-[85dvh] flex flex-col">
         <div className="flex justify-center pt-3 pb-2 shrink-0">
           <div className="w-10 h-1 bg-surface-strong rounded-full" />
         </div>
@@ -189,7 +189,7 @@ export default function DateSelectSheet({
 
         <div
           className="flex items-center justify-between px-6 pt-4 border-t border-border-subtle shrink-0"
-          style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
         >
           {onClear ? (
             <button
