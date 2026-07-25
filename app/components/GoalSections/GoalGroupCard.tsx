@@ -62,8 +62,6 @@ export interface GoalGroupCardProps {
   isDeleting?: boolean
   /** 파생 상태. 'pending_settlement'일 때 헤더에 "정산 대기" 배지 노출. */
   status?: GoalStatus
-  /** 최상단 카드 등에서 손잡이에 관심 유도 넛지(띠용띠용)를 켠다. */
-  nudge?: boolean
   /** 홈 목적 정렬 드래그 손잡이(카드 헤더에 스프레드). 미지정 카드엔 미전달. */
   dragHandle?: SortableRenderProps['handle']
   /** 이 카드가 드래그 중인지 여부(스타일 훅). */
@@ -94,7 +92,6 @@ export function GoalGroupCard({
   onDeleteGoal,
   isDeleting = false,
   status,
-  nudge = false,
   dragHandle,
   isDragging = false,
 }: GoalGroupCardProps) {
@@ -316,7 +313,6 @@ export function GoalGroupCard({
         <AddRecordDrawer
           goalId={goal.id}
           onAddRecord={onAddRecord}
-          nudge={nudge}
         />
       )}
 

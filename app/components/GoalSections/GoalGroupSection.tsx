@@ -131,7 +131,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-4">
-            {groups.map(({ goal, progress, records: groupRecords, status }, index) => (
+            {groups.map(({ goal, progress, records: groupRecords, status }) => (
               <Sortable key={goal.id} id={goal.id}>
                 {({ setNodeRef, style, isDragging, handle }) => (
                   <div ref={setNodeRef} style={style}>
@@ -154,7 +154,6 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
                       onEditGoal={(id) => router.push(`/goal/detail/edit?id=${id}`)}
                       onDeleteGoal={handleDelete}
                       isDeleting={isDeleting}
-                      nudge={groups.length > 1 && index === 0}
                       dragHandle={handle}
                       isDragging={isDragging}
                     />
