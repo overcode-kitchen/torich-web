@@ -19,6 +19,9 @@ function AddRecordContent() {
     recordType,
     effectiveRecordType,
     setRecordType,
+    goalDeadline,
+    goalEndDate,
+    setGoalEndDate,
     isEditMode,
     flow,
     formState,
@@ -60,6 +63,9 @@ function AddRecordContent() {
             recordType={effectiveRecordType}
             investmentForm={investmentForm}
             formState={formState}
+            goalDeadline={goalDeadline}
+            goalEndDate={goalEndDate}
+            onGoalEndDateChange={setGoalEndDate}
           />
         )}
         {flow.currentGroup === 'C' && (

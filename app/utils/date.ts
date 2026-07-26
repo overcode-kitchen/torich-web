@@ -1,4 +1,5 @@
 import { differenceInMonths, addMonths, addDays, differenceInDays, format, isBefore, isAfter } from 'date-fns'
+import type { Investment } from '@/app/types/investment'
 
 /**
  * 개월 수를 "X년 Y개월" 형태의 문자열로 변환
@@ -32,6 +33,29 @@ export function formatDuration(totalMonths: number): string {
 export function calculateEndDate(startDate: Date, periodYears: number | null | undefined): Date | null {
   if (!periodYears || periodYears <= 0) return null
   return addMonths(startDate, periodYears * 12)
+}
+
+/**
+ * 항목의 종료일(만기)을 구한다.
+ * - maturity_date가 있으면 그 날짜 우선 (예적금 만기일, 목적 마감일에 맞춘 투자/현금)
+ * - 없으면 시작일 + 목표 기간(년)으로 계산 (적립형이면 null)
+ */
+export function getRecordEndDate(
+  record: Pick<Investment, 'maturity_date' | 'period_years' | 'start_date' | 'created_at'>,
+): Date | null {
+  if (record.maturity_date) return new Date(record.maturity_date)
+  const startDate = record.start_date ? new Date(record.start_date) : new Date(record.created_at)
+  return calculateEndDate(startDate, record.period_years)
+}
+
+/**
+ * 시작일부터 목표 마감일까지를 "목표 기간(년)"으로 환산한다.
+ * - period_years를 양수로 유지해 '목적형' 분류를 지키기 위한 대략적 fallback.
+ * - 개월수를 12로 나눠 올림하고, 음수/0이면 1년으로 클램프한다.
+ */
+export function periodYearsUntil(startDate: Date, targetDate: Date): number {
+  const months = differenceInMonths(targetDate, startDate)
+  return Math.max(1, Math.ceil(months / 12))
 }
 
 /**

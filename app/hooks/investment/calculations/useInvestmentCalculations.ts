@@ -4,6 +4,7 @@ import {
   calculateProgress,
   getElapsedMonths,
   getNextPaymentDate,
+  getRecordEndDate,
   isCompleted,
 } from '@/app/utils/date';
 
@@ -46,9 +47,11 @@ export function useInvestmentCalculations({
     ? parseFloat(editAnnualRate || '0')
     : item.annual_rate || 10;
 
-  const endDate = displayPeriodYears
-    ? calculateEndDate(startDate, displayPeriodYears)
-    : null;
+  // 종료일: 조회 모드에서는 maturity_date(목적 마감일에 맞춘 항목/예적금)를 우선한다.
+  // 수정 모드는 편집 중인 목표 기간을 그대로 반영(범위 최소화, 기존 동작 유지).
+  const endDate = isEditMode
+    ? (displayPeriodYears ? calculateEndDate(startDate, displayPeriodYears) : null)
+    : getRecordEndDate(item);
 
   // 납입 개월 수
   const elapsedMonths = getElapsedMonths(startDate);
