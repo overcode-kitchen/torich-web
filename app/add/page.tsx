@@ -32,8 +32,8 @@ function AddRecordContent() {
     isSubmitting,
     handleBack,
     exitDialogOpen,
-    setExitDialogOpen,
-    goBackToRoot,
+    closeExitDialog,
+    confirmExit,
     onSkip,
     pendingMismatch,
     linkedGoal,
@@ -140,11 +140,8 @@ function AddRecordContent() {
 
       <ExitConfirmDialog
         isOpen={exitDialogOpen}
-        onClose={() => setExitDialogOpen(false)}
-        onConfirm={() => {
-          setExitDialogOpen(false)
-          goBackToRoot()
-        }}
+        onClose={closeExitDialog}
+        onConfirm={confirmExit}
       />
 
       {pendingMismatch && linkedGoal?.target_date && (

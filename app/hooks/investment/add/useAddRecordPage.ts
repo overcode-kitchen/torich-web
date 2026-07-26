@@ -12,6 +12,7 @@ import { useAddItemActions } from './useAddItemActions'
 import { useModalState } from '@/app/hooks/ui/useModalState'
 import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { useUnsavedChangesGuard } from '@/app/hooks/navigation/useUnsavedChangesGuard'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
@@ -32,7 +33,6 @@ export function useAddRecordPage() {
   const initialField = searchParams.get('field')
   const isEditMode = !!editId
 
-  const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
   // 신규 추가 모드에서 사용자가 선택한 record_type. 미선택은 null (페이지 진입 직후).
   const [draftRecordType, setDraftRecordType] = useState<RecordType | null>(null)
 
@@ -127,6 +127,56 @@ export function useAddRecordPage() {
 
   const { goBack: goBackToRoot } = useFlowBack({ rootPath: '/' })
 
+  // 이탈 확인: 입력이 실제로 바뀐 경우에만 붙잡는다. (← 버튼·브라우저 뒤로가기 동일 규칙)
+  // 편집 모드는 프리필이 끝난 뒤를 기준으로 삼아야 "안 고쳤는데 확인이 뜨는" 오판이 없다.
+  const dirtySignature = useMemo(
+    () =>
+      JSON.stringify([
+        recordType,
+        formState.title,
+        formState.monthlyAmount,
+        formState.investmentDays,
+        formState.interestRate,
+        formState.maturityDate,
+        formState.periodYears,
+        investmentForm.stockName,
+        investmentForm.monthlyAmount,
+        investmentForm.monthlyShares,
+        investmentForm.unitType,
+        investmentForm.period,
+        investmentForm.isHabitMode,
+        investmentForm.startDate?.getTime() ?? null,
+        investmentForm.investmentDays,
+        endDateOverride,
+      ]),
+    [
+      recordType,
+      formState.title,
+      formState.monthlyAmount,
+      formState.investmentDays,
+      formState.interestRate,
+      formState.maturityDate,
+      formState.periodYears,
+      investmentForm.stockName,
+      investmentForm.monthlyAmount,
+      investmentForm.monthlyShares,
+      investmentForm.unitType,
+      investmentForm.period,
+      investmentForm.isHabitMode,
+      investmentForm.startDate,
+      investmentForm.investmentDays,
+      endDateOverride,
+    ],
+  )
+
+  const guard = useUnsavedChangesGuard({
+    signature: dirtySignature,
+    ready: !isEditMode || !!edit.initData,
+    deferBaseline: isEditMode,
+    onExit: goBackToRoot,
+  })
+  const { runWithoutGuard } = guard
+
   // 케이스 A 사전 안내 — 적금 신규/수정 시 묶인 목적의 종료일이 만기보다 빠른지 검사.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
   const [pendingMismatch, setPendingMismatch] = useState<MaturityMismatch | null>(null)
@@ -184,8 +234,9 @@ export function useAddRecordPage() {
     flow,
     investmentForm,
     formState,
-    onSubmitInvestment: investmentForm.handleSubmit,
-    onSubmitSavingsCash: guardedOnSubmitSavingsCash,
+    // 저장은 스스로 화면을 옮기므로 감시 항목을 먼저 걷어내고 실행한다.
+    onSubmitInvestment: () => runWithoutGuard(investmentForm.handleSubmit),
+    onSubmitSavingsCash: () => runWithoutGuard(guardedOnSubmitSavingsCash),
     isSubmitting,
   })
 
@@ -193,14 +244,14 @@ export function useAddRecordPage() {
 
   const handleBack = useCallback((): void => {
     if (flow.isAtFirstGroup) {
-      setExitDialogOpen(true)
+      guard.requestExit()
       return
     }
     flow.goPrevGroup()
-  }, [flow])
+  }, [flow, guard])
 
   const onSkip = goalId && !isEditMode
-    ? () => router.replace('/')
+    ? () => void runWithoutGuard(() => router.replace('/'))
     : undefined
 
   const daysPicker = isInvestment ? investmentDaysPicker : savingsCashDaysPicker
@@ -222,9 +273,9 @@ export function useAddRecordPage() {
     actions,
     isSubmitting,
     handleBack,
-    exitDialogOpen,
-    setExitDialogOpen,
-    goBackToRoot,
+    exitDialogOpen: guard.isConfirmOpen,
+    closeExitDialog: guard.cancelExit,
+    confirmExit: guard.confirmExit,
     onSkip,
     // 케이스 A 사전 확인 모달용
     pendingMismatch,

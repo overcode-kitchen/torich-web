@@ -12,6 +12,7 @@ import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { useUnsavedChangesGuard } from '@/app/hooks/navigation/useUnsavedChangesGuard'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { detectMaturityMismatch } from '@/app/utils/goal-status'
 import { Button } from '@/components/ui/button'
@@ -30,19 +31,13 @@ function EditForm({ goal, userId, onExit }: EditFormProps) {
   const { updateGoal, isUpdating } = useGoalUpdate(userId)
   const { records } = useInvestmentsContext()
   const [confirmOpen, setConfirmOpen] = useState<boolean>(false)
-  const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
 
-  // 변경사항이 있으면 뒤로가기·취소 시 이탈 확인을 띄운다.
-  const [initialSnapshot] = useState<string>(() => JSON.stringify(values))
-  const isDirty = JSON.stringify(values) !== initialSnapshot
-
-  const requestExit = (): void => {
-    if (isDirty) {
-      setExitDialogOpen(true)
-      return
-    }
-    onExit()
-  }
+  // 변경사항이 있으면 ← 버튼·취소·브라우저 뒤로가기 모두 같은 이탈 확인을 거친다.
+  const guard = useUnsavedChangesGuard({
+    signature: JSON.stringify(values),
+    onExit,
+  })
+  const { requestExit, runWithoutGuard } = guard
 
   // 케이스 A 사전 안내: 새 종료일이 묶인 적금 만기보다 빠른지 검사.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
@@ -55,10 +50,13 @@ function EditForm({ goal, userId, onExit }: EditFormProps) {
     [values.target_date, linkedRecords],
   )
 
+  // 저장은 스스로 화면을 옮기므로 감시 항목을 먼저 걷어내고 실행한다.
   async function doSubmit(override?: Partial<GoalCreateInput>): Promise<void> {
-    const payload = { ...toCreateInput(), ...override }
-    const updated = await updateGoal(goal.id, payload)
-    if (updated) router.replace(`/goal/detail?id=${goal.id}`)
+    await runWithoutGuard(async () => {
+      const payload = { ...toCreateInput(), ...override }
+      const updated = await updateGoal(goal.id, payload)
+      if (updated) router.replace(`/goal/detail?id=${goal.id}`)
+    })
   }
 
   function handleSubmit(): void {
@@ -130,12 +128,9 @@ function EditForm({ goal, userId, onExit }: EditFormProps) {
       )}
 
       <ExitConfirmDialog
-        isOpen={exitDialogOpen}
-        onClose={() => setExitDialogOpen(false)}
-        onConfirm={() => {
-          setExitDialogOpen(false)
-          onExit()
-        }}
+        isOpen={guard.isConfirmOpen}
+        onClose={guard.cancelExit}
+        onConfirm={guard.confirmExit}
       />
     </SubPageScaffold>
   )
