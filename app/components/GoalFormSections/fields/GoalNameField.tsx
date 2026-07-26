@@ -1,11 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import {
-  GOAL_PRESETS,
-  resolvePurposeIcon,
-  type GoalPreset,
-} from '@/app/constants/goal'
+import { resolvePurposeIcon, type GoalPreset } from '@/app/constants/goal'
+import { useGoalPresets } from '@/app/hooks/goal/data/useGoalPresets'
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
 import { FlowInput } from '@/app/components/Common/FlowInput'
 import { cn } from '@/lib/utils'
@@ -29,6 +26,8 @@ export default function GoalNameField({
   setField,
   disabled,
 }: GoalNameFieldProps) {
+  const { presets } = useGoalPresets()
+
   function applyPreset(preset: GoalPreset): void {
     setField('name', preset.name)
     setField('emoji', preset.iconKey)
@@ -51,7 +50,7 @@ export default function GoalNameField({
       />
 
       <div className="grid grid-cols-5 gap-2">
-        {GOAL_PRESETS.map((preset) => {
+        {presets.map((preset) => {
           const isActive = values.name.trim() === preset.name
           const icon = resolvePurposeIcon(preset.iconKey)
           return (

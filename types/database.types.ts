@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      goal_presets: {
+        Row: {
+          created_at: string
+          display_from: string | null
+          display_to: string | null
+          icon_key: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_from?: string | null
+          display_to?: string | null
+          icon_key: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_from?: string | null
+          display_to?: string | null
+          icon_key?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           archived_at: string | null
