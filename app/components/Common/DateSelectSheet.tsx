@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { CaretDown, CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import { ko } from 'date-fns/locale'
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar'
@@ -64,7 +65,11 @@ export default function DateSelectSheet({
   const atStart = month.getFullYear() === startYear && month.getMonth() === 0
   const atEnd = month.getFullYear() === endYear && month.getMonth() === 11
 
-  return (
+  // 조상(SubPageScaffold의 animate-page-in transform 등)이 만드는 stacking context 밖으로
+  // 빼기 위해 body로 포털 렌더한다. 이래야 시트가 페이지 고정 하단 바 위로 온전히 덮인다.
+  if (typeof document === 'undefined') return null
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"
@@ -217,6 +222,7 @@ export default function DateSelectSheet({
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

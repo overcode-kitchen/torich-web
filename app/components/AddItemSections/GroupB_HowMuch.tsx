@@ -6,7 +6,6 @@ import PeriodInput from '@/app/components/Common/PeriodInput'
 import DateSelectField from '@/app/components/Common/DateSelectField'
 import { FlowInput } from '@/app/components/Common/FlowInput'
 import ProgressiveField from './ProgressiveField'
-import { formatFullDate } from '@/app/utils/date'
 import type { RecordType } from '@/app/types/investment'
 import type { UseAddItemFormStateReturn } from '@/app/hooks/investment/add/useAddItemFormState'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
@@ -44,11 +43,12 @@ function GoalEndDateField({
   value: string
   onChange: (value: string) => void
 }) {
+  const onGoalDeadline = value === goalDeadline
   const helper = value
-    ? value === goalDeadline
-      ? `목적 마감일(${formatFullDate(new Date(goalDeadline))})에 맞춰뒀어요. 눌러서 다른 날짜로 바꿀 수 있어요.`
-      : '직접 정한 종료 날짜예요.'
-    : '종료 없이 계속 적립해요. 원하면 날짜를 정하세요.'
+    ? onGoalDeadline
+      ? '목적 마감일에 맞췄어요'
+      : '직접 정한 날짜예요'
+    : '종료 없이 계속 적립해요'
 
   return (
     <ProgressiveField label="언제까지 모을까요?">
@@ -61,7 +61,18 @@ function GoalEndDateField({
         clearable
         emptyLabel="목표 기간 없이 계속 적립"
       />
-      <p className="mt-2 px-1 text-xs text-muted-foreground">{helper}</p>
+      <div className="mt-2 flex items-center justify-between gap-3 px-1">
+        <p className="text-xs text-muted-foreground">{helper}</p>
+        {!onGoalDeadline && goalDeadline && (
+          <button
+            type="button"
+            onClick={() => onChange(goalDeadline)}
+            className="shrink-0 text-xs text-foreground-subtle underline underline-offset-2 hover:text-foreground-soft transition-colors"
+          >
+            목적 마감일로
+          </button>
+        )}
+      </div>
     </ProgressiveField>
   )
 }
