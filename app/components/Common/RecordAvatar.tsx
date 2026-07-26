@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { getRecordAvatar, type RecordAvatarSize } from '@/app/utils/recordAvatar'
+import { getWiggleStyle } from '@/app/utils/wiggle'
 import type { Investment } from '@/app/types/investment'
 import { TORY_FACE_MASK_PATH, TORY_FACE_MASK_VIEWBOX } from './toryFaceMaskPath'
 
@@ -28,33 +29,6 @@ export interface RecordAvatarProps {
   /** 제자리에서 가끔 한 번씩 꿈틀거리는 애니메이션. 종목마다 다른 박자라 화면에서 뜸하게 한두 개만 움직인다. (기본 on) */
   wiggle?: boolean
   className?: string
-}
-
-/** 문자열을 안정적인 정수 해시로. 종목마다 일정하지만 서로 다른 박자를 만든다. */
-function hashString(str: string): number {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) | 0
-  }
-  return Math.abs(hash)
-}
-
-/**
- * 종목명 해시로 꿈틀거림 박자(주기·시작 위상)를 정한다.
- * Math.random 대신 해시라 리렌더·SSR에도 값이 안정적이고, 종목마다 서로 다른 박자가 된다.
- * 주기를 길게(9~15s) 주고 위상을 넓게 흩뿌려, 활성 구간(≈10%)이 겹치는 일이 드물다.
- * → 한 화면에 아바타가 여러 개여도 동시에 한두 개만 뜨문뜨문 움직인다.
- */
-function getWiggleStyle(key: string): React.CSSProperties {
-  const seed = hashString(key)
-  const r1 = (seed % 1000) / 1000
-  const r2 = ((seed >>> 10) % 1000) / 1000
-  const duration = 9 + r1 * 6 // 9s ~ 15s (긴 정지 + 짧은 꿈틀)
-  const delay = -(r2 * duration) // 음수 지연으로 시작 위상을 전 주기에 흩뿌려 desync
-  return {
-    animationDuration: `${duration.toFixed(2)}s`,
-    animationDelay: `${delay.toFixed(2)}s`,
-  }
 }
 
 /**
