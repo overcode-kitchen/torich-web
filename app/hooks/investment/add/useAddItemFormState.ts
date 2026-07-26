@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Investment } from '@/app/types/investment'
 
 export interface UseAddItemFormStateProps {
@@ -47,9 +47,15 @@ export function useAddItemFormState({
   const [maturityDate, setMaturityDate] = useState<string>('')
   const [periodYears, setPeriodYears] = useState<string>('')
 
-  // initData 변경 시 1회 초기화 (편집 모드 진입)
+  // 편집 모드 프리필: 레코드당 1회만 실행한다. (useAddInvestmentForm과 동일한 규약)
+  // 배경 refetch로 initData의 객체 identity만 바뀌는 경우가 잦은데(전역 records 갱신 등),
+  // 가드가 없으면 그때마다 폼이 서버 값으로 되돌아가 사용자가 입력하던 값이 사라진다.
+  const prefilledIdRef = useRef<string | null>(null)
   useEffect(() => {
     if (!initData) return
+    if (prefilledIdRef.current === initData.id) return
+    prefilledIdRef.current = initData.id
+
     setTitle(initData.title ?? '')
     setMonthlyAmount(
       initData.monthly_amount
