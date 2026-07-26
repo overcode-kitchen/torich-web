@@ -66,9 +66,16 @@ export function useAddRecordPage() {
     ? undefined
     : linkedGoal?.target_date ?? undefined
 
+  // 목적에 묶인 항목의 "종료 날짜". 기본값은 목적 마감일이고, 사용자가 바꾸면 그 값을 쓴다.
+  // (빈 문자열이면 종료 없이 계속 적립 = 무기한). 분리(unlink)해도 이 날짜는 항목에 남는다.
+  const [endDateOverride, setEndDateOverride] = useState<string | null>(null)
+  const goalEndDate: string = endDateOverride ?? goalDeadline ?? ''
+  const setGoalEndDate = useCallback((v: string) => setEndDateOverride(v), [])
+
   const investmentForm = useAddInvestmentForm({
     goalId,
-    goalTargetDate: goalDeadline,
+    goalHasDeadline: !!goalDeadline,
+    goalEndDate,
     mode: isEditMode ? 'edit' : 'create',
     recordId: isEditMode ? editId ?? undefined : undefined,
     initData: edit.initData,
@@ -83,7 +90,7 @@ export function useAddRecordPage() {
     maturityDate: formState.maturityDate,
     periodYears: formState.periodYears,
     goalId,
-    goalTargetDate: goalDeadline,
+    goalEndDate,
     mode: isEditMode ? 'edit' : 'create',
     recordId: isEditMode ? editId ?? undefined : undefined,
   })
@@ -205,6 +212,8 @@ export function useAddRecordPage() {
     effectiveRecordType,
     setRecordType,
     goalDeadline,
+    goalEndDate,
+    setGoalEndDate,
     flow,
     formState,
     investmentForm,

@@ -27,8 +27,8 @@ export interface UseSavingsCashSubmitProps {
   periodYears?: string
   /** 목적 만들기 흐름에서 넘어온 경우 연결할 목적 ID */
   goalId?: string
-  /** 묶인 목적의 마감일(YYYY-MM-DD). 현금 항목을 목적 마감일에 만기시킬 때 사용(예적금 제외). */
-  goalTargetDate?: string
+  /** 선택된 종료 날짜(YYYY-MM-DD, 기본값=목적 마감일). 현금 항목을 이 날짜에 만기시킬 때 사용(예적금 제외). 비면 무기한. */
+  goalEndDate?: string
   /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
   mode?: 'create' | 'edit'
   /** edit 모드에서 수정할 records.id */
@@ -53,7 +53,7 @@ export function useSavingsCashSubmit({
   maturityDate,
   periodYears,
   goalId,
-  goalTargetDate,
+  goalEndDate,
   mode = 'create',
   recordId,
 }: UseSavingsCashSubmitProps): UseSavingsCashSubmitReturn {
@@ -124,14 +124,14 @@ export function useSavingsCashSubmit({
       }
 
       // 신규 추가
-      // 목적에 연결된 '현금' 항목이고 목적 마감일이 있으면, 목적 마감일에 만기시킨다.
-      // (예적금은 자체 만기일 피커/정합성 흐름을 쓰므로 제외한다.)
+      // 목적에 연결된 '현금' 항목이고 종료 날짜(기본=목적 마감일, 변경 가능)가 있으면 그 날짜에 만기시킨다.
+      // (예적금은 자체 만기일 피커/정합성 흐름을 쓰므로 제외한다.) 비웠으면 무기한 적립.
       const goalLinkedCash =
-        recordType === 'cash' && !!goalId && !!goalTargetDate
+        recordType === 'cash' && !!goalId && !!goalEndDate
       const goalDeadlineOverride = goalLinkedCash
         ? {
-            maturity_date: goalTargetDate,
-            period_years: periodYearsUntil(new Date(), new Date(goalTargetDate!)),
+            maturity_date: goalEndDate,
+            period_years: periodYearsUntil(new Date(), new Date(goalEndDate!)),
           }
         : {}
 
@@ -175,7 +175,7 @@ export function useSavingsCashSubmit({
     periodYears,
     recordType,
     goalId,
-    goalTargetDate,
+    goalEndDate,
     mode,
     recordId,
     router,
