@@ -231,11 +231,15 @@ Deno.serve(async () => {
       )
     }
 
-    const tokensMap = new Map<string, string[]>()
+    // user_push_tokens에는 같은 토큰이 여러 줄 들어 있을 수 있다(기기 재설치·재등록).
+    // 중복을 그대로 순회하면 동일한 (goal_id, scheduled_at, token) 행을 두 번 만들어
+    // 한 insert 안에서 자기들끼리 unique 충돌(23505)이 난다. Set으로 반드시 걷어낸다.
+    const tokensMap = new Map<string, Set<string>>()
     for (const t of tokenRows || []) {
       const row = t as { user_id: string; token: string }
-      if (!tokensMap.has(row.user_id)) tokensMap.set(row.user_id, [])
-      tokensMap.get(row.user_id)!.push(row.token)
+      if (!row.token) continue
+      if (!tokensMap.has(row.user_id)) tokensMap.set(row.user_id, new Set())
+      tokensMap.get(row.user_id)!.add(row.token)
     }
 
     // 5. 이미 예약된 행 조회 후 코드에서 중복 제거.
@@ -268,7 +272,7 @@ Deno.serve(async () => {
     const allRows: GoalNotificationRow[] = []
     for (const { goal, daysBefore } of targetGoals) {
       const tokens = tokensMap.get(goal.user_id)
-      if (!tokens?.length) continue
+      if (!tokens?.size) continue
 
       const defaultTime = userDefaultTime[goal.user_id] || '09:00'
       const scheduledAtStr = getKSTDateTimeAsUTC(
@@ -282,7 +286,11 @@ Deno.serve(async () => {
       )
 
       for (const token of tokens) {
-        if (existingKeys.has(`${goal.id}|${scheduledAtStr}|${token}`)) continue
+        const key = `${goal.id}|${scheduledAtStr}|${token}`
+        // 이미 DB에 있거나, 이번 실행에서 이미 만든 행이면 건너뛴다.
+        // 후자를 빼면 한 insert 안에서 자기들끼리 unique 충돌(23505)이 날 수 있다.
+        if (existingKeys.has(key)) continue
+        existingKeys.add(key)
         allRows.push({
           user_id: goal.user_id,
           record_id: null,
@@ -319,9 +327,14 @@ Deno.serve(async () => {
         .insert(chunk)
 
       if (insertError) {
+        // 상세 내용은 Dashboard → Edge Functions → Logs 에서 확인한다.
+        // 토큰 등 사용자 데이터가 섞이므로 응답 본문에는 담지 않는다.
         console.error('Error inserting goal notifications:', insertError)
         return new Response(
-          JSON.stringify({ error: 'Failed to insert goal notifications' }),
+          JSON.stringify({
+            error: 'Failed to insert goal notifications',
+            code: insertError.code ?? null,
+          }),
           { status: 500, headers: { 'Content-Type': 'application/json' } }
         )
       }
