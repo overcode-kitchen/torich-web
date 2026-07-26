@@ -15,8 +15,29 @@
 | `reminder` | 납입(매수)일 리마인더 (사전 알림 포함) | `schedule-notification`, `reschedule-notifications` (둘 다 `buildNotificationRows`) | 실제 record UUID |
 | `re_reminder` | 어제 납입일을 놓친 record에 대한 미완료 재알림 | `schedule-re-reminders` | 실제 record UUID |
 | `service_announcement` | 운영 공지사항 푸시 | `send-announcement` | sentinel UUID `00000000-0000-0000-0000-000000000001` |
+| `goal_deadline` | 목적 마감일 알림 (D-7 / D-1 / 당일) | `schedule-goal-notifications` | **`null`** (대신 `goal_id`에 목적 UUID) |
 
-`send-push`는 `notification_type` 자체로 분기하지 않고 **`record_id`의 존재 여부**로 GA 이벤트 라벨만 구분합니다 (`record_id` 있으면 `monthly_reminder`, 없거나 빈 문자열이면 `announcement` — `send-push/index.ts:269-273`). 즉 `re_reminder`도 GA상으로는 `monthly_reminder`로 집계됩니다.
+`send-push`는 `notification_type` 자체로 분기하지 않고 **`goal_id` → `record_id` 순서로 존재 여부**를 보고 GA 이벤트 라벨을 정합니다 (`goal_id` 있으면 `goal_deadline`, 없고 `record_id`가 있으면 `monthly_reminder`, 둘 다 없으면 `announcement`). 즉 `re_reminder`도 GA상으로는 `monthly_reminder`로 집계됩니다.
+
+### 1.1 목적 마감일 알림 (`goal_deadline`)
+
+`schedule-goal-notifications`가 pg_cron으로 매일 KST 00:20에 돌면서, 아래 조건을 모두 만족하는 목적을 찾아 **그날 발송할 알림만** 예약합니다.
+
+- `target_date`가 있고, 오늘로부터 **7일 / 1일 / 0일** 남음
+- `notification_enabled = true`, `archived_at IS NULL`, `completed_at IS NULL`
+- 소유 사용자의 `notification_global_enabled`가 `false`가 아님 (`user_settings` 행이 없으면 기본 ON으로 간주)
+
+record 알림과 다른 점:
+
+| | record 알림 | 목적 마감일 알림 |
+|---|---|---|
+| 예약 시점 | 납입일 전체를 미리 선예약 | **당일 것만** 매일 예약 |
+| 주말·공휴일 보정 | `notification_skip_weekend_holiday` 적용 | **적용하지 않음** — 마감일은 고정 날짜라 다음 영업일로 미루면 마감일을 넘겨 알리게 됨 |
+| 사전 알림 설정 | `notification_pre_reminder` 따름 | 고정 D-7/D-1/당일 (목적 수정 화면 안내 문구와 일치) |
+| 중복 방지 | `upsert(onConflict: record_id,scheduled_at,token)` | 기존 행을 조회해 **코드에서 필터 후 insert** (partial unique index는 PostgREST `onConflict`로 지정 불가) |
+| 취소 처리 | `send-push`가 `records.notification_enabled = false`인 행 삭제 | `send-push`가 알림 OFF·보관·달성된 목적의 pending 행 삭제 (동일 패턴) |
+
+> 본문에 진척률(`62% 모았어요`)은 넣지 않았습니다. 진척 계산이 클라이언트(`useGoalProgress`)에만 있어 서버(Deno)에 중복 구현하면 두 값이 어긋날 수 있기 때문입니다. 필요하면 계산을 공용화한 뒤 별도로 추가합니다.
 
 > 코드상 또 다른 타입 흔적: `user_settings.notification_streak_enabled` 컬럼이 DB에는 존재하나(`database.types.ts:334`), 클라이언트 설정 상태(`NotificationSettingsState`)와 Edge Function 어디에서도 사용되지 않습니다. 미연동/레거시 컬럼입니다.
 
@@ -369,7 +390,7 @@ UI 라벨 (`NotificationReminderSection.tsx:27-34`): `없음 / 당일 / 1일 전
 | `id` | uuid | PK |
 | `user_id` | string | 대상 유저 |
 | `record_id` | string \| null | 실제 record UUID / 공지 sentinel / null |
-| `goal_id` | string \| null | goals FK (예약 로직에선 미사용) |
+| `goal_id` | string \| null | goals FK. `goal_deadline` 알림에만 채워지고, 이때 `record_id`는 `null` |
 | `token` | string | FCM 토큰 |
 | `title` / `body` | string | 푸시 내용 |
 | `scheduled_at` | string(ts) | 발송 예정 UTC |
