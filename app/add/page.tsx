@@ -1,6 +1,8 @@
 'use client'
 
 import { Suspense } from 'react'
+import { useRouter } from 'next/navigation'
+import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
 import AddItemHeader from '@/app/components/AddItemSections/AddItemHeader'
@@ -11,11 +13,15 @@ import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialo
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import ManualInputModal from '@/app/components/ManualInputModal'
 import MaturityMismatchConfirmModal from '@/app/components/Common/MaturityMismatchConfirmModal'
+import { Button } from '@/components/ui/button'
 import { useAddRecordPage } from '@/app/hooks/investment/add/useAddRecordPage'
 
 function AddRecordContent() {
+  const router = useRouter()
   const page = useAddRecordPage()
   const {
+    isLoadingEdit,
+    editError,
     recordType,
     effectiveRecordType,
     setRecordType,
@@ -41,6 +47,30 @@ function AddRecordContent() {
     proceedDespiteMismatch,
     alignAndSubmit,
   } = page
+
+  // 편집 대상을 불러오는 중 — 폼을 그리면 유형 카드가 전부 잠긴 화면이 보인다.
+  // 문구·레이아웃은 목적 편집(EditGoalClient)과 동일하게 맞춘다.
+  if (isLoadingEdit) {
+    return (
+      <SubPageScaffold onBack={goBackToRoot} contentClassName="py-6">
+        <div className="flex items-center justify-center py-16">
+          <CircleNotch className="w-6 h-6 animate-spin text-foreground-subtle" />
+        </div>
+      </SubPageScaffold>
+    )
+  }
+
+  // 편집 대상을 못 찾음 (다른 기기에서 삭제, 오래된 딥링크 등) — 막힌 화면 대신 안내한다.
+  if (editError) {
+    return (
+      <SubPageScaffold onBack={goBackToRoot} contentClassName="py-6">
+        <div className="flex flex-col items-center gap-4 py-16">
+          <p className="text-sm text-foreground-subtle">{editError}</p>
+          <Button onClick={() => router.push('/')}>홈으로</Button>
+        </div>
+      </SubPageScaffold>
+    )
+  }
 
   return (
     <>

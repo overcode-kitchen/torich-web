@@ -208,6 +208,12 @@ export function useAddRecordPage() {
   return {
     goalId,
     isEditMode,
+    // 편집 대상 로드 상태 — 소비하지 않으면 없는 항목에서 화면이 잠긴다.
+    // edit.isLoading은 fetch를 시작하는 effect 이후에 true가 되므로, 그 이전 렌더에서도
+    // 잠긴 폼이 깜빡이지 않도록 "편집 모드인데 데이터도 에러도 없는" 구간을 로딩으로 본다.
+    isLoadingEdit:
+      edit.isLoading || (isEditMode && !edit.initData && !edit.error),
+    editError: edit.error,
     recordType,
     effectiveRecordType,
     setRecordType,
