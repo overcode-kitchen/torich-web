@@ -232,7 +232,6 @@ function CashFields({
   onGoalEndDateChange?: (value: string) => void
 }) {
   const amountFilled = parseAmount(formState.monthlyAmount) > 0
-  const isHabitMode = formState.periodYears === ''
 
   return (
     <div>
@@ -257,10 +256,8 @@ function CashFields({
               value={formState.periodYears}
               onChange={formState.handlePeriodYearsChange}
               onAdjust={formState.adjustPeriodYears}
-              isHabitMode={isHabitMode}
-              onToggleHabitMode={(habit) => {
-                if (habit) formState.setPeriodYearsRaw('')
-              }}
+              isHabitMode={formState.isHabitMode}
+              onToggleHabitMode={formState.setIsHabitMode}
             />
           </ProgressiveField>
         ))}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { isHabitMode as isRecordHabitMode } from '@/app/types/investment'
 import type { Investment } from '@/app/types/investment'
 
 export interface UseAddItemFormStateProps {
@@ -22,11 +23,18 @@ export interface UseAddItemFormStateReturn {
   handleInterestRateChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   maturityDate: string
   setMaturityDate: (value: string) => void
-  /** 현금 목표 기간(년). 빈 문자열이면 habit(무기한 적립) */
+  /** 현금 목표 기간(년). */
   periodYears: string
   setPeriodYearsRaw: (value: string) => void
   handlePeriodYearsChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   adjustPeriodYears: (delta: number) => void
+  /**
+   * 적립형(목표 기간 없음) 여부. periodYears에서 파생하지 않고 독립 state로 둔다.
+   * 파생값이면 초기값 ''이 곧 habit이 되어 입력칸이 처음부터 잠기고 토글도 못 끈다.
+   * (투자 유형의 useAddInvestmentUI.isHabitMode와 같은 규약)
+   */
+  isHabitMode: boolean
+  setIsHabitMode: (value: boolean) => void
   /** 공통 필드를 모두 빈 상태로 리셋 (type 변경 시 사용) */
   resetAll: () => void
 }
@@ -46,6 +54,8 @@ export function useAddItemFormState({
   const [interestRate, setInterestRate] = useState<string>('')
   const [maturityDate, setMaturityDate] = useState<string>('')
   const [periodYears, setPeriodYears] = useState<string>('')
+  // 기본값 false — 신규 진입 시 목표 기간을 바로 입력할 수 있어야 한다.
+  const [isHabitMode, setIsHabitMode] = useState<boolean>(false)
 
   // 편집 진입 시 기존 값으로 폼을 채운다. 기준은 "레코드가 바뀌었는가"(id)다.
   //
@@ -70,11 +80,10 @@ export function useAddItemFormState({
       initData.interest_rate != null ? String(initData.interest_rate) : '',
     )
     setMaturityDate(initData.maturity_date ?? '')
-    setPeriodYears(
-      initData.period_years != null && initData.period_years > 0
-        ? String(initData.period_years)
-        : '',
-    )
+    // 투자 편집(useAddInvestmentForm)과 동일하게 habit 여부를 먼저 정하고 기간을 채운다.
+    const habit = isRecordHabitMode(initData)
+    setIsHabitMode(habit)
+    setPeriodYears(habit ? '' : String(initData.period_years))
   }
 
   // 금액: 숫자만 허용, 천 단위 콤마 표기 (만원 단위)
@@ -119,6 +128,7 @@ export function useAddItemFormState({
     setInterestRate('')
     setMaturityDate('')
     setPeriodYears('')
+    setIsHabitMode(false)
   }, [])
 
   return {
@@ -139,6 +149,8 @@ export function useAddItemFormState({
     setPeriodYearsRaw: setPeriodYears,
     handlePeriodYearsChange,
     adjustPeriodYears,
+    isHabitMode,
+    setIsHabitMode,
     resetAll,
   }
 }

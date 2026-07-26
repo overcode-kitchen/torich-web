@@ -88,7 +88,8 @@ export function useAddRecordPage() {
     investmentDays: formState.investmentDays,
     interestRate: formState.interestRate,
     maturityDate: formState.maturityDate,
-    periodYears: formState.periodYears,
+    // 적립형이면 기간을 저장하지 않는다 (입력해 둔 값은 토글을 다시 끄면 복원되도록 남긴다).
+    periodYears: formState.isHabitMode ? '' : formState.periodYears,
     initialMaturityDate: edit.initData?.maturity_date ?? undefined,
     goalId,
     goalEndDate,
