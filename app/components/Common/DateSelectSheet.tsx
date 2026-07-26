@@ -31,10 +31,16 @@ interface DateSelectSheetProps {
   emptyLabel?: string
   /** 연도 휠을 올해보다 과거로 몇 년까지 열지 (시작일 등 과거 선택용). 기본 0(과거 불가). */
   pastYears?: number
+  /** 선택 가능한 가장 이른 날짜. 이전 날짜는 비활성이고 월 이동도 막힌다. */
+  minDate?: Date
 }
 
 function shiftMonth(base: Date, delta: number): Date {
   return new Date(base.getFullYear(), base.getMonth() + delta, 1)
+}
+
+function monthStart(base: Date): Date {
+  return new Date(base.getFullYear(), base.getMonth(), 1)
 }
 
 /**
@@ -51,18 +57,31 @@ export default function DateSelectSheet({
   onClear,
   emptyLabel = '선택 안 함',
   pastYears = 0,
+  minDate,
 }: DateSelectSheetProps) {
   const today = new Date()
   const currentYear = today.getFullYear()
   const selectedYear = selectedDate?.getFullYear() ?? currentYear
   // 휠 연도 범위: 과거 선택값·pastYears(과거 시작일 등)를 포괄하고, 장기 목표를 위해 +30년까지 노출.
-  const startYear = Math.min(currentYear - pastYears, selectedYear)
+  // minDate가 있으면 그 해보다 이전 연도는 열지 않는다.
+  const earliestYear = minDate ? minDate.getFullYear() : currentYear - pastYears
+  const startYear = Math.min(earliestYear, selectedYear)
   const endYear = Math.max(currentYear + 30, selectedYear)
 
   const [month, setMonth] = useState<Date>(selectedDate ?? new Date())
   const [pickerOpen, setPickerOpen] = useState(false)
 
-  const atStart = month.getFullYear() === startYear && month.getMonth() === 0
+  // 이동 가능한 가장 이른 달. minDate가 있으면 그 달이 하한이다.
+  // 단, 이미 저장된 과거 날짜(레거시 데이터)를 편집할 때는 그 달을 볼 수 있어야 하므로
+  // 선택값이 하한보다 앞서면 연도 시작까지 열어 둔다. (그 날짜들은 disabled로 보인다)
+  const minMonth = minDate ? monthStart(minDate) : null
+  const selectedMonth = selectedDate ? monthStart(selectedDate) : null
+  const lowerMonth =
+    minMonth && (!selectedMonth || selectedMonth >= minMonth)
+      ? minMonth
+      : new Date(startYear, 0, 1)
+
+  const atStart = monthStart(month) <= lowerMonth
   const atEnd = month.getFullYear() === endYear && month.getMonth() === 11
 
   // 조상(SubPageScaffold의 animate-page-in transform 등)이 만드는 stacking context 밖으로
@@ -112,7 +131,10 @@ export default function DateSelectSheet({
           <div className={cn('flex items-center gap-1', pickerOpen && 'invisible')}>
             <button
               type="button"
-              onClick={() => setMonth(new Date(currentYear, today.getMonth(), 1))}
+              onClick={() => {
+                const thisMonth = new Date(currentYear, today.getMonth(), 1)
+                setMonth(thisMonth < lowerMonth ? lowerMonth : thisMonth)
+              }}
               className="flex h-11 items-center rounded-xl px-3 text-sm font-medium text-foreground-subtle hover:bg-surface transition-colors"
             >
               오늘
@@ -146,7 +168,10 @@ export default function DateSelectSheet({
               month={month.getMonth() + 1}
               startYear={startYear}
               endYear={endYear}
-              onChange={(y, m) => setMonth(new Date(y, m - 1, 1))}
+              onChange={(y, m) => {
+                const next = new Date(y, m - 1, 1)
+                setMonth(next < lowerMonth ? lowerMonth : next)
+              }}
             />
             <button
               type="button"
@@ -164,8 +189,9 @@ export default function DateSelectSheet({
                 locale={ko}
                 month={month}
                 onMonthChange={setMonth}
-                startMonth={new Date(startYear, 0, 1)}
+                startMonth={lowerMonth}
                 endMonth={new Date(endYear, 11, 31)}
+                disabled={minDate ? { before: minDate } : undefined}
                 selected={selectedDate ?? undefined}
                 fixedWeeks
                 className="w-full"

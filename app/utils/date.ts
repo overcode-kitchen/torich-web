@@ -1,6 +1,20 @@
 import { differenceInMonths, addMonths, addDays, differenceInDays, format, isBefore, isAfter } from 'date-fns'
 import type { Investment } from '@/app/types/investment'
 
+/** 로컬 시간대 기준 YYYY-MM-DD 문자열. (toISOString은 UTC라 하루 밀릴 수 있다) */
+export function toIsoDateString(date: Date): string {
+  return format(date, 'yyyy-MM-dd')
+}
+
+/**
+ * 내일 날짜(YYYY-MM-DD). "오늘보다 뒤"를 요구하는 입력의 하한으로 쓴다.
+ * 만기일이 오늘이면 isMaturedAndUnsettled가 곧바로 참이 되어 등록 즉시 정산되므로,
+ * 만기일 하한은 오늘이 아니라 내일이다.
+ */
+export function tomorrowIsoDate(base: Date = new Date()): string {
+  return toIsoDateString(addDays(base, 1))
+}
+
 /**
  * 개월 수를 "X년 Y개월" 형태의 문자열로 변환
  * - 개월 수가 0이면 생략 (예: "1년 0개월" -> "1년")

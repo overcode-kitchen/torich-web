@@ -1,11 +1,13 @@
 'use client'
 
+import { useMemo } from 'react'
 import AmountInput from '@/app/components/Common/AmountInput'
 import ShareInput from '@/app/components/Common/ShareInput'
 import PeriodInput from '@/app/components/Common/PeriodInput'
 import DateSelectField from '@/app/components/Common/DateSelectField'
 import { FlowInput } from '@/app/components/Common/FlowInput'
 import ProgressiveField from './ProgressiveField'
+import { tomorrowIsoDate } from '@/app/utils/date'
 import type { RecordType } from '@/app/types/investment'
 import type { UseAddItemFormStateReturn } from '@/app/hooks/investment/add/useAddItemFormState'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
@@ -179,6 +181,9 @@ function InvestmentFields({
 function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) {
   const amountFilled = parseAmount(formState.monthlyAmount) > 0
   const rateFilled = parseFloat(formState.interestRate) > 0
+  // 만기일은 반드시 미래여야 한다. 오늘 이전이면 등록 직후 자동 만기 정산이 돌아
+  // 방금 만든 항목이 곧바로 종료 상태가 된다.
+  const earliestMaturity = useMemo(() => tomorrowIsoDate(), [])
 
   return (
     <div>
@@ -210,6 +215,7 @@ function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) 
             onChange={formState.setMaturityDate}
             variant="flow"
             placeholder="만기일 선택"
+            minDate={earliestMaturity}
           />
         </ProgressiveField>
       )}

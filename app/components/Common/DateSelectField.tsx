@@ -19,6 +19,8 @@ interface DateSelectFieldProps {
   clearable?: boolean
   /** clearable일 때 미선택 푸터 문구 */
   emptyLabel?: string
+  /** 선택 가능한 가장 이른 날짜(YYYY-MM-DD). 이전 날짜는 시트에서 비활성. */
+  minDate?: string
 }
 
 function toIsoDate(date: Date): string {
@@ -48,9 +50,11 @@ export default function DateSelectField({
   sheetTitle,
   clearable = false,
   emptyLabel,
+  minDate,
 }: DateSelectFieldProps) {
   const [isOpen, setIsOpen] = useState(false)
   const selectedDate = parseIsoDate(value)
+  const minSelectableDate = parseIsoDate(minDate ?? '')
 
   const buttonClass =
     variant === 'flow'
@@ -82,6 +86,7 @@ export default function DateSelectField({
           selectedDate={selectedDate}
           title={sheetTitle ?? placeholder}
           emptyLabel={emptyLabel}
+          minDate={minSelectableDate ?? undefined}
           onSelect={(date) => onChange(toIsoDate(date))}
           onClear={clearable ? () => onChange('') : undefined}
           onClose={() => setIsOpen(false)}
