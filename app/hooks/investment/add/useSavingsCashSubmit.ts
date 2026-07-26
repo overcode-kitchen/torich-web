@@ -92,16 +92,25 @@ export function useSavingsCashSubmit({
     const periodYearsValue =
       Number.isFinite(periodYearsNum) && periodYearsNum > 0 ? periodYearsNum : null
 
-    const payload = {
+    // 폼이 실제로 입력받는 필드. 유형별로 다루는 필드가 다르므로 여기서 갈라 둔다.
+    const formFields = {
       title: title.trim(),
-      symbol: null,
       monthly_amount: amountInWon,
-      period_years: periodYearsValue,
+      investment_days: investmentDays.length > 0 ? investmentDays : null,
+      record_type: recordType,
+      ...(recordType === 'savings'
+        ? { interest_rate: rate, maturity_date: maturityDate }
+        : { period_years: periodYearsValue }),
+    }
+
+    // 신규 생성에만 필요한 기본값. 예적금·현금은 투자 전용 컬럼을 쓰지 않는다.
+    // (편집 payload에 넣으면 폼이 다루지 않는 컬럼을 매 저장마다 덮어쓰게 된다 — #64)
+    const createDefaults = {
+      symbol: null,
       annual_rate: 0,
       final_amount: 0,
-      investment_days: investmentDays.length > 0 ? investmentDays : null,
       unit_type: 'amount',
-      record_type: recordType,
+      period_years: periodYearsValue,
       interest_rate: recordType === 'savings' ? rate : null,
       maturity_date: recordType === 'savings' ? maturityDate : null,
     }
@@ -110,8 +119,10 @@ export function useSavingsCashSubmit({
       setIsSubmitting(true)
 
       // 편집 모드: updateInvestment에 위임(단일 진실 출처). 중복 .update() 방지.
+      // 폼이 입력받은 필드만 넘긴다. 키가 없으면 copyIfPresent가 건너뛰므로
+      // 예적금의 period_years, 현금의 maturity_date처럼 폼 밖의 값이 보존된다.
       if (mode === 'edit' && recordId) {
-        await updateInvestment(recordId, payload as Partial<Investment>)
+        await updateInvestment(recordId, formFields as Partial<Investment>)
 
         track('investment_update_success', {
           amount_bucket: amountBucket(amountInWon),
@@ -140,7 +151,8 @@ export function useSavingsCashSubmit({
         .from('records')
         .insert({
           user_id: userId,
-          ...payload,
+          ...createDefaults,
+          ...formFields,
           notification_enabled: true,
           ...(goalId ? { goal_id: goalId } : {}),
           ...goalDeadlineOverride,
