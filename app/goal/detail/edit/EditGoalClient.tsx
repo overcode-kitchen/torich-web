@@ -14,6 +14,7 @@ import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { detectMaturityMismatch } from '@/app/utils/goal-status'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
 import type { Goal, GoalCreateInput } from '@/app/types/goal'
@@ -55,10 +56,21 @@ function EditForm({ goal, userId, onExit }: EditFormProps) {
     [values.target_date, linkedRecords],
   )
 
+  // 실패 시 반드시 토스트로 알린다. 적립 항목(useSavingsCashSubmit)과 동일한 문구를 쓴다.
+  // updateGoal은 실패하면 throw, userId 미확정이면 null을 반환하므로 두 경로를 모두 잡는다.
   async function doSubmit(override?: Partial<GoalCreateInput>): Promise<void> {
     const payload = { ...toCreateInput(), ...override }
-    const updated = await updateGoal(goal.id, payload)
-    if (updated) router.replace(`/goal/detail?id=${goal.id}`)
+    try {
+      const updated = await updateGoal(goal.id, payload)
+      if (!updated) {
+        toastError(TOAST_MESSAGES.updateSaveFailed)
+        return
+      }
+      router.replace(`/goal/detail?id=${goal.id}`)
+    } catch {
+      // 입력값은 유지한 채 재시도할 수 있게 화면을 그대로 둔다.
+      toastError(TOAST_MESSAGES.updateSaveFailed)
+    }
   }
 
   function handleSubmit(): void {
@@ -101,7 +113,7 @@ function EditForm({ goal, userId, onExit }: EditFormProps) {
         <PrimaryCTAButton
           label="저장하기"
           onClick={handleSubmit}
-          disabled={!isValid}
+          disabled={!isValid || !userId}
           loading={isUpdating}
           loadingLabel="저장 중..."
         />

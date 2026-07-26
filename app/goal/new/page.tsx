@@ -15,6 +15,7 @@ import { useGoalFlow } from '@/app/hooks/goal/add/useGoalFlow'
 import { useGoalCreate } from '@/app/hooks/goal/data/useGoalCreate'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { amountBucket, track } from '@/app/lib/analytics'
+import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { createClient } from '@/utils/supabase/client'
 
 const STEP_COMPONENTS = {
@@ -59,19 +60,33 @@ function NewGoalContent() {
     return true
   }, [flow.currentStep, values.name, values.target_amount])
 
+  // 진입 직후 userId가 확정되기 전에는 저장이 조용히 실패하므로 CTA를 잠근다.
+  // 앞 단계(A·B)는 userId와 무관하므로 마지막 단계에서만 잠근다.
+  const isSaveBlocked = flow.isAtLastStep && !userId
+
+  // 실패 시 반드시 토스트로 알린다. 적립 항목(useSavingsCashSubmit)과 동일한 문구를 쓴다.
+  // createGoal은 실패하면 throw, userId 미확정이면 null을 반환하므로 두 경로를 모두 잡는다.
   const handleSubmit = useCallback(async (): Promise<void> => {
-    const goal = await createGoal(toCreateInput())
-    if (!goal) return
-    const trimmedName = values.name.trim()
-    track('goal_create_success', {
-      target_amount_bucket: amountBucket(Number(values.target_amount) || 0),
-      has_deadline: !!values.target_date,
-      has_external_amount: Number(values.external_amount) > 0,
-      preset_used: GOAL_PRESET_NAMES.includes(trimmedName)
-        ? trimmedName
-        : 'custom',
-    })
-    router.replace('/')
+    try {
+      const goal = await createGoal(toCreateInput())
+      if (!goal) {
+        toastError(TOAST_MESSAGES.updateSaveFailed)
+        return
+      }
+      const trimmedName = values.name.trim()
+      track('goal_create_success', {
+        target_amount_bucket: amountBucket(Number(values.target_amount) || 0),
+        has_deadline: !!values.target_date,
+        has_external_amount: Number(values.external_amount) > 0,
+        preset_used: GOAL_PRESET_NAMES.includes(trimmedName)
+          ? trimmedName
+          : 'custom',
+      })
+      router.replace('/')
+    } catch {
+      // 입력값은 유지한 채 재시도할 수 있게 화면을 그대로 둔다.
+      toastError(TOAST_MESSAGES.updateSaveFailed)
+    }
   }, [createGoal, router, toCreateInput, values])
 
   const handleAction = useCallback((): void => {
@@ -115,7 +130,7 @@ function NewGoalContent() {
           <PrimaryCTAButton
             label={flow.isAtLastStep ? '저장하기' : '다음으로'}
             onClick={handleAction}
-            disabled={!canAdvance}
+            disabled={!canAdvance || isSaveBlocked}
             loading={isCreating}
             loadingLabel="저장 중..."
           />
