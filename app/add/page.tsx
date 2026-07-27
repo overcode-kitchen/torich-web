@@ -74,7 +74,8 @@ function AddRecordContent() {
   return (
     <>
       <SubPageScaffold onBack={handleBack} contentClassName="py-6 pb-40" enterAnimation>
-        <AddItemHeader currentGroup={flow.currentGroup} />
+        {/* 단일 필드 편집은 3단계 위저드가 아니므로 진행 표시를 숨긴다. */}
+        {!flow.isSingleFieldMode && <AddItemHeader currentGroup={flow.currentGroup} />}
 
         {flow.currentGroup === 'A' && (
           <GroupA_WhatToSave
@@ -105,6 +106,7 @@ function AddRecordContent() {
             isStartDatePickerOpen={modals.isDatePickerOpen}
             onStartDatePickerOpenChange={modals.setIsDatePickerOpen}
             onOpenDaysPicker={() => modals.setIsDaysPickerOpen(true)}
+            openDaysPickerOnMount={flow.entryField === 'investmentDays'}
           />
         )}
       </SubPageScaffold>

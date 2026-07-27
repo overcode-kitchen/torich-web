@@ -245,7 +245,9 @@ export function useAddRecordPage() {
   const isInvestment = effectiveRecordType === 'investment'
 
   const handleBack = useCallback((): void => {
-    if (flow.isAtFirstGroup) {
+    // 단일 필드 편집은 그룹 이동 없이 바로 나간다. 그룹 B/C로 진입했다고 해서
+    // ←가 유형 선택(A)으로 데려가면, 고치러 들어온 화면과 무관한 곳에 떨어진다.
+    if (flow.isSingleFieldMode || flow.isAtFirstGroup) {
       guard.requestExit()
       return
     }

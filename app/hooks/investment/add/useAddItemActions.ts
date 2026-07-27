@@ -79,7 +79,7 @@ function isGroupCReady(
 /**
  * 그룹 단위 진행 액션 hook.
  * - 현재 그룹의 모든 필수 필드 충족 시 canAdvance=true
- * - 마지막 그룹(C)이면 라벨 "저장하기" + 최종 제출 호출
+ * - 마지막 그룹(C)이거나 단일 필드 편집이면 라벨 "저장하기" + 최종 제출 호출
  * - 그 외에는 라벨 "다음으로" + 다음 그룹으로 이동
  */
 export function useAddItemActions({
@@ -98,17 +98,19 @@ export function useAddItemActions({
     return isGroupCReady(recordType, investmentForm, formState)
   }, [flow.currentGroup, recordType, investmentForm, formState])
 
-  const label = flow.isAtLastGroup ? '저장하기' : '다음으로'
+  // 단일 필드 편집은 진입 그룹이 어디든 그 자리에서 끝낸다.
+  const isFinalStep = flow.isSingleFieldMode || flow.isAtLastGroup
+  const label = isFinalStep ? '저장하기' : '다음으로'
 
   const onAction = useCallback((): void => {
     if (isSubmitting || recordType === null) return
-    if (flow.isAtLastGroup) {
+    if (isFinalStep) {
       if (recordType === 'investment') void onSubmitInvestment()
       else void onSubmitSavingsCash()
       return
     }
     flow.goNextGroup()
-  }, [isSubmitting, flow, recordType, onSubmitInvestment, onSubmitSavingsCash])
+  }, [isSubmitting, isFinalStep, flow, recordType, onSubmitInvestment, onSubmitSavingsCash])
 
   return { label, canAdvance, onAction }
 }
