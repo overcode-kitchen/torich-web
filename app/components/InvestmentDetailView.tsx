@@ -93,6 +93,12 @@ function InternalInvestmentDetailView({
 
   const isNotificationDisabled = !isGlobalNotificationOn
 
+  // 정보 행 탭 → 토스 스타일 편집 플로우(/add?editId=...&field=...)로 진입.
+  // 예적금·현금 상세(SavingsCashDetailView)와 동일한 규약. (이슈 #72)
+  const handleFieldTap = (field: string): void => {
+    router.push(`/add?editId=${item.id}&field=${field}`)
+  }
+
   // 헤더 우측 액션: 알림 토글 + 더보기 메뉴
   const headerActions = (
     <div className="flex items-center -mr-1">
@@ -164,7 +170,7 @@ function InternalInvestmentDetailView({
           />
         }
       >
-        <InvestmentDetailContent />
+        <InvestmentDetailContent onFieldTap={handleFieldTap} />
 
         {/* 삭제 확인 모달 */}
         <DeleteConfirmModal
