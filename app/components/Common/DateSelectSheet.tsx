@@ -31,6 +31,11 @@ interface DateSelectSheetProps {
   emptyLabel?: string
   /** 연도 휠을 올해보다 과거로 몇 년까지 열지 (시작일 등 과거 선택용). 기본 0(과거 불가). */
   pastYears?: number
+  /**
+   * 이 날짜보다 이전은 선택할 수 없게 한다 (만기일·종료일처럼 미래여야 하는 값).
+   * 이미 저장된 과거 날짜는 계속 보이고 선택 상태도 유지된다 — 새로 고를 수만 없다.
+   */
+  minDate?: Date
 }
 
 function shiftMonth(base: Date, delta: number): Date {
@@ -51,6 +56,7 @@ export default function DateSelectSheet({
   onClear,
   emptyLabel = '선택 안 함',
   pastYears = 0,
+  minDate,
 }: DateSelectSheetProps) {
   const today = new Date()
   const currentYear = today.getFullYear()
@@ -167,6 +173,7 @@ export default function DateSelectSheet({
                 startMonth={new Date(startYear, 0, 1)}
                 endMonth={new Date(endYear, 11, 31)}
                 selected={selectedDate ?? undefined}
+                disabled={minDate ? { before: minDate } : undefined}
                 fixedWeeks
                 className="w-full"
                 classNames={{

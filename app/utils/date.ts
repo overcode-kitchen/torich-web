@@ -27,6 +27,17 @@ export function formatDuration(totalMonths: number): string {
 }
 
 /**
+ * YYYY-MM-DD 문자열이 오늘보다 이전인지 판단한다.
+ * 빈 값·형식 불량은 false (별도 필수 검증이 따로 처리한다).
+ */
+export function isPastDateString(value: string): boolean {
+  if (!value) return false
+  const [y, m, d] = value.split('-').map(Number)
+  if (!y || !m || !d) return false
+  return new Date(y, m - 1, d).getTime() < startOfToday().getTime()
+}
+
+/**
  * 시작일과 목표 기간(년)을 기반으로 종료일 계산
  * 적립형(periodYears null/0)은 종료일이 없으므로 null 반환.
  */
@@ -183,8 +194,8 @@ export function isCompleted(startDate: Date, periodYears: number | null | undefi
   return isAfter(new Date(), endDate)
 }
 
-/** 오늘 00:00:00 기준 Date */
-function startOfToday(): Date {
+/** 오늘 00:00:00 기준 Date. "오늘은 과거가 아니다"를 보장하는 날짜 비교 기준점. */
+export function startOfToday(): Date {
   const t = new Date()
   return new Date(t.getFullYear(), t.getMonth(), t.getDate())
 }

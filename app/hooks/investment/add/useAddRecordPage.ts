@@ -89,6 +89,7 @@ export function useAddRecordPage() {
     interestRate: formState.interestRate,
     maturityDate: formState.maturityDate,
     periodYears: formState.periodYears,
+    initialMaturityDate: edit.initData?.maturity_date ?? undefined,
     goalId,
     goalEndDate,
     mode: isEditMode ? 'edit' : 'create',
