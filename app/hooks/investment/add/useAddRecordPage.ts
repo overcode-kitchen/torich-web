@@ -274,6 +274,11 @@ export function useAddRecordPage() {
     actions,
     isSubmitting,
     handleBack,
+    // 편집 대상 조회 상태. 화면이 이걸 렌더하지 않으면 없는 editId로 들어왔을 때
+    // 유형 선택은 잠기고 recordType은 null이라 빈 화면에 갇힌다.
+    isEditLoading: edit.isLoading,
+    editError: edit.error,
+    goHome: goBackToRoot,
     exitDialogOpen: guard.isConfirmOpen,
     closeExitDialog: guard.cancelExit,
     confirmExit: guard.confirmExit,
