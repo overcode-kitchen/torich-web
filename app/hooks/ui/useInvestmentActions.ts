@@ -4,45 +4,21 @@ import { useState } from 'react'
 import { track } from '@/app/lib/analytics'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
-interface UpdateData {
-  monthly_amount: number
-  /** 적립형(목표 기간 없음)은 null */
-  period_years: number | null
-  annual_rate: number
-  investment_days?: number[]
-}
-
 interface UseInvestmentActionsProps {
-  onUpdate: (data: UpdateData) => Promise<void>
   onDelete: () => Promise<void>
   isDeleting?: boolean
-  isUpdating?: boolean
 }
 
 interface UseInvestmentActionsReturn {
   isDeleting: boolean
-  isUpdating: boolean
-  handleUpdate: (data: UpdateData) => Promise<void>
   handleDelete: () => Promise<void>
 }
 
 export function useInvestmentActions({
-  onUpdate,
   onDelete,
   isDeleting: externalIsDeleting = false,
-  isUpdating: externalIsUpdating = false,
 }: UseInvestmentActionsProps): UseInvestmentActionsReturn {
   const [isDeleting, setIsDeleting] = useState(externalIsDeleting)
-  const [isUpdating, setIsUpdating] = useState(externalIsUpdating)
-
-  const handleUpdate = async (data: UpdateData) => {
-    setIsUpdating(true)
-    try {
-      await onUpdate(data)
-    } finally {
-      setIsUpdating(false)
-    }
-  }
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -58,8 +34,6 @@ export function useInvestmentActions({
 
   return {
     isDeleting: isDeleting || externalIsDeleting,
-    isUpdating: isUpdating || externalIsUpdating,
-    handleUpdate,
     handleDelete,
   }
 }

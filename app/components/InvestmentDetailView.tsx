@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, BellSlash, DotsThreeVertical } from '@phosphor-icons/react'
 import { Investment } from '@/app/types/investment'
@@ -29,7 +28,6 @@ import { cn } from '@/lib/utils'
 interface InvestmentDetailViewProps {
   item: Investment
   onBack: () => void
-  onUpdate: (data: { monthly_amount: number; period_years: number | null; annual_rate: number; investment_days?: number[] }) => Promise<void>
   onDelete: () => Promise<void>
 }
 
@@ -40,7 +38,6 @@ import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotific
 function InternalInvestmentDetailView({
   item,
   onBack,
-  onUpdate,
   onDelete,
 }: InvestmentDetailViewProps) {
   const router = useRouter()
@@ -68,27 +65,16 @@ function InternalInvestmentDetailView({
   const {
     showDeleteModal,
     setShowDeleteModal,
-    isEditMode,
-    setIsEditMode,
-    isDaysPickerOpen,
-    setIsDaysPickerOpen,
   } = useInvestmentDetailUI()
 
   // 핸들러 훅
   const {
     investmentData,
     isDeleting,
-    isUpdating,
-    handleSave,
-    handleCancel,
     handleDelete,
   } = useInvestmentDetailHandlers({
     item,
-    onUpdate,
     onDelete,
-    isEditMode,
-    setIsEditMode,
-    setIsDaysPickerOpen,
     completedPayments,
     retroactivePayments,
     onToggleRetroactive: toggleRetroactivePayment,
@@ -96,15 +82,6 @@ function InternalInvestmentDetailView({
     onToggleAuto: (recordId, yearMonth, currentCompleted) =>
       monthUndo.onToggleAuto(item, completedPayments.get(recordId), yearMonth, currentCompleted),
   })
-
-  // 수정 모드 진입 시 초기화
-  useEffect(() => {
-    if (isEditMode) {
-      investmentData.initializeFromItem(item)
-      setIsDaysPickerOpen(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode, item])
 
   // 종목 상세 진입 시 시세 캐시 갱신 + shares 모드면 monthly_amount 동기화
   useShareModeSync(item)
@@ -116,8 +93,8 @@ function InternalInvestmentDetailView({
 
   const isNotificationDisabled = !isGlobalNotificationOn
 
-  // 헤더 우측 액션: 알림 토글 + 더보기 메뉴 (수정 모드에서는 숨김)
-  const headerActions = !isEditMode ? (
+  // 헤더 우측 액션: 알림 토글 + 더보기 메뉴
+  const headerActions = (
     <div className="flex items-center -mr-1">
       <button
         type="button"
@@ -157,26 +134,19 @@ function InternalInvestmentDetailView({
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  ) : undefined
+  )
 
   return (
     <InvestmentDetailProvider
       value={{
         item,
-        isEditMode,
         investmentData,
         ui: {
           isDeleting,
-          isUpdating,
           showDeleteModal,
           setShowDeleteModal,
-          setIsEditMode,
-          isDaysPickerOpen,
-          setIsDaysPickerOpen,
         },
         handlers: {
-          onSave: handleSave,
-          onCancel: handleCancel,
           onDelete: handleDelete,
         },
       }}
