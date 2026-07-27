@@ -1,7 +1,6 @@
 'use client'
 
-import { CaretRight } from '@phosphor-icons/react'
-import { InvestmentField } from '@/app/components/Common/InvestmentField'
+import { TappableField } from '@/app/components/Common/TappableField'
 import { formatCurrency } from '@/lib/utils'
 import { formatFullDate } from '@/app/utils/date'
 import { formatInvestmentDays } from '@/app/types/investment'
@@ -18,27 +17,6 @@ interface SavingsCashInfoSectionProps {
   onFieldTap?: (field: string) => void
   /** 탭 스크롤용 ref */
   infoRef?: React.RefObject<HTMLElement | null>
-}
-
-interface TappableFieldProps {
-  label: string
-  value: string
-  onTap?: () => void
-}
-
-function TappableField({ label, value, onTap }: TappableFieldProps) {
-  const field = <InvestmentField label={label} value={value} />
-  if (!onTap) return field
-  return (
-    <button
-      type="button"
-      onClick={onTap}
-      className="flex w-full items-center gap-2 text-left rounded-lg -mx-2 px-2 min-h-[44px] hover:bg-muted/30 transition-colors"
-    >
-      <span className="min-w-0 flex-1">{field}</span>
-      <CaretRight className="h-4 w-4 shrink-0 text-foreground-subtle" weight="bold" aria-hidden />
-    </button>
-  )
 }
 
 /**

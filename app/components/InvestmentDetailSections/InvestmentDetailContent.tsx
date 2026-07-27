@@ -9,7 +9,12 @@ import { DetailTabs } from '@/app/components/Common/DetailTabs'
 import { useInvestmentDetailContext } from '@/app/components/InvestmentDetailSections/InvestmentDetailContext'
 import { useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
 
-export function InvestmentDetailContent() {
+interface InvestmentDetailContentProps {
+    /** 정보 행 탭 시 편집 진입 핸들러. InvestmentDetailView가 라우팅을 담당한다. */
+    onFieldTap?: (field: string) => void
+}
+
+export function InvestmentDetailContent({ onFieldTap }: InvestmentDetailContentProps = {}) {
     const { investmentData } = useInvestmentDetailContext()
 
     const {
@@ -49,7 +54,7 @@ export function InvestmentDetailContent() {
             />
 
             <div className="divide-y divide-border-subtle-lighter">
-                <InfoSection infoRef={infoRef} />
+                <InfoSection infoRef={infoRef} onFieldTap={onFieldTap} />
                 {(investmentData.paymentHistory.length > 0 ||
                     investmentData.retroactivePaymentHistory?.length > 0) && (
                     <PaymentHistorySection historyRef={historyRef} />
