@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChangeEvent } from 'react'
+import { clampAmountManwon, normalizeAmountInput } from '@/app/constants/input-limits'
 
 export interface UseAddInvestmentCalculationsReturn {
   handleAmountChange: (e: ChangeEvent<HTMLInputElement>) => void
@@ -24,26 +25,12 @@ export function useAddInvestmentCalculations({
 }: UseAddInvestmentCalculationsProps): UseAddInvestmentCalculationsReturn {
   
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    const value = e.target.value.replace(/[^0-9]/g, '')
-
-    if (value === '') {
-      setMonthlyAmount('')
-      return
-    }
-
-    const formatted = parseInt(value).toLocaleString('ko-KR')
-    setMonthlyAmount(formatted)
+    setMonthlyAmount(normalizeAmountInput(e.target.value))
   }
 
   const adjustAmount = (delta: number): void => {
     const currentValue = monthlyAmount ? parseInt(monthlyAmount.replace(/,/g, '')) : 0
-    const newValue = Math.max(0, currentValue + delta)
-
-    if (newValue === 0) {
-      setMonthlyAmount('')
-    } else {
-      setMonthlyAmount(newValue.toLocaleString('ko-KR'))
-    }
+    setMonthlyAmount(clampAmountManwon(currentValue + delta))
   }
 
   const handlePeriodChange = (e: ChangeEvent<HTMLInputElement>): void => {

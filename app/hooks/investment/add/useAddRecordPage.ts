@@ -107,6 +107,9 @@ export function useAddRecordPage() {
       investmentForm.setSelectedStock(null)
       investmentForm.setIsManualInput(false)
     },
+    // 그룹 A에 이미 입력한 이름/종목명이 있으면, 유형만 바꿔도 조용히 지우지 않고 안내한다.
+    groupAHasContent:
+      formState.title.trim() !== '' || investmentForm.stockName.trim() !== '',
     isEditMode,
   })
 

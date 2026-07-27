@@ -2,6 +2,11 @@
 
 import { useCallback, useState } from 'react'
 import { isHabitMode as isRecordHabitMode } from '@/app/types/investment'
+import {
+  MAX_INTEREST_RATE,
+  clampAmountManwon,
+  normalizeAmountInput,
+} from '@/app/constants/input-limits'
 import type { Investment } from '@/app/types/investment'
 
 export interface UseAddItemFormStateProps {
@@ -86,27 +91,27 @@ export function useAddItemFormState({
     setPeriodYears(habit ? '' : String(initData.period_years))
   }
 
-  // 금액: 숫자만 허용, 천 단위 콤마 표기 (만원 단위)
+  // 금액: 숫자만 허용, 천 단위 콤마 표기 (만원 단위). 자릿수 상한은 normalizeAmountInput에서 강제.
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const digitsOnly = e.target.value.replace(/[^0-9]/g, '')
-    if (digitsOnly === '') {
-      setMonthlyAmount('')
-      return
-    }
-    setMonthlyAmount(parseInt(digitsOnly, 10).toLocaleString())
+    setMonthlyAmount(normalizeAmountInput(e.target.value))
   }
 
   const adjustAmount = (delta: number): void => {
     const current = parseInt(monthlyAmount.replace(/,/g, ''), 10) || 0
-    const next = Math.max(0, current + delta)
-    setMonthlyAmount(next === 0 ? '' : next.toLocaleString())
+    setMonthlyAmount(clampAmountManwon(current + delta))
   }
 
-  // 연이율: 숫자·소수점 1개만 허용
+  // 연이율: 숫자·소수점 1개만 허용, 상한(MAX_INTEREST_RATE)까지만.
   const handleInterestRateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const cleaned = e.target.value.replace(/[^0-9.]/g, '')
     const parts = cleaned.split('.')
-    setInterestRate(parts.length > 2 ? `${parts[0]}.${parts[1]}` : cleaned)
+    const normalized = parts.length > 2 ? `${parts[0]}.${parts[1]}` : cleaned
+    const parsed = parseFloat(normalized)
+    if (Number.isFinite(parsed) && parsed > MAX_INTEREST_RATE) {
+      setInterestRate(String(MAX_INTEREST_RATE))
+      return
+    }
+    setInterestRate(normalized)
   }
 
   // 목표 기간(년): 정수만 허용. 빈 문자열 허용 (habit 모드 의미).
