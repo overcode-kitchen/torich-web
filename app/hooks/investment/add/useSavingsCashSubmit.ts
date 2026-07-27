@@ -23,7 +23,10 @@ export interface UseSavingsCashSubmitProps {
   interestRate: string
   /** 만기일 (YYYY-MM-DD) — 예적금만 사용 */
   maturityDate: string
-  /** 목표 기간(년) — 현금에서만 사용. 빈 문자열이면 habit(무기한 적립) */
+  /**
+   * 목표 기간(년). 입력칸은 현금에만 있지만, 예적금도 편집 진입 시 기존 값이 실려 온다.
+   * 빈 문자열이면 habit(무기한 적립).
+   */
   periodYears?: string
   /** 목적 만들기 흐름에서 넘어온 경우 연결할 목적 ID */
   goalId?: string
@@ -86,9 +89,11 @@ export function useSavingsCashSubmit({
       return
     }
 
-    // 현금만 목표 기간 입력 (예적금은 maturity_date로 종료 시점 관리)
-    const periodYearsNum =
-      recordType === 'cash' ? parseInt(periodYears ?? '', 10) : NaN
+    // 목표 기간은 유형과 무관하게 폼 값을 그대로 반영한다.
+    // 예적금은 입력칸이 없지만 편집 진입 시 기존 period_years가 폼에 실려 있다.
+    // 여기서 유형으로 걸러 null을 넣으면 이름만 고쳐도 기존 값이 지워지고,
+    // isHabitMode()가 true로 뒤집혀 '적립형'으로 잘못 분류된다. (종료일은 maturity_date 우선이라 무사)
+    const periodYearsNum = parseInt(periodYears ?? '', 10)
     const periodYearsValue =
       Number.isFinite(periodYearsNum) && periodYearsNum > 0 ? periodYearsNum : null
 
