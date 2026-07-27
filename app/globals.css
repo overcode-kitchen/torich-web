@@ -66,6 +66,7 @@
   --color-brand-accent-bg: var(--brand-accent-bg);
   --color-brand-accent-text: var(--brand-accent-text);
   --color-brand-accent-border: var(--brand-accent-border);
+  --color-acorn-well-bg: var(--acorn-well-bg);
   --color-field-bg: var(--field-bg);
   --color-chart-profit: var(--chart-profit);
   --color-chart-principal: var(--chart-principal);
@@ -210,6 +211,8 @@
   --brand-accent-bg: var(--palette-brand-50);
   --brand-accent-text: var(--palette-brand-700);
   --brand-accent-border: var(--palette-brand-200);
+  /* 도토리 더미가 담기는 '달성' 칸 배경 — 도토리(브라운)와 어울리는 크림/샌드 베이지 */
+  --acorn-well-bg: hsl(36, 44%, 90%);
   /* 입력칸 배경: 라이트=흰색에 가까운 아주 옅은 회색(경계는 약한 보더가 담당) */
   --field-bg: hsl(210, 9%, 97%);
   /* 차트 색상 */
@@ -295,6 +298,8 @@
   --brand-accent-bg: var(--palette-brand-200);
   --brand-accent-text: var(--palette-brand-600);
   --brand-accent-border: var(--palette-brand-300);
+  /* 도토리 '달성' 칸 배경 — 다크에선 밝은 크림이 눈부셔서 따뜻한 다크 톤으로 (카드보다 살짝 밝게) */
+  --acorn-well-bg: hsl(30, 18%, 22%);
   /* 입력칸 배경: 다크=중립 다크 서피스 (밝은 민트는 눈부셔서 제외, text-foreground 대비 확보) */
   --field-bg: var(--palette-coolgray-800);
   /* 차트 색상 - 다크모드에서도 밝은 색상 유지 */
