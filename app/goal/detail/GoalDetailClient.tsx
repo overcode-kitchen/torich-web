@@ -277,7 +277,11 @@ export default function GoalDetailClient() {
       />
 
       <div ref={infoRef}>
-        <GoalInfoSection goal={goal} progress={progress} />
+        <GoalInfoSection
+          goal={goal}
+          progress={progress}
+          onSetTarget={() => router.push(`/goal/detail/edit?id=${goal.id}`)}
+        />
       </div>
 
       <div ref={linkedRef}>

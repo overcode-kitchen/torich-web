@@ -27,13 +27,33 @@ export const adjustWonByManwon = (won: string, deltaManwon: number): string => {
   return String(next * 10000)
 }
 
-/** 목표 금액 빠른 조정 칩 (만원 단위 delta) */
-export const TARGET_QUICK_ADJUSTS: { label: string; delta: number }[] = [
-  { label: '+1,000만', delta: 1000 },
-  { label: '-1,000만', delta: -1000 },
-  { label: '+100만', delta: 100 },
-  { label: '-100만', delta: -100 },
-]
+export interface QuickAdjust {
+  label: string
+  delta: number
+}
+
+/**
+ * 현재 금액대에 맞는 빠른 조정 칩 (만원 단위 delta).
+ *
+ * 칩은 단순 편의 버튼이 아니라 "이 앱이 기대하는 금액대" 신호다. 백만원 눈금만 두면
+ * 만원씩 모으는 사람은 자기 자리가 아니라고 읽는다. 그렇다고 8개를 다 깔면 좁은 화면에서
+ * 두 줄이 되므로, 현재 값에 따라 눈금 한 쌍(굵게·잘게)만 노출한다.
+ *
+ * - 100만 미만: +10만 / +1만 (적립 항목 금액칸과 같은 눈금)
+ * - 1,000만 미만: +100만 / +10만
+ * - 그 이상: +1,000만 / +100만 (기존 눈금)
+ */
+export const getTargetQuickAdjusts = (won: string): QuickAdjust[] => {
+  const amount = Number(won) || 0
+  const step = amount < 1_000_000 ? 1 : amount < 10_000_000 ? 10 : 100
+  return [step * 10, step].flatMap((unit) => {
+    const label = `${unit.toLocaleString('ko-KR')}만`
+    return [
+      { label: `+${label}`, delta: unit },
+      { label: `-${label}`, delta: -unit },
+    ]
+  })
+}
 
 /** 마감일 헬프텍스트 — 추가/수정 공통 문구 */
 export const GOAL_DEADLINE_HELP =
