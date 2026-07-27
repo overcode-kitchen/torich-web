@@ -16,14 +16,23 @@ interface GoalOptionalFieldsProps {
 }
 
 /**
- * 목적의 선택 입력(메모·이미 모은 돈·마감일 알림) 공용 필드.
- * 추가 마지막 단계와 수정 폼이 동일하게 사용한다.
+ * 목적의 선택 입력(메모·이미 모은 돈·마감일 알림). **수정 폼 전용이다.**
+ *
+ * 추가 위저드에는 의도적으로 넣지 않는다. 목적을 만드는 데 꼭 필요한 값이 아닌데
+ * 만들기 흐름에서 물으면, 답할 필요 없는 칸 앞에서 사용자가 멈추고 이탈한다.
+ * 만든 뒤 채우면 되는 값이므로 수정 화면에만 둔다. (#70에서 재확인한 결정 —
+ * "추가에 없어서 불일치"로 보고 넣으려 하기 전에 docs/ux-consistency-audit.md P2-5를 읽자.)
  */
 export default function GoalOptionalFields({
   values,
   setField,
   disabled,
 }: GoalOptionalFieldsProps) {
+  // 마감일이 없으면 알릴 날도 없다. 스케줄러가 target_date 있는 목적만 집어가므로
+  // (supabase/functions/schedule-goal-notifications) 여기서 켜도 아무 일이 없는
+  // 스위치가 된다. 마감일을 건너뛰고 온 사람에게는 아예 묻지 않는다.
+  const hasDeadline = values.target_date.trim().length > 0
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -52,20 +61,24 @@ export default function GoalOptionalFields({
         </p>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="goal-noti">마감일 알림</Label>
-          <span className="text-xs text-foreground-subtle">
-            일주일 전·하루 전·당일에 알려드려요.
-          </span>
+      {hasDeadline && (
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="goal-noti">마감일 알림</Label>
+            <span className="text-xs text-foreground-subtle">
+              일주일 전·하루 전·당일에 알려드려요.
+            </span>
+          </div>
+          <Switch
+            id="goal-noti"
+            checked={values.notification_enabled}
+            onCheckedChange={(checked) =>
+              setField('notification_enabled', checked)
+            }
+            disabled={disabled}
+          />
         </div>
-        <Switch
-          id="goal-noti"
-          checked={values.notification_enabled}
-          onCheckedChange={(checked) => setField('notification_enabled', checked)}
-          disabled={disabled}
-        />
-      </div>
+      )}
     </div>
   )
 }

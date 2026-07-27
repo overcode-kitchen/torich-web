@@ -282,7 +282,7 @@ GA4를 활성화하는 것만으로 아래 이벤트들은 자동으로 쌓입�
 | 이벤트 이름 | 언제 보내나 | 코드 위치 | 함께 보낼 추가 정보 |
 | --- | --- | --- | --- |
 | `goal_add_click` | 대시보드에서 "목적 만들기"·"+" 버튼을 눌렀을 때 | `app/components/DashboardSections/GoalSection.tsx` (inline `onCreate`) | `entry_point`: "dashboard_empty"(목적이 0개일 때 빈 상태 CTA) / "dashboard_carousel"(이미 1개 이상 있고 추가 누름) |
-| `goal_create_success` | 목적 생성이 완료됐을 때 | `app/goal/new/page.tsx` `handleSubmit` | `target_amount_bucket` (목표 금액 구간), `has_deadline`: 마감일 설정 여부, `has_external_amount`: 이미 모은 돈 입력 여부, `preset_used`: "결혼 자금"/"주택 자금"/"여행"/"차"/"이사" 또는 `"custom"`(직접 입력) |
+| `goal_create_success` | 목적 생성이 완료됐을 때 | `app/goal/new/page.tsx` `handleSubmit` | `target_amount_bucket` (목표 금액 구간), `has_target_amount`: 목표 금액을 정했는지(금액 없이 만든 목적 구분), `has_deadline`: 마감일 설정 여부, `has_external_amount`: 이미 모은 돈 입력 여부, `preset_used`: "결혼 자금"/"주택 자금"/"여행"/"차"/"이사" 또는 `"custom"`(직접 입력) |
 | `goal_record_linked` | 상세 페이지에서 기존 투자를 목적에 묶었을 때 | `app/goal/[id]/page.tsx` `handleLink` | `monthly_amount_bucket`: 묶은 투자의 월 납입 금액 구간 |
 | `goal_completed` | 진행률 100%를 처음 도달했을 때 (자동 감지) | `app/goal/[id]/page.tsx` 자동 완료 useEffect | `target_amount_bucket`, `days_to_complete`: 생성→완료 일수, `linked_record_count`: 연결된 투자 건수 |
 | `goal_delete` | 목적을 삭제했을 때 | `app/goal/[id]/page.tsx` `handleArchive` + `app/components/DashboardSections/GoalSection.tsx` `handleDelete` | `entry_point`: "detail_menu"(상세 더보기) / "swipe"(카드 스와이프) |

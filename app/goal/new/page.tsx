@@ -99,7 +99,9 @@ function NewGoalContent() {
           ? trimmedName
           : 'custom',
       })
-      router.replace('/')
+      // 방금 만든 목적을 보여준다. 홈으로 튕기면 뭘 만들었는지 확인하러
+      // 사용자가 다시 찾아 들어가야 한다(적립 항목 수정도 상세로 돌아간다).
+      router.replace(`/goal/detail?id=${goal.id}`)
     } catch (e) {
       showErrorToast(TOAST_MESSAGES.goalSaveFailed, e)
     }

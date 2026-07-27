@@ -15,7 +15,10 @@ export interface GoalFormSectionProps {
     value: GoalFormValues[K],
   ) => void
   disabled?: boolean
-  /** 이모지·메모·마감일 알림 같은 보조 필드 노출 여부. 신규 생성 시 false. */
+  /**
+   * 메모·이미 모은 돈·마감일 알림 노출 여부. 이 폼은 수정 전용이라 기본 true다.
+   * (추가 위저드는 이 필드들을 일부러 묻지 않는다 — GoalOptionalFields 주석 참고.)
+   */
   showOptionalFields?: boolean
   /**
    * `?field=`로 진입했을 때 열자마자 데려갈 칸. 지금은 `target_amount`만 쓴다.
@@ -26,8 +29,9 @@ export interface GoalFormSectionProps {
 }
 
 /**
- * 목적 수정용 단일 폼. 이름·금액·마감일은 추가 위저드와 동일한 공용 필드를 사용하고,
- * 메모·이미 모은 돈·마감일 알림은 수정 화면에서만 노출한다.
+ * 목적 수정용 단일 폼. 이름·금액·마감일은 추가 위저드와 같은 공용 필드를 쓰고
+ * 화면 구조만 다르다 — 값을 이미 아는 사람에게 3단계를 다시 걷게 하지 않는다.
+ * 메모·이미 모은 돈·마감일 알림은 수정에서만 묻는다(GoalOptionalFields 주석 참고).
  */
 export function GoalFormSection({
   values,
