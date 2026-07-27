@@ -22,20 +22,17 @@ export function GoalInfoSection({ goal, progress }: GoalInfoSectionProps) {
         <InvestmentField
           label="목표 금액"
           value={hasTarget ? formatCurrency(goal.target_amount) : '미설정'}
-          isEditMode={false}
         />
 
         <InvestmentField
           label="이미 모은 돈"
           value={formatCurrency(goal.external_amount)}
-          isEditMode={false}
         />
 
         {hasTarget && (
           <InvestmentField
             label="남은 금액"
             value={formatCurrency(remaining)}
-            isEditMode={false}
           />
         )}
       </div>

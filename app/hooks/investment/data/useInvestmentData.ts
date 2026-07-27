@@ -1,7 +1,6 @@
 'use client'
 
 import { useNotificationToggle } from '../../notification/useNotificationToggle'
-import { useInvestmentDetailEdit } from '../detail/useInvestmentDetailEdit'
 import { useInvestmentCalculations } from '../calculations/useInvestmentCalculations'
 import { getPaymentHistoryFromStart } from '@/app/utils/payment-history'
 import { usePaymentPagination } from '../../payment/usePaymentPagination'
@@ -9,7 +8,6 @@ import type { UseInvestmentDataProps, UseInvestmentDataReturn } from '../../type
 
 export function useInvestmentData({
   item,
-  isEditMode,
   completedPayments,
   retroactivePayments,
   onToggleRetroactive,
@@ -19,19 +17,8 @@ export function useInvestmentData({
   // 알림 훅
   const { notificationOn, toggleNotification } = useNotificationToggle(item.id)
 
-  // 수정 폼 훅
-  const editForm = useInvestmentDetailEdit()
-
   // 계산 훅
-  const calculations = useInvestmentCalculations({
-    item,
-    isEditMode,
-    editMonthlyAmount: editForm.editMonthlyAmount,
-    editPeriodYears: editForm.editPeriodYears,
-    editAnnualRate: editForm.editAnnualRate,
-    editInvestmentDays: editForm.editInvestmentDays,
-    editIsHabitMode: editForm.editIsHabitMode,
-  })
+  const calculations = useInvestmentCalculations({ item })
 
   // 납입 기록
   // - start_date: 진행률/경과 기간 계산 기준 (실제 투자 시작일)
@@ -72,7 +59,6 @@ export function useInvestmentData({
   return {
     notificationOn,
     toggleNotification,
-    ...editForm,
     ...calculations,
     paymentHistory,
     retroactivePaymentHistory,

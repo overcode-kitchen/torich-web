@@ -27,7 +27,7 @@ interface TappableFieldProps {
 }
 
 function TappableField({ label, value, onTap }: TappableFieldProps) {
-  const field = <InvestmentField label={label} value={value} isEditMode={false} />
+  const field = <InvestmentField label={label} value={value} />
   if (!onTap) return field
   return (
     <button
