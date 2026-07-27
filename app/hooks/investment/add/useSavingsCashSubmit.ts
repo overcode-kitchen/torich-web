@@ -7,7 +7,7 @@ import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { createClient } from '@/utils/supabase/client'
 import { track, amountBucket } from '@/app/lib/analytics'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
-import { periodYearsUntil } from '@/app/utils/date'
+import { isPastDateString, periodYearsUntil } from '@/app/utils/date'
 import type { Investment, RecordType } from '@/app/types/investment'
 
 export interface UseSavingsCashSubmitProps {
@@ -29,6 +29,11 @@ export interface UseSavingsCashSubmitProps {
   goalId?: string
   /** 선택된 종료 날짜(YYYY-MM-DD, 기본값=목적 마감일). 현금 항목을 이 날짜에 만기시킬 때 사용(예적금 제외). 비면 무기한. */
   goalEndDate?: string
+  /**
+   * 편집 진입 시점의 만기일. 이미 만기된 항목을 이름만 고쳐 저장하는 건 정상이므로,
+   * 과거 만기일 차단은 "사용자가 새로 고른 날짜"에만 적용한다.
+   */
+  initialMaturityDate?: string
   /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
   mode?: 'create' | 'edit'
   /** edit 모드에서 수정할 records.id */
@@ -52,6 +57,7 @@ export function useSavingsCashSubmit({
   interestRate,
   maturityDate,
   periodYears,
+  initialMaturityDate,
   goalId,
   goalEndDate,
   mode = 'create',
@@ -83,6 +89,16 @@ export function useSavingsCashSubmit({
     }
     if (recordType === 'savings' && !maturityDate) {
       toastError('만기일을 선택해주세요.')
+      return
+    }
+    // 지나간 만기일은 저장을 막는다. 단 이미 만기된 기존 항목을 그대로 두는 건 정상이므로,
+    // 편집 진입 시점 값과 같으면 통과시킨다. (달력에서도 과거 날짜는 선택할 수 없다)
+    if (
+      recordType === 'savings' &&
+      isPastDateString(maturityDate) &&
+      maturityDate !== initialMaturityDate
+    ) {
+      toastError('만기일은 오늘 이후로 선택해주세요.')
       return
     }
 
@@ -173,6 +189,7 @@ export function useSavingsCashSubmit({
     interestRate,
     maturityDate,
     periodYears,
+    initialMaturityDate,
     recordType,
     goalId,
     goalEndDate,

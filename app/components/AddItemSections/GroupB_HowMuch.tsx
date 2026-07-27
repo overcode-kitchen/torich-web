@@ -6,6 +6,7 @@ import PeriodInput from '@/app/components/Common/PeriodInput'
 import DateSelectField from '@/app/components/Common/DateSelectField'
 import { FlowInput } from '@/app/components/Common/FlowInput'
 import ProgressiveField from './ProgressiveField'
+import { startOfToday } from '@/app/utils/date'
 import type { RecordType } from '@/app/types/investment'
 import type { UseAddItemFormStateReturn } from '@/app/hooks/investment/add/useAddItemFormState'
 import type { UseAddInvestmentFormReturn } from '@/app/hooks/types/useAddInvestmentForm'
@@ -60,6 +61,7 @@ function GoalEndDateField({
         sheetTitle="언제까지 모을까요?"
         clearable
         emptyLabel="목표 기간 없이 계속 적립"
+        minDate={startOfToday()}
       />
       <div className="mt-2 flex items-center justify-between gap-3 px-1">
         <p className="text-xs text-muted-foreground">{helper}</p>
@@ -210,6 +212,7 @@ function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) 
             onChange={formState.setMaturityDate}
             variant="flow"
             placeholder="만기일 선택"
+            minDate={startOfToday()}
           />
         </ProgressiveField>
       )}
