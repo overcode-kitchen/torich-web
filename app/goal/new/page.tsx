@@ -14,6 +14,7 @@ import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
 import { useGoalFlow } from '@/app/hooks/goal/add/useGoalFlow'
 import { useGoalCreate } from '@/app/hooks/goal/data/useGoalCreate'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { useUnsavedChangesGuard } from '@/app/hooks/navigation/useUnsavedChangesGuard'
 import { amountBucket, track } from '@/app/lib/analytics'
 import { createClient } from '@/utils/supabase/client'
 
@@ -27,7 +28,6 @@ function NewGoalContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [userId, setUserId] = useState<string | undefined>(undefined)
-  const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
   const { values, setField, toCreateInput } = useGoalForm()
   const { presets } = useGoalPresets()
   const { createGoal, isCreating } = useGoalCreate(userId)
@@ -54,12 +54,20 @@ function NewGoalContent() {
     setField('emoji', matched.iconKey)
   }, [searchParams, setField, presets])
 
+  // 이탈 확인은 실제로 입력이 바뀐 뒤에만. preset으로 미리 채워진 값은 기준 스냅샷에 포함한다.
+  const guard = useUnsavedChangesGuard({
+    signature: JSON.stringify(values),
+    deferBaseline: !!searchParams.get('preset'),
+    onExit: goBack,
+  })
+
   const canAdvance = useMemo<boolean>(() => {
     if (flow.currentStep === 'A') return values.name.trim().length > 0
     if (flow.currentStep === 'B') return Number(values.target_amount) > 0
     return true
   }, [flow.currentStep, values.name, values.target_amount])
 
+  const { runWithoutGuard } = guard
   const handleSubmit = useCallback(async (): Promise<void> => {
     const goal = await createGoal(toCreateInput())
     if (!goal) return
@@ -78,19 +86,20 @@ function NewGoalContent() {
   const handleAction = useCallback((): void => {
     if (isCreating) return
     if (flow.isAtLastStep) {
-      void handleSubmit()
+      // 저장은 스스로 화면을 옮기므로 감시 항목을 먼저 걷어내고 실행한다.
+      void runWithoutGuard(handleSubmit)
       return
     }
     flow.goNextStep()
-  }, [flow, handleSubmit, isCreating])
+  }, [flow, handleSubmit, isCreating, runWithoutGuard])
 
   const handleBack = useCallback((): void => {
     if (flow.isAtFirstStep) {
-      setExitDialogOpen(true)
+      guard.requestExit()
       return
     }
     flow.goPrevStep()
-  }, [flow])
+  }, [flow, guard])
 
   return (
     <>
@@ -124,12 +133,9 @@ function NewGoalContent() {
       </div>
 
       <ExitConfirmDialog
-        isOpen={exitDialogOpen}
-        onClose={() => setExitDialogOpen(false)}
-        onConfirm={() => {
-          setExitDialogOpen(false)
-          goBack()
-        }}
+        isOpen={guard.isConfirmOpen}
+        onClose={guard.cancelExit}
+        onConfirm={guard.confirmExit}
       />
     </>
   )
