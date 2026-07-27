@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
 import { Label } from '@/components/ui/label'
 import GoalNameField from './fields/GoalNameField'
@@ -16,6 +17,12 @@ export interface GoalFormSectionProps {
   disabled?: boolean
   /** 이모지·메모·마감일 알림 같은 보조 필드 노출 여부. 신규 생성 시 false. */
   showOptionalFields?: boolean
+  /**
+   * `?field=`로 진입했을 때 열자마자 데려갈 칸. 지금은 `target_amount`만 쓴다.
+   * 상세의 "정하기"로 들어오면 이 폼은 한 페이지라 금액칸이 접힌 화면 아래에 있는데,
+   * 맨 위에 떨궈두면 뭘 고치러 왔는지 사용자가 다시 찾아야 한다.
+   */
+  focusField?: string | null
 }
 
 /**
@@ -27,7 +34,17 @@ export function GoalFormSection({
   setField,
   disabled,
   showOptionalFields = true,
+  focusField,
 }: GoalFormSectionProps) {
+  const amountBlockRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (focusField !== 'target_amount') return
+    amountBlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // 포커스는 스크롤을 다시 튀게 하지 않도록 preventScroll로 준다.
+    document.getElementById('goal-target')?.focus({ preventScroll: true })
+  }, [focusField])
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
@@ -35,7 +52,7 @@ export function GoalFormSection({
         <GoalNameField values={values} setField={setField} disabled={disabled} />
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div ref={amountBlockRef} className="flex flex-col gap-2 scroll-mt-6">
         <Label htmlFor="goal-target">목표 금액</Label>
         <GoalAmountField
           id="goal-target"

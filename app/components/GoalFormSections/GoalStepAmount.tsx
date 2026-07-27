@@ -16,8 +16,8 @@ interface GoalStepAmountProps {
  * 단계 B — 얼마나 모을까요?
  * 맥락화된 제목 + 공용 GoalAmountField(대형) + ±빠른 조정.
  *
- * 금액은 선택이다. 얼마가 필요한지 모른 채 시작하는 목적이 많아서, 비워두면 하단 CTA가
- * "건너뛰기"로 바뀐다. 버튼만으로는 눈에 안 들어오므로 제목 아래에서 한 번 더 말해준다.
+ * 금액은 선택이다. 비워두면 하단 CTA가 "건너뛰기"로 바뀌어 그것만으로 안내한다.
+ * 화면에 "몰라도 된다"고 따로 적지는 않는다 — 넣으려던 사람까지 건너뛰게 만든다.
  */
 export default function GoalStepAmount({
   values,
@@ -29,12 +29,9 @@ export default function GoalStepAmount({
 
   return (
     <div className="py-4">
-      <h2 className="text-2xl font-bold text-foreground tracking-tight mb-3">
+      <h2 className="text-2xl font-bold text-foreground tracking-tight mb-10">
         {title}
       </h2>
-      <p className="mb-10 text-sm text-foreground-muted">
-        아직 모르겠으면 비워두고 넘어가도 돼요. 나중에 목적 정보에서 정할 수 있어요.
-      </p>
       <GoalAmountField
         id="goal-target"
         size="lg"
