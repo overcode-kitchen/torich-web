@@ -42,7 +42,9 @@ export interface GoalPaceSectionProps {
  * 목표별 페이스 — 기한 있는 목적(Goal)마다 "달성(모은 금액%) vs 기한(지나온 시간%)"을 나란히 대비.
  * 판정하지 않고 두 값을 보여줘, 시간 대비 빠른지 느린지는 사용자가 읽는다.
  * goalProgress(목적 진척)가 '얼마나 모았나'라면 이 섹션은 '시간 대비 페이스'를 답한다.
- * 스타일은 통계 페이지 형제 카드(목적 진척·자산)의 규칙(카드·헤더·DDayBadge·바·여백)에 맞춘다.
+ * 레이아웃은 목적마다 가로 카드 하나: 좌측 그린 패널이 도토리를 달성률만큼 쌓아 강한 시각화를
+ * 맡고(달성% 오버레이), 우측 흰 영역이 목적명·D-day·기한(회색 바)·만기를 조용히 정리한다.
+ * 그린은 좌측 한 곳에만 강하게 주고 기한은 회색으로 눌러 "판정 없는 대비" 톤을 지킨다.
  */
 export default function GoalPaceSection({ records }: GoalPaceSectionProps) {
   const router = useRouter()
@@ -107,42 +109,44 @@ export default function GoalPaceSection({ records }: GoalPaceSectionProps) {
                 onClick={() => router.push(`/goal/detail?id=${goal.id}`)}
                 className="w-full py-4 px-1 text-left"
               >
-                <div className="mb-3 flex items-center gap-2">
-                  <h3 className="min-w-0 truncate text-lg font-semibold text-foreground">
-                    {goal.name}
-                  </h3>
-                  {dday && <DDayBadge label={dday} />}
-                </div>
-
-                {/* 좌: 달성(도토리 더미) · 우: 기한(회색 바) + 만기 */}
-                <div className="grid grid-cols-[1fr_1.25fr] gap-2.5">
-                  <div className="relative min-h-[84px] overflow-hidden rounded-xl bg-acorn-well-bg px-3 py-3">
+                {/* 좌: 그린 패널(도토리가 달성률만큼 쌓임 + 달성%) · 우: 목적명·D-day·기한·만기 */}
+                <div className="grid grid-cols-[132px_1fr] items-stretch gap-3.5">
+                  <div className="goal-well relative isolate h-[132px] overflow-hidden rounded-2xl">
                     <AcornPhysicsFill level={clampPercent(achieved)} seed={index + 1} />
-                    <div className="relative">
-                      <div className="text-xs font-bold text-success">달성</div>
-                      <div className="mt-1 text-2xl font-bold leading-none tracking-tight text-success tabular-nums">
+                    <div className="relative z-10 px-3 pt-3">
+                      <div className="goal-well-label text-[11px] font-extrabold tracking-wide">달성</div>
+                      <div className="goal-well-num mt-0.5 text-[34px] font-extrabold leading-none tracking-tight tabular-nums">
                         {achieved}
-                        <span className="ml-0.5 text-sm">%</span>
+                        <span className="text-base">%</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex min-h-[84px] flex-col justify-center gap-2 rounded-xl border border-card-border px-3 py-3">
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-xs font-bold text-foreground-muted">기한</span>
-                      <span className="text-sm font-bold text-foreground-soft tabular-nums">
-                        {elapsed}%
-                        <span className="ml-0.5 text-[10px] font-medium text-foreground-muted">지남</span>
-                      </span>
+                  <div className="flex min-w-0 flex-col py-0.5">
+                    <div className="flex items-center gap-2">
+                      <h3 className="min-w-0 flex-1 truncate text-lg font-bold text-foreground">
+                        {goal.name}
+                      </h3>
+                      {dday && <DDayBadge label={dday} />}
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-surface-hover">
-                      <div
-                        className="h-full rounded-full bg-foreground-subtle transition-all duration-500"
-                        style={{ width: `${elapsed}%` }}
-                      />
-                    </div>
-                    <div className="text-[11px] font-semibold text-foreground-subtle">
-                      {maturityLabel(goal.target_date)} 만기
+
+                    <div className="mt-auto">
+                      <div className="mb-2 flex items-baseline justify-between">
+                        <span className="text-xs font-bold text-foreground-muted">기한</span>
+                        <span className="text-sm font-bold text-foreground-soft tabular-nums">
+                          {elapsed}%
+                          <span className="ml-0.5 text-[10px] font-medium text-foreground-subtle">지남</span>
+                        </span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-surface-hover">
+                        <div
+                          className="h-full rounded-full bg-foreground-subtle transition-all duration-500"
+                          style={{ width: `${elapsed}%` }}
+                        />
+                      </div>
+                      <div className="mt-2 text-[11px] font-semibold text-foreground-subtle">
+                        {maturityLabel(goal.target_date)} 만기
+                      </div>
                     </div>
                   </div>
                 </div>
