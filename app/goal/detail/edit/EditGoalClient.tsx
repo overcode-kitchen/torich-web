@@ -15,6 +15,7 @@ import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { useUnsavedChangesGuard } from '@/app/hooks/navigation/useUnsavedChangesGuard'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { detectMaturityMismatch } from '@/app/utils/goal-status'
+import { showErrorToast, toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
 import type { Goal, GoalCreateInput } from '@/app/types/goal'
@@ -54,8 +55,19 @@ function EditForm({ goal, userId, onExit }: EditFormProps) {
   async function doSubmit(override?: Partial<GoalCreateInput>): Promise<void> {
     await runWithoutGuard(async () => {
       const payload = { ...toCreateInput(), ...override }
-      const updated = await updateGoal(goal.id, payload)
-      if (updated) router.replace(`/goal/detail?id=${goal.id}`)
+      // updateGoal은 실패를 throw로, 세션이 없으면 null로 알린다.
+      // 둘 다 잡아서 알리지 않으면 화면이 그대로라 저장된 줄 알고 나가게 된다.
+      // 여기서 삼키면 runWithoutGuard가 "화면에 남았다"를 인지해 이탈 감시를 복구한다.
+      try {
+        const updated = await updateGoal(goal.id, payload)
+        if (!updated) {
+          toastError(TOAST_MESSAGES.updateSaveFailed)
+          return
+        }
+        router.replace(`/goal/detail?id=${goal.id}`)
+      } catch (e) {
+        showErrorToast(TOAST_MESSAGES.updateSaveFailed, e)
+      }
     })
   }
 

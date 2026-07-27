@@ -16,6 +16,7 @@ import { useGoalCreate } from '@/app/hooks/goal/data/useGoalCreate'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { useUnsavedChangesGuard } from '@/app/hooks/navigation/useUnsavedChangesGuard'
 import { amountBucket, track } from '@/app/lib/analytics'
+import { showErrorToast, toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { createClient } from '@/utils/supabase/client'
 
 const STEP_COMPONENTS = {
@@ -69,18 +70,27 @@ function NewGoalContent() {
 
   const { runWithoutGuard } = guard
   const handleSubmit = useCallback(async (): Promise<void> => {
-    const goal = await createGoal(toCreateInput())
-    if (!goal) return
-    const trimmedName = values.name.trim()
-    track('goal_create_success', {
-      target_amount_bucket: amountBucket(Number(values.target_amount) || 0),
-      has_deadline: !!values.target_date,
-      has_external_amount: Number(values.external_amount) > 0,
-      preset_used: presets.some((p) => p.name === trimmedName)
-        ? trimmedName
-        : 'custom',
-    })
-    router.replace('/')
+    // createGoal은 실패를 throw로, 세션이 없으면 null로 알린다.
+    // 둘 다 잡아서 알리지 않으면 화면이 그대로라 저장된 줄 알고 나가게 된다.
+    try {
+      const goal = await createGoal(toCreateInput())
+      if (!goal) {
+        toastError(TOAST_MESSAGES.goalSaveFailed)
+        return
+      }
+      const trimmedName = values.name.trim()
+      track('goal_create_success', {
+        target_amount_bucket: amountBucket(Number(values.target_amount) || 0),
+        has_deadline: !!values.target_date,
+        has_external_amount: Number(values.external_amount) > 0,
+        preset_used: presets.some((p) => p.name === trimmedName)
+          ? trimmedName
+          : 'custom',
+      })
+      router.replace('/')
+    } catch (e) {
+      showErrorToast(TOAST_MESSAGES.goalSaveFailed, e)
+    }
   }, [createGoal, router, toCreateInput, values, presets])
 
   const handleAction = useCallback((): void => {
