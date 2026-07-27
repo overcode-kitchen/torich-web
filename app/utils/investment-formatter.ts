@@ -4,6 +4,7 @@
 
 import type { InvestmentUnitType } from '@/app/types/investment'
 import type { StockDetail } from '@/app/hooks/types/useStockSearch'
+import { ymd } from '@/app/utils/monthly-installments'
 
 interface FormatInvestmentDataParams {
   stockName: string
@@ -58,10 +59,12 @@ export function convertPeriodToYears(period: string): number {
 }
 
 /**
- * 날짜를 YYYY-MM-DD 형식으로 변환
+ * 날짜를 YYYY-MM-DD 형식으로 변환.
+ * toISOString()은 UTC로 잘라 KST 로컬 자정 Date를 하루 앞당긴다(2/1 00:00 KST → 1/31 저장, #54).
+ * 날짜 선택기가 주는 로컬 자정 Date를 그 로컬 달력값 그대로 포맷한다.
  */
 export function formatDateToISO(date: Date): string {
-  return date.toISOString().split('T')[0]
+  return ymd(date.getFullYear(), date.getMonth() + 1, date.getDate())
 }
 
 /**
