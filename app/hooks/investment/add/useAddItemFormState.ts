@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { Investment } from '@/app/types/investment'
 
 export interface UseAddItemFormStateProps {
@@ -47,9 +47,18 @@ export function useAddItemFormState({
   const [maturityDate, setMaturityDate] = useState<string>('')
   const [periodYears, setPeriodYears] = useState<string>('')
 
-  // initData 변경 시 1회 초기화 (편집 모드 진입)
-  useEffect(() => {
-    if (!initData) return
+  // 편집 진입 시 기존 값으로 폼을 채운다. 기준은 "레코드가 바뀌었는가"(id)다.
+  //
+  // 이전에는 이 작업을 useEffect([initData])에서 했는데, initData는 목록이 갱신될 때마다
+  // 새 객체 참조로 다시 들어온다. 값이 그대로여도 참조만 바뀌면 effect가 또 돌아
+  // 사용자가 입력하던 내용을 서버 값으로 덮어썼다.
+  //
+  // 렌더 도중 state를 맞추는 건 React가 권장하는 패턴이다. 커밋 전에 곧바로 재렌더되므로
+  // effect처럼 화면이 한 번 깜빡였다가 바뀌지 않는다.
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prefilledId, setPrefilledId] = useState<string | null>(null)
+  if (initData && initData.id !== prefilledId) {
+    setPrefilledId(initData.id)
     setTitle(initData.title ?? '')
     setMonthlyAmount(
       initData.monthly_amount
@@ -66,7 +75,7 @@ export function useAddItemFormState({
         ? String(initData.period_years)
         : '',
     )
-  }, [initData])
+  }
 
   // 금액: 숫자만 허용, 천 단위 콤마 표기 (만원 단위)
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
