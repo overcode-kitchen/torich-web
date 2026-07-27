@@ -62,11 +62,21 @@ function NewGoalContent() {
     onExit: goBack,
   })
 
+  const hasTargetAmount = Number(values.target_amount) > 0
+
+  // 필수는 이름뿐이다(useGoalForm.isValid와 같은 기준). 금액을 모른 채 시작하는 목적이
+  // 많은데 여기서 막으면 그대로 이탈한다. 금액 미정은 0으로 저장되고 "미설정"으로 읽힌다.
   const canAdvance = useMemo<boolean>(() => {
     if (flow.currentStep === 'A') return values.name.trim().length > 0
-    if (flow.currentStep === 'B') return Number(values.target_amount) > 0
     return true
-  }, [flow.currentStep, values.name, values.target_amount])
+  }, [flow.currentStep, values.name])
+
+  // 값이 없는 B단계에서는 "다음으로"가 아니라 건너뛰어도 된다고 버튼이 직접 말한다.
+  const ctaLabel = flow.isAtLastStep
+    ? '저장하기'
+    : flow.currentStep === 'B' && !hasTargetAmount
+      ? '건너뛰기'
+      : '다음으로'
 
   const { runWithoutGuard } = guard
   const handleSubmit = useCallback(async (): Promise<void> => {
@@ -81,6 +91,8 @@ function NewGoalContent() {
       const trimmedName = values.name.trim()
       track('goal_create_success', {
         target_amount_bucket: amountBucket(Number(values.target_amount) || 0),
+        // 금액 없이 만든 목적(bucket이 '<100k'로 뭉뚱그려짐)을 구분해서 본다.
+        has_target_amount: Number(values.target_amount) > 0,
         has_deadline: !!values.target_date,
         has_external_amount: Number(values.external_amount) > 0,
         preset_used: presets.some((p) => p.name === trimmedName)
@@ -133,7 +145,7 @@ function NewGoalContent() {
       >
         <div className="mx-auto w-full max-w-md md:max-w-lg lg:max-w-2xl px-4 pt-4">
           <PrimaryCTAButton
-            label={flow.isAtLastStep ? '저장하기' : '다음으로'}
+            label={ctaLabel}
             onClick={handleAction}
             disabled={!canAdvance}
             loading={isCreating}

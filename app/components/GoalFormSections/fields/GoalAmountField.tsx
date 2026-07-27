@@ -5,7 +5,7 @@ import {
   wonToManwonDisplay,
   manwonInputToWon,
   adjustWonByManwon,
-  TARGET_QUICK_ADJUSTS,
+  getTargetQuickAdjusts,
 } from '@/app/utils/goal-amount'
 
 interface GoalAmountFieldProps {
@@ -18,7 +18,7 @@ interface GoalAmountFieldProps {
   /** 'lg' 히어로 표시(추가 위저드) | 'md' 일반(수정 폼) */
   size?: 'md' | 'lg'
   placeholder?: string
-  /** ±100만/±1,000만 빠른 조정 칩 노출 여부 */
+  /** 현재 금액대에 맞춘 ± 빠른 조정 칩 노출 여부 */
   showQuickAdjust?: boolean
 }
 
@@ -49,7 +49,7 @@ export default function GoalAmountField({
       />
       {showQuickAdjust && (
         <div className="flex flex-wrap justify-end gap-2">
-          {TARGET_QUICK_ADJUSTS.map(({ label, delta }) => (
+          {getTargetQuickAdjusts(value).map(({ label, delta }) => (
             <button
               key={label}
               type="button"

@@ -277,7 +277,15 @@ export default function GoalDetailClient() {
       />
 
       <div ref={infoRef}>
-        <GoalInfoSection goal={goal} progress={progress} />
+        <GoalInfoSection
+          goal={goal}
+          progress={progress}
+          // 금액 하나 고치러 가는 길이므로 수정 화면 맨 위가 아니라 그 칸으로 데려간다.
+          // (적립 항목 상세 → /add?editId=&field= 와 같은 규칙)
+          onSetTarget={() =>
+            router.push(`/goal/detail/edit?id=${goal.id}&field=target_amount`)
+          }
+        />
       </div>
 
       <div ref={linkedRef}>

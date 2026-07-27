@@ -24,9 +24,11 @@ interface EditFormProps {
   goal: Goal
   userId: string | undefined
   onExit: () => void
+  /** 상세의 정보 행에서 그 칸만 고치러 들어온 경우의 진입 필드 (`?field=`). */
+  focusField?: string | null
 }
 
-function EditForm({ goal, userId, onExit }: EditFormProps) {
+function EditForm({ goal, userId, onExit, focusField }: EditFormProps) {
   const router = useRouter()
   const { values, setField, isValid, toCreateInput } = useGoalForm(goal)
   const { updateGoal, isUpdating } = useGoalUpdate(userId)
@@ -105,6 +107,7 @@ function EditForm({ goal, userId, onExit }: EditFormProps) {
         setField={setField}
         disabled={isUpdating}
         showOptionalFields
+        focusField={focusField}
       />
 
       <div className="flex flex-col gap-3 pt-8">
@@ -151,6 +154,7 @@ function EditForm({ goal, userId, onExit }: EditFormProps) {
 export default function EditGoalClient() {
   const searchParams = useSearchParams()
   const goalId = searchParams.get('id') ?? undefined
+  const focusField = searchParams.get('field')
   const router = useRouter()
   const [userId, setUserId] = useState<string | undefined>(undefined)
   const { goBack } = useFlowBack({
@@ -190,5 +194,12 @@ export default function EditGoalClient() {
     )
   }
 
-  return <EditForm goal={goal} userId={userId} onExit={goBack} />
+  return (
+    <EditForm
+      goal={goal}
+      userId={userId}
+      onExit={goBack}
+      focusField={focusField}
+    />
+  )
 }
