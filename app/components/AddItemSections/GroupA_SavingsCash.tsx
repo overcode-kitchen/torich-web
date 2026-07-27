@@ -1,6 +1,7 @@
 'use client'
 
 import ProgressiveField from './ProgressiveField'
+import { MAX_ITEM_NAME_LENGTH } from '@/app/constants/input-limits'
 import type { RecordType } from '@/app/types/investment'
 
 interface GroupA_SavingsCashProps {
@@ -26,6 +27,7 @@ export default function GroupA_SavingsCash({
         type="text"
         value={title}
         onChange={(e) => onTitleChange(e.target.value)}
+        maxLength={MAX_ITEM_NAME_LENGTH}
         placeholder={placeholder}
         className="w-full bg-card rounded-2xl py-3.5 px-4 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       />

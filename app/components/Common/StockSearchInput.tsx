@@ -2,6 +2,7 @@
 
 import { CircleNotch } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
+import { MAX_ITEM_NAME_LENGTH } from '@/app/constants/input-limits'
 import { type SearchResult } from '@/app/hooks/stock/useStockSearch'
 
 interface StockSearchInputProps {
@@ -37,6 +38,7 @@ export default function StockSearchInput({
         type="text"
         value={stockName}
         onChange={(e) => onStockNameChange(e.target.value)}
+        maxLength={MAX_ITEM_NAME_LENGTH}
         placeholder={market === 'KR' ? '삼성전자, TIGER...' : 'S&P 500, AAPL...'}
         className="w-full bg-card rounded-2xl py-3.5 pl-4 pr-12 text-foreground placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-ring"
         autoComplete="off"

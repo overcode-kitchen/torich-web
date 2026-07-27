@@ -12,6 +12,11 @@ export interface UseAddItemResetPolicyProps {
   flow: UseAddItemFlowReturn
   /** 투자 전용 state 리셋 콜백 (stockName/period 등). 투자에서만 필요. */
   resetInvestmentSpecific?: () => void
+  /**
+   * 유형 변경 직전 그룹 A에 이미 입력된 내용이 있었는지(이름/종목명 등).
+   * true면 그룹 A 내부 변경도 조용히 지우지 않고 안내 토스트를 띄운다.
+   */
+  groupAHasContent?: boolean
   /** 편집 모드면 type 변경 자체가 허용되지 않으므로 정책 비활성. */
   isEditMode?: boolean
 }
@@ -30,6 +35,7 @@ export function useAddItemResetPolicy({
   formState,
   flow,
   resetInvestmentSpecific,
+  groupAHasContent = false,
   isEditMode = false,
 }: UseAddItemResetPolicyProps): void {
   const prevTypeRef = useRef<RecordType>(recordType)
@@ -53,9 +59,12 @@ export function useAddItemResetPolicy({
       flow.goToGroup('A')
       toast(RESET_TOAST_MESSAGE)
     } else {
-      // 그룹 A 내부 변경: 공통 state도 깨끗하게 초기화 (이전 type의 입력값 유지하지 않음)
+      // 그룹 A 내부 변경: 공통 state도 깨끗하게 초기화 (이전 type의 입력값 유지하지 않음).
+      // 이미 입력한 내용(이름/종목명 등)이 있었다면 조용히 지우지 말고 안내한다.
+      // 첫 유형 선택처럼 지울 내용이 없을 땐 토스트를 띄우지 않는다.
       formState.resetAll()
       resetInvestmentSpecific?.()
+      if (groupAHasContent) toast(RESET_TOAST_MESSAGE)
     }
 
     prevTypeRef.current = recordType
