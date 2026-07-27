@@ -4,14 +4,10 @@ import Link from 'next/link'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
 import MonthlyComplianceHeroSection from '@/app/components/StatsSections/MonthlyComplianceHeroSection'
 import MonthlyTrendSection from '@/app/components/StatsSections/MonthlyTrendSection'
-import ModeBreakdownSection from '@/app/components/StatsSections/ModeBreakdownSection'
+import GoalPaceSection from '@/app/components/StatsSections/GoalPaceSection'
 import StatsGoalProgressSection from '@/app/components/StatsSections/StatsGoalProgressSection'
 import { useStatsInsights } from '@/app/hooks/stats/useStatsInsights'
 import type { Investment } from '@/app/types/investment'
-import type {
-    GoalStats,
-    HabitStats,
-} from '@/app/hooks/investment/calculations/useStatsCalculations'
 import type { PaymentHistoryMap } from '@/app/types/payment'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
@@ -39,8 +35,6 @@ interface StatsContentProps {
             progress: number
             remainingPayment: number
         }
-        goalStats: GoalStats
-        habitStats: HabitStats
     }
     filter: {
         periodPreset: PeriodPreset
@@ -74,8 +68,6 @@ export default function StatsContent({
         totalPaidPrincipal,
         totalMonthlyPayment,
         thisMonth,
-        goalStats,
-        habitStats,
     } = calculations
     const { periodPreset, setPeriodPreset, periodLabel, customDateRange, setCustomDateRange, handleCustomPeriod } = filter
     const { periodCompletionRate, chartData, chartBarColor, chartEmphasisColor, consistency } = chart
@@ -145,17 +137,15 @@ export default function StatsContent({
     // 결과(목적 진척) — 활성 목적이 없으면 컴포넌트가 스스로 null 렌더.
     const goalProgress = <StatsGoalProgressSection key="goal" records={records} />
 
-    // 결과(투자 상태 요약) — 목표형·적립형 혼재 시에만 컴포넌트가 렌더.
-    const status = hasRecords ? (
-        <ModeBreakdownSection key="status" goalStats={goalStats} habitStats={habitStats} />
-    ) : null
+    // 결과(목표별 페이스) — 기한 있는 목적이 없으면 컴포넌트가 스스로 null 렌더.
+    const pace = <GoalPaceSection key="pace" records={records} />
 
     // 기본: 행동(이행→추세) → 결과(목적→상태) → 자산(톤다운된 보조 카드, 수익률 해명 링크 동반).
     // 자산을 결과 맨 끝에 둬야 딸린 "왜 수익률을 안 보여주나" 링크가 콘텐츠 흐름을 끊지 않고 마무리 각주가 된다.
     // 저데이터: 이행이 비어 있으니 목적 진척을 맨 위로 올려 첫 화면을 채운다.
     const sections = hasComplianceData
-        ? [hero, trend, goalProgress, status, asset]
-        : [goalProgress, hero, status, asset]
+        ? [hero, trend, goalProgress, pace, asset]
+        : [goalProgress, hero, pace, asset]
 
     return <>{sections}</>
 }

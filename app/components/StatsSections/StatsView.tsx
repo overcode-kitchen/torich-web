@@ -7,10 +7,6 @@ import { useMonthlyContribution } from '@/app/hooks/investment/calculations/useM
 import StatsContent from '@/app/components/StatsSections/StatsContent'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
-import {
-    GoalStats,
-    HabitStats,
-} from '@/app/hooks/investment/calculations/useStatsCalculations'
 import type { PaymentHistoryMap } from '@/app/types/payment'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
@@ -52,8 +48,6 @@ interface StatsViewProps {
             progress: number
             remainingPayment: number
         }
-        goalStats: GoalStats
-        habitStats: HabitStats
     }
     chart: {
         periodCompletionRate: number
