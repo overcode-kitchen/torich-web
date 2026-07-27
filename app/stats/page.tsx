@@ -48,8 +48,6 @@ export default function StatsPage() {
     totalPaidPrincipal,
     totalMonthlyPayment,
     thisMonth,
-    goalStats,
-    habitStats,
   } = useStatsCalculations({ records, activeRecords, completedPayments, retroactivePayments, postponedPayments, capturedAmounts, goals })
 
   const {
@@ -95,8 +93,6 @@ export default function StatsPage() {
         totalPaidPrincipal,
         totalMonthlyPayment,
         thisMonth,
-        goalStats,
-        habitStats,
       }}
       chart={{
         periodCompletionRate,
