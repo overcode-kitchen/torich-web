@@ -16,29 +16,40 @@ export async function GET(request: Request) {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // 쿼리 빌더 패턴으로 조건부 필터링
-    let queryBuilder = supabase
-      .from('stocks')
-      .select('symbol, name, group')
-      .or(`name.ilike.%${query}%,symbol.ilike.%${query}%`)
-
-    // market 파라미터가 있으면 필터링 추가
-    if (market) {
-      queryBuilder = queryBuilder.eq('market', market)
+    // name / symbol 을 각각 별도 쿼리로 돌린다.
+    // .or() 에 검색어를 보간하면 쉼표가 PostgREST 조건 구분자로 해석돼
+    // "삼성,전자" 같은 입력이 400(PGRST100)으로 깨진다(#53).
+    // .ilike(column, value) 는 값을 필터 문자열에 보간하지 않아 쉼표가 안전하다.
+    const buildBase = () => {
+      let qb = supabase.from('stocks').select('symbol, name, group')
+      if (market) {
+        qb = qb.eq('market', market)
+      }
+      return qb
     }
 
-    // limit 적용 및 실행
-    const { data: stocks, error: dbError } = await queryBuilder.limit(20)
+    const [byName, bySymbol] = await Promise.all([
+      buildBase().ilike('name', `%${query}%`).limit(20),
+      buildBase().ilike('symbol', `%${query}%`).limit(20),
+    ])
 
-    if (dbError) {
-      console.error('Supabase 조회 오류:', dbError)
+    if (byName.error || bySymbol.error) {
+      console.error('Supabase 조회 오류:', byName.error ?? bySymbol.error)
       return NextResponse.json({ error: 'DB 조회 중 오류가 발생했습니다.' }, { status: 500 })
     }
 
+    // symbol 기준 중복 제거 후 병합. name 매치를 앞에 두고 상위 20건만 반환한다.
+    const seen = new Set<string>()
+    const stocks = [...(byName.data ?? []), ...(bySymbol.data ?? [])]
+      .filter((stock) => {
+        if (seen.has(stock.symbol)) return false
+        seen.add(stock.symbol)
+        return true
+      })
+      .slice(0, 20)
+
     // 결과 반환 (빈 배열도 정상 응답)
-    return NextResponse.json({
-      stocks: stocks || []
-    })
+    return NextResponse.json({ stocks })
 
   } catch (error) {
     console.error('검색 오류:', error)
