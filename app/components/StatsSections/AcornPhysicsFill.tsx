@@ -14,6 +14,18 @@ import {
 
 type Mode = 'pending' | 'static' | 'physics'
 
+/** 도토리 PNG 스프라이트 — 여러 canvas가 공유하도록 모듈 단위로 한 번만 로드한다. */
+const ACORN_SPRITE_SRC = '/icons/3d/acorn-1.png'
+let acornSprite: HTMLImageElement | null = null
+function getAcornSprite(): HTMLImageElement | null {
+  if (typeof window === 'undefined') return null
+  if (!acornSprite) {
+    acornSprite = new window.Image()
+    acornSprite.src = ACORN_SPRITE_SRC
+  }
+  return acornSprite
+}
+
 function canUsePhysics(): boolean {
   if (typeof document === 'undefined' || typeof window === 'undefined') return false
   if (!document.createElement('canvas').getContext) return false
@@ -53,6 +65,7 @@ function AcornCanvas({ level, seed }: { level: number; seed: number }) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    const sprite = getAcornSprite()
     let world: AcornWorld | null = null
     let raf = 0
     let running = false
@@ -77,7 +90,7 @@ function AcornCanvas({ level, seed }: { level: number; seed: number }) {
     const loop = () => {
       if (!world) return
       stepWorld(world, gxRef.current)
-      drawWorld(ctx, world)
+      drawWorld(ctx, world, sprite)
       settledFrames = isSettled(world) ? settledFrames + 1 : 0
       // 안정 + 기울기 미사용 → 정지(배터리). 기울기 켜지면 onResume이 다시 깨운다.
       if (settledFrames > 18 && !activeRef.current) {
@@ -130,7 +143,7 @@ function AcornCanvas({ level, seed }: { level: number; seed: number }) {
         measure()
         world = createWorld(level, nw, nh, seed)
         settleInstantly(world) // 리사이즈는 다시 쏟지 않고 즉시 최종 배치
-        drawWorld(ctx, world)
+        drawWorld(ctx, world, sprite)
         if (visible) start()
       })
       ro.observe(canvas)
@@ -139,11 +152,19 @@ function AcornCanvas({ level, seed }: { level: number; seed: number }) {
 
     const teardownResume = onResume(start)
 
+    // 스프라이트가 아직 로딩 중이면(첫 캔버스·느린 기기) 로드되는 순간 다시 그린다.
+    let teardownSprite = () => {}
+    if (sprite && !(sprite.complete && sprite.naturalWidth > 0)) {
+      sprite.addEventListener('load', start, { once: true })
+      teardownSprite = () => sprite.removeEventListener('load', start)
+    }
+
     return () => {
       stop()
       teardownIO()
       teardownRO()
       teardownResume()
+      teardownSprite()
     }
   }, [level, seed, gxRef, activeRef, onResume])
 

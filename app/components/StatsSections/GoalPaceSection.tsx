@@ -116,7 +116,7 @@ export default function GoalPaceSection({ records }: GoalPaceSectionProps) {
 
                 {/* 좌: 달성(도토리 더미) · 우: 기한(회색 바) + 만기 */}
                 <div className="grid grid-cols-[1fr_1.25fr] gap-2.5">
-                  <div className="relative min-h-[84px] overflow-hidden rounded-xl bg-brand-accent-bg px-3 py-3">
+                  <div className="relative min-h-[84px] overflow-hidden rounded-xl bg-acorn-well-bg px-3 py-3">
                     <AcornPhysicsFill level={clampPercent(achieved)} seed={index + 1} />
                     <div className="relative">
                       <div className="text-xs font-bold text-success">달성</div>

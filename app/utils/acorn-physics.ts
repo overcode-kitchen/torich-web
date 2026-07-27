@@ -1,12 +1,15 @@
 // 도토리 물리 엔진 — React·DOM 비의존의 순수 로직. canvas 2D에 "쏟기·쌓임·기울임"을 그린다.
 // 스펙(검증된 프로토타입 파라미터): docs/specs/99-acorn-physics-delight.md §8.
 
-const BODY = '#CDA067' // 몸통(탄)
+const BODY = '#CDA067' // 몸통(탄) — 이미지 로드 전 벡터 폴백용
 const CAP = '#744F2F' // 캡(브라운)
 const STEM = '#5C3E24' // 꼭지
 
 export const GRAVITY = 0.34 // 기본 중력(아래)
 export const RADIUS = 6.5 // 도토리 반지름(CSS px)
+// 스프라이트(도토리 PNG)를 그릴 한 변 = 반지름 × 이 값.
+// PNG는 정사각 프레임에 투명 여백이 있어, 보이는 도토리가 충돌 원(2r)에 얼추 맞게 살짝 키운다.
+const SPRITE_SCALE = 2.7
 const PACK = 0.72 // 채움 밀도
 const MAX_ACORNS = 64 // 한 칸 도토리 상한(성능 cap)
 const DAMPING = 0.99 // 속도 감쇠
@@ -134,7 +137,8 @@ export function isSettled(world: AcornWorld): boolean {
   return energy < SETTLE_ENERGY
 }
 
-function drawAcorn(ctx: CanvasRenderingContext2D, p: Acorn) {
+/** 이미지 로드 전 벡터 폴백 — 캡+몸통+꼭지 3파트. */
+function drawAcornVector(ctx: CanvasRenderingContext2D, p: Acorn) {
   ctx.save()
   ctx.translate(p.x, p.y)
   ctx.rotate(p.rot)
@@ -151,9 +155,32 @@ function drawAcorn(ctx: CanvasRenderingContext2D, p: Acorn) {
   ctx.restore()
 }
 
-export function drawWorld(ctx: CanvasRenderingContext2D, world: AcornWorld) {
+/** 도토리 PNG 스프라이트를 회전·중앙 정렬해 그린다. */
+function drawAcornSprite(ctx: CanvasRenderingContext2D, p: Acorn, sprite: CanvasImageSource) {
+  const d = p.r * SPRITE_SCALE
+  ctx.save()
+  ctx.translate(p.x, p.y)
+  ctx.rotate(p.rot)
+  ctx.drawImage(sprite, -d / 2, -d / 2, d, d)
+  ctx.restore()
+}
+
+function spriteReady(sprite: HTMLImageElement | null): sprite is HTMLImageElement {
+  return !!sprite && sprite.complete && sprite.naturalWidth > 0
+}
+
+/** sprite(도토리 PNG)가 준비됐으면 이미지로, 아니면 벡터로 그린다. */
+export function drawWorld(
+  ctx: CanvasRenderingContext2D,
+  world: AcornWorld,
+  sprite: HTMLImageElement | null = null,
+) {
   ctx.clearRect(0, 0, world.w, world.h)
-  for (const p of world.acorns) drawAcorn(ctx, p)
+  const ready = spriteReady(sprite)
+  for (const p of world.acorns) {
+    if (ready) drawAcornSprite(ctx, p, sprite)
+    else drawAcornVector(ctx, p)
+  }
 }
 
 /** reduce-motion·리사이즈 폴백: rAF 없이 동기로 진행해 최종 쌓임 상태만 만든다. */
