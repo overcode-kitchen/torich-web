@@ -9,7 +9,7 @@ import GoalFlowHeader from '@/app/components/GoalFormSections/GoalFlowHeader'
 import GoalStepName from '@/app/components/GoalFormSections/GoalStepName'
 import GoalStepAmount from '@/app/components/GoalFormSections/GoalStepAmount'
 import GoalStepDate from '@/app/components/GoalFormSections/GoalStepDate'
-import { GOAL_PRESETS, GOAL_PRESET_NAMES } from '@/app/constants/goal'
+import { useGoalPresets } from '@/app/hooks/goal/data/useGoalPresets'
 import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
 import { useGoalFlow } from '@/app/hooks/goal/add/useGoalFlow'
 import { useGoalCreate } from '@/app/hooks/goal/data/useGoalCreate'
@@ -29,6 +29,7 @@ function NewGoalContent() {
   const [userId, setUserId] = useState<string | undefined>(undefined)
   const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
   const { values, setField, toCreateInput } = useGoalForm()
+  const { presets } = useGoalPresets()
   const { createGoal, isCreating } = useGoalCreate(userId)
   const flow = useGoalFlow()
   const { goBack } = useFlowBack({
@@ -47,11 +48,11 @@ function NewGoalContent() {
   useEffect(() => {
     const preset = searchParams.get('preset')
     if (!preset) return
-    const matched = GOAL_PRESETS.find((p) => p.name === preset)
+    const matched = presets.find((p) => p.name === preset)
     if (!matched) return
     setField('name', matched.name)
     setField('emoji', matched.iconKey)
-  }, [searchParams, setField])
+  }, [searchParams, setField, presets])
 
   const canAdvance = useMemo<boolean>(() => {
     if (flow.currentStep === 'A') return values.name.trim().length > 0
@@ -67,12 +68,12 @@ function NewGoalContent() {
       target_amount_bucket: amountBucket(Number(values.target_amount) || 0),
       has_deadline: !!values.target_date,
       has_external_amount: Number(values.external_amount) > 0,
-      preset_used: GOAL_PRESET_NAMES.includes(trimmedName)
+      preset_used: presets.some((p) => p.name === trimmedName)
         ? trimmedName
         : 'custom',
     })
     router.replace('/')
-  }, [createGoal, router, toCreateInput, values])
+  }, [createGoal, router, toCreateInput, values, presets])
 
   const handleAction = useCallback((): void => {
     if (isCreating) return

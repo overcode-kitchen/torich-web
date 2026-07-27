@@ -4,11 +4,13 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Target } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
-import { GOAL_PRESETS, resolvePurposeIcon } from '@/app/constants/goal'
+import { resolvePurposeIcon } from '@/app/constants/goal'
+import { useGoalPresets } from '@/app/hooks/goal/data/useGoalPresets'
 import { track } from '@/app/lib/analytics'
 
 export default function EmptyState() {
   const router = useRouter()
+  const { presets } = useGoalPresets()
 
   function goToNewGoal(preset?: string): void {
     track('goal_create_click', {
@@ -40,7 +42,7 @@ export default function EmptyState() {
       </Button>
 
       <div className="flex flex-wrap justify-center gap-2">
-        {GOAL_PRESETS.map((preset) => {
+        {presets.map((preset) => {
           const icon = resolvePurposeIcon(preset.iconKey)
           return (
             <button
