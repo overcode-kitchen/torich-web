@@ -60,22 +60,7 @@ export function useInvestmentsUpdate(
         copyIfPresent(updateData, data, key)
       }
 
-      console.log('Update attempt:', { id, userId, updateData })
-
       try {
-        // debug: check if record exists for this user
-        const { data: checkData, error: checkError } = await supabase
-          .from('records')
-          .select('id, user_id')
-          .eq('id', id)
-          .maybeSingle()
-
-        console.log('Pre-update check:', { checkData, checkError })
-
-        if (!checkData) {
-          console.error('Record not found via select. ID:', id, 'User:', userId)
-        }
-
         // 1. Update without returning data (avoids 406)
         const updateResult = await supabase
           .from('records')
@@ -96,8 +81,6 @@ export function useInvestmentsUpdate(
           }
         }
         // notification_enabled가 true로 바뀐 경우 재예약은 records UPDATE 시 Database Webhook(schedule-notification)으로 처리됨
-
-        console.log('Update success, fetching new data...')
 
         // 2. Fetch updated data
         const { data: newData, error: fetchError } = await supabase
