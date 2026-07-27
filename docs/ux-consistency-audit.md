@@ -27,6 +27,12 @@
 - 목적: 추가는 [3단계 위저드](../app/goal/new/page.tsx#L20-L24) / 수정은 [단일 폼](../app/goal/detail/edit/EditGoalClient.tsx#L79-L84) → 추가 때 배운 조작이 수정 때 무효.
 - 적립항목: 예적금은 위저드 수정, 투자는 인라인 토글 수정 → "투자는 왜 화면이 안 바뀌지?" 인지 부조화.
 
+> **2026-07-28 갱신 (#72 완료)** — 위 표의 '투자' 행은 옛 상태다. 인플레이스 토글 편집은 제거되어
+> 세 상세 화면 모두 **정보 행을 탭하면 그 필드 편집으로** 들어간다. 행 마크업은 공용
+> [`TappableField`](../app/components/Common/TappableField.tsx) 하나를 쓰고(높이·셰브런·hover 동일),
+> 진입 경로는 적립항목 `/add?editId=&field=` · 목적 `/goal/detail/edit?id=&field=`.
+> 목적은 단일 폼이라 그룹 진입 대신 해당 칸으로 스크롤·포커스한다. 계산값 행(남은 금액·만기 예상 수령액)은 탭 불가.
+
 **P0-2. 투자 수정 시 고칠 수 있는 필드가 추가보다 적다**
 
 - 투자 인플레이스 편집 = 금액/기간/투자일만. 종목명은 ["수정할 수 없습니다"](../app/components/InvestmentDetailSections/InvestmentDetailOverview.tsx#L60), 시장·시작일·연수익률은 편집 UI 자체가 없음.
