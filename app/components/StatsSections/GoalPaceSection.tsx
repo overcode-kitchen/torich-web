@@ -13,6 +13,7 @@ import { TiltProvider } from '@/app/hooks/stats/useTiltGravity'
 import type { Investment } from '@/app/types/investment'
 import type { Goal } from '@/app/types/goal'
 import { createClient } from '@/utils/supabase/client'
+import { hasArrivalEstimate } from '@/app/utils/goal-scope'
 
 const clampPercent = (n: number) => Math.max(0, Math.min(100, n))
 
@@ -68,7 +69,7 @@ export default function GoalPaceSection({ records }: GoalPaceSectionProps) {
       goals
         .filter(
           (g): g is Goal & { target_date: string } =>
-            g.completed_at === null && g.target_date !== null && g.target_amount > 0,
+            g.completed_at === null && hasArrivalEstimate(g),
         )
         .sort(
           (a, b) => new Date(a.target_date).getTime() - new Date(b.target_date).getTime(),
