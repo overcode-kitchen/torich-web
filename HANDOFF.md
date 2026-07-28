@@ -2,37 +2,39 @@
 
 > 이 파일은 재진입 노트다. 세션 시작 시 훅이 자동으로 읽어준다.
 > 돌아오면 `/catchup` 으로 이 파일 + git 상태를 브리핑받고 시작하라.
-> _마지막 갱신: 2026-07-27 21:52 · 브랜치: feat/99-acorn-physics-delight_
+> _마지막 갱신: 2026-07-28 · 브랜치: style/104-goal-pace-ui_
 
 ## 🎯 지금 목표 (한 줄)
-이슈 #99 — 통계 '목표별 페이스' 달성 칸을 **도토리 물리(쏟기·기울임)** 로 채우는 delight. 코드 완료·PR 오픈, 남은 건 **실기기 검증**과 **머지 결정**.
+이슈 #104 — '목표별 페이스' 섹션을 **레퍼런스(뱅킹 카드)처럼 좌 그린패널·우 정보 2단 카드**로 재구성하는 UI 리디자인. 코드 완료·푸시됨, 남은 건 **내일 회사에서 실기기 눈검증**과 캘리브레이션.
 
 ## ✅ 마지막으로 한 것 (이번 세션)
-- **도토리 물리 delight 구현**(#99, 스펙 `docs/specs/99-acorn-physics-delight.md`). `AcornFill`(정적)을 canvas 물리 `AcornPhysicsFill`로 교체. 진입 시 도토리가 쏟아져 달성%만큼 쌓이고(권한 불필요·항상), 기기를 기울이면 재정렬(iOS 모션 권한 필요 → 헤더 '기울이기' 옵트인 토글).
-- **모듈 분리**: 순수 물리 엔진 `app/utils/acorn-physics.ts` / 틸트 권한·센서 공유 컨텍스트 `app/hooks/stats/useTiltGravity.tsx` / `AcornPhysicsFill.tsx`(canvas 루프+IO/RO) / `AcornStaticFill.tsx`(폴백) / `TiltToggle.tsx`.
-- **피드백 반영(2번째 커밋)**: 도토리를 **3D 이미지 `acorn-1.png`** 로 교체(canvas는 `drawImage`, 정적은 `next/image`, 로드 전 벡터 폴백). '달성' 칸 배경을 연녹색→**크림/샌드 베이지** 신규 토큰 `acorn-well-bg`(라이트 `#f1e8da`/다크 `#42382e`).
-- **폴백 매트릭스**: reduce-motion·canvas 미지원 → 정적 이미지 배치 / 권한거부·PC → pour만 / 오프스크린·안정 → rAF 정지. 서버·초기 렌더 null이라 하이드레이션 안전.
-- 커밋 `e6aa46a`(물리 뼈대) + `5294075`(이미지·배경). PR **#102** 생성(base integration).
+- **레이아웃 재구성**(#104). 목적마다 가로 카드 하나로 바꿈: **좌측 = 브랜드 그린 그라디언트 패널**(도토리가 달성률만큼 쌓임 + 달성% 흰 텍스트 오버레이), **우측 = 흰 영역**(목적명 · D-day 뱃지 · 기한 회색 바 · 만기). 그린은 좌측 한 곳에만 강하게, 기한은 회색으로 눌러 "판정 없는 대비" 톤 유지.
+- **globals.css**: 크림 `--acorn-well-bg` 토큰 3곳(@theme 매핑·라이트·다크) 제거 → 그린 그라디언트 `--goal-well`(라이트 `hsl(140 88% 39%)→29%` / 다크 `34%→22%`) + `.goal-well`(글로우·헤어라인) / `.goal-well-num` / `.goal-well-label`(흰 텍스트+섀도) 클래스 신설.
+- 달성 칸 높이 **84→132px**(도토리 쌓일 세로 공간 확보), grid `1fr_1.25fr`→`132px_1fr`.
+- 도토리 물리/정적 fill(`AcornPhysicsFill`/`AcornStaticFill`)·`acorn-physics.ts`는 **그대로 재사용**(배경만 크림→그린, 로직 무변경).
+- **Claude 디자인 시안**(아트팩트)로 방향 먼저 확정받고 구현: https://claude.ai/code/artifact/28a8d4b8-53a7-4681-8fd8-297edd3b6b3e (테마 토글·다시 쏟기 포함). 시안 파일 `scratchpad/goal-pace-redesign.html`.
+- 커밋 `f51ff82`, 브랜치 `style/104-goal-pace-ui` origin 푸시됨.
 
 ## 📍 지금 상태
-- 빌드/실행: `tsc --noEmit` ✅, 변경파일 `eslint` ✅, `pnpm run build:app`(정적 export) ✅ — localhost 누출 0, `acorn-well-bg` 토큰 CSS 생성 확인, `out/icons/3d/acorn-1.png` 포함, `app/api`·`app/auth` 복구·백업 잔재 없음. **PR #102 CI verify ✅**.
-- 미커밋 변경: **없음** (두 커밋 전부 origin에 푸시됨, ahead/behind 0/0).
+- 빌드/실행: `tsc --noEmit` ✅, `eslint`(변경 tsx) ✅. **`build:app` 정적 export는 아직 안 돌림** — 라우팅/env 무변경(순수 스타일)이라 스킵. 머지 전엔 돌릴 것.
+- 미커밋 변경: **없음**(커밋 1개 origin 푸시, PR은 아직 안 열음).
+- 담당자: #104 @me 지정됨.
 
 ## ⏭️ 다음 할 일 (우선순위 순)
-1. **실기기 검증 ①(최우선 리스크)**: Capacitor WKWebView에서 `DeviceOrientationEvent.requestPermission()` 프롬프트가 실제로 뜨는지. 안 뜨면 기울기 기능은 죽고 pour-only가 확정 baseline(앱은 정상). 스펙 §5-2.
-2. **실기기 검증 ②(튜닝)**: 도토리 크기(`SPRITE_SCALE=2.7` in `app/utils/acorn-physics.ts`)·크림 톤 명도·90%가 "거의 꽉"인지 눈으로 보고 조정.
-3. **머지**: 담당자(suni) 판단. 지시 오면 CI 통과 확인 후 **Squash merge**(이슈브랜치→integration).
-4. (별건) 통계 v2 Phase C — 전망 신호등(`docs/stats-redesign-plan-v2.md`), 담당 suni.
+1. **실기기 눈검증(내일 회사)**: Xcode 빌드 → 통계 탭 '목표별 페이스'. ① 그린 패널에 도토리 쏟겨 쌓이는지 ② 달성% 흰 글자가 도토리 위에서 잘 읽히는지 ③ 132px 높이·좌우(132px_1fr) 밸런스 ④ 다크모드 그린 명도(눈부심). 라이트/다크 둘 다.
+2. **캘리브레이션(필요 시)**: 도토리 크기 `SPRITE_SCALE=2.7`(`app/utils/acorn-physics.ts`) / 그린 명도·그라디언트(`app/globals.css` `--goal-well`) / 패널 높이·컬럼 비율(`GoalPaceSection.tsx`).
+3. **PR 오픈**(base `integration`) → CI verify. 열기 전 `pnpm run build:app`로 localhost 누출 0·라우팅 확인.
+4. **머지**: 담당자 판단, CI 통과 후 Squash.
 
 ## 🧭 결정과 이유 (이번 세션)
-- **쏟기=기본(권한 불필요) / 기울기=옵트인 토글** — 왜: 권한 없어도 delight의 핵심(쏟기)은 항상 제공, 앱은 완전 정상. iOS 권한은 사용자 제스처 안에서만 요청 가능해 토글이 그 진입점.
-- **틸트 권한/센서를 origin 단위 컨텍스트로 공유** — 왜: 권한은 origin 1회, canvas는 목적마다 여러 개. 구독 1개로 모든 canvas에 수평중력 ref 공급, 기울기 켜지면 정지된 canvas를 resume 콜백으로 깨움.
-- **폴백=정적 이미지 배치, 서버 렌더는 null** — 왜: 하이드레이션 안전 + `useSyncExternalStore`로 supported 플래그 읽어 불일치 없음. reduce-motion 존중.
-- **배경=신규 시맨틱 토큰 `acorn-well-bg`(라이트 크림/다크 웜톤)** — 왜: 3-Layer 규칙 준수 + 다크에서 밝은 크림 눈부심 방지. 버린 대안: `torich-brown-light` 직접 사용(다크 대응 안 됨).
+- **좌 시각화 / 우 정보 2단 분할** — 왜: 레퍼런스 뱅킹 카드 구조를 그대로 차용(좌 컬러카드→그린, 검은영역→흰 카드). 시각(도토리 더미)과 정보(기한·만기)가 역할로 갈려 스캔이 쉬움.
+- **그린은 좌측 패널 한 곳만** — 왜: 디자인 시스템 원칙(브랜드 그린은 1~2곳). 기한 바를 회색으로 두면 "판정 아닌 대비" 톤이 살고 달성 패널이 주인공.
+- **달성%를 그린 위 흰 텍스트로** — 왜: 도토리 쌓인 높이=달성률이라 숫자와 시각이 한 덩어리로 읽힘. 섀도로 도토리와 겹쳐도 가독성 확보.
+- **`--acorn-well-bg`(#99 크림) 제거하고 `--goal-well`로 교체** — 왜: #104가 바로 그 배경을 그린으로 바꾸는 리디자인. 크림 토큰은 이 컴포넌트에서만 쓰여 안전하게 제거.
 
 ## 🚧 막힌 것 / 열린 질문
-- **WKWebView 모션 권한 프롬프트 실효성** — 실기기 스파이크 전까지 미확정(스펙 최우선 리스크). 웹/시뮬레이터로 검증 불가.
-- 도토리 스프라이트 크기·크림 배경 명도는 실기기 눈검증 필요(현재 안전 기본값).
+- 그린 명도·그라디언트, 도토리 크기, 패널 높이(132px)는 **실기기 눈검증 전 잠정값**. 웹에서 본 느낌 기준이라 기기에서 조정 가능성.
+- 다크모드 딥그린 위 브라운 도토리 대비 — 눈으로 확인 필요.
 
 ## ▶️ 바로 이어가려면
-`git checkout feat/99-acorn-physics-delight`(이미 그 브랜치, 클린). Xcode로 앱 빌드 → 통계 탭 '목표별 페이스'에서 도토리 쏟김 확인 → 헤더 '기울이기' 탭 → 권한 프롬프트 뜨는지(핵심) → 기울여 재정렬 확인. 웹만이면 `pnpm run dev` 후 기한 있는 목적 만들어 canvas pour/폴백 확인. 값 조정은 `app/utils/acorn-physics.ts`(SPRITE_SCALE·물리 파라미터), 배경은 `app/globals.css`의 `--acorn-well-bg`.
+`git checkout style/104-goal-pace-ui`(클린, origin과 동기). Xcode로 앱 빌드 → 통계 탭 '목표별 페이스' 눈검증(위 1번). 웹만이면 `pnpm run dev` 후 기한+목표금액 있는 목적 만들어 확인. 값 조정 위치: 그린 `app/globals.css`의 `--goal-well`, 도토리 크기 `app/utils/acorn-physics.ts`의 `SPRITE_SCALE`, 레이아웃(높이·컬럼) `app/components/StatsSections/GoalPaceSection.tsx`. 시안은 아트팩트 링크 참고.
