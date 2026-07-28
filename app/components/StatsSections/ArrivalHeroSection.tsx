@@ -1,20 +1,39 @@
 'use client'
 
 import { useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { track } from '@/app/lib/analytics'
+import { resolvePurposeIcon } from '@/app/constants/goal'
 import { shortWon } from '@/app/utils/goal-format'
-import { arrivalHeroLine, arrivalMonthLabel, targetMonthLabel } from '@/app/utils/goal-arrival-copy'
+import {
+  arrivalActionPhrase,
+  arrivalMonthLabel,
+  monthlyContributionValue,
+  targetMonthLabel,
+} from '@/app/utils/goal-arrival-copy'
 import type { GoalArrival } from '@/app/utils/goal-arrival'
+
+/** 라벨 + 값 한 쌍. 값 넷을 문장 대신 2×2로 놓아 어느 줄도 접히지 않게 한다 */
+function Stat({ label, value, alignRight }: { label: string; value: string; alignRight?: boolean }) {
+  return (
+    <div className={`flex min-w-0 items-baseline gap-1.5 ${alignRight ? 'justify-end' : ''}`}>
+      <span className="shrink-0 text-xs text-foreground-muted">{label}</span>
+      <span className="min-w-0 truncate text-xs font-bold text-foreground tabular-nums">
+        {value}
+      </span>
+    </div>
+  )
+}
 
 /**
  * 도착 예정 hero — 목표 탭에서 유일하게 미래를 말하는 카드.
  *
- * "46% 모았다"는 상태 보고지만 "2027년 3월 도착 예정 · 월 6만원을 더하면 목표일에 맞춰져요"는
- * 다음 행동이 붙은 피드백이다. 그래서 큰 숫자는 진행률이 아니라 도착 예정 월 하나다.
+ * "46% 모았다"는 상태 보고지만 "2027년 3월 도착 예정 · 월 6만원 더하면 맞춰져요"는 다음 행동이
+ * 붙은 피드백이다. 그래서 큰 숫자는 진행률이 아니라 도착 예정 월 하나다.
  *
  * 도토리 우물을 쓰지 않는다 — 3D·캐릭터 자산은 탭당 하나(목표 탭=도토리)이고 그 자리는 아래
- * 페이스 카드가 갖는다. hero는 텍스트와 회색 진행바로만 위계를 만든다.
+ * 페이스 카드가 갖는다. 대신 목적 아이콘과 진행바로 hero임을 드러낸다.
  *
  * 카드 안의 모든 숫자는 이 목적 하나의 스코프다 — 전체 월 적립액 같은 값을 섞으면
  * "이 목적에 월 25만원"과 "월 60만원 적립 중"이 한 카드에서 부딪힌다.
@@ -30,7 +49,10 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // goals.emoji에는 3D 아이콘 키(예: 'airplane')가 들어 있다 — 그대로 그리면 글자로 보인다
+  const icon = resolvePurposeIcon(goal.emoji)
   const percent = Math.max(0, Math.min(progress.progressPercent ?? 0, 100))
+  const remaining = Math.max(0, goal.target_amount - progress.currentValue)
 
   return (
     <section className="mb-4">
@@ -44,12 +66,20 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
       >
         <p className="text-xs font-bold text-foreground-muted">가장 먼저 도착</p>
 
-        <div className="mt-1.5 flex min-w-0 items-baseline gap-1.5">
-          {goal.emoji && <span className="shrink-0 text-sm">{goal.emoji}</span>}
-          <h2 className="min-w-0 truncate text-[15px] font-bold tracking-tight text-foreground">
+        <div className="mt-2 flex items-center gap-2">
+          {icon && (
+            <Image
+              src={icon.src}
+              alt=""
+              width={28}
+              height={28}
+              className="h-7 w-7 shrink-0 object-contain"
+            />
+          )}
+          <h2 className="min-w-0 flex-1 truncate text-[15px] font-bold tracking-tight text-foreground">
             {goal.name}
           </h2>
-          <span className="shrink-0 text-xs font-semibold text-foreground-subtle">
+          <span className="shrink-0 text-xs font-semibold text-foreground-subtle tabular-nums">
             목표 {shortWon(goal.target_amount)}
           </span>
         </div>
@@ -66,7 +96,6 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
           </p>
         )}
 
-        {/* 통계 화면은 coolgray 위계 — 그린은 아래 도토리 우물 한 곳에만 준다 */}
         <div
           className="mt-3.5 h-2 w-full overflow-hidden rounded-full bg-progress-track"
           role="progressbar"
@@ -76,29 +105,21 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
           aria-valuemax={100}
         >
           <div
-            className="h-full rounded-full bg-foreground-soft transition-all duration-500"
+            className="h-full rounded-full bg-primary transition-all duration-500"
             style={{ width: `${percent}%` }}
           />
         </div>
 
-        <div className="mt-2 flex items-baseline justify-between gap-3">
-          <span className="min-w-0 truncate text-xs text-foreground-muted">
-            모은 금액{' '}
-            <span className="font-bold text-foreground tabular-nums">
-              {shortWon(progress.currentValue)}
-            </span>
-          </span>
-          <span className="shrink-0 text-xs text-foreground-muted">
-            목표일{' '}
-            <span className="font-bold text-foreground tabular-nums">
-              {targetMonthLabel(goal.target_date)}
-            </span>
-          </span>
+        <div className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1">
+          <Stat label="모은 금액" value={shortWon(progress.currentValue)} />
+          <Stat label="목표일" value={targetMonthLabel(goal.target_date)} alignRight />
+          <Stat label="월 적립" value={monthlyContributionValue(arrival)} />
+          <Stat label="남은 금액" value={shortWon(remaining)} alignRight />
         </div>
 
-        {/* 상태(월 적립액)와 다음 행동을 한 줄로 — 카드당 설명 문장은 최대 1줄 */}
-        <p className="mt-4 border-t border-border-subtle pt-3 text-xs leading-relaxed text-foreground-muted">
-          {arrivalHeroLine(arrival)}
+        {/* 카드의 마지막 한 줄 = 다음 행동. 값들과 섞이지 않도록 헤어라인으로 끊는다 */}
+        <p className="mt-3.5 truncate border-t border-border-subtle pt-3 text-xs font-semibold text-foreground-soft">
+          {arrivalActionPhrase(arrival)}
         </p>
       </button>
     </section>
