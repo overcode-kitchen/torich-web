@@ -1,7 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import Image from 'next/image'
 import { track } from '@/app/lib/analytics'
+import { resolvePurposeIcon } from '@/app/constants/goal'
 import type { FulfillmentHeatmap, HeatmapCell } from '@/app/utils/fulfillment-heatmap'
 
 /** 접기 전 기본으로 그리는 행 수 — 목적이 많으면 셀이 12 × 목적 수만큼 늘어난다 */
@@ -60,28 +62,41 @@ export default function FulfillmentHeatmapSection({ heatmap }: { heatmap: Fulfil
       <h2 className="text-sm font-semibold text-foreground-muted mb-3">최근 12개월 이행</h2>
 
       <div className="flex flex-col gap-[3px]">
-        {rows.map((row) => (
-          <div
-            key={row.key}
-            className="grid items-center gap-[3px]"
-            style={{ gridTemplateColumns: `56px repeat(${row.cells.length}, 1fr)` }}
-          >
-            <span className="truncate text-[10px] text-muted-foreground">
-              {row.emoji ? `${row.emoji} ` : ''}
-              {row.label}
-            </span>
-            {row.cells.map((cell) => (
-              <button
-                key={cell.yearMonth}
-                type="button"
-                disabled={!cell.scheduled}
-                onClick={() => handleCellClick(row.label, cell)}
-                aria-label={`${row.label} ${cell.month}월 ${cell.scheduled ? `${cell.total}건 중 ${cell.completed}건` : '적립 예정 없음'}`}
-                className={`aspect-square rounded-[3px] disabled:cursor-default ${cellClass(cell)}`}
-              />
-            ))}
-          </div>
-        ))}
+        {rows.map((row) => {
+          // goals.emoji는 3D 아이콘 키('airplane')거나 구버전 이모지('✈️')다.
+          // 그대로 찍으면 키가 글자로 새어 나오므로 다른 화면과 같이 아이콘으로 푼다.
+          const icon = resolvePurposeIcon(row.emoji)
+          return (
+            <div
+              key={row.key}
+              className="grid items-center gap-[3px]"
+              style={{ gridTemplateColumns: `56px repeat(${row.cells.length}, 1fr)` }}
+            >
+              <span className="flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground">
+                {icon && (
+                  <Image
+                    src={icon.src}
+                    alt=""
+                    width={12}
+                    height={12}
+                    className="h-3 w-3 shrink-0 object-contain"
+                  />
+                )}
+                <span className="truncate">{row.label}</span>
+              </span>
+              {row.cells.map((cell) => (
+                <button
+                  key={cell.yearMonth}
+                  type="button"
+                  disabled={!cell.scheduled}
+                  onClick={() => handleCellClick(row.label, cell)}
+                  aria-label={`${row.label} ${cell.month}월 ${cell.scheduled ? `${cell.total}건 중 ${cell.completed}건` : '적립 예정 없음'}`}
+                  className={`aspect-square rounded-[3px] disabled:cursor-default ${cellClass(cell)}`}
+                />
+              ))}
+            </div>
+          )
+        })}
 
         {/* 월 눈금 — 행 라벨 칸만큼 비우고 셀에 맞춰 정렬한다 */}
         <div
