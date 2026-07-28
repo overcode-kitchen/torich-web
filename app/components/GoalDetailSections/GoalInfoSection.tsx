@@ -1,7 +1,6 @@
 'use client'
 
 import { formatCurrency } from '@/lib/utils'
-import { InvestmentField } from '@/app/components/Common/InvestmentField'
 import { TappableField } from '@/app/components/Common/TappableField'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 
@@ -57,9 +56,10 @@ export function GoalInfoSection({
           onTap={tap('external_amount')}
         />
 
-        {/* 남은 금액은 목표−모은 금액으로 계산된 값이라 고칠 대상이 없다. 탭 불가로 유지한다. */}
+        {/* 남은 금액은 목표−모은 금액으로 계산된 값이라 고칠 대상이 없다. 탭 불가로 유지하되,
+            위 두 행과 같은 틀(TappableField, onTap 없음)을 써야 높이·오른쪽 끝이 맞는다. */}
         {hasTarget && (
-          <InvestmentField label="남은 금액" value={formatCurrency(remaining)} />
+          <TappableField label="남은 금액" value={formatCurrency(remaining)} />
         )}
       </div>
     </section>
