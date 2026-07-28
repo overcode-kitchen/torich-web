@@ -117,7 +117,11 @@ export interface TypeShareTile {
 }
 
 /**
- * 유형 비중 — 주식·ETF / 예적금·현금.
+ * 유형 비중 — 투자 / 예적금·현금.
+ *
+ * 라벨은 항목을 추가할 때 고르는 이름(RecordTypeSelector)을 그대로 쓴다. 거기서 '투자'는
+ * 주식·ETF만이 아니라 종목 기반 전부라, '주식·ETF'라고 부르면 코인·금을 투자로 넣어둔 사람의
+ * 돈이 이름과 어긋나는 칸에 잡힌다.
  *
  * 같은 정보를 문장으로 쓰면 두 줄이 되므로 타일 두 칸으로 둔다. 유형이 없는 '이미 모은 돈'
  * (goal.external_amount)은 여기서 빠지므로 두 칸의 합은 hero 금액과 다를 수 있다 —
@@ -145,7 +149,7 @@ export function buildRecordTypeShare(
   }
 
   return withPercents([
-    { key: 'investment' as const, label: '주식·ETF', amount: investment },
+    { key: 'investment' as const, label: '투자', amount: investment },
     { key: 'deposit' as const, label: '예적금·현금', amount: deposit },
   ])
 }
