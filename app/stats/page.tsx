@@ -75,6 +75,7 @@ export default function StatsPage() {
         completedPayments,
         retroactivePayments,
         postponedPayments,
+        capturedAmounts,
       }}
       ui={{
         showContributionSheet,

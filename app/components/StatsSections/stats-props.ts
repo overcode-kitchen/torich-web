@@ -1,6 +1,6 @@
 import type { Investment } from '@/app/types/investment'
 import type { Goal } from '@/app/types/goal'
-import type { PaymentHistoryMap } from '@/app/types/payment'
+import type { CapturedAmountsMap, PaymentHistoryMap } from '@/app/types/payment'
 import type { PostponedPaymentsMap } from '@/app/hooks/payment/usePostponedPayments'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
@@ -25,6 +25,8 @@ export interface StatsPayment {
   retroactivePayments: PaymentHistoryMap
   /** 미룬 회차 — 이행 히트맵의 점선 판정과 완료율 분모 제외에 쓴다 */
   postponedPayments: PostponedPaymentsMap
+  /** 매수 시점 실제 납입액 — 목적 진척·도착 예정의 '모은 금액'을 과거 금액 그대로 합산하는 데 쓴다 */
+  capturedAmounts: CapturedAmountsMap
 }
 
 export interface StatsUI {

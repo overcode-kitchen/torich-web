@@ -1,19 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useGoals } from '@/app/hooks/goal/data/useGoals'
-import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
-import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { dDayLabel, shortWon } from '@/app/utils/goal-format'
 import { DDayBadge } from '@/app/components/Common/DDayBadge'
 import { AcornPhysicsFill } from '@/app/components/StatsSections/AcornPhysicsFill'
 import { TiltToggle } from '@/app/components/StatsSections/TiltToggle'
 import { TiltProvider } from '@/app/hooks/stats/useTiltGravity'
-import type { Investment } from '@/app/types/investment'
-import type { Goal } from '@/app/types/goal'
-import { createClient } from '@/utils/supabase/client'
-import { hasArrivalEstimate } from '@/app/utils/goal-scope'
+import { arrivalMonthLabel } from '@/app/utils/goal-arrival-copy'
+import type { GoalArrival } from '@/app/utils/goal-arrival'
 
 const clampPercent = (n: number) => Math.max(0, Math.min(100, n))
 
@@ -36,7 +30,8 @@ function maturityLabel(targetDate: string): string {
 }
 
 export interface GoalPaceSectionProps {
-  records: Investment[]
+  /** 도착 예정이 계산된 목적들 — hero에 올라간 목적은 호출측에서 빼고 넘긴다 */
+  arrivals: GoalArrival[]
 }
 
 /**
@@ -45,47 +40,13 @@ export interface GoalPaceSectionProps {
  * goalProgress(목적 진척)가 '얼마나 모았나'라면 이 섹션은 '시간 대비 페이스'를 답한다.
  * 레이아웃은 목적 하나당 흰 카드 하나: 카드 머리에 목적명·D-day를 두고, 그 아래를 좌우로 나눠
  * 좌측 그린 패널이 도토리를 달성률만큼 쌓아 시각화를 맡고(달성% 오버레이), 우측이 모은 금액과
- * 기한(회색 바)·만기를 위아래로 벌려 채운다.
+ * 기한(회색 바)·만기를 위아래로 벌려 채운다. 카드 밑단에는 도착 예정 한 줄을 얹는다.
  * 그린은 좌측 한 곳에만 강하게 주고 기한은 회색으로 눌러 "판정 없는 대비" 톤을 지킨다.
  */
-export default function GoalPaceSection({ records }: GoalPaceSectionProps) {
+export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
   const router = useRouter()
-  const [userId, setUserId] = useState<string | undefined>(undefined)
 
-  useEffect(() => {
-    const supabase = createClient()
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id)
-    })
-  }, [])
-
-  const { goals } = useGoals(userId)
-  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistoryContext()
-
-  // 기한(target_date) + 목표금액이 있는 활성 목적만 — 페이스를 계산할 수 있는 대상.
-  // 마감 임박순(가까운 target_date 먼저)으로 정렬한다.
-  const paceGoals = useMemo(
-    () =>
-      goals
-        .filter(
-          (g): g is Goal & { target_date: string } =>
-            g.completed_at === null && hasArrivalEstimate(g),
-        )
-        .sort(
-          (a, b) => new Date(a.target_date).getTime() - new Date(b.target_date).getTime(),
-        ),
-    [goals],
-  )
-
-  const progressMap = useGoalsProgress(
-    paceGoals,
-    records,
-    completedPayments,
-    retroactivePayments,
-    capturedAmounts,
-  )
-
-  if (paceGoals.length === 0) return null
+  if (arrivals.length === 0) return null
 
   return (
     <TiltProvider>
@@ -98,13 +59,17 @@ export default function GoalPaceSection({ records }: GoalPaceSectionProps) {
         </div>
 
         <ul className="flex flex-col gap-3">
-        {paceGoals.map((goal, index) => {
-          const progress = progressMap.get(goal.id)
-          if (!progress) return null
-
+        {arrivals.map((arrival, index) => {
+          const { goal, progress } = arrival
           const achieved = progress.progressPercent ?? 0
           const elapsed = elapsedPercent(goal.created_at, goal.target_date)
           const dday = dDayLabel(progress.dDay)
+          // 이미 목표를 채운 목적은 '도착 예정'이 성립하지 않고, 월 적립이 없으면 계산 자체가 안 된다
+          const arrivalText = progress.isCompleted
+            ? '목표 금액을 채웠어요'
+            : arrival.arrivalDate
+              ? arrivalMonthLabel(arrival.arrivalDate)
+              : null
 
           return (
             <li key={goal.id}>
@@ -165,6 +130,19 @@ export default function GoalPaceSection({ records }: GoalPaceSectionProps) {
                     </div>
                   </div>
                 </div>
+
+                {/* 새 카드가 아니라 기존 카드의 새 필드 — 도착 예정 한 줄.
+                    계산할 수 없는 목적(월 적립 없음)은 줄을 아예 그리지 않는다. */}
+                {arrivalText && (
+                  <div className="mt-3.5 flex items-baseline justify-between gap-3 border-t border-border-subtle pt-3">
+                    <span className="text-xs font-bold text-foreground-muted">
+                      {progress.isCompleted ? '도착' : '도착 예정'}
+                    </span>
+                    <span className="min-w-0 truncate text-sm font-bold text-foreground tabular-nums">
+                      {arrivalText}
+                    </span>
+                  </div>
+                )}
               </button>
             </li>
           )

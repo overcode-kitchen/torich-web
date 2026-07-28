@@ -44,7 +44,7 @@ export default function StatsContent({
         bleedClassName="-mx-4 px-4 mb-4 bg-surface top-[calc(env(safe-area-inset-top,0px)+12px)]"
       />
 
-      {view === 'goal' && <StatsGoalTab data={data} />}
+      {view === 'goal' && <StatsGoalTab data={data} payment={payment} />}
       {view === 'record' && (
         <StatsRecordTab data={data} payment={payment} filter={filter} chart={chart} />
       )}
