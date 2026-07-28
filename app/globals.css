@@ -52,6 +52,7 @@
   --color-card: var(--card);
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
+  --color-progress-track: var(--progress-track);
   --color-surface-strong: var(--surface-strong);
   --color-surface-strong-hover: var(--surface-strong-hover);
   --color-border-subtle: var(--border-subtle);
@@ -194,6 +195,9 @@
   /* 역할별 시맨틱 (Primitives 직접 사용 대체용) */
   --surface: var(--palette-coolgray-25);
   --surface-hover: var(--palette-coolgray-50);
+  /* 카드 위 진행바 트랙 — 라이트에선 surface-hover와 같지만, 다크에선 card와
+     같은 색이 되어 트랙이 사라지므로 한 단계 밝은 값을 따로 잡는다. */
+  --progress-track: var(--palette-coolgray-50);
   --surface-strong: var(--palette-coolgray-200);
   --surface-strong-hover: var(--palette-coolgray-300);
   --border-subtle: var(--palette-coolgray-100);
@@ -280,6 +284,8 @@
   /* 역할별 시맨틱 - surface(950) / card(900) */
   --surface: var(--palette-coolgray-950);
   --surface-hover: var(--palette-coolgray-900);
+  /* 카드(900) 위에서 트랙이 묻히지 않도록 한 단계 밝은 800으로 띄운다. */
+  --progress-track: var(--palette-coolgray-800);
   --surface-strong: var(--palette-coolgray-500);
   --surface-strong-hover: var(--palette-coolgray-400);
   --border-subtle: var(--palette-coolgray-600);

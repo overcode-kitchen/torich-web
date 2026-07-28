@@ -279,6 +279,7 @@ export function CoreSection() {
                             {[
                                 { name: "surface", token: "color-surface", bg: "bg-surface", text: "text-foreground", border: true },
                                 { name: "surface-hover", token: "color-surface-hover", bg: "bg-surface-hover", text: "text-foreground", border: true },
+                                { name: "progress-track", token: "color-progress-track", bg: "bg-progress-track", text: "text-foreground", border: true },
                                 { name: "surface-strong", token: "color-surface-strong", bg: "bg-surface-strong", text: "text-foreground", border: true },
                                 { name: "surface-strong-hover", token: "color-surface-strong-hover", bg: "bg-surface-strong-hover", text: "text-foreground", border: true },
                                 { name: "surface-dark", token: "color-surface-dark", bg: "bg-surface-dark", text: "text-white" },
