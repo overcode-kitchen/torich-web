@@ -8,6 +8,7 @@ import StatsContent from '@/app/components/StatsSections/StatsContent'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
 import type { PaymentHistoryMap } from '@/app/types/payment'
+import type { ThisMonthStats } from '@/app/utils/stats'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
 import type { DateRange } from 'react-day-picker'
@@ -42,12 +43,7 @@ interface StatsViewProps {
     calculations: {
         totalPaidPrincipal: number
         totalMonthlyPayment: number
-        thisMonth: {
-            totalPayment: number
-            completedPayment: number
-            progress: number
-            remainingPayment: number
-        }
+        thisMonth: ThisMonthStats
     }
     chart: {
         periodCompletionRate: number

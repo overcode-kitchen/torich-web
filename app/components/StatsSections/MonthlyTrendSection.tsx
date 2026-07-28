@@ -13,6 +13,7 @@ import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'recharts'
 import type { DateRange } from 'react-day-picker'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
+import type { ThisMonthStats } from '@/app/utils/stats'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 
 // ── 통나무 막대(모듈 쌓기) ────────────────────────────────────────────────
@@ -131,6 +132,8 @@ function WoodBarShape({
 }
 
 interface MonthlyTrendSectionProps {
+  /** 이번 달 현황 — 차트 마지막 막대('적립 중')의 캡션용. 건수 기준만 사용한다. */
+  thisMonth: ThisMonthStats
   // 기간 필터
   periodPreset: PeriodPreset
   setPeriodPreset: (preset: PeriodPreset) => void
@@ -148,11 +151,14 @@ interface MonthlyTrendSectionProps {
 }
 
 /**
- * 월별 이행 추세 블록 — 기간 필터·막대 차트·꾸준함 인사이트를 담당.
- * 이번 달 현황과 같은 주제(이행)의 줌아웃이라 Hero 카드 안에 구분선으로 합쳐 렌더한다.
+ * 월별 이행 추세 블록 — 이번 달 현황·기간 필터·막대 차트·꾸준함 인사이트를 담당.
+ *
+ * 이번 달 현황은 이 카드가 맡는다. 차트 마지막 막대가 곧 이번 달('적립 중')이므로,
+ * 위쪽 한 줄은 그 막대의 캡션이 된다(예전에는 Hero가 같은 값을 %로 한 번 더 말해 중복이었다).
  * 필터를 차트 바로 위(이 블록 헤더)에 두어 "필터가 무엇을 제어하는지"를 자명하게 만든다.
  */
 export default function MonthlyTrendSection({
+  thisMonth,
   periodPreset,
   setPeriodPreset,
   periodLabel,
@@ -213,14 +219,41 @@ export default function MonthlyTrendSection({
         </div>
       )}
 
+      {/* 이번 달 현황 — 항상 이번 달 기준이라(기간 필터와 무관) 라벨에 '이번 달'을 명시한다.
+          금액 기준(thisMonth.progress)이 아니라 건수로 말해 차트 막대와 같은 숫자를 쓴다. */}
+      {thisMonth.totalCount > 0 && (
+        <p className="text-sm text-foreground-muted mb-1">
+          {thisMonth.remainingCount === 0 ? (
+            <>
+              🎉 이번 달{' '}
+              <span className="font-semibold text-primary tabular-nums">
+                {thisMonth.totalCount}건 모두
+              </span>{' '}
+              완료했어요
+            </>
+          ) : (
+            <>
+              이번 달 <span className="tabular-nums">{thisMonth.totalCount}건</span> 중{' '}
+              <span className="font-semibold text-primary tabular-nums">
+                {thisMonth.completedCount}건
+              </span>{' '}
+              완료 · <span className="tabular-nums">{thisMonth.remainingCount}건</span> 남았어요
+            </>
+          )}
+        </p>
+      )}
+
       {hasTrend ? (
         <>
-          {/* 결론(요약) 먼저 → 근거(차트) 나중. 평균도 문장으로 풀어 격려 톤 유지 */}
-          <p className="text-sm text-foreground-muted">
-            {periodLabel} 평균{' '}
-            <span className="font-semibold text-foreground tabular-nums">{periodCompletionRate}%</span>{' '}
-            완료했어요
-          </p>
+          {/* 결론(요약) 먼저 → 근거(차트) 나중. 평균도 문장으로 풀어 격려 톤 유지.
+              '이번 달' 필터일 때는 위 이번 달 줄과 같은 말이 되므로 생략한다. */}
+          {periodPreset !== '1' && (
+            <p className="text-sm text-foreground-muted">
+              {periodLabel} 평균{' '}
+              <span className="font-semibold text-foreground tabular-nums">{periodCompletionRate}%</span>{' '}
+              완료했어요
+            </p>
+          )}
 
           {/* 꾸준함 인사이트 — 통계 고유 집계 (캘린더·홈과 중복 없음).
               연속 2개월 이상이면 스트릭으로 강조, 아니면 기존 집계/최고 기록으로 폴백. */}

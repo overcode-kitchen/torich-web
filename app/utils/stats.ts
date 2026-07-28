@@ -73,8 +73,30 @@ export function getPaymentEventsForMonth(
   return events.sort((a, b) => a.day - b.day)
 }
 
+/** 이번 달 납입 현황 — 금액 기준과 건수 기준을 함께 담는다(기준을 섞어 쓰지 않도록 이름으로 구분). */
+export interface ThisMonthStats {
+  /** 이번 달 예정 납입 금액 합 */
+  totalPayment: number
+  /** 이번 달 완료 납입 금액 합 */
+  completedPayment: number
+  /** 금액 기준 이행률(%) — 금액 문맥에서만 사용 */
+  progress: number
+  /** 이번 달 남은 납입 금액 */
+  remainingPayment: number
+  /** 이번 달 예정 납입 건수 — 월별 추세 차트와 같은 기준 */
+  totalCount: number
+  /** 이번 달 완료 납입 건수 */
+  completedCount: number
+  /** 이번 달 남은 납입 건수 */
+  remainingCount: number
+}
+
 /**
- * 이번 달 납입 현황 (총 금액, 완료 금액, 진행률, 남은 금액)
+ * 이번 달 납입 현황 — 금액 기준(총·완료·남은 금액, 진행률)과 건수 기준(총·완료·남은 건수)을 함께 낸다.
+ *
+ * 두 기준을 섞어 쓰면 화면에서 "이번 달 몇 %"가 서로 다른 숫자로 갈린다.
+ * 월별 추세 차트(getMonthlyCompletionRates)가 건수 기준이므로, 차트와 같은 자리에서 말하는
+ * 이번 달 현황은 반드시 건수(...Count)를 쓴다. 금액 기준 값은 금액 문맥에서만 쓴다.
  */
 export function getThisMonthStats(
   investments: Array<{
@@ -88,7 +110,7 @@ export function getThisMonthStats(
   }>,
   completedPayments: PaymentHistoryMap,
   postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED
-): { totalPayment: number; completedPayment: number; progress: number; remainingPayment: number } {
+): ThisMonthStats {
   const today = new Date()
   const year = today.getFullYear()
   const month = today.getMonth() + 1
@@ -96,20 +118,32 @@ export function getThisMonthStats(
   const events = getPaymentEventsForMonth(investments, year, month)
   let totalPayment = 0
   let completedPayment = 0
+  let totalCount = 0
+  let completedCount = 0
 
   for (const e of events) {
     // 미룬 회차는 '이번 달 할 일'에서 빠진 것 → 예정(분모)에서 제외
     if (isRecordPostponedInMonth(postponedPayments, e.investmentId, e.year, e.month)) continue
     totalPayment += e.monthlyAmount
+    totalCount++
     if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
       completedPayment += e.monthlyAmount
+      completedCount++
     }
   }
 
   const progress = totalPayment > 0 ? Math.round((completedPayment / totalPayment) * 100) : 0
   const remainingPayment = totalPayment - completedPayment
 
-  return { totalPayment, completedPayment, progress, remainingPayment }
+  return {
+    totalPayment,
+    completedPayment,
+    progress,
+    remainingPayment,
+    totalCount,
+    completedCount,
+    remainingCount: totalCount - completedCount,
+  }
 }
 
 /**

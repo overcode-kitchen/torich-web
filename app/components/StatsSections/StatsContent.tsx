@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import ExpectedAssetSection from '@/app/components/StatsSections/ExpectedAssetSection'
-import MonthlyComplianceHeroSection from '@/app/components/StatsSections/MonthlyComplianceHeroSection'
+import AchievementHeroSection from '@/app/components/StatsSections/AchievementHeroSection'
 import MonthlyTrendSection from '@/app/components/StatsSections/MonthlyTrendSection'
 import GoalPaceSection from '@/app/components/StatsSections/GoalPaceSection'
 import StatsGoalProgressSection from '@/app/components/StatsSections/StatsGoalProgressSection'
 import { useStatsInsights } from '@/app/hooks/stats/useStatsInsights'
 import type { Investment } from '@/app/types/investment'
 import type { PaymentHistoryMap } from '@/app/types/payment'
+import type { ThisMonthStats } from '@/app/utils/stats'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
 import type { DateRange } from 'react-day-picker'
@@ -29,12 +30,7 @@ interface StatsContentProps {
     calculations: {
         totalPaidPrincipal: number
         totalMonthlyPayment: number
-        thisMonth: {
-            totalPayment: number
-            completedPayment: number
-            progress: number
-            remainingPayment: number
-        }
+        thisMonth: ThisMonthStats
     }
     filter: {
         periodPreset: PeriodPreset
@@ -72,13 +68,12 @@ export default function StatsContent({
     const { periodPreset, setPeriodPreset, periodLabel, customDateRange, setCustomDateRange, handleCustomPeriod } = filter
     const { periodCompletionRate, chartData, chartBarColor, chartEmphasisColor, consistency } = chart
 
-    // 이행 Hero 회전 서브라인용 칭찬 인사이트 (누적 원금·지난달보다 더)
-    const insights = useStatsInsights({
+    // 누적 성취 Hero용 — 헤드라인 숫자(누적 완료 건수)와 회전 칭찬 문구(지난달보다 더)
+    const { totalCompleted, items: insights } = useStatsInsights({
         activeRecords,
         completedPayments,
         retroactivePayments,
         thisMonthCompleted: thisMonth.completedPayment,
-        consistency,
     })
 
     // 이행(행동) 데이터가 쌓였는지 — 이번 달 예정 납입이 있거나 과거 활동이 1개월 이상.
@@ -86,20 +81,21 @@ export default function StatsContent({
     const hasComplianceData =
         thisMonth.totalPayment > 0 || (consistency?.activeMonths ?? 0) >= 1
 
-    // 행동(이행·동기부여) 카드
+    // 누적 성취(회고·동기부여) 카드 — 완료 건수가 0이면 컴포넌트가 스스로 null 렌더.
     const hero = (
-        <MonthlyComplianceHeroSection
+        <AchievementHeroSection
             key="hero"
             hasRecords={hasRecords}
-            thisMonth={thisMonth}
+            totalCompleted={totalCompleted}
             insights={insights}
         />
     )
 
-    // 회고(월별 이행 추세·꾸준함) — Hero에서 분리한 독립 카드. 이행 데이터가 있을 때만 노출.
+    // 이번 달 현황 + 월별 이행 추세. 이행 데이터가 있을 때만 노출.
     const trend = hasRecords && hasComplianceData ? (
         <section key="trend" className="bg-card rounded-2xl p-5 mb-4">
             <MonthlyTrendSection
+                thisMonth={thisMonth}
                 periodPreset={periodPreset}
                 setPeriodPreset={setPeriodPreset}
                 periodLabel={periodLabel}
@@ -140,7 +136,8 @@ export default function StatsContent({
     // 결과(목표별 페이스) — 기한 있는 목적이 없으면 컴포넌트가 스스로 null 렌더.
     const pace = <GoalPaceSection key="pace" records={records} />
 
-    // 기본: 행동(이행→추세) → 결과(목적→상태) → 자산(톤다운된 보조 카드, 수익률 해명 링크 동반).
+    // 기본: 누적 성취 → 이번 달·추세 → 결과(목적→상태) → 자산(톤다운된 보조 카드, 수익률 해명 링크 동반).
+    // 첫 화면을 "얼마나 해왔나"(누적)로 시작한다 — '이번 달 남은 %'는 홈이 맡는 실행 정보라 아래로 내렸다.
     // 자산을 결과 맨 끝에 둬야 딸린 "왜 수익률을 안 보여주나" 링크가 콘텐츠 흐름을 끊지 않고 마무리 각주가 된다.
     // 저데이터: 이행이 비어 있으니 목적 진척을 맨 위로 올려 첫 화면을 채운다.
     const sections = hasComplianceData

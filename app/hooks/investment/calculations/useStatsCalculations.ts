@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Investment } from '@/app/types/investment'
-import { getThisMonthStats } from '@/app/utils/stats'
+import { getThisMonthStats, type ThisMonthStats } from '@/app/utils/stats'
 import { getRecordRealizedPrincipal } from '@/app/utils/realized-principal'
 import type { Goal } from '@/app/types/goal'
 import type { PaymentHistoryMap, CapturedAmountsMap } from '@/app/types/payment'
@@ -26,12 +26,7 @@ export interface UseStatsCalculationsReturn {
   totalPaidPrincipal: number
   /** 현재 매달 납입 중인 금액 합 (진행 중 기록만; 기간 종료분 제외) */
   totalMonthlyPayment: number
-  thisMonth: {
-    totalPayment: number
-    completedPayment: number
-    progress: number
-    remainingPayment: number
-  }
+  thisMonth: ThisMonthStats
 }
 
 export function useStatsCalculations({
