@@ -139,7 +139,6 @@ interface MonthlyTrendSectionProps {
   setCustomDateRange: (range: DateRange | undefined) => void
   handleCustomPeriod: () => void
   // 차트
-  periodCompletionRate: number
   chartData: Array<{ name: string; rate: number; completed: number; total: number }>
   chartBarColor: string
   chartEmphasisColor: string
@@ -159,7 +158,6 @@ export default function MonthlyTrendSection({
   customDateRange,
   setCustomDateRange,
   handleCustomPeriod,
-  periodCompletionRate,
   chartData,
   chartEmphasisColor,
   consistency,
@@ -215,13 +213,6 @@ export default function MonthlyTrendSection({
 
       {hasTrend ? (
         <>
-          {/* 결론(요약) 먼저 → 근거(차트) 나중. 평균도 문장으로 풀어 격려 톤 유지 */}
-          <p className="text-sm text-foreground-muted">
-            {periodLabel} 평균{' '}
-            <span className="font-semibold text-foreground tabular-nums">{periodCompletionRate}%</span>{' '}
-            완료했어요
-          </p>
-
           {/* 꾸준함 인사이트 — 통계 고유 집계 (캘린더·홈과 중복 없음).
               연속 2개월 이상이면 스트릭으로 강조, 아니면 기존 집계/최고 기록으로 폴백. */}
           {consistency.currentPerfectStreak >= 2 ? (

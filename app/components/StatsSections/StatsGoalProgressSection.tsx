@@ -7,6 +7,7 @@ import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { fmt, dDayLabel } from '@/app/utils/goal-format'
+import { hasArrivalEstimate } from '@/app/utils/goal-scope'
 import { DDayBadge } from '@/app/components/Common/DDayBadge'
 import type { Investment } from '@/app/types/investment'
 import { createClient } from '@/utils/supabase/client'
@@ -29,8 +30,10 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
   const { goals } = useGoals(userId)
   const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistoryContext()
 
+  // 기한(+목표금액) 있는 목적은 '목표별 페이스'가 담당한다 — 여기서 제외해 같은 목적이 두 카드에
+  // 두 번 나오지 않게 한다. 두 조건은 서로 여집합이라 빠지는 목적도 없다.
   const activeGoals = useMemo(
-    () => goals.filter((g) => g.completed_at === null),
+    () => goals.filter((g) => g.completed_at === null && !hasArrivalEstimate(g)),
     [goals]
   )
 
@@ -46,7 +49,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
 
   return (
     <section className="bg-card rounded-2xl p-5 mb-4">
-      <h2 className="text-sm font-semibold text-foreground-muted mb-2">목적 진척</h2>
+      <h2 className="text-sm font-semibold text-foreground-muted mb-2">기한 없는 목적</h2>
       <ul className="flex flex-col">
         {activeGoals.map((goal, index) => {
           const progress = progressMap.get(goal.id)
