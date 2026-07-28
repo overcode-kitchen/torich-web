@@ -1,7 +1,9 @@
 'use client'
 
+import Image from 'next/image'
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 import MaskedAmount from '@/app/components/StatsSections/MaskedAmount'
+import { resolvePurposeIcon } from '@/app/constants/goal'
 import { shortWon } from '@/app/utils/goal-format'
 import type { CompositionSlice } from '@/app/utils/money-composition'
 
@@ -65,25 +67,38 @@ export default function GoalCompositionSection({
         </div>
 
         <ul className="flex min-w-0 flex-1 flex-col gap-2">
-          {slices.map((slice, index) => (
-            <li key={slice.key} className="flex items-center gap-2 text-xs">
-              <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: colorAt(index) }}
-                aria-hidden
-              />
-              <span className="truncate text-foreground-muted">
-                {slice.emoji ? `${slice.emoji} ` : ''}
-                {slice.label}
-              </span>
-              <span className="ml-auto shrink-0 font-bold tabular-nums text-foreground">
-                {slice.percent}%
-              </span>
-              <span className="w-[62px] shrink-0 text-right tabular-nums text-muted-foreground">
-                <MaskedAmount visible={amountsVisible}>{shortWon(slice.amount)}</MaskedAmount>
-              </span>
-            </li>
-          ))}
+          {slices.map((slice, index) => {
+            // goals.emoji는 3D 아이콘 키('airplane')거나 구버전 이모지('✈️')다.
+            // 그대로 찍으면 키가 글자로 새어 나오므로 다른 화면과 같이 아이콘으로 푼다.
+            const icon = resolvePurposeIcon(slice.emoji)
+            return (
+              <li key={slice.key} className="flex items-center gap-2 text-xs">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: colorAt(index) }}
+                  aria-hidden
+                />
+                <span className="flex min-w-0 items-center gap-1 text-foreground-muted">
+                  {icon && (
+                    <Image
+                      src={icon.src}
+                      alt=""
+                      width={16}
+                      height={16}
+                      className="h-4 w-4 shrink-0 object-contain"
+                    />
+                  )}
+                  <span className="truncate">{slice.label}</span>
+                </span>
+                <span className="ml-auto shrink-0 font-bold tabular-nums text-foreground">
+                  {slice.percent}%
+                </span>
+                <span className="w-[62px] shrink-0 text-right tabular-nums text-muted-foreground">
+                  <MaskedAmount visible={amountsVisible}>{shortWon(slice.amount)}</MaskedAmount>
+                </span>
+              </li>
+            )
+          })}
         </ul>
       </div>
     </section>
