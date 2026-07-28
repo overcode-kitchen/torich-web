@@ -1,6 +1,7 @@
 import type { Investment } from '@/app/types/investment'
 import type { Goal } from '@/app/types/goal'
 import type { PaymentHistoryMap } from '@/app/types/payment'
+import type { PostponedPaymentsMap } from '@/app/hooks/payment/usePostponedPayments'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
 import type { DateRange } from 'react-day-picker'
@@ -22,6 +23,8 @@ export interface StatsData {
 export interface StatsPayment {
   completedPayments: PaymentHistoryMap
   retroactivePayments: PaymentHistoryMap
+  /** 미룬 회차 — 이행 히트맵의 점선 판정과 완료율 분모 제외에 쓴다 */
+  postponedPayments: PostponedPaymentsMap
 }
 
 export interface StatsUI {

@@ -74,6 +74,7 @@ export default function StatsPage() {
       payment={{
         completedPayments,
         retroactivePayments,
+        postponedPayments,
       }}
       ui={{
         showContributionSheet,

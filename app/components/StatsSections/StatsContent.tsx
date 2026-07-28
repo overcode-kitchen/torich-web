@@ -20,12 +20,10 @@ const STATS_TABS: DetailTab[] = [
  * 한 화면이 "언제 이뤄지나 / 빠뜨리지 않았나 / 얼마 모였나"에 동시에 답하려다 위계를 잃었던 것을
  * 탭으로 나눈다. 탭바는 투자·예적금 상세가 쓰는 DetailTabs를 그대로 재사용해 앱 전체 탭 문법을
  * 하나로 유지한다.
- *
- * payment(납입 이력)는 지금 어느 탭도 직접 쓰지 않지만, 기록 탭의 이행 히트맵이 쓸 자리라
- * prop 체인은 그대로 둔다.
  */
 export default function StatsContent({
   data,
+  payment,
   ui,
   calculations,
   filter,
@@ -47,7 +45,9 @@ export default function StatsContent({
       />
 
       {view === 'goal' && <StatsGoalTab data={data} />}
-      {view === 'record' && <StatsRecordTab data={data} filter={filter} chart={chart} />}
+      {view === 'record' && (
+        <StatsRecordTab data={data} payment={payment} filter={filter} chart={chart} />
+      )}
       {view === 'money' && <StatsMoneyTab data={data} ui={ui} calculations={calculations} />}
     </>
   )

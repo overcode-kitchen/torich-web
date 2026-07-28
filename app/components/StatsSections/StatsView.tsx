@@ -12,8 +12,8 @@ import type {
     StatsChart,
     StatsData,
     StatsFilter,
+    StatsPayment,
 } from '@/app/components/StatsSections/stats-props'
-import type { PaymentHistoryMap } from '@/app/types/payment'
 
 interface StatsViewProps {
     isLoading: boolean
@@ -21,10 +21,7 @@ interface StatsViewProps {
 
     // Grouped Props (stats-props.ts 공용 타입)
     data: StatsData
-    payment: {
-        completedPayments: PaymentHistoryMap
-        retroactivePayments: PaymentHistoryMap
-    }
+    payment: StatsPayment
     ui: {
         showContributionSheet: boolean
         handleCloseContribution: () => void
