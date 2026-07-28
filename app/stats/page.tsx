@@ -54,7 +54,7 @@ export default function StatsPage() {
     chartBarColor,
     chartEmphasisColor,
     consistency,
-  } = useChartData({ activeRecords, completedPayments, postponedPayments, isCustomRange, effectiveMonths, customDateRange })
+  } = useChartData({ activeRecords, completedPayments, retroactivePayments, postponedPayments, isCustomRange, effectiveMonths, customDateRange })
 
   if (!isLoading && !user) {
     router.replace('/login')

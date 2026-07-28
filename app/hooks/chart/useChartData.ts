@@ -11,6 +11,8 @@ import { PostponedPaymentsMap } from '../payment/usePostponedPayments'
 interface UseChartDataProps {
   activeRecords: Investment[]
   completedPayments: PaymentHistoryMap
+  /** 소급 납입 — 그 달을 채운 것으로 세야 히트맵·hero와 같은 숫자가 나온다 */
+  retroactivePayments: PaymentHistoryMap
   /** 이번 달 미룸 처리된 회차 — 월별 완료율 분모에서 제외 */
   postponedPayments: PostponedPaymentsMap
   isCustomRange: boolean
@@ -54,6 +56,7 @@ export interface UseChartDataReturn {
 export function useChartData({
   activeRecords,
   completedPayments,
+  retroactivePayments,
   postponedPayments,
   isCustomRange,
   effectiveMonths,
@@ -61,10 +64,10 @@ export function useChartData({
 }: UseChartDataProps): UseChartDataReturn {
   const monthlyRates = useMemo(() => {
     if (isCustomRange && customDateRange?.from && customDateRange?.to) {
-      return getMonthlyCompletionRatesForRange(activeRecords, completedPayments, customDateRange.from, customDateRange.to, postponedPayments)
+      return getMonthlyCompletionRatesForRange(activeRecords, completedPayments, customDateRange.from, customDateRange.to, postponedPayments, retroactivePayments)
     }
-    return getMonthlyCompletionRates(activeRecords, completedPayments, effectiveMonths, postponedPayments)
-  }, [activeRecords, completedPayments, postponedPayments, effectiveMonths, isCustomRange, customDateRange])
+    return getMonthlyCompletionRates(activeRecords, completedPayments, effectiveMonths, postponedPayments, retroactivePayments)
+  }, [activeRecords, completedPayments, retroactivePayments, postponedPayments, effectiveMonths, isCustomRange, customDateRange])
 
   const periodCompletionRate = useMemo(() => {
     const rates = monthlyRates
