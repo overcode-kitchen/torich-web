@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Target, Flame } from '@phosphor-icons/react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -213,24 +212,8 @@ export default function MonthlyTrendSection({
 
       {hasTrend ? (
         <>
-          {/* 꾸준함 인사이트 — 통계 고유 집계 (캘린더·홈과 중복 없음).
-              연속 2개월 이상이면 스트릭으로 강조, 아니면 기존 집계/최고 기록으로 폴백. */}
-          {consistency.currentPerfectStreak >= 2 ? (
-            <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
-              <Flame className="w-3.5 h-3.5" weight="fill" />
-              {consistency.currentPerfectStreak}개월째 빠짐없이 적립 완료 중
-            </p>
-          ) : consistency.perfectMonths > 0 ? (
-            <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
-              <Target className="w-3.5 h-3.5" weight="fill" />
-              {periodLabel} 중 {consistency.perfectMonths}개월 100% 완료
-            </p>
-          ) : (
-            <p className="mt-1 text-xs text-muted-foreground">
-              가장 잘한 달 {consistency.bestMonthLabel} {consistency.bestRate}%
-            </p>
-          )}
-
+          {/* 차트 위 문장 0줄 — 스트릭·기간 중 N개월 100%·가장 잘한 달은 전부 걷어냈다.
+              연속 적립은 기간 필터에 흔들리지 않는 hero(StreakHeroSection)가 이어받는다. */}
           <div className="h-28 mt-3">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 22, right: 8, left: 0, bottom: 0 }}>
