@@ -95,7 +95,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
                       />
                     </span>
                     <div
-                      className="h-2.5 w-full overflow-hidden rounded-full bg-surface-hover"
+                      className="h-2.5 w-full overflow-hidden rounded-full bg-progress-track"
                       role="progressbar"
                       aria-label={`${goal.name} 진행률`}
                       aria-valuenow={clamped}

@@ -52,6 +52,7 @@
   --color-card: var(--card);
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
+  --color-progress-track: var(--progress-track);
   --color-surface-strong: var(--surface-strong);
   --color-surface-strong-hover: var(--surface-strong-hover);
   --color-border-subtle: var(--border-subtle);
@@ -66,7 +67,6 @@
   --color-brand-accent-bg: var(--brand-accent-bg);
   --color-brand-accent-text: var(--brand-accent-text);
   --color-brand-accent-border: var(--brand-accent-border);
-  --color-acorn-well-bg: var(--acorn-well-bg);
   --color-field-bg: var(--field-bg);
   --color-chart-profit: var(--chart-profit);
   --color-chart-principal: var(--chart-principal);
@@ -195,6 +195,9 @@
   /* 역할별 시맨틱 (Primitives 직접 사용 대체용) */
   --surface: var(--palette-coolgray-25);
   --surface-hover: var(--palette-coolgray-50);
+  /* 카드 위 진행바 트랙 — 라이트에선 surface-hover와 같지만, 다크에선 card와
+     같은 색이 되어 트랙이 사라지므로 한 단계 밝은 값을 따로 잡는다. */
+  --progress-track: var(--palette-coolgray-50);
   --surface-strong: var(--palette-coolgray-200);
   --surface-strong-hover: var(--palette-coolgray-300);
   --border-subtle: var(--palette-coolgray-100);
@@ -211,8 +214,8 @@
   --brand-accent-bg: var(--palette-brand-50);
   --brand-accent-text: var(--palette-brand-700);
   --brand-accent-border: var(--palette-brand-200);
-  /* 도토리 더미가 담기는 '달성' 칸 배경 — 도토리(브라운)와 어울리는 크림/샌드 베이지 */
-  --acorn-well-bg: hsl(36, 44%, 90%);
+  /* 목표별 페이스 '달성' 그린 패널 배경 — 도토리(브라운)가 쌓이는 강조 시각화 면. 브랜드 그린 그라디언트(brand-600 계열) */
+  --goal-well: linear-gradient(155deg, hsl(140, 88%, 39%) 0%, hsl(140, 96%, 29%) 100%);
   /* 입력칸 배경: 라이트=흰색에 가까운 아주 옅은 회색(경계는 약한 보더가 담당) */
   --field-bg: hsl(210, 9%, 97%);
   /* 차트 색상 */
@@ -281,6 +284,8 @@
   /* 역할별 시맨틱 - surface(950) / card(900) */
   --surface: var(--palette-coolgray-950);
   --surface-hover: var(--palette-coolgray-900);
+  /* 카드(900) 위에서 트랙이 묻히지 않도록 한 단계 밝은 800으로 띄운다. */
+  --progress-track: var(--palette-coolgray-800);
   --surface-strong: var(--palette-coolgray-500);
   --surface-strong-hover: var(--palette-coolgray-400);
   --border-subtle: var(--palette-coolgray-600);
@@ -298,13 +303,35 @@
   --brand-accent-bg: var(--palette-brand-200);
   --brand-accent-text: var(--palette-brand-600);
   --brand-accent-border: var(--palette-brand-300);
-  /* 도토리 '달성' 칸 배경 — 다크에선 밝은 크림이 눈부셔서 따뜻한 다크 톤으로 (카드보다 살짝 밝게) */
-  --acorn-well-bg: hsl(30, 18%, 22%);
+  /* '달성' 그린 패널 — 다크에선 눈부심을 낮춘 딥그린 그라디언트 (흰 텍스트·브라운 도토리 대비 유지) */
+  --goal-well: linear-gradient(155deg, hsl(140, 74%, 34%) 0%, hsl(140, 90%, 22%) 100%);
   /* 입력칸 배경: 다크=중립 다크 서피스 (밝은 민트는 눈부셔서 제외, text-foreground 대비 확보) */
   --field-bg: var(--palette-coolgray-800);
   /* 차트 색상 - 다크모드에서도 밝은 색상 유지 */
   --chart-profit: var(--palette-brand-500);
   --chart-principal: var(--palette-brand-200);
+}
+
+/* 목표별 페이스 — '달성' 그린 패널.
+   그라디언트 위에 좌상단 하이라이트 글로우와 안쪽 헤어라인을 얹어 입체감을 준다.
+   도토리(canvas/정적)는 이 위에 쌓이고, 라벨·달성%는 흰색으로 그 위에 올린다. */
+.goal-well {
+  background:
+    radial-gradient(120% 78% at 16% 4%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 58%),
+    var(--goal-well);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+.dark .goal-well {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+/* 그린 위 텍스트 — 도토리와 겹쳐도 읽히도록 흰색 + 소프트 섀도 */
+.goal-well-num {
+  color: hsl(0, 0%, 100%);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.34);
+}
+.goal-well-label {
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.32);
 }
 
 @layer base {
