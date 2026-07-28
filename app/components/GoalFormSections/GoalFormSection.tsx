@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import type { GoalFormValues } from '@/app/hooks/goal/add/useGoalForm'
 import { Label } from '@/components/ui/label'
 import GoalNameField from './fields/GoalNameField'
@@ -21,11 +21,21 @@ export interface GoalFormSectionProps {
    */
   showOptionalFields?: boolean
   /**
-   * `?field=`로 진입했을 때 열자마자 데려갈 칸. 지금은 `target_amount`만 쓴다.
-   * 상세의 "정하기"로 들어오면 이 폼은 한 페이지라 금액칸이 접힌 화면 아래에 있는데,
+   * `?field=`로 진입했을 때 열자마자 데려갈 칸 (FIELD_TO_INPUT_ID의 키).
+   * 상세 정보 행을 탭해 들어오면 이 폼은 한 페이지라 그 칸이 화면 아래에 있는데,
    * 맨 위에 떨궈두면 뭘 고치러 왔는지 사용자가 다시 찾아야 한다.
    */
   focusField?: string | null
+}
+
+/**
+ * `?field=` 키 → 그 칸의 input id. 상세 정보 행이 보내는 키만 여기 있다.
+ * 새 행을 탭 가능하게 만들 때 이 표에 한 줄 추가하면 스크롤·포커스가 따라온다.
+ * (이름은 `goal-name`, 메모는 `goal-memo`로 이미 id가 있으니 필요해지면 그대로 쓴다.)
+ */
+const FIELD_TO_INPUT_ID: Record<string, string> = {
+  target_amount: 'goal-target',
+  external_amount: 'goal-external',
 }
 
 /**
@@ -40,13 +50,14 @@ export function GoalFormSection({
   showOptionalFields = true,
   focusField,
 }: GoalFormSectionProps) {
-  const amountBlockRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
-    if (focusField !== 'target_amount') return
-    amountBlockRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const inputId = focusField ? FIELD_TO_INPUT_ID[focusField] : undefined
+    // 접힌 칸(showOptionalFields=false)으로 오면 그릴 대상이 없으니 그냥 맨 위에 둔다.
+    const input = inputId ? document.getElementById(inputId) : null
+    if (!input) return
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' })
     // 포커스는 스크롤을 다시 튀게 하지 않도록 preventScroll로 준다.
-    document.getElementById('goal-target')?.focus({ preventScroll: true })
+    input.focus({ preventScroll: true })
   }, [focusField])
 
   return (
@@ -56,7 +67,7 @@ export function GoalFormSection({
         <GoalNameField values={values} setField={setField} disabled={disabled} />
       </div>
 
-      <div ref={amountBlockRef} className="flex flex-col gap-2 scroll-mt-6">
+      <div className="flex flex-col gap-2">
         <Label htmlFor="goal-target">목표 금액</Label>
         <GoalAmountField
           id="goal-target"
