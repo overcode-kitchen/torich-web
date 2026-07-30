@@ -118,7 +118,16 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                           <span className="ml-0.5 text-[10px] font-medium text-foreground-subtle">지남</span>
                         </span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-progress-track">
+                      {/* 트랙을 border-subtle로 한 단계 눌러 흰 카드 위에서도 '전체 폭'이 보이게 한다.
+                          progress-track(거의 흰색)이면 경과분만 회색 알약처럼 떠 보여 기한의 척도가 사라진다. */}
+                      <div
+                        className="h-2 w-full overflow-hidden rounded-full bg-border-subtle"
+                        role="progressbar"
+                        aria-label={`${goal.name} 기한 경과`}
+                        aria-valuenow={elapsed}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
                         <div
                           className="h-full rounded-full bg-foreground-subtle transition-all duration-500"
                           style={{ width: `${elapsed}%` }}
