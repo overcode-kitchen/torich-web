@@ -5,7 +5,8 @@ import Image from 'next/image'
 import { track } from '@/app/lib/analytics'
 import type { LifetimeConsistency } from '@/app/hooks/stats/useLifetimeConsistency'
 
-const ACORN_SRC = '/icons/3d/acorn-1.png'
+/** 도토리 세 알 — '한 번'이 아니라 '쌓인다'는 연속 적립의 뜻에 맞춘다(단알은 acorn-1) */
+const ACORN_SRC = '/icons/3d/acorn-3.png'
 
 /**
  * 연속 적립 hero — 기록 탭의 "빠뜨리지 않았나"에 큰 숫자 하나로 답한다.
@@ -40,9 +41,16 @@ export default function StreakHeroSection({ consistency }: { consistency: Lifeti
             </p>
           )}
         </div>
-        <div className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-2xl bg-brand-accent-bg">
-          <Image src={ACORN_SRC} alt="" width={30} height={30} className="select-none" priority />
-        </div>
+        {/* 3D 에셋은 자기 그림자와 여백을 이미 갖고 있어, 초록 칩을 깔면 배경만 두 겹이 된다.
+            칩을 걷어낸 만큼 아이콘 자체를 키워 hero의 무게를 유지한다. */}
+        <Image
+          src={ACORN_SRC}
+          alt=""
+          width={58}
+          height={58}
+          className="h-[58px] w-[58px] shrink-0 select-none object-contain"
+          priority
+        />
       </div>
 
       {hasHistory && (
