@@ -3,9 +3,9 @@ import { monthIndex, toYearMonth } from '@/app/utils/scheduled-contribution'
 import type { GoalArrival } from '@/app/utils/goal-arrival'
 
 /**
- * 도착 예정 문구.
+ * 달성 예정 문구.
  *
- * 톤 규칙: `늦게 도착해요`처럼 판정하지 않고 `월 N원이면 맞춰져요`처럼 산수로 안내한다.
+ * 톤 규칙: `늦게 달성해요`처럼 판정하지 않고 `월 N원이면 맞춰져요`처럼 산수로 안내한다.
  * 목표별 페이스가 지켜온 "판정하지 않고 값을 보여준다"를 문장에서도 유지하기 위함이다.
  */
 
@@ -70,7 +70,7 @@ export function arrivalActionPhrase(arrival: GoalArrival, today: Date = new Date
       const arrivalIndex = arrival.arrivalDate
         ? monthIndex(toYearMonth(arrival.arrivalDate))
         : targetIndex
-      return arrivalIndex < targetIndex ? '목표일보다 빨라요' : '목표일에 맞춰 도착해요'
+      return arrivalIndex < targetIndex ? '목표일보다 빨라요' : '목표일에 맞춰 달성해요'
     }
     case 'config_gap':
       return `월 ${shortWon(arrival.extraMonthly)} 더하면 목표일에 맞춰져요`
@@ -82,4 +82,42 @@ export function arrivalActionPhrase(arrival: GoalArrival, today: Date = new Date
       return `${label} 적립 종료 · 이어가면 맞춰져요`
     }
   }
+}
+
+/** hero 회전 문구는 두 줄까지 — 세 줄이면 한 바퀴가 길어져 첫 줄로 언제 돌아오는지 감이 안 온다 */
+const MAX_INSIGHT_LINES = 2
+
+/**
+ * hero 마지막 줄에서 번갈아 돌릴 문구들 — "얼마 부족한가 → 그래서 뭘 하면 되나".
+ *
+ * 한 줄에 다 넣으면 접히고, 여러 줄로 쌓으면 카드가 값 표시판이 되므로 회전으로 나눠 보여준다.
+ * 위의 값 4개(모은 금액·목표일·월 적립·남은 금액)와 같은 수치를 반복하지 않는 것이 규칙이다.
+ * shortfall은 '남은 금액'과 다른 수치다 — 목표일까지 이대로 넣었을 때 그래도 비는 금액이다.
+ *
+ * 후보를 우선순위 순으로 쌓고 앞에서 두 개만 취한다 — 목적 상태에 따라 성립하는 문구가 달라서,
+ * 자리를 고정해두면 어떤 목적에서는 빈 줄이 돌게 된다.
+ */
+export function arrivalInsightLines(arrival: GoalArrival, today: Date = new Date()): string[] {
+  const { goal, progress, shortfall, monthlyContribution } = arrival
+  const remaining = Math.max(0, goal.target_amount - progress.currentValue)
+  const targetPassed =
+    monthIndex(toYearMonth(new Date(goal.target_date))) < monthIndex(toYearMonth(today))
+
+  const lines: string[] = []
+
+  // 목표일이 지난 목적에 "목표일까지 부족해요"는 성립하지 않는다 — 그 안내는 액션 문구가 맡는다
+  if (shortfall > 0 && !targetPassed) {
+    lines.push(`목표일까지 ${shortWon(shortfall)} 부족해요`)
+  }
+
+  lines.push(arrivalActionPhrase(arrival, today))
+
+  if (monthlyContribution > 0 && remaining > 0) {
+    lines.push(
+      `월 ${shortWon(monthlyContribution)}씩 ${Math.ceil(remaining / monthlyContribution)}번이면 채워져요`
+    )
+  }
+
+  // 원인 조합에 따라 같은 말이 두 번 들어갈 수 있어 중복을 걷어낸다
+  return Array.from(new Set(lines)).slice(0, MAX_INSIGHT_LINES)
 }

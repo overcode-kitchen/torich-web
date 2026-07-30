@@ -64,7 +64,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
           const achieved = progress.progressPercent ?? 0
           const elapsed = elapsedPercent(goal.created_at, goal.target_date)
           const dday = dDayLabel(progress.dDay)
-          // 이미 목표를 채운 목적은 '도착 예정'이 성립하지 않고, 월 적립이 없으면 계산 자체가 안 된다
+          // 이미 목표를 채운 목적은 '달성 예정'이 성립하지 않고, 월 적립이 없으면 계산 자체가 안 된다
           const arrivalText = progress.isCompleted
             ? '목표 금액을 채웠어요'
             : arrival.arrivalDate
@@ -118,7 +118,16 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                           <span className="ml-0.5 text-[10px] font-medium text-foreground-subtle">지남</span>
                         </span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-progress-track">
+                      {/* 트랙을 border-subtle로 한 단계 눌러 흰 카드 위에서도 '전체 폭'이 보이게 한다.
+                          progress-track(거의 흰색)이면 경과분만 회색 알약처럼 떠 보여 기한의 척도가 사라진다. */}
+                      <div
+                        className="h-2 w-full overflow-hidden rounded-full bg-border-subtle"
+                        role="progressbar"
+                        aria-label={`${goal.name} 기한 경과`}
+                        aria-valuenow={elapsed}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                      >
                         <div
                           className="h-full rounded-full bg-foreground-subtle transition-all duration-500"
                           style={{ width: `${elapsed}%` }}
@@ -131,12 +140,12 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                   </div>
                 </div>
 
-                {/* 새 카드가 아니라 기존 카드의 새 필드 — 도착 예정 한 줄.
+                {/* 새 카드가 아니라 기존 카드의 새 필드 — 달성 예정 한 줄.
                     계산할 수 없는 목적(월 적립 없음)은 줄을 아예 그리지 않는다. */}
                 {arrivalText && (
                   <div className="mt-3.5 flex items-baseline justify-between gap-3 border-t border-border-subtle pt-3">
                     <span className="text-xs font-bold text-foreground-muted">
-                      {progress.isCompleted ? '도착' : '도착 예정'}
+                      {progress.isCompleted ? '달성' : '달성 예정'}
                     </span>
                     <span className="min-w-0 truncate text-sm font-bold text-foreground tabular-nums">
                       {arrivalText}

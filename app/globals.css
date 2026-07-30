@@ -366,8 +366,10 @@
 }
 
 @layer utilities {
+  /* 0.45s는 문구가 튀어 오르듯 바뀌어 읽기 전에 자리를 잡아버렸다.
+     한 줄을 눈으로 따라갈 수 있도록 0.75s로 늘린다(전환 간격은 RotatingInsights가 관리). */
   .animate-insight {
-    animation: insight-slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: insight-slide-up 0.75s cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 

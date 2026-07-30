@@ -10,6 +10,13 @@ import type { FulfillmentHeatmap, HeatmapCell } from '@/app/utils/fulfillment-he
 const VISIBLE_ROWS = 5
 
 /**
+ * 행 라벨 칸 폭(px) — 셀 격자와 월 눈금이 같은 값을 써야 열이 어긋나지 않는다.
+ * 목적명을 읽을 수 있는 크기(text-xs)로 올리면서 함께 넓혔다. 남는 폭을 12개월이 나눠 가지므로
+ * 이 값을 더 키우면 셀이 눈에 띄게 작아진다.
+ */
+const LABEL_COLUMN = '80px'
+
+/**
  * 셀 농도 3단계 + 미완료 회색.
  *
  * 통계 화면은 coolgray 위계가 원칙이라, 브랜드 그린은 기록 탭에서 이 히트맵 하나에만 쓴다.
@@ -70,16 +77,16 @@ export default function FulfillmentHeatmapSection({ heatmap }: { heatmap: Fulfil
             <div
               key={row.key}
               className="grid items-center gap-[3px]"
-              style={{ gridTemplateColumns: `56px repeat(${row.cells.length}, 1fr)` }}
+              style={{ gridTemplateColumns: `${LABEL_COLUMN} repeat(${row.cells.length}, 1fr)` }}
             >
-              <span className="flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="flex min-w-0 items-center gap-1 pr-1.5 text-xs text-muted-foreground">
                 {icon && (
                   <Image
                     src={icon.src}
                     alt=""
-                    width={12}
-                    height={12}
-                    className="h-3 w-3 shrink-0 object-contain"
+                    width={16}
+                    height={16}
+                    className="h-4 w-4 shrink-0 object-contain"
                   />
                 )}
                 <span className="truncate">{row.label}</span>
@@ -100,12 +107,12 @@ export default function FulfillmentHeatmapSection({ heatmap }: { heatmap: Fulfil
 
         {/* 월 눈금 — 행 라벨 칸만큼 비우고 셀에 맞춰 정렬한다 */}
         <div
-          className="grid gap-[3px]"
-          style={{ gridTemplateColumns: `56px repeat(${heatmap.months.length}, 1fr)` }}
+          className="mt-0.5 grid gap-[3px]"
+          style={{ gridTemplateColumns: `${LABEL_COLUMN} repeat(${heatmap.months.length}, 1fr)` }}
         >
           <span />
           {heatmap.months.map((m) => (
-            <span key={m} className="text-center text-[8.5px] text-muted-foreground tabular-nums">
+            <span key={m} className="text-center text-[11px] text-muted-foreground tabular-nums">
               {m}
             </span>
           ))}

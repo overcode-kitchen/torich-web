@@ -11,11 +11,11 @@ import type { StatsData, StatsPayment } from '@/app/components/StatsSections/sta
 /**
  * 목표 탭 — "언제 이뤄지나".
  *
- * 도착 예정 hero(가장 먼저 도착하는 목적 1개) → 목표별 페이스(나머지) → 기한 없는 목적 순으로
+ * 달성 예정 hero(가장 먼저 달성하는 목적 1개) → 목표별 페이스(나머지) → 기한 없는 목적 순으로
  * 크게 → 자세히 내려간다.
  *
  * 세 카드가 목적을 나눠 담당한다(겹치지 않게).
- * - hero: 기한+목표금액이 있는 목적 중 마감 임박 1위 — 도착 예정 월과 다음 행동
+ * - hero: 기한+목표금액이 있는 목적 중 마감 임박 1위 — 달성 예정 월과 다음 행동
  * - 목표별 페이스: hero에 올라간 목적을 뺀 나머지 — 달성% vs 지나온 시간%
  * - 기한 없는 목적: 시간축이 없어 페이스를 그릴 수 없는 목적 — 진척률만
  *
@@ -73,7 +73,7 @@ export default function StatsGoalTab({
       <StatsGoalProgressSection records={records} />
       {arrivals.length === 0 && (
         <p className="pt-1 pb-4 text-center text-sm text-muted-foreground">
-          목적에 목표 금액과 마감일을 정하면 도착 시점을 알려드려요
+          목적에 목표 금액과 마감일을 정하면 달성 시점을 알려드려요
         </p>
       )}
     </>
