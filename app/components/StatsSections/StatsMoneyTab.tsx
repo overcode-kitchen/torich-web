@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import SavedMoneyHeroSection from '@/app/components/StatsSections/SavedMoneyHeroSection'
 import GoalCompositionSection from '@/app/components/StatsSections/GoalCompositionSection'
@@ -86,17 +85,9 @@ export default function StatsMoneyTab({ data, ui, calculations }: StatsMoneyTabP
       <RecordTypeShareTiles tiles={typeShare} amountsVisible={amountsVisible} />
 
       {/* 범위 안내 — 금융앱에서 보는 '내 자산'과 다른 값이라는 오해를 미리 닫는다 */}
-      <p className="px-1 text-center text-xs text-muted-foreground">
+      <p className="px-1 pb-4 text-center text-xs text-muted-foreground">
         토리치에 기록한 것만 합산해요
       </p>
-
-      {/* 수익률 해명은 '모은 돈'을 본 직후 떠오르는 질문이라 이 탭 마무리 각주로 둔다 */}
-      <Link
-        href="/faq"
-        className="block text-center pt-3 pb-4 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
-      >
-        토리치는 왜 수익률을 안 보여주나요? →
-      </Link>
     </>
   )
 }
