@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation'
 import { track } from '@/app/lib/analytics'
 import { resolvePurposeIcon } from '@/app/constants/goal'
 import { shortWon } from '@/app/utils/goal-format'
+import RotatingInsights from '@/app/components/StatsSections/RotatingInsights'
 import {
-  arrivalActionPhrase,
+  arrivalInsightLines,
   arrivalMonthLabel,
   monthlyContributionValue,
   targetMonthLabel,
@@ -117,10 +118,14 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
           <Stat label="남은 금액" value={shortWon(remaining)} alignRight />
         </div>
 
-        {/* 카드의 마지막 한 줄 = 다음 행동. 값들과 섞이지 않도록 헤어라인으로 끊는다 */}
-        <p className="mt-3.5 truncate border-t border-border-subtle pt-3 text-xs font-semibold text-foreground-soft">
-          {arrivalActionPhrase(arrival)}
-        </p>
+        {/* 카드의 마지막 한 줄 = 다음 행동. 값들과 섞이지 않도록 헤어라인으로 끊는다.
+            얼마 부족한지 → 뭘 하면 맞춰지는지 → 몇 번 더 넣으면 되는지를 한 줄에서 번갈아 돌린다. */}
+        <div className="mt-3.5 border-t border-border-subtle pt-2.5">
+          <RotatingInsights
+            items={arrivalInsightLines(arrival)}
+            className="truncate text-xs font-semibold text-foreground-soft"
+          />
+        </div>
       </button>
     </section>
   )
