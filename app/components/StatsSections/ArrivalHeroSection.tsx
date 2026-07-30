@@ -27,10 +27,10 @@ function Stat({ label, value, alignRight }: { label: string; value: string; alig
 }
 
 /**
- * 도착 예정 hero — 목표 탭에서 유일하게 미래를 말하는 카드.
+ * 달성 예정 hero — 목표 탭에서 유일하게 미래를 말하는 카드.
  *
- * "46% 모았다"는 상태 보고지만 "2027년 3월 도착 예정 · 월 6만원 더하면 맞춰져요"는 다음 행동이
- * 붙은 피드백이다. 그래서 큰 숫자는 진행률이 아니라 도착 예정 월 하나다.
+ * "46% 모았다"는 상태 보고지만 "2027년 3월 달성 예정 · 월 6만원 더하면 맞춰져요"는 다음 행동이
+ * 붙은 피드백이다. 그래서 큰 숫자는 진행률이 아니라 달성 예정 월 하나다.
  *
  * 도토리 우물을 쓰지 않는다 — 3D·캐릭터 자산은 탭당 하나(목표 탭=도토리)이고 그 자리는 아래
  * 페이스 카드가 갖는다. 대신 목적 아이콘과 진행바로 hero임을 드러낸다.
@@ -64,7 +64,7 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
         }}
         className="w-full rounded-2xl bg-card p-5 text-left"
       >
-        <p className="text-xs font-bold text-foreground-muted">가장 먼저 도착</p>
+        <p className="text-xs font-bold text-foreground-muted">가장 먼저 달성</p>
 
         <div className="mt-2 flex items-center gap-2">
           {icon && (
@@ -84,15 +84,15 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
           </span>
         </div>
 
-        {/* 큰 숫자는 하나 — 도착 예정 월 */}
+        {/* 큰 숫자는 하나 — 달성 예정 월 */}
         {arrival.arrivalDate ? (
           <p className="mt-3 text-[26px] font-extrabold leading-none tracking-tight text-foreground tabular-nums">
             {arrivalMonthLabel(arrival.arrivalDate)}
-            <span className="ml-1.5 text-sm font-bold text-foreground-muted">도착 예정</span>
+            <span className="ml-1.5 text-sm font-bold text-foreground-muted">달성 예정</span>
           </p>
         ) : (
           <p className="mt-3 text-lg font-bold leading-snug tracking-tight text-foreground">
-            도착 시점을 아직 알 수 없어요
+            달성 시점을 아직 알 수 없어요
           </p>
         )}
 

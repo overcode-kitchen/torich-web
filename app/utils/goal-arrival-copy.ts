@@ -3,9 +3,9 @@ import { monthIndex, toYearMonth } from '@/app/utils/scheduled-contribution'
 import type { GoalArrival } from '@/app/utils/goal-arrival'
 
 /**
- * 도착 예정 문구.
+ * 달성 예정 문구.
  *
- * 톤 규칙: `늦게 도착해요`처럼 판정하지 않고 `월 N원이면 맞춰져요`처럼 산수로 안내한다.
+ * 톤 규칙: `늦게 달성해요`처럼 판정하지 않고 `월 N원이면 맞춰져요`처럼 산수로 안내한다.
  * 목표별 페이스가 지켜온 "판정하지 않고 값을 보여준다"를 문장에서도 유지하기 위함이다.
  */
 
@@ -70,7 +70,7 @@ export function arrivalActionPhrase(arrival: GoalArrival, today: Date = new Date
       const arrivalIndex = arrival.arrivalDate
         ? monthIndex(toYearMonth(arrival.arrivalDate))
         : targetIndex
-      return arrivalIndex < targetIndex ? '목표일보다 빨라요' : '목표일에 맞춰 도착해요'
+      return arrivalIndex < targetIndex ? '목표일보다 빨라요' : '목표일에 맞춰 달성해요'
     }
     case 'config_gap':
       return `월 ${shortWon(arrival.extraMonthly)} 더하면 목표일에 맞춰져요`
