@@ -107,6 +107,24 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Layer 3: 타입 스케일 — 역할 기반 폰트 크기 토큰 (docs/design-system/02-TOKENS.md 기준).
+     임의 px(text-[11px]·text-[2rem] 등) 대신 이 토큰만 쓴다.
+     caption 12 / label 14 / body 16 / heading 20 / title 24 / display 30, 랜딩 히어로만 display-lg. */
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.25rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-heading: 1.25rem;
+  --text-heading--line-height: 1.75rem;
+  --text-title: 1.5rem;
+  --text-title--line-height: 2rem;
+  --text-display: 1.875rem;
+  --text-display--line-height: 2.25rem;
+  --text-display-lg: 2.25rem;
+  --text-display-lg--line-height: 2.5rem;
 }
 
 :root {
