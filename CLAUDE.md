@@ -210,3 +210,16 @@ app/foo/[id]/
 - **[docs/architecture.md](docs/architecture.md)** — 파일 구조·네이밍·커스텀 훅 패턴·파일 크기 규칙·새 페이지/리팩터링 순서. *(페이지 생성·구조 변경 시 필독)*
 - **[docs/design-system.md](docs/design-system.md)** — 디자인 바이브·컬러 3-Layer·다크모드·차트 색·shadcn·아이콘·이미지 변환 워크플로우. *(UI 작업 시 필독)*
 - **[docs/coding-style.md](docs/coding-style.md)** — 기술 스택 제약·코딩 스타일·경로/컴포넌트 규칙·한국어 처리.
+
+---
+
+# 디자인 규칙 (Design Rules)
+
+> 토큰 정본은 [docs/design-system/02-TOKENS.md](docs/design-system/02-TOKENS.md), 전체 규칙은 [docs/design-system/03-RULES.md](docs/design-system/03-RULES.md). 아래는 UI를 만들 때 반드시 지키는 요약이다. 단정형으로 못박는다.
+
+- **색**: 정의된 시맨틱 토큰만 쓴다(`bg-card` `text-foreground` `text-muted-foreground` `bg-primary` `text-success` 등). 임의 hex/`rgb()`/`hsl()`·`bg-white`·`text-black`을 직접 쓰지 않는다. 그라디언트는 페이드 마스크와 토큰화된 브랜드 패널(`--goal-well`)만 허용한다. 한 화면에 primary(브랜드 그린) 버튼은 1개다.
+- **글자**: 스케일 토큰만 쓴다 — `text-caption`(12) `text-label`(14) `text-body`(16) `text-heading`(20) `text-title`(24) `text-display`(30), 랜딩만 `text-display-lg`. 임의 px(`text-[11px]` 등) 금지. 본문 기본은 `text-body`. 굵기는 `font-medium`·`font-semibold`·`font-bold` 3종만 명시한다(본문은 미지정).
+- **간격**: 4배수 스텝(`1 2 3 4 6 8 12`)만 쓴다. 하프스텝은 칩/작은 버튼의 `1.5`·`2.5`만 예외다. 내부 `p-3~p-4` / 사이 `gap-2~gap-3` / 섹션 사이 `gap-6~gap-8`.
+- **컴포넌트**: 만들기 전 `components/ui`·`app/components`에 같은 역할이 있는지 확인한다. 버튼은 `<Button>`, 카드는 `<Card>`를 쓴다. 화면/섹션 파일에 `rounded-2xl bg-card` 같은 껍데기나 raw `<button>` 스타일을 인라인·복붙하지 않는다.
+- **레이아웃**: 모바일 우선(`md:` 이상에서 확장), 콘텐츠 최대 폭 제한.
+- **작업 후 자가 점검**: 임의 hex·`text-[..px]`·`bg-white` 없음 / 폰트 6단·굵기 3종 이내 / 간격 4배수 / `<Button>`·`<Card>` 사용 / primary 버튼 1개 / 라이트·다크 대비 유지 / `globals.css` 변경 시 `app/design-system` 갱신.
