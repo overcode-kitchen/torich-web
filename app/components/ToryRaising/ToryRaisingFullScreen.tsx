@@ -230,7 +230,7 @@ export default function ToryRaisingFullScreen() {
         {view === 'main' && (
           <div className="h-full flex flex-col gap-4 overflow-hidden">
             {/* 명언 카드 */}
-            <div className="rounded-2xl bg-[#ece4f7] px-4 py-3">
+            <div className="rounded-2xl bg-tory-quote px-4 py-3">
               <div className="text-sm text-foreground leading-snug line-clamp-3">
                 {quoteLoading
                   ? '명언을 불러오는 중...'

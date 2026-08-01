@@ -110,7 +110,14 @@ function WoodBarShape({
         {modules}
         {/* 선택 강조 — 나뭇결을 가리지 않게 밝게 띄우는 얇은 워시 */}
         {isSelected && (
-          <rect x={x} y={y} width={width} height={height} fill="#ffffff" opacity={0.14} />
+          <rect
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            style={{ fill: 'var(--chart-selection-wash)' }}
+            opacity={0.14}
+          />
         )}
       </g>
       {isSelected && (
