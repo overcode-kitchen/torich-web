@@ -223,3 +223,11 @@ app/foo/[id]/
 - **컴포넌트**: 만들기 전 `components/ui`·`app/components`에 같은 역할이 있는지 확인한다. 버튼은 `<Button>`, 카드는 `<Card>`를 쓴다. 화면/섹션 파일에 `rounded-2xl bg-card` 같은 껍데기나 raw `<button>` 스타일을 인라인·복붙하지 않는다.
 - **레이아웃**: 모바일 우선(`md:` 이상에서 확장), 콘텐츠 최대 폭 제한.
 - **작업 후 자가 점검**: 임의 hex·`text-[..px]`·`bg-white` 없음 / 폰트 6단·굵기 3종 이내 / 간격 4배수 / `<Button>`·`<Card>` 사용 / primary 버튼 1개 / 라이트·다크 대비 유지 / `globals.css` 변경 시 `app/design-system` 갱신.
+
+### 이 규칙은 자동으로 강제된다 (기억이 아니라 가드)
+
+위 색·글자·간격 규칙은 **검사기가 막는다.** `pre-commit` 훅과 CI가 `pnpm run lint:design`을 돌리며, 어기면 **커밋이 되지 않는다.** 자세한 내용은 [docs/design-system/04-GUARD.md](docs/design-system/04-GUARD.md).
+
+- 직접 돌려보기: `pnpm run lint:design` (전체 0.2초) · 부채까지 보려면 `--strict`
+- **정당한 예외**는 두 방법으로만 등록한다 — 각 `scripts/check-hardcoded-*.mjs` 상단의 `ALLOWLIST`, 또는 해당 줄 위 `// design-guard-disable-next-line <rule> — 이유`. **이유를 안 쓰면 예외가 걸리지 않는다.**
+- 기존 부채(임의 폰트 34건)는 파일별로 **동결**돼 있다. 그 숫자는 **내려가기만 한다** — 늘리는 변경은 막힌다.
