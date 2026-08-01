@@ -8,6 +8,10 @@ import {
 import type { PaymentHistoryMap } from '@/app/types/payment'
 import { PostponedPaymentsMap } from '../payment/usePostponedPayments'
 
+/** 차트 폴백 색 — CSS 토큰을 먼저 읽고 실패 시에만 쓰는 근사치. 케이싱은 대문자로 통일한다. */
+const CHART_FALLBACK_AXIS = '#9C9EA6' // --foreground-subtle 근사 (coolgray)
+const CHART_FALLBACK_EMPHASIS = '#16A34A' // --primary 근사 (브랜드 그린)
+
 interface UseChartDataProps {
   activeRecords: Investment[]
   completedPayments: PaymentHistoryMap
@@ -117,21 +121,21 @@ export function useChartData({
   const chartBarColor = useMemo(() => {
     if (typeof window === 'undefined') {
       // 서버 사이드 렌더링 시에는 대략적인 coolgray 색상으로 fallback
-      return '#9c9ea6'
+      return CHART_FALLBACK_AXIS
     }
     const root = getComputedStyle(document.documentElement)
     const fromToken = root.getPropertyValue('--foreground-subtle').trim()
-    return fromToken || '#9c9ea6'
+    return fromToken || CHART_FALLBACK_AXIS
   }, [])
 
   const chartEmphasisColor = useMemo(() => {
     if (typeof window === 'undefined') {
       // SSR fallback — 브랜드 컬러 근사치
-      return '#16a34a'
+      return CHART_FALLBACK_EMPHASIS
     }
     const root = getComputedStyle(document.documentElement)
     const fromToken = root.getPropertyValue('--primary').trim()
-    return fromToken || '#16a34a'
+    return fromToken || CHART_FALLBACK_EMPHASIS
   }, [])
 
   return {
