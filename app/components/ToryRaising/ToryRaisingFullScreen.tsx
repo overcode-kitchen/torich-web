@@ -281,7 +281,7 @@ export default function ToryRaisingFullScreen() {
         )}
 
         {view === 'shop' && (
-          <div className="h-full rounded-2xl bg-white border border-coolgray-100 p-4 flex flex-col gap-3 overflow-hidden">
+          <div className="h-full rounded-2xl bg-card border border-border-subtle p-4 flex flex-col gap-3 overflow-hidden">
             <div className="text-base font-semibold text-foreground">도토리 상점</div>
             <div className="flex flex-wrap gap-2">
               {(['background', 'hat', 'glasses', 'outfit'] as ToryShopCategory[]).map((c) => (
@@ -330,7 +330,7 @@ export default function ToryRaisingFullScreen() {
         )}
 
         {view === 'customize' && (
-          <div className="h-full rounded-2xl bg-white border border-coolgray-100 p-4 flex flex-col gap-3 overflow-hidden">
+          <div className="h-full rounded-2xl bg-card border border-border-subtle p-4 flex flex-col gap-3 overflow-hidden">
             <div className="text-base font-semibold text-foreground">토리 꾸미기</div>
             <div className="flex flex-wrap gap-2">
               {(['background', 'hat', 'glasses', 'outfit'] as const).map((c) => (
@@ -400,7 +400,7 @@ export default function ToryRaisingFullScreen() {
             type="button"
             onClick={() => handleActionResult(claimAttendance())}
             disabled={!isUnlocked}
-            className="h-12 rounded-full bg-white border border-coolgray-100 text-sm font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
+            className="h-12 rounded-full bg-card border border-border-subtle text-sm font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
           >
             출석
           </button>
@@ -408,7 +408,7 @@ export default function ToryRaisingFullScreen() {
             type="button"
             onClick={() => handleActionResult(claimPlay())}
             disabled={!isUnlocked}
-            className="h-12 rounded-full bg-white border border-coolgray-100 text-sm font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
+            className="h-12 rounded-full bg-card border border-border-subtle text-sm font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
           >
             놀아주기
           </button>
@@ -416,7 +416,7 @@ export default function ToryRaisingFullScreen() {
             type="button"
             onClick={() => handleActionResult(claimPet())}
             disabled={!isUnlocked}
-            className="h-12 rounded-full bg-white border border-coolgray-100 text-sm font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
+            className="h-12 rounded-full bg-card border border-border-subtle text-sm font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
           >
             쓰다듬기
           </button>
