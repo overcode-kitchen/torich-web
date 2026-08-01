@@ -12,6 +12,10 @@
     "build:app": "node scripts/verify-app-build-env.mjs && ([ -d ./server-routes.backup/api ] && mv ./server-routes.backup/api app/ || true) && ([ -d ./server-routes.backup/auth ] && mv ./server-routes.backup/auth app/ || true) && rm -rf ./server-routes.backup && mkdir -p ./server-routes.backup && ([ -d app/api ] && mv app/api ./server-routes.backup/ || true) && ([ -d app/auth ] && mv app/auth ./server-routes.backup/ || true) && BUILD_TARGET=app next build && ([ -d ./server-routes.backup/api ] && mv ./server-routes.backup/api app/ || true) && ([ -d ./server-routes.backup/auth ] && mv ./server-routes.backup/auth app/ || true) && rm -rf ./server-routes.backup",
     "start": "next start",
     "lint": "eslint",
+    "lint:color": "node scripts/check-hardcoded-color.mjs",
+    "lint:fontsize": "node scripts/check-hardcoded-fontsize.mjs",
+    "lint:spacing": "node scripts/check-hardcoded-spacing.mjs",
+    "lint:design": "node scripts/check-hardcoded-color.mjs && node scripts/check-hardcoded-fontsize.mjs && node scripts/check-hardcoded-spacing.mjs",
     "prepare": "husky"
   },
   "dependencies": {
