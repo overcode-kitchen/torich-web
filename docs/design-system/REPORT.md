@@ -124,6 +124,7 @@
 **규칙 반영**(append) : `CLAUDE.md`, `.cursorrules`
 **코드** : `app/globals.css`(타입 스케일) · `components/ui/card.tsx`(신규) · `app/hooks/chart/useChartColors·useChartData.ts`(폴백 통합) · `app/components/ToryRaising/ToryRaisingFullScreen.tsx`(bg-card) · `app/components/design-system/CoreSection.tsx`(가이드 데모)
 **캡처** : `capture.mjs`(Playwright, 재실행 가능) · `screenshots/before·after/`(96장) · `screenshots/compare.html`(비교 뷰어)
+→ `screenshots/`는 **저장소에 커밋하지 않는다**(`.gitignore`, 6.5MB 바이너리). `node capture.mjs after`로 재생성한다.
 
 **커밋 9개** (모두 `docs/…`·`style/…`·`feat/…`·`refactor/…` 규칙, 로직 불변):
 `docs(진단·토큰)` → `docs(규칙)` → `chore(캡처스크립트)` → `style(타입스케일)` → `refactor(차트색)` → `style(tory bg-card)` → `feat(Card)` → `style(가이드 데모)` → `docs(비포/애프터)` → `docs(SUMMARY)`

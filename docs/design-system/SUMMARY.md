@@ -48,6 +48,10 @@
 - `screenshots/before·after/` — 7화면 × desktop/mobile × light/dark = 96장
 - `screenshots/compare.html` — 외부 의존성 없는 좌우 비교 뷰어(사이즈·테마 탭)
 
+> **`screenshots/`는 저장소에 커밋하지 않는다**(`.gitignore`). 96장 6.5MB 바이너리가 히스토리에
+> 영구히 남는 것을 피하기 위해서다. `node capture.mjs before|after`로 언제든 재생성되고,
+> 원본은 로컬 `design-system-setup` 브랜치에 남아 있다.
+
 ## 4. BLOCKED / 제약
 
 - **인증 게이트 화면은 로그아웃 상태 캡처 불가.** `stats·settings·calendar·add`→`/login`, `investment`→`/`로 리다이렉트. 비포/애프터는 **공개 렌더 7화면**(design-system·home·login·faq·tory·goal-new·notifications)만. → **product 화면의 개선 효과는 스크린샷으로 증명되지 않음.** 사람이 로그인 상태로 눈검증 필요.
