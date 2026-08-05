@@ -223,9 +223,21 @@ export default function MonthlyTrendSection({
         <>
           {/* 차트 위 문장 0줄 — 스트릭·기간 중 N개월 100%·가장 잘한 달은 전부 걷어냈다.
               연속 적립은 기간 필터에 흔들리지 않는 hero(StreakHeroSection)가 이어받는다. */}
-          <div className="h-28 mt-3">
+          {/* 차트 안쪽 포커스 링을 전부 없앤다.
+              recharts가 접근성용으로 차트 <svg>와 내부 레이어를 포커스 대상으로 만드는데,
+              막대를 탭하면 거기에 포커스가 들어가 브랜드 그린 링(--ring)이 차트를 감싸 버린다.
+              이 차트는 Tooltip이 없어 포커스로 할 수 있는 동작이 없으므로 잃는 기능이 없다.
+              accessibilityLayer={false}로 tabIndex는 떼지만, 어떤 요소에 걸리든 막히도록 함께 둔다. */}
+          <div className="h-28 mt-3 [&_:focus]:outline-none [&_:focus-visible]:outline-none">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 22, right: 8, left: 0, bottom: 0 }}>
+              {/* accessibilityLayer를 끈다 — recharts가 차트 <svg>에 tabIndex=0을 붙이는데,
+                  이 차트엔 Tooltip이 없어 포커스로 할 수 있는 동작이 없다. 그런데도 막대를
+                  탭하면 포커스가 들어가 브랜드 그린 포커스 링이 차트 전체를 감싸 버린다. */}
+              <BarChart
+                accessibilityLayer={false}
+                data={chartData}
+                margin={{ top: 22, right: 8, left: 0, bottom: 0 }}
+              >
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} width={28} />
                 <Bar
