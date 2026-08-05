@@ -2,6 +2,13 @@
 
 import { Button } from "@/components/ui/button"
 import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+} from "@/components/ui/card"
+import {
     Plus,
     CircleNotch,
     CaretDown,
@@ -65,6 +72,32 @@ export function CoreSection() {
                             text-base leading-relaxed
                         </code>
                     </div>
+                </div>
+                {/* 역할 기반 타입 스케일 — 신규 토큰 (docs/design-system/02-TOKENS.md) */}
+                <div className="space-y-4 rounded-xl border border-coolgray-200 bg-card p-6">
+                    <p className="text-label font-semibold text-foreground-soft">
+                        역할 스케일 · 신규 토큰
+                    </p>
+                    {[
+                        { cls: "text-display", px: "30", usage: "히어로 숫자·대형 KPI", sample: "1,240만" },
+                        { cls: "text-title", px: "24", usage: "섹션 제목", sample: "이번 달 요약" },
+                        { cls: "text-heading", px: "20", usage: "카드 제목", sample: "목표별 페이스" },
+                        { cls: "text-body", px: "16", usage: "본문 기본", sample: "본문 텍스트입니다." },
+                        { cls: "text-label", px: "14", usage: "조밀 데이터·보조 라벨", sample: "보조 라벨" },
+                        { cls: "text-caption", px: "12", usage: "캡션·메타·배지", sample: "3일 전 · 메타" },
+                    ].map(({ cls, px, usage, sample }) => (
+                        <div
+                            key={cls}
+                            className="flex items-baseline justify-between gap-4 border-b border-border-subtle-lighter pb-3 last:border-0 last:pb-0"
+                        >
+                            <span className={cn(cls, "font-semibold text-foreground")}>{sample}</span>
+                            <span className="shrink-0 text-right text-caption text-muted-foreground">
+                                <code>{cls}</code> · {px}px
+                                <br />
+                                {usage}
+                            </span>
+                        </div>
+                    ))}
                 </div>
             </section>
 
@@ -162,6 +195,27 @@ export function CoreSection() {
                     카드 스타일
                 </h2>
                 <div className="space-y-8">
+                    {/* 신규: 공용 <Card> 컴포넌트 — 껍데기 복붙 대체 */}
+                    <div className="space-y-2">
+                        <NameLabel
+                            label="Card (신규 컴포넌트)"
+                            token="ui/card"
+                            usage="components/ui/card.tsx — rounded-2xl bg-card 껍데기 복붙 대체"
+                        />
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>카드 제목입니다.</CardTitle>
+                                <CardDescription>
+                                    Card / CardHeader / CardTitle / CardContent 구조
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-3">
+                                <p className="text-body text-muted-foreground">
+                                    공용 Card 컴포넌트로 렌더한 예시입니다. bg-card · card-border · rounded-2xl.
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
                     {/* 카드 1: 기본 흰색 카드 */}
                     <div className="space-y-2">
                         <NameLabel

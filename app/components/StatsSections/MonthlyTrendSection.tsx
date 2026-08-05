@@ -119,7 +119,14 @@ function WoodBarShape({
         {modules}
         {/* 선택 강조 — 나뭇결을 가리지 않게 밝게 띄우는 얇은 워시 */}
         {isSelected && (
-          <rect x={x} y={y} width={width} height={height} fill="#ffffff" opacity={0.14} />
+          <rect
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            style={{ fill: 'var(--chart-selection-wash)' }}
+            opacity={0.14}
+          />
         )}
       </g>
       {isSelected && (
@@ -230,15 +237,14 @@ export default function MonthlyTrendSection({
               accessibilityLayer={false}로 tabIndex는 떼지만, 어떤 요소에 걸리든 막히도록 함께 둔다. */}
           <div className="h-28 mt-3 [&_:focus]:outline-none [&_:focus-visible]:outline-none">
             <ResponsiveContainer width="100%" height="100%">
-              {/* accessibilityLayer를 끈다 — recharts가 차트 <svg>에 tabIndex=0을 붙이는데,
-                  이 차트엔 Tooltip이 없어 포커스로 할 수 있는 동작이 없다. 그런데도 막대를
-                  탭하면 포커스가 들어가 브랜드 그린 포커스 링이 차트 전체를 감싸 버린다. */}
               <BarChart
                 accessibilityLayer={false}
                 data={chartData}
                 margin={{ top: 22, right: 8, left: 0, bottom: 0 }}
               >
+                {/* design-guard-disable-next-line fontsize — Recharts tick prop은 내부 SVG 렌더러가 받는 값이라 Tailwind 스케일 클래스가 닿지 않는다 */}
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                {/* design-guard-disable-next-line fontsize — 위와 같음(Recharts tick prop) */}
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} width={28} />
                 <Bar
                   dataKey="rate"
