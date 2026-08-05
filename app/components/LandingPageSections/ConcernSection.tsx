@@ -14,7 +14,7 @@ export default function ConcernSection({ onScrollToTop }: ConcernSectionProps) {
       id="landing-section-2"
       className="flex h-dvh shrink-0 snap-start snap-always flex-col overflow-y-auto overflow-x-hidden px-4 pt-10"
       style={{
-        background: '#292A2E',
+        background: 'var(--palette-landing-dark)',
       }}
       aria-label="고민 공감"
     >
@@ -74,7 +74,7 @@ export default function ConcernSection({ onScrollToTop }: ConcernSectionProps) {
                 className="pointer-events-none absolute inset-x-0 top-0 bottom-0 z-10"
                 style={{
                   background:
-                    'linear-gradient(to bottom, #292A2E 0%, #292A2E 18%, rgba(41,42,46,0.92) 38%, rgba(41,42,46,0.5) 60%, transparent 100%)',
+                    'linear-gradient(to bottom, var(--palette-landing-dark) 0%, var(--palette-landing-dark) 18%, hsl(var(--palette-landing-dark-hsl) / 0.92) 38%, hsl(var(--palette-landing-dark-hsl) / 0.5) 60%, transparent 100%)',
                 }}
                 aria-hidden
               />

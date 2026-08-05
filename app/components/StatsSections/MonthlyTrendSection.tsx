@@ -110,7 +110,14 @@ function WoodBarShape({
         {modules}
         {/* 선택 강조 — 나뭇결을 가리지 않게 밝게 띄우는 얇은 워시 */}
         {isSelected && (
-          <rect x={x} y={y} width={width} height={height} fill="#ffffff" opacity={0.14} />
+          <rect
+            x={x}
+            y={y}
+            width={width}
+            height={height}
+            style={{ fill: 'var(--chart-selection-wash)' }}
+            opacity={0.14}
+          />
         )}
       </g>
       {isSelected && (
@@ -217,7 +224,9 @@ export default function MonthlyTrendSection({
           <div className="h-28 mt-3">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 22, right: 8, left: 0, bottom: 0 }}>
+                {/* design-guard-disable-next-line fontsize — Recharts tick prop은 내부 SVG 렌더러가 받는 값이라 Tailwind 스케일 클래스가 닿지 않는다 */}
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                {/* design-guard-disable-next-line fontsize — 위와 같음(Recharts tick prop) */}
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} width={28} />
                 <Bar
                   dataKey="rate"
