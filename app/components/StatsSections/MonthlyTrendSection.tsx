@@ -13,43 +13,52 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from 'rec
 import type { DateRange } from 'react-day-picker'
 import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
 import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
+import {
+  WOOD_CANVAS_AR,
+  WOOD_CORE_FRAC,
+  WOOD_PLAIN,
+  WOOD_DECORATED,
+} from '@/app/constants/wood-bar'
 
 // ── 통나무 막대(모듈 쌓기) ────────────────────────────────────────────────
 // 부품(모듈)을 아래에서부터 세로로 쌓아 긴 통나무를 만들고, rate(%) 높이에서
 // 윗부분을 잘라 정확한 수치를 표현한다. 이미지를 '늘리지' 않고 '잘라 보여서' 결이
-// 망가지지 않는다. 부품 PNG는 디자이너 리소스가 오면 파일만 교체하면 된다.
-const WOOD_BASE = '/icons/3d/wood'
-// 부품 PNG는 몸통(기둥)이 canvas 중앙에 있고 좌우로 투명 여백(가지·옹이가 튀어나올 자리)이 있다.
-// canvas 종횡비(H/W)와 '몸통 폭 ÷ canvas 폭' 비율을 알면, 몸통을 막대 폭에 정확히 맞추고
-// 가지·옹이는 옆으로 넘치게(가로 클립 없이) 그릴 수 있다. 아래 값은 현재 리소스 실측치.
-const WOOD_CANVAS_AR = 398 / 541 // canvas 종횡비(H/W)
-const WOOD_CORE_FRAC = 317 / 541 // 몸통 폭 ÷ canvas 폭 — 이 부분이 막대 폭과 일치하게 렌더
-const WOOD_MODULES = {
-  body: `${WOOD_BASE}/wooden%20pole_01.png`, // 민무늬
-  crack: `${WOOD_BASE}/wooden%20pole_02.png`, // 결/갈라짐
-  knot: `${WOOD_BASE}/wooden%20pole_03.png`, // 옹이
-  branch: `${WOOD_BASE}/wooden%20pole_04.png`, // 가지+옹이
-} as const
+// 망가지지 않는다. 부품 파일과 실측 비율은 app/constants/wood-bar.ts가 관리한다.
 
 // 막대별 부품 배치는 index로 '고정'한다(랜덤 금지 — 다시 그릴 때 모양이 바뀌면 어지럽다).
 // 맨 아래는 항상 민무늬, 위로 갈수록 가지·옹이를 가끔 섞어 조합마다 다르게 보이게.
+// 부품은 파일 그대로만 쓴다 — 반전해 붙이면 광원·결 방향이 어긋나 어색해진다.
 function woodSequence(index: number, count: number): string[] {
   let h = (index * 2654435761 + 40503) >>> 0
   const next = () => ((h = (h * 1103515245 + 12345) >>> 0), h % 100)
   const seq: string[] = []
-  // count-2 = 윗부분에서 잘리는(보이는) 맨 위 칸. 맨 아래(0)와 이 칸은 민무늬로 둬야
-  // 바닥은 안정적이고 윗면은 깔끔하게 잘린다. 가지·옹이는 그 사이 중간 칸에만.
-  const topVisible = count - 2
+  // 바닥(0)만 민무늬로 고정한다 — 축에 닿는 면이라 여기서 가지가 튀어나오면 떠 보인다.
+  //
+  // 위에서 잘리는 칸(count-2)까지 민무늬로 묶지 않는다. 막대가 낮을 때 완전히 보이는 칸이
+  // 한둘뿐이라, 두 칸을 다 고정하면 옹이·가지가 한 번도 나오지 못하고 민무늬만 쌓인다.
+  // 잘린 칸의 장식은 반쯤 보이지만, 통나무를 잘라 놓은 것처럼 읽혀 어색하지 않다.
+  // 마디 수와 장식 칸 수는 둘 다 '막대 높이 ÷ 칸 높이'라 높이로는 맞바꿀 수 없다.
+  // 이 규칙이 마디를 늘리지 않고 장식만 늘리는 유일한 손잡이다.
+  //
+  // 직전 칸과 같은 부품이 연달아 오면 복제한 티가 나므로 한 칸 기억해 두고 피한다.
+  let prev: string | null = null
   for (let i = 0; i < count; i++) {
-    if (i === 0 || i === topVisible) {
-      seq.push(WOOD_MODULES.body)
+    if (i === 0) {
+      seq.push(WOOD_PLAIN)
+      prev = WOOD_PLAIN
       continue
     }
-    const r = next()
-    if (r < 26) seq.push(WOOD_MODULES.branch)
-    else if (r < 54) seq.push(WOOD_MODULES.knot)
-    else if (r < 74) seq.push(WOOD_MODULES.crack)
-    else seq.push(WOOD_MODULES.body)
+    // 4칸 중 1칸꼴로 민무늬를 섞어 장식이 빽빽해지지 않게 한다.
+    if (next() < 26) {
+      seq.push(WOOD_PLAIN)
+      prev = WOOD_PLAIN
+      continue
+    }
+    // 직전과 다른 부품만 후보로 남긴다(후보가 3종이라 항상 하나 이상 남는다).
+    const candidates = WOOD_DECORATED.filter((src) => src !== prev)
+    const src = candidates[next() % candidates.length]
+    seq.push(src)
+    prev = src
   }
   return seq
 }
