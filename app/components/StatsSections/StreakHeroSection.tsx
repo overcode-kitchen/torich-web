@@ -29,14 +29,14 @@ export default function StreakHeroSection({ consistency }: { consistency: Lifeti
     <section className="bg-card rounded-2xl p-5 mb-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs text-muted-foreground">연속 적립</p>
+          <p className="text-caption text-muted-foreground">연속 적립</p>
           {streakMonths > 0 ? (
             <p className="mt-1 text-[32px] font-extrabold leading-none tracking-tight text-foreground tabular-nums">
               {streakMonths}
-              <span className="ml-0.5 text-sm font-bold">개월</span>
+              <span className="ml-0.5 text-label font-bold">개월</span>
             </p>
           ) : (
-            <p className="mt-1.5 text-base font-bold text-foreground">
+            <p className="mt-1.5 text-body font-bold text-foreground">
               이번 달 첫 적립을 완료해보세요
             </p>
           )}
@@ -54,7 +54,7 @@ export default function StreakHeroSection({ consistency }: { consistency: Lifeti
       </div>
 
       {hasHistory && (
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="mt-2 text-caption text-muted-foreground">
           최고 기록 <span className="font-bold text-foreground">{bestStreakMonths}개월</span> · 지금까지{' '}
           <span className="font-bold text-foreground">{totalPayments}번</span> 적립
         </p>

@@ -11,7 +11,7 @@ const VISIBLE_ROWS = 5
 
 /**
  * 행 라벨 칸 폭(px) — 셀 격자와 월 눈금이 같은 값을 써야 열이 어긋나지 않는다.
- * 목적명을 읽을 수 있는 크기(text-xs)로 올리면서 함께 넓혔다. 남는 폭을 12개월이 나눠 가지므로
+ * 목적명을 읽을 수 있는 크기(text-caption)로 올리면서 함께 넓혔다. 남는 폭을 12개월이 나눠 가지므로
  * 이 값을 더 키우면 셀이 눈에 띄게 작아진다.
  */
 const LABEL_COLUMN = '80px'
@@ -66,7 +66,7 @@ export default function FulfillmentHeatmapSection({ heatmap }: { heatmap: Fulfil
 
   return (
     <section className="bg-card rounded-2xl p-5 mb-4">
-      <h2 className="text-sm font-semibold text-foreground-muted mb-3">최근 12개월 이행</h2>
+      <h2 className="text-label font-semibold text-foreground-muted mb-3">최근 12개월 이행</h2>
 
       <div className="flex flex-col gap-[3px]">
         {rows.map((row) => {
@@ -79,7 +79,7 @@ export default function FulfillmentHeatmapSection({ heatmap }: { heatmap: Fulfil
               className="grid items-center gap-[3px]"
               style={{ gridTemplateColumns: `${LABEL_COLUMN} repeat(${row.cells.length}, 1fr)` }}
             >
-              <span className="flex min-w-0 items-center gap-1 pr-1.5 text-xs text-muted-foreground">
+              <span className="flex min-w-0 items-center gap-1 pr-1.5 text-caption text-muted-foreground">
                 {icon && (
                   <Image
                     src={icon.src}
@@ -123,7 +123,7 @@ export default function FulfillmentHeatmapSection({ heatmap }: { heatmap: Fulfil
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="mt-3 w-full text-xs font-medium text-muted-foreground"
+          className="mt-3 w-full text-caption font-medium text-muted-foreground"
         >
           {expanded ? '접기' : `더 보기 (${heatmap.rows.length - VISIBLE_ROWS}개)`}
         </button>
@@ -131,7 +131,7 @@ export default function FulfillmentHeatmapSection({ heatmap }: { heatmap: Fulfil
 
       {/* 셀을 누르면 그 달 상세, 아니면 점선 설명 한 줄. 카드당 설명은 최대 1줄로 유지한다. */}
       {selected ? (
-        <p className="mt-3 border-t border-border-subtle pt-2 text-xs text-muted-foreground">
+        <p className="mt-3 border-t border-border-subtle pt-2 text-caption text-muted-foreground">
           {selected.rowLabel} · {selected.cell.month}월 ·{' '}
           {selected.cell.postponed ? (
             '미룬 달이에요'
@@ -144,7 +144,7 @@ export default function FulfillmentHeatmapSection({ heatmap }: { heatmap: Fulfil
         </p>
       ) : (
         hasPostponed && (
-          <p className="mt-3 border-t border-border-subtle pt-2 text-xs text-muted-foreground">
+          <p className="mt-3 border-t border-border-subtle pt-2 text-caption text-muted-foreground">
             점선은 미룬 달이에요 — 빠진 것으로 세지 않아요
           </p>
         )

@@ -85,7 +85,7 @@ export default function StatsMoneyTab({ data, ui, calculations }: StatsMoneyTabP
       <RecordTypeShareTiles tiles={typeShare} amountsVisible={amountsVisible} />
 
       {/* 범위 안내 — 금융앱에서 보는 '내 자산'과 다른 값이라는 오해를 미리 닫는다 */}
-      <p className="px-1 pb-4 text-center text-xs text-muted-foreground">
+      <p className="px-1 pb-4 text-center text-caption text-muted-foreground">
         토리치에 기록한 것만 합산해요
       </p>
     </>

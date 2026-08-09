@@ -28,11 +28,11 @@ export default function RecordTypeShareTiles({
     <div className="mb-4 grid grid-cols-2 gap-3">
       {tiles.map((tile) => (
         <div key={tile.key} className="rounded-2xl bg-card p-4">
-          <p className="text-xs text-muted-foreground">{tile.label}</p>
-          <p className="mt-1.5 text-xl font-bold leading-none tabular-nums text-foreground">
+          <p className="text-caption text-muted-foreground">{tile.label}</p>
+          <p className="mt-1.5 text-heading font-bold leading-none tabular-nums text-foreground">
             {tile.percent}%
           </p>
-          <p className="mt-1.5 text-xs tabular-nums text-muted-foreground">
+          <p className="mt-1.5 text-caption tabular-nums text-muted-foreground">
             <MaskedAmount visible={amountsVisible}>{shortWon(tile.amount)}</MaskedAmount>
           </p>
         </div>

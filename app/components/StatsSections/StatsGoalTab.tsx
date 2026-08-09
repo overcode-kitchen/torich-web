@@ -72,7 +72,7 @@ export default function StatsGoalTab({
       <GoalPaceSection arrivals={paceArrivals} />
       <StatsGoalProgressSection records={records} />
       {arrivals.length === 0 && (
-        <p className="pt-1 pb-4 text-center text-sm text-muted-foreground">
+        <p className="pt-1 pb-4 text-center text-label text-muted-foreground">
           목적에 목표 금액과 마감일을 정하면 달성 시점을 알려드려요
         </p>
       )}

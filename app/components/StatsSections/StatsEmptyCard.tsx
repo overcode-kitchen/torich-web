@@ -24,8 +24,8 @@ export default function StatsEmptyCard({
 }: StatsEmptyCardProps) {
   return (
     <section className="bg-card rounded-2xl p-6 mb-4 text-center">
-      <h2 className="text-base font-bold text-foreground mb-1">{title}</h2>
-      <p className="text-sm text-muted-foreground whitespace-pre-line">{description}</p>
+      <h2 className="text-body font-bold text-foreground mb-1">{title}</h2>
+      <p className="text-label text-muted-foreground whitespace-pre-line">{description}</p>
       {actionLabel && onAction && (
         <Button className="mt-4" onClick={onAction}>
           {actionLabel}
