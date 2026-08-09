@@ -49,11 +49,11 @@ export interface DetailHeroProps {
 export function DetailHero({ label, amount, context, progress, sub, children, className }: DetailHeroProps) {
   return (
     <section className={cn('pt-2 pb-6', className)}>
-      {label && <p className="text-sm font-medium text-muted-foreground">{label}</p>}
-      <p className="mt-1 text-3xl font-bold tracking-tight text-foreground tabular-nums break-all">
+      {label && <p className="text-label font-medium text-muted-foreground">{label}</p>}
+      <p className="mt-1 text-display font-bold tracking-tight text-foreground tabular-nums break-all">
         {amount}
       </p>
-      {context && <div className="mt-1.5 text-sm text-foreground-muted">{context}</div>}
+      {context && <div className="mt-1.5 text-label text-foreground-muted">{context}</div>}
       {progress && (
         <div className="mt-4">
           <ProgressBar
@@ -63,7 +63,7 @@ export function DetailHero({ label, amount, context, progress, sub, children, cl
             className="bg-border-subtle-lighter"
           />
           {(progress.startLabel || progress.endLabel) && (
-            <div className="mt-2 flex justify-between text-xs font-medium text-muted-foreground tabular-nums">
+            <div className="mt-2 flex justify-between text-caption font-medium text-muted-foreground tabular-nums">
               <span>{progress.startLabel}</span>
               <span>{progress.endLabel}</span>
             </div>
@@ -71,7 +71,7 @@ export function DetailHero({ label, amount, context, progress, sub, children, cl
         </div>
       )}
       {sub && (
-        <div className={cn('text-sm text-foreground-muted', progress ? 'mt-3' : 'mt-1.5')}>
+        <div className={cn('text-label text-foreground-muted', progress ? 'mt-3' : 'mt-1.5')}>
           {sub}
         </div>
       )}

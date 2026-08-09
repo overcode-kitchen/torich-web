@@ -194,7 +194,7 @@ export default function MonthlyTrendSection({
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-3">
-        <h2 className="text-sm font-semibold text-foreground-muted">월별 적립 기록</h2>
+        <h2 className="text-label font-semibold text-foreground-muted">월별 적립 기록</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -290,19 +290,19 @@ export default function MonthlyTrendSection({
 
           {/* 막대 탭 시 그 달 요약(차트 아래 고정 줄). 미선택 시 탐색 안내. */}
           {selectedIndex !== null && chartData[selectedIndex] ? (
-            <p className="mt-2 text-center text-sm text-muted-foreground">
+            <p className="mt-2 text-center text-label text-muted-foreground">
               {chartData[selectedIndex].name} · {chartData[selectedIndex].total}건 중 {chartData[selectedIndex].completed}건 ·{' '}
               <span className="font-bold text-primary">{chartData[selectedIndex].rate}%</span> 완료
             </p>
           ) : (
-            <p className="mt-2 text-center text-xs text-muted-foreground">
+            <p className="mt-2 text-center text-caption text-muted-foreground">
               막대를 눌러 월별 기록을 볼 수 있어요
             </p>
           )}
         </>
       ) : (
         // 추세를 그릴 만큼 쌓이지 않은 신규/단월 상태 — 빈 차트 대신 격려 문구.
-        <p className="text-sm text-muted-foreground py-6 text-center">
+        <p className="text-label text-muted-foreground py-6 text-center">
           다음 달부터 월별 적립 기록이 쌓여요.
         </p>
       )}

@@ -19,8 +19,8 @@ import type { GoalArrival } from '@/app/utils/goal-arrival'
 function Stat({ label, value, alignRight }: { label: string; value: string; alignRight?: boolean }) {
   return (
     <div className={`flex min-w-0 items-baseline gap-1.5 ${alignRight ? 'justify-end' : ''}`}>
-      <span className="shrink-0 text-xs text-foreground-muted">{label}</span>
-      <span className="min-w-0 truncate text-xs font-bold text-foreground tabular-nums">
+      <span className="shrink-0 text-caption text-foreground-muted">{label}</span>
+      <span className="min-w-0 truncate text-caption font-bold text-foreground tabular-nums">
         {value}
       </span>
     </div>
@@ -65,7 +65,7 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
         }}
         className="w-full rounded-2xl bg-card p-5 text-left"
       >
-        <p className="text-xs font-bold text-foreground-muted">가장 먼저 달성</p>
+        <p className="text-caption font-bold text-foreground-muted">가장 먼저 달성</p>
 
         <div className="mt-2 flex items-center gap-2">
           {icon && (
@@ -80,7 +80,7 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
           <h2 className="min-w-0 flex-1 truncate text-[15px] font-bold tracking-tight text-foreground">
             {goal.name}
           </h2>
-          <span className="shrink-0 text-xs font-semibold text-foreground-subtle tabular-nums">
+          <span className="shrink-0 text-caption font-semibold text-foreground-subtle tabular-nums">
             목표 {shortWon(goal.target_amount)}
           </span>
         </div>
@@ -89,7 +89,7 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
         {arrival.arrivalDate ? (
           <p className="mt-3 text-[26px] font-extrabold leading-none tracking-tight text-foreground tabular-nums">
             {arrivalMonthLabel(arrival.arrivalDate)}
-            <span className="ml-1.5 text-sm font-bold text-foreground-muted">달성 예정</span>
+            <span className="ml-1.5 text-label font-bold text-foreground-muted">달성 예정</span>
           </p>
         ) : (
           <p className="mt-3 text-lg font-bold leading-snug tracking-tight text-foreground">
@@ -123,7 +123,7 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
         <div className="mt-3.5 border-t border-border-subtle pt-2.5">
           <RotatingInsights
             items={arrivalInsightLines(arrival)}
-            className="truncate text-xs font-semibold text-foreground-soft"
+            className="truncate text-caption font-semibold text-foreground-soft"
           />
         </div>
       </button>

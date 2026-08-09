@@ -96,8 +96,8 @@ function EditForm({ goal, userId, onExit, focusField }: EditFormProps) {
   return (
     <SubPageScaffold onBack={requestExit} contentClassName="py-6">
       <div className="mb-8">
-        <h1 className="text-xl font-bold text-foreground mb-3">목적 다듬기</h1>
-        <p className="text-sm text-foreground-subtle">
+        <h1 className="text-heading font-bold text-foreground mb-3">목적 다듬기</h1>
+        <p className="text-label text-foreground-subtle">
           이름·금액·마감일 등 언제든 자유롭게 바꿀 수 있어요.
         </p>
       </div>
@@ -122,7 +122,7 @@ function EditForm({ goal, userId, onExit, focusField }: EditFormProps) {
           type="button"
           onClick={requestExit}
           disabled={isUpdating}
-          className="w-full text-sm text-foreground-subtle py-2 hover:text-foreground transition-colors disabled:opacity-50"
+          className="w-full text-label text-foreground-subtle py-2 hover:text-foreground transition-colors disabled:opacity-50"
         >
           취소
         </button>
@@ -185,7 +185,7 @@ export default function EditGoalClient() {
     return (
       <SubPageScaffold onBack={goBack} contentClassName="py-6">
         <div className="flex flex-col items-center gap-4 py-16">
-          <p className="text-sm text-foreground-subtle">
+          <p className="text-label text-foreground-subtle">
             목적을 찾을 수 없습니다.
           </p>
           <Button onClick={() => router.push('/')}>홈으로</Button>

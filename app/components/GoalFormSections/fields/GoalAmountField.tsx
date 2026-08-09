@@ -55,7 +55,7 @@ export default function GoalAmountField({
               type="button"
               onClick={() => onChange(adjustWonByManwon(value, delta))}
               disabled={disabled}
-              className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-xs px-3 py-1.5 transition-colors disabled:opacity-50"
+              className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-caption px-3 py-1.5 transition-colors disabled:opacity-50"
             >
               {label}
             </button>

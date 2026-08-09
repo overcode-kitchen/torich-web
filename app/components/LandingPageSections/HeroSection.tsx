@@ -40,7 +40,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
             <br />
             까먹지 않게 관리해줄게
           </h1>
-          <p className="text-base text-foreground-muted">
+          <p className="text-body text-foreground-muted">
             적립식 투자를 캘린더처럼 관리해주는
             <br />
             작은 투자 동반자, 토리치예요.
@@ -65,7 +65,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
           </div>
           {/* Layer 2: 흰 박스 (중간) */}
           <div className="relative z-10 mt-0 space-y-4 rounded-3xl bg-card p-5 shadow-sm">
-            <ul className="space-y-4 text-base">
+            <ul className="space-y-4 text-body">
               <li className="flex items-center gap-3">
                 <div className="relative h-7 w-7 shrink-0">
                   <Image
@@ -135,7 +135,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
         <div className="space-y-4">
           <Button
             size="lg"
-            className="w-full py-3.5 text-base font-semibold"
+            className="w-full py-3.5 text-body font-semibold"
             onClick={() => router.push('/login')}
           >
             시작하기
@@ -143,7 +143,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
           <div className="flex justify-center pb-2">
             <button
               type="button"
-              className="flex flex-col items-center gap-1 text-xs text-foreground-subtle"
+              className="flex flex-col items-center gap-1 text-caption text-foreground-subtle"
               aria-label="아래로 스크롤하기"
               onClick={scrollToSection2}
             >

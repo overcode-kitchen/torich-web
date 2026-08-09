@@ -27,7 +27,7 @@ export default function EmptyState() {
         <p className="text-lg font-bold text-foreground">
           무엇을 위해 모으고 있나요?
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-label text-muted-foreground">
           목적을 정하면 무엇을, 얼마나 모을지 한눈에 보여요.
         </p>
       </div>
@@ -49,7 +49,7 @@ export default function EmptyState() {
               key={preset.name}
               type="button"
               onClick={() => goToNewGoal(preset.name)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle-lighter bg-card px-3 py-1.5 text-xs font-medium text-foreground-soft hover:bg-muted transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle-lighter bg-card px-3 py-1.5 text-caption font-medium text-foreground-soft hover:bg-muted transition-colors"
             >
               {icon && (
                 <Image

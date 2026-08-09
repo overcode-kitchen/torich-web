@@ -49,7 +49,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
 
   return (
     <section className="bg-card rounded-2xl p-5 mb-4">
-      <h2 className="text-sm font-semibold text-foreground-muted mb-2">기한 없는 목적</h2>
+      <h2 className="text-label font-semibold text-foreground-muted mb-2">기한 없는 목적</h2>
       <ul className="flex flex-col">
         {activeGoals.map((goal, index) => {
           const progress = progressMap.get(goal.id)
@@ -113,7 +113,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
                   </div>
                 )}
 
-                <p className="truncate text-sm text-muted-foreground">
+                <p className="truncate text-label text-muted-foreground">
                   {fmt(progress.currentValue)}원
                   {progress.progressPercent !== null
                     ? ` · ${progress.progressPercent}%`

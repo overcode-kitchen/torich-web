@@ -71,7 +71,7 @@ export default function SavedMoneyHeroSection({
             className="h-6 w-6 shrink-0"
             aria-hidden
           />
-          <h2 className="text-sm font-semibold text-foreground-muted">지금까지 모은 돈</h2>
+          <h2 className="text-label font-semibold text-foreground-muted">지금까지 모은 돈</h2>
         </div>
         {canToggleAmounts && (
           <Button
@@ -98,12 +98,12 @@ export default function SavedMoneyHeroSection({
         </div>
       )}
 
-      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{subline}</p>
+      <p className="mt-2 text-caption leading-relaxed text-muted-foreground">{subline}</p>
 
       {totalMonthlyPayment > 0 && (
         <button
           onClick={onShowContribution}
-          className="mt-3 inline-flex items-center rounded-full border border-border-subtle bg-muted/30 px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground-muted dark:border-border dark:bg-muted-darker dark:font-semibold dark:text-foreground-soft dark:hover:bg-muted-darker dark:hover:text-foreground-soft dark:hover:brightness-95"
+          className="mt-3 inline-flex items-center rounded-full border border-border-subtle bg-muted/30 px-3 py-1.5 text-label font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground-muted dark:border-border dark:bg-muted-darker dark:font-semibold dark:text-foreground-soft dark:hover:bg-muted-darker dark:hover:text-foreground-soft dark:hover:brightness-95"
         >
           이번 달 내역 보기
         </button>

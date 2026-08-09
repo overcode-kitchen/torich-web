@@ -39,7 +39,7 @@ export default function GoalCompositionSection({
 
   return (
     <section className="bg-card rounded-2xl p-5 mb-4">
-      <h2 className="mb-3 text-sm font-semibold text-foreground-muted">어디에 모여 있나</h2>
+      <h2 className="mb-3 text-label font-semibold text-foreground-muted">어디에 모여 있나</h2>
 
       <div className="flex items-center gap-4">
         {/* outerRadius를 96%로 두는 건 조각 테두리(2px)가 컨테이너에 잘리지 않게 하기 위함이다 */}
@@ -72,7 +72,7 @@ export default function GoalCompositionSection({
             // 그대로 찍으면 키가 글자로 새어 나오므로 다른 화면과 같이 아이콘으로 푼다.
             const icon = resolvePurposeIcon(slice.emoji)
             return (
-              <li key={slice.key} className="flex items-center gap-2 text-xs">
+              <li key={slice.key} className="flex items-center gap-2 text-caption">
                 <span
                   className="h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: colorAt(index) }}

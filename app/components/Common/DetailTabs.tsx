@@ -40,7 +40,7 @@ export function DetailTabs({ tabs, activeTab, onTabClick, bleedClassName }: Deta
               aria-selected={selected}
               onClick={() => onTabClick(key)}
               className={cn(
-                'py-3 text-sm font-medium transition-colors border-b-2',
+                'py-3 text-label font-medium transition-colors border-b-2',
                 selected
                   ? 'border-foreground text-foreground'
                   : 'border-transparent text-foreground-subtle hover:text-foreground-soft',

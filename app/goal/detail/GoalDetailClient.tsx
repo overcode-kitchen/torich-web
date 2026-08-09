@@ -149,7 +149,7 @@ export default function GoalDetailClient() {
     return (
       <SubPageScaffold onBack={goBack} surfaceClassName="bg-background" contentClassName="px-6 py-6">
         <div className="flex flex-col items-center gap-4 py-16">
-          <p className="text-sm text-foreground-subtle">
+          <p className="text-label text-foreground-subtle">
             목적을 찾을 수 없습니다.
           </p>
           <Button onClick={() => router.push('/')}>홈으로</Button>
@@ -260,7 +260,7 @@ export default function GoalDetailClient() {
 
       {/* 메모: 이름 블록을 앱바로 올린 뒤, 목적 설명은 히어로 아래 보조 줄로 종속시킨다. */}
       {goal.memo?.trim() && (
-        <p className="-mt-2 mb-2 text-sm text-foreground-muted whitespace-pre-line break-words">
+        <p className="-mt-2 mb-2 text-label text-foreground-muted whitespace-pre-line break-words">
           {goal.memo}
         </p>
       )}

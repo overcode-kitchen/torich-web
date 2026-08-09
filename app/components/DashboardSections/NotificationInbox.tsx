@@ -19,7 +19,7 @@ export default function NotificationInbox() {
         <span
           className={cn(
             'absolute top-1 right-1 flex items-center justify-center min-w-[18px] h-[18px] rounded-full',
-            'bg-primary text-primary-foreground text-xs font-medium'
+            'bg-primary text-primary-foreground text-caption font-medium'
           )}
           aria-hidden
         >

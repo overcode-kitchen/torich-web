@@ -44,7 +44,7 @@ export default function ManualInputModal({
         <div className="space-y-4 py-4">
           {/* 항목 이름 입력 */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">항목 이름</label>
+            <label className="text-label font-medium text-foreground">항목 이름</label>
             <input
               type="text"
               value={stockName}

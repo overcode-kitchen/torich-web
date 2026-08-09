@@ -54,7 +54,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
         {/* 한 섹션이 카드 여러 장으로 쪼개지면 제목은 카드 밖에 둔다(FAQList와 같은 구조).
             한 섹션 = 한 카드인 다른 통계 섹션들이 제목을 카드 안에 두는 것과 같은 규칙이다. */}
         <div className="mb-2 flex items-center justify-between px-1">
-          <h2 className="text-sm font-semibold text-foreground-muted">목표별 페이스</h2>
+          <h2 className="text-label font-semibold text-foreground-muted">목표별 페이스</h2>
           <TiltToggle />
         </div>
 
@@ -93,7 +93,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                       <div className="goal-well-label text-[11px] font-extrabold tracking-wide">달성</div>
                       <div className="goal-well-num mt-0.5 text-[34px] font-extrabold leading-none tracking-tight tabular-nums">
                         {achieved}
-                        <span className="text-base">%</span>
+                        <span className="text-body">%</span>
                       </div>
                     </div>
                   </div>
@@ -101,10 +101,10 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                   {/* 위(모은 금액)와 아래(기한·만기)를 벌려 그린 패널 높이를 채운다 */}
                   <div className="flex min-w-0 flex-col justify-between py-0.5">
                     <div className="min-w-0">
-                      <div className="text-xs font-bold text-foreground-muted">모은 금액</div>
-                      <div className="mt-1 truncate text-xl font-extrabold leading-tight tracking-tight text-foreground tabular-nums">
+                      <div className="text-caption font-bold text-foreground-muted">모은 금액</div>
+                      <div className="mt-1 truncate text-heading font-extrabold leading-tight tracking-tight text-foreground tabular-nums">
                         {shortWon(progress.currentValue)}
-                        <span className="ml-1 text-xs font-semibold text-foreground-subtle">
+                        <span className="ml-1 text-caption font-semibold text-foreground-subtle">
                           / {shortWon(goal.target_amount)}
                         </span>
                       </div>
@@ -112,8 +112,8 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
 
                     <div>
                       <div className="mb-2 flex items-baseline justify-between">
-                        <span className="text-xs font-bold text-foreground-muted">기한</span>
-                        <span className="text-sm font-bold text-foreground-soft tabular-nums">
+                        <span className="text-caption font-bold text-foreground-muted">기한</span>
+                        <span className="text-label font-bold text-foreground-soft tabular-nums">
                           {elapsed}%
                           <span className="ml-0.5 text-[10px] font-medium text-foreground-subtle">지남</span>
                         </span>
@@ -144,10 +144,10 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                     계산할 수 없는 목적(월 적립 없음)은 줄을 아예 그리지 않는다. */}
                 {arrivalText && (
                   <div className="mt-3.5 flex items-baseline justify-between gap-3 border-t border-border-subtle pt-3">
-                    <span className="text-xs font-bold text-foreground-muted">
+                    <span className="text-caption font-bold text-foreground-muted">
                       {progress.isCompleted ? '달성' : '달성 예정'}
                     </span>
-                    <span className="min-w-0 truncate text-sm font-bold text-foreground tabular-nums">
+                    <span className="min-w-0 truncate text-label font-bold text-foreground tabular-nums">
                       {arrivalText}
                     </span>
                   </div>

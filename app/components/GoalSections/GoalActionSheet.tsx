@@ -46,7 +46,7 @@ export default function GoalActionSheet({
       <div className="relative z-[60] mx-auto w-full max-w-md p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
         <div className="overflow-hidden rounded-2xl bg-card">
           <div className="px-5 py-3">
-            <p className="truncate text-center text-sm font-semibold text-foreground-soft">
+            <p className="truncate text-center text-label font-semibold text-foreground-soft">
               {goalName}
             </p>
           </div>
@@ -54,7 +54,7 @@ export default function GoalActionSheet({
           <button
             type="button"
             onClick={onEdit}
-            className="flex w-full items-center gap-3 px-5 py-4 text-left text-base font-medium text-foreground transition-colors hover:bg-surface-hover"
+            className="flex w-full items-center gap-3 px-5 py-4 text-left text-body font-medium text-foreground transition-colors hover:bg-surface-hover"
           >
             <PencilSimple className="h-5 w-5 shrink-0" weight="bold" />
             수정하기
@@ -65,7 +65,7 @@ export default function GoalActionSheet({
               <button
                 type="button"
                 onClick={onArchive}
-                className="flex w-full items-center gap-3 px-5 py-4 text-left text-base font-medium text-foreground transition-colors hover:bg-surface-hover"
+                className="flex w-full items-center gap-3 px-5 py-4 text-left text-body font-medium text-foreground transition-colors hover:bg-surface-hover"
               >
                 <Archive className="h-5 w-5 shrink-0" weight="bold" />
                 보관하기
@@ -76,7 +76,7 @@ export default function GoalActionSheet({
           <button
             type="button"
             onClick={onDelete}
-            className="flex w-full items-center gap-3 px-5 py-4 text-left text-base font-medium text-destructive transition-colors hover:bg-surface-hover"
+            className="flex w-full items-center gap-3 px-5 py-4 text-left text-body font-medium text-destructive transition-colors hover:bg-surface-hover"
           >
             <Trash className="h-5 w-5 shrink-0" weight="bold" />
             삭제하기
@@ -86,7 +86,7 @@ export default function GoalActionSheet({
         <button
           type="button"
           onClick={onClose}
-          className="mt-2 w-full rounded-2xl bg-card py-4 text-base font-semibold text-foreground-soft transition-colors hover:bg-surface-hover"
+          className="mt-2 w-full rounded-2xl bg-card py-4 text-body font-semibold text-foreground-soft transition-colors hover:bg-surface-hover"
         >
           취소
         </button>

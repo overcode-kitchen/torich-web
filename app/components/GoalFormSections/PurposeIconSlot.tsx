@@ -51,7 +51,7 @@ export default function PurposeIconSlot({
           ) : (
             <div className="flex flex-col items-center gap-1 text-foreground-subtle">
               <Plus className="h-5 w-5" weight="bold" />
-              <span className="text-xs font-medium">아이콘</span>
+              <span className="text-caption font-medium">아이콘</span>
             </div>
           )}
         </button>

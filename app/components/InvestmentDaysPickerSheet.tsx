@@ -54,14 +54,14 @@ export default function InvestmentDaysPickerSheet({
               {tempDays.map((day) => (
                 <span
                   key={day}
-                  className="inline-flex items-center bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] px-2 py-0.5 rounded-full text-xs font-medium"
+                  className="inline-flex items-center bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] px-2 py-0.5 rounded-full text-caption font-medium"
                 >
                   {day}일
                 </span>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-foreground-subtle text-right">
+            <p className="text-label text-foreground-subtle text-right">
               선택된 날짜가 없어요
             </p>
           )}
@@ -77,7 +77,7 @@ export default function InvestmentDaysPickerSheet({
                   key={day}
                   type="button"
                   onClick={() => onToggleDay(day)}
-                  className={`h-9 rounded-full text-sm font-semibold transition-colors ${selected
+                  className={`h-9 rounded-full text-label font-semibold transition-colors ${selected
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-surface-hover text-foreground-soft hover:bg-secondary'
                     }`}
@@ -94,7 +94,7 @@ export default function InvestmentDaysPickerSheet({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 text-sm font-semibold text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors"
+            className="flex-1 py-3 text-label font-semibold text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors"
           >
             취소
           </button>
@@ -102,7 +102,7 @@ export default function InvestmentDaysPickerSheet({
             type="button"
             onClick={onApply}
             disabled={!isDirty}
-            className="flex-1 py-3 text-sm font-semibold text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-default"
+            className="flex-1 py-3 text-label font-semibold text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-default"
           >
             적용
           </button>

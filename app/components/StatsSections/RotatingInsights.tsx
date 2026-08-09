@@ -32,7 +32,7 @@ const SWIPE_THRESHOLD = 28
 export default function RotatingInsights({
   items,
   intervalMs = 4600,
-  className = 'text-sm text-foreground-muted',
+  className = 'text-label text-foreground-muted',
 }: RotatingInsightsProps) {
   const [index, setIndex] = useState(0)
   // 손으로 넘긴 직후 남은 간격만큼 뒤에 또 넘어가지 않도록, 값을 바꿔 타이머를 처음부터 다시 센다

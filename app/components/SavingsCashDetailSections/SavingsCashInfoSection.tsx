@@ -71,11 +71,11 @@ export function SavingsCashInfoSection({
       {/* 예적금: 만기 예상 수령액 */}
       {isSavings && maturity && (
         <div className="mt-6 rounded-2xl bg-secondary p-5">
-          <p className="text-sm text-muted-foreground mb-1">만기 예상 수령액</p>
-          <p className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+          <p className="text-label text-muted-foreground mb-1">만기 예상 수령액</p>
+          <p className="text-title font-bold tracking-tight text-foreground tabular-nums">
             {formatCurrency(maturity.total)}
           </p>
-          <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+          <div className="mt-3 space-y-1 text-label text-muted-foreground">
             <div className="flex justify-between">
               <span>넣은 원금</span>
               <span className="tabular-nums">{formatCurrency(maturity.principal)}</span>
@@ -85,7 +85,7 @@ export function SavingsCashInfoSection({
               <span className="tabular-nums">{formatCurrency(maturity.interest)}</span>
             </div>
           </div>
-          <p className="mt-3 text-xs text-foreground-muted">
+          <p className="mt-3 text-caption text-foreground-muted">
             단리·세전 기준 약식 추정값이에요. 우대금리·세금은 반영되지 않아요.
           </p>
         </div>

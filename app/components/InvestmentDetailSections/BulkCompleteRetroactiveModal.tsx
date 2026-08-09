@@ -28,10 +28,10 @@ export default function BulkCompleteRetroactiveModal({
 
       <div className="relative z-[60] w-full max-w-md mx-4 bg-card rounded-2xl shadow-lg p-6">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold tracking-tight text-foreground mb-3">
+          <h2 className="text-heading font-semibold tracking-tight text-foreground mb-3">
             소급 기록을 모두 완료로 표시할까요?
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             아직 기록되지 않은 <span className="font-medium text-foreground">{count}개월</span>을
             한 번에 완료로 표시합니다. 이미 기록된 월은 그대로 유지돼요.
           </p>
@@ -41,14 +41,14 @@ export default function BulkCompleteRetroactiveModal({
           <button
             onClick={onClose}
             disabled={isPending}
-            className="flex-1 py-3 text-base font-medium text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors disabled:opacity-50"
+            className="flex-1 py-3 text-body font-medium text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors disabled:opacity-50"
           >
             취소
           </button>
           <button
             onClick={() => onConfirm()}
             disabled={isPending}
-            className="flex-1 py-3 text-base font-medium text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="flex-1 py-3 text-body font-medium text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             {isPending ? '처리 중...' : '전체 완료'}
           </button>

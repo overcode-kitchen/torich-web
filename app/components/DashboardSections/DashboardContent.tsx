@@ -66,7 +66,7 @@ export default function DashboardContent({
             {records.length > 0 && (
                 <Link
                     href="/stats"
-                    className="block text-center pt-3 pb-4 text-sm text-muted-foreground hover:text-foreground-soft transition-colors"
+                    className="block text-center pt-3 pb-4 text-label text-muted-foreground hover:text-foreground-soft transition-colors"
                 >
                     적립 현황 보기 →
                 </Link>

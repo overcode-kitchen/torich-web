@@ -36,7 +36,7 @@ export default function AuthErrorView({ onGoBack, onGoToLogin }: AuthErrorViewPr
                         <p className="text-foreground text-lg font-semibold">
                             로그인 중 오류가 발생했습니다
                         </p>
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-muted-foreground text-label">
                             다시 시도해주세요
                         </p>
                     </div>

@@ -34,7 +34,7 @@ export default function BrandStoryCard({
           />
           <span className="text-foreground font-medium">토리치가 궁금하다면</span>
         </div>
-        <span className="text-sm text-muted-foreground mt-0.5">
+        <span className="text-label text-muted-foreground mt-0.5">
           이름에 담긴 의미와 우리가 추구하는 방향을 소개해요.
         </span>
       </button>

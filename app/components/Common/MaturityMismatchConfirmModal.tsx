@@ -56,10 +56,10 @@ export default function MaturityMismatchConfirmModal({
 
       <div className="relative z-[60] w-full max-w-md mx-4 bg-card rounded-2xl shadow-lg p-6">
         <div className="mb-5">
-          <h2 className="text-xl font-semibold tracking-tight text-foreground mb-3">
+          <h2 className="text-heading font-semibold tracking-tight text-foreground mb-3">
             묶인 적금이 더 늦게 만기돼요
           </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-label text-muted-foreground leading-relaxed">
             <span className="font-medium text-foreground">&ldquo;{goalName}&rdquo;</span>의
             종료일은 <span className="tabular-nums">{goalDateLabel}</span>이고,
             묶은 <span className="font-medium text-foreground">&ldquo;{recordTitle}&rdquo;</span>
@@ -75,7 +75,7 @@ export default function MaturityMismatchConfirmModal({
             type="button"
             onClick={onProceed}
             disabled={isProcessing}
-            className="w-full py-3 text-base font-semibold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full py-3 text-body font-semibold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             그대로 진행
           </button>
@@ -83,7 +83,7 @@ export default function MaturityMismatchConfirmModal({
             type="button"
             onClick={onAlignDate}
             disabled={isProcessing}
-            className="w-full py-3 text-base font-medium text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors disabled:opacity-50"
+            className="w-full py-3 text-body font-medium text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors disabled:opacity-50"
           >
             종료일을 적금 만기로 맞추기
           </button>
@@ -91,7 +91,7 @@ export default function MaturityMismatchConfirmModal({
             type="button"
             onClick={onCancel}
             disabled={isProcessing}
-            className="w-full py-2 text-sm text-foreground-subtle hover:text-foreground transition-colors disabled:opacity-50"
+            className="w-full py-2 text-label text-foreground-subtle hover:text-foreground transition-colors disabled:opacity-50"
           >
             취소
           </button>

@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils'
 
 interface FlowInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   /**
-   * 'md': 일반 인풋 (h-12, text-base) — 이름·텍스트 입력
-   * 'lg': 히어로 표시용 (h-16, text-2xl bold, 가운데 정렬) — 금액·수량 입력
+   * 'md': 일반 인풋 (h-12, text-body) — 이름·텍스트 입력
+   * 'lg': 히어로 표시용 (h-16, text-title bold, 가운데 정렬) — 금액·수량 입력
    */
   size?: 'md' | 'lg'
   /** 인풋 오른쪽에 고정 표시되는 단위 텍스트 (예: "만원", "주") */
@@ -27,8 +27,8 @@ const FlowInput = React.forwardRef<HTMLInputElement, FlowInputProps>(
 
     const sizeClass =
       size === 'lg'
-        ? 'h-16 px-4 text-2xl font-bold text-center tracking-tight'
-        : 'h-12 px-4 text-base'
+        ? 'h-16 px-4 text-title font-bold text-center tracking-tight'
+        : 'h-12 px-4 text-body'
 
     if (suffix) {
       return (
@@ -41,7 +41,7 @@ const FlowInput = React.forwardRef<HTMLInputElement, FlowInputProps>(
           <span
             className={cn(
               'absolute right-4 top-1/2 -translate-y-1/2 font-medium text-foreground-soft pointer-events-none',
-              size === 'lg' ? 'text-base' : 'text-sm',
+              size === 'lg' ? 'text-body' : 'text-label',
             )}
           >
             {suffix}

@@ -46,7 +46,7 @@ export default function BottomNavigation() {
               aria-current={isActive ? 'page' : undefined}
             >
               <Icon className="w-6 h-6 shrink-0" weight={isActive ? 'fill' : 'regular'} />
-              <span className="text-xs font-medium truncate w-full text-center">{label}</span>
+              <span className="text-caption font-medium truncate w-full text-center">{label}</span>
             </Link>
           )
         })}

@@ -80,7 +80,7 @@ export default function GoalNameField({
               </span>
               <span
                 className={cn(
-                  'truncate text-xs',
+                  'truncate text-caption',
                   isActive
                     ? 'font-semibold text-foreground'
                     : 'font-medium text-foreground-soft',
