@@ -56,7 +56,7 @@ export default function GoalOptionalFields({
           disabled={disabled}
           showQuickAdjust={false}
         />
-        <p className="text-xs text-foreground-subtle">
+        <p className="text-caption text-foreground-subtle">
           청약통장·예적금 등 토리치 밖에서 이미 모아둔 금액. 필요할 때 직접 갱신해요.
         </p>
       </div>
@@ -65,7 +65,7 @@ export default function GoalOptionalFields({
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
             <Label htmlFor="goal-noti">마감일 알림</Label>
-            <span className="text-xs text-foreground-subtle">
+            <span className="text-caption text-foreground-subtle">
               일주일 전·하루 전·당일에 알려드려요.
             </span>
           </div>

@@ -29,7 +29,7 @@ export default function GoalStepAmount({
 
   return (
     <div className="py-4">
-      <h2 className="text-2xl font-bold text-foreground tracking-tight mb-10">
+      <h2 className="text-title font-bold text-foreground tracking-tight mb-10">
         {title}
       </h2>
       <GoalAmountField

@@ -69,7 +69,7 @@ export default function PurposeIconPickerSheet({
             ) : (
               <div className="flex flex-col items-center gap-1 text-foreground-subtle">
                 <Plus className="h-6 w-6" weight="bold" />
-                <span className="text-xs font-medium">아이콘</span>
+                <span className="text-caption font-medium">아이콘</span>
               </div>
             )}
           </div>
@@ -113,7 +113,7 @@ export default function PurposeIconPickerSheet({
           <button
             type="button"
             onClick={() => setTempKey('')}
-            className="flex-1 py-3 text-sm font-semibold text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors"
+            className="flex-1 py-3 text-label font-semibold text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors"
           >
             지우기
           </button>
@@ -123,7 +123,7 @@ export default function PurposeIconPickerSheet({
               onApply(tempKey)
               onClose()
             }}
-            className="flex-1 py-3 text-sm font-semibold text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors"
+            className="flex-1 py-3 text-label font-semibold text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors"
           >
             확인
           </button>

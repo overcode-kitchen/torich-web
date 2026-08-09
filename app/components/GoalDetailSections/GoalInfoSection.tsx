@@ -31,7 +31,7 @@ export function GoalInfoSection({
   const targetValue = hasTarget ? (
     formatCurrency(goal.target_amount)
   ) : onFieldTap ? (
-    <span className="rounded-full bg-surface-hover px-3 py-1 text-sm font-medium text-foreground-soft">
+    <span className="rounded-full bg-surface-hover px-3 py-1 text-label font-medium text-foreground-soft">
       정하기
     </span>
   ) : (

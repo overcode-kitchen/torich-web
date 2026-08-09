@@ -152,7 +152,7 @@ export function GoalGroupCard({
           className="h-7 w-7 shrink-0 object-contain"
         />
       )}
-      <h3 className="min-w-0 flex-1 truncate text-base font-bold text-foreground">
+      <h3 className="min-w-0 flex-1 truncate text-body font-bold text-foreground">
         {name}
       </h3>
       {isCompletedGoal ? (
@@ -170,7 +170,7 @@ export function GoalGroupCard({
           )}
           {!isPendingSettlement && dDay && <DDayBadge label={dDay} />}
           {percent !== null && (
-            <span className="shrink-0 text-sm font-semibold text-foreground tabular-nums">
+            <span className="shrink-0 text-label font-semibold text-foreground tabular-nums">
               {percent}%
             </span>
           )}
@@ -285,7 +285,7 @@ export function GoalGroupCard({
               </div>
             )
           ) : (
-            <p className="py-4 text-center text-sm text-muted-foreground">
+            <p className="py-4 text-center text-label text-muted-foreground">
               아직 적립 항목이 없어요
             </p>
           )}
@@ -298,7 +298,7 @@ export function GoalGroupCard({
                 <button
                   type="button"
                   onClick={() => onArchive(goal.id)}
-                  className="flex shrink-0 items-center gap-1 text-sm font-semibold text-foreground-soft transition-colors hover:text-foreground"
+                  className="flex shrink-0 items-center gap-1 text-label font-semibold text-foreground-soft transition-colors hover:text-foreground"
                 >
                   <Archive className="h-4 w-4" weight="bold" />
                   보관하기

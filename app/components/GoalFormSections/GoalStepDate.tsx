@@ -27,10 +27,10 @@ export default function GoalStepDate({
 
   return (
     <div className="py-4">
-      <h2 className="text-2xl font-bold text-foreground tracking-tight mb-3">
+      <h2 className="text-title font-bold text-foreground tracking-tight mb-3">
         {title}
       </h2>
-      <p className="text-sm text-foreground-subtle mb-8">{GOAL_DEADLINE_HELP}</p>
+      <p className="text-label text-foreground-subtle mb-8">{GOAL_DEADLINE_HELP}</p>
       <GoalDateField
         value={values.target_date}
         onChange={(v) => setField('target_date', v)}

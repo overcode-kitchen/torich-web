@@ -143,12 +143,12 @@ export function GoalGroupItemRow({
             <div className="flex min-w-0 flex-col gap-1.5">
               <div className="flex min-w-0 items-center gap-2">
                 <RecordAvatar record={record} size="sm" />
-                <h4 className="min-w-0 truncate text-base font-semibold text-foreground">
+                <h4 className="min-w-0 truncate text-body font-semibold text-foreground">
                   {record.title}
                 </h4>
               </div>
               <div className="pl-2">
-                <p className="truncate text-sm text-muted-foreground">
+                <p className="truncate text-label text-muted-foreground">
                   {formatInvestmentDays(record.investment_days)}
                 </p>
               </div>
@@ -156,13 +156,13 @@ export function GoalGroupItemRow({
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
-            <span className="text-sm font-bold tabular-nums text-foreground">
+            <span className="text-label font-bold tabular-nums text-foreground">
               {amountLabel}
             </span>
             {isSettled ? (
               // 만기 완료: 종료된 항목 → 중립 회색 pill (비인터랙티브)
               <span
-                className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-xs font-medium text-foreground-soft"
+                className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-caption font-medium text-foreground-soft"
                 aria-label="만기 정산 완료"
               >
                 만기 완료
@@ -174,7 +174,7 @@ export function GoalGroupItemRow({
               // 전부 완료: 초록 pill. 탭하면 마지막 회차를 취소한다.
               <button
                 type="button"
-                className="inline-flex shrink-0 items-center gap-1 rounded-md bg-brand-accent-bg px-2.5 py-1 text-xs font-medium text-brand-accent-text"
+                className="inline-flex shrink-0 items-center gap-1 rounded-md bg-brand-accent-bg px-2.5 py-1 text-caption font-medium text-brand-accent-text"
                 onClick={(ev) => {
                   ev.stopPropagation()
                   onTogglePaid(record)
@@ -188,7 +188,7 @@ export function GoalGroupItemRow({
               // 미룸 상태(아직 한 회차도 완료 안 함): 중립 회색 pill. 탭하면 미룸을 해제한다.
               <button
                 type="button"
-                className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-xs font-medium text-foreground-soft"
+                className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-caption font-medium text-foreground-soft"
                 onClick={(ev) => {
                   ev.stopPropagation()
                   onTogglePostpone(record)
