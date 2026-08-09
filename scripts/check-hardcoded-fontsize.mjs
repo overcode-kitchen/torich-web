@@ -52,6 +52,7 @@ const INLINE_FONT_SIZE = /\bfontSize\s*:\s*(['"`]?)(\d[\d.]*(?:px|rem|em|pt)?)\1
 
 /** px 기준 스케일 토큰. 안내에 '가장 가까운 토큰'을 찍어주려고 쓴다. */
 const SCALE = [
+  { token: 'text-micro', px: 11 },
   { token: 'text-caption', px: 12 },
   { token: 'text-label', px: 14 },
   { token: 'text-body', px: 16 },

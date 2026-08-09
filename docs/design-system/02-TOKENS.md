@@ -47,7 +47,8 @@
 
 | 토큰 | rem / px | line-height | Tailwind 대응 | 역할 | 흡수하는 현재 값 |
 |---|---|---|---|---|---|
-| `text-caption` | 0.75rem / 12 | 1rem | text-xs | 캡션·메타·배지 | `text-xs`(118), `text-[11px]`(17), `text-[10px]`(3), `text-[0.8rem]`(2) |
+| `text-micro` | 0.6875rem / 11 | 0.875rem | — | 배지·초소형 메타(D-day 등) | `text-[11px]`(17), `text-[10px]`(3) |
+| `text-caption` | 0.75rem / 12 | 1rem | text-xs | 캡션·메타 | `text-xs`(118), `text-[0.8rem]`(2) |
 | `text-label` | 0.875rem / 14 | 1.25rem | text-sm | 조밀 데이터·보조 라벨 | `text-sm`(223) |
 | `text-body` | 1rem / 16 | 1.5rem | text-base | **본문 기본** | `text-base`(79), `text-[15px]`(2), `text-[17px]`(1) |
 | `text-heading` | 1.25rem / 20 | 1.75rem | text-xl | 카드 제목·강조 | `text-xl`(19), `text-lg`(25) |

@@ -113,6 +113,8 @@
   /* Layer 3: 타입 스케일 — 역할 기반 폰트 크기 토큰 (docs/design-system/02-TOKENS.md 기준).
      임의 px(text-[11px]·text-[2rem] 등) 대신 이 토큰만 쓴다.
      caption 12 / label 14 / body 16 / heading 20 / title 24 / display 30, 랜딩 히어로만 display-lg. */
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 0.875rem;
   --text-caption: 0.75rem;
   --text-caption--line-height: 1rem;
   --text-label: 0.875rem;
