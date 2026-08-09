@@ -25,7 +25,7 @@ export default function RichQuoteCard({ text, author, onShare }: RichQuoteCardPr
       </div>
 
       <blockquote className="flex flex-col gap-3">
-        <p className="text-lg leading-relaxed font-medium break-keep">
+        <p className="text-heading leading-relaxed font-medium break-keep">
           &ldquo;{text}&rdquo;
         </p>
         <footer className="text-label text-white/70">— {author}</footer>

@@ -38,7 +38,7 @@ export function BrandStorySheet({ isOpen, onClose }: BrandStorySheetProps) {
               />
             </div>
           </div>
-          <h2 className="text-lg font-semibold text-foreground mb-3">
+          <h2 className="text-heading font-semibold text-foreground mb-3">
             토리치(Torich)는 &quot;(도)토리 + 리치&quot;의 합성어예요.
           </h2>
           <div className="space-y-3 text-label leading-relaxed text-foreground-soft">

@@ -38,7 +38,7 @@ export function SavingsCashInfoSection({
 
   return (
     <section ref={infoRef} className="py-6">
-      <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
+      <h3 className="text-heading font-semibold tracking-tight text-foreground mb-4">
         적립 정보
       </h3>
       <div className="space-y-6">
