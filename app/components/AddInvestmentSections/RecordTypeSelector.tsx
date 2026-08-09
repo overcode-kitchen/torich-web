@@ -72,10 +72,10 @@ export default function RecordTypeSelector({
           >
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-body font-semibold text-foreground">
+                <p className="text-base font-semibold text-foreground">
                   {option.label}
                 </p>
-                <p className="mt-1 text-caption text-muted-foreground">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {option.description}
                 </p>
               </div>
