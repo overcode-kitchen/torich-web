@@ -37,7 +37,7 @@ export default function InvestmentDaysPickerSheet({
 
         {/* 헤더 */}
         <div className="flex items-center justify-between px-6 pb-4">
-          <h2 className="text-lg font-bold text-foreground">매월 투자일 선택</h2>
+          <h2 className="text-heading font-bold text-foreground">매월 투자일 선택</h2>
           <button
             onClick={onClose}
             className="p-1 text-foreground-subtle hover:text-foreground-muted transition-colors"

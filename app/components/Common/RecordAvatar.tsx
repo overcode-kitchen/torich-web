@@ -50,7 +50,7 @@ export function RecordAvatar({
   const resolvedLabel = label ?? avatar?.label ?? '?'
   const resolvedBg = bgClassName ?? avatar?.bgClassName ?? 'bg-coolgray-50'
   const resolvedText = textClassName ?? avatar?.textClassName ?? 'text-coolgray-700'
-  const sizeClassName = avatar?.sizeClassName ?? (size === 'lg' ? 'h-10 w-10 text-label' : 'h-6 w-6 text-[11px]')
+  const sizeClassName = avatar?.sizeClassName ?? (size === 'lg' ? 'h-10 w-10 text-label' : 'h-6 w-6 text-caption')
 
   // 종목명(없으면 라벨)으로 박자를 정해 서로 다른 리듬으로 뒤뚱거리게 한다.
   const wiggleStyle = wiggle

@@ -49,7 +49,7 @@ export default function InvestmentItem({
               aria-label="삭제"
             >
               <TrashSimple className="w-5 h-5 text-white" weight="bold" />
-              <span className="text-[11px] font-semibold text-white">삭제</span>
+              <span className="text-caption font-semibold text-white">삭제</span>
             </button>
           </div>
         )}
@@ -94,7 +94,7 @@ export default function InvestmentItem({
                     <> · {formatInvestmentDays(item.investment_days)}</>
                   )}
                 </p>
-                <span className="inline-flex items-center rounded-full px-1.5 py-px text-[10px] font-medium bg-surface text-foreground-subtle">
+                <span className="inline-flex items-center rounded-full px-1.5 py-px text-caption font-medium bg-surface text-foreground-subtle">
                   {habit ? '자유 적립' : '목표 적립'}
                 </span>
               </div>
