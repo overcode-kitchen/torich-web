@@ -36,10 +36,10 @@ export function FullScreenErrorSection({
         </div>
 
         <div className="space-y-2">
-          <p className="text-xl font-semibold tracking-tight text-foreground">
+          <p className="text-heading font-semibold tracking-tight text-foreground">
             {title ?? copy.title}
           </p>
-          <p className="text-base text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             {description ?? copy.description}
           </p>
         </div>
@@ -69,7 +69,7 @@ export function FullScreenErrorSection({
         </div>
 
         {debugMessage && (
-          <p className="pt-2 text-xs text-foreground-subtle break-words">
+          <p className="pt-2 text-caption text-foreground-subtle break-words">
             {debugMessage}
           </p>
         )}

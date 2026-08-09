@@ -16,10 +16,10 @@ export default function FAQPage() {
   return (
     <SubPageScaffold onBack={goBack} surfaceClassName="bg-background" contentClassName="py-6">
       <header className="mb-6">
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
+        <h1 className="text-heading font-bold tracking-tight text-foreground">
           토리치, 자주 묻는 질문
         </h1>
-        <p className="mt-2 text-base text-muted-foreground leading-relaxed">
+        <p className="mt-2 text-body text-muted-foreground leading-relaxed">
           목적·적립·진행률에 대해 자주 묻는 것들을 모았어요.
         </p>
       </header>
