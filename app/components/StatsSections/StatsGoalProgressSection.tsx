@@ -71,7 +71,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
                 className="flex w-full flex-col gap-3.5 px-1 py-4 text-left"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="min-w-0 truncate text-lg font-semibold text-foreground">
+                  <h3 className="min-w-0 truncate text-heading font-semibold text-foreground">
                     {goal.name}
                   </h3>
                   {dDay && <DDayBadge label={dDay} />}

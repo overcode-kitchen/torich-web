@@ -66,7 +66,7 @@ export default function CumulativePrincipalChart({
         </AreaChart>
       </ResponsiveContainer>
 
-      <div className="flex justify-between px-1 text-[10px] tabular-nums text-foreground-subtle">
+      <div className="flex justify-between px-1 text-caption tabular-nums text-foreground-subtle">
         <span>{points[0].label}</span>
         <span>{last.label}</span>
       </div>

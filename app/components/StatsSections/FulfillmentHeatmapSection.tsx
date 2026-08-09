@@ -112,7 +112,7 @@ export default function FulfillmentHeatmapSection({ heatmap }: { heatmap: Fulfil
         >
           <span />
           {heatmap.months.map((m) => (
-            <span key={m} className="text-center text-[11px] text-muted-foreground tabular-nums">
+            <span key={m} className="text-center text-caption text-muted-foreground tabular-nums">
               {m}
             </span>
           ))}

@@ -33,7 +33,7 @@ export default function MonthlyContributionSheet({
 
         {/* 헤더 */}
         <div className="flex items-center justify-between px-6 pb-4">
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+          <h2 className="text-heading font-bold text-foreground flex items-center gap-2">
             📋 이번 달 투자 내역
           </h2>
           <button

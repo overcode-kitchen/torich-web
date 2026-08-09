@@ -19,7 +19,7 @@ export function TiltToggle() {
       onClick={toggle}
       disabled={status === 'denied'}
       aria-pressed={enabled}
-      className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors disabled:opacity-40 ${
+      className={`rounded-full border px-2.5 py-1 text-caption font-semibold transition-colors disabled:opacity-40 ${
         enabled
           ? 'border-transparent bg-brand-accent-bg text-foreground-soft'
           : 'border-card-border text-foreground-muted'
