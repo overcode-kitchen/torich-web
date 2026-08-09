@@ -103,7 +103,7 @@ export default function DateSelectSheet({
           <button
             type="button"
             onClick={() => setPickerOpen((prev) => !prev)}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 -ml-2 text-base font-semibold text-foreground hover:bg-surface transition-colors"
+            className="flex items-center gap-1 rounded-lg px-2 py-1 -ml-2 text-body font-semibold text-foreground hover:bg-surface transition-colors"
             aria-expanded={pickerOpen}
           >
             <span>{`${month.getFullYear()}년 ${month.getMonth() + 1}월`}</span>
@@ -119,7 +119,7 @@ export default function DateSelectSheet({
             <button
               type="button"
               onClick={() => setMonth(new Date(currentYear, today.getMonth(), 1))}
-              className="flex h-11 items-center rounded-xl px-3 text-sm font-medium text-foreground-subtle hover:bg-surface transition-colors"
+              className="flex h-11 items-center rounded-xl px-3 text-label font-medium text-foreground-subtle hover:bg-surface transition-colors"
             >
               오늘
             </button>
@@ -157,7 +157,7 @@ export default function DateSelectSheet({
             <button
               type="button"
               onClick={() => setPickerOpen(false)}
-              className="mt-2 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="mt-2 w-full rounded-xl bg-primary py-2.5 text-label font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               완료
             </button>
@@ -210,14 +210,14 @@ export default function DateSelectSheet({
                 onClear()
                 onClose()
               }}
-              className="text-sm font-medium text-foreground-subtle hover:text-foreground-soft transition-colors"
+              className="text-label font-medium text-foreground-subtle hover:text-foreground-soft transition-colors"
             >
               삭제
             </button>
           ) : (
             <span />
           )}
-          <p className="text-sm text-foreground-soft">
+          <p className="text-label text-foreground-soft">
             {selectedDate
               ? selectedDate.toLocaleDateString('ko-KR', {
                   year: 'numeric',

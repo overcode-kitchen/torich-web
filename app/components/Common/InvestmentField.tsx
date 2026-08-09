@@ -16,14 +16,14 @@ export function InvestmentField({
 }: InvestmentFieldProps) {
   return (
     <div className="flex justify-between items-center">
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-label text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2">
         {badge && (
-          <span className="inline-flex items-center rounded-full bg-surface text-foreground-muted text-xs font-medium px-2.5 py-1">
+          <span className="inline-flex items-center rounded-full bg-surface text-foreground-muted text-caption font-medium px-2.5 py-1">
             {badge.text}
           </span>
         )}
-        <span className="text-base font-semibold text-foreground">
+        <span className="text-body font-semibold text-foreground">
           {value}
         </span>
       </div>

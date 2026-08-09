@@ -56,10 +56,10 @@ export default function DeleteConfirmModal({
       <div className="relative z-[60] w-full max-w-md mx-4 bg-card rounded-2xl shadow-lg p-6">
         {/* 헤더 */}
         <div className="mb-4">
-          <h2 className="text-xl font-semibold tracking-tight text-foreground mb-3">
+          <h2 className="text-heading font-semibold tracking-tight text-foreground mb-3">
             {title}
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             {description}
           </p>
         </div>
@@ -69,14 +69,14 @@ export default function DeleteConfirmModal({
           <button
             onClick={onClose}
             disabled={isDeleting}
-            className="flex-1 py-3 text-base font-medium text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors disabled:opacity-50"
+            className="flex-1 py-3 text-body font-medium text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors disabled:opacity-50"
           >
             취소
           </button>
           <button
             onClick={() => onConfirm()}
             disabled={isDeleting}
-            className={`flex-1 py-3 text-base font-medium rounded-xl transition-colors disabled:opacity-50 ${confirmClasses}`}
+            className={`flex-1 py-3 text-body font-medium rounded-xl transition-colors disabled:opacity-50 ${confirmClasses}`}
           >
             {isDeleting ? confirmingLabel : confirmLabel}
           </button>

@@ -24,7 +24,7 @@ export function DetailHeaderTitle({ leading, title, onClick }: DetailHeaderTitle
   const inner = (
     <>
       {leading}
-      <span className="truncate text-base font-semibold tracking-tight text-foreground">
+      <span className="truncate text-body font-semibold tracking-tight text-foreground">
         {title}
       </span>
     </>
