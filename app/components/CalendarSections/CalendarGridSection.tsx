@@ -79,7 +79,7 @@ export function CalendarGridSection({
     >
       <div className="grid grid-cols-7 gap-1 mb-2">
         {['일', '월', '화', '수', '목', '금', '토'].map((w) => (
-          <div key={w} className="text-center text-xs font-medium text-muted-foreground py-1">
+          <div key={w} className="text-center text-caption font-medium text-muted-foreground py-1">
             {w}
           </div>
         ))}
@@ -123,7 +123,7 @@ export function CalendarGridSection({
                     tabIndex={isHidden ? -1 : 0}
                     onClick={() => selectDate(day)}
                     aria-current={isToday ? 'date' : undefined}
-                    className={`relative aspect-square w-full rounded-lg flex items-center justify-center text-center text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500 ${
+                    className={`relative aspect-square w-full rounded-lg flex items-center justify-center text-center text-label transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500 ${
                       isSelected
                         ? 'bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] ring-1 ring-inset ring-brand-500'
                         : isToday
@@ -169,15 +169,15 @@ export function CalendarGridSection({
         <div className="relative flex items-center justify-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-xs text-foreground-muted">완료됨</span>
+            <span className="text-caption text-foreground-muted">완료됨</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-red-500" />
-            <span className="text-xs text-foreground-muted">미완료</span>
+            <span className="text-caption text-foreground-muted">미완료</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-surface-strong-hover" />
-            <span className="text-xs text-foreground-muted">예정</span>
+            <span className="text-caption text-foreground-muted">예정</span>
           </div>
           {!isTodaySelected && (
             <button
@@ -187,7 +187,7 @@ export function CalendarGridSection({
                 goToToday()
               }}
               aria-label="오늘로 이동"
-              className="absolute right-0 inline-flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground"
+              className="absolute right-0 inline-flex items-center gap-1 text-caption text-foreground-muted hover:text-foreground"
             >
               <ArrowUUpLeft className="w-3 h-3" />
               오늘

@@ -97,7 +97,7 @@ export default function SettingsView({
             >
                 <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto pl-4 pr-2">
                     <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
-                        <h1 className="text-xl font-bold text-foreground">설정</h1>
+                        <h1 className="text-heading font-bold text-foreground">설정</h1>
                     </div>
                 </div>
             </header>
@@ -178,12 +178,12 @@ export default function SettingsView({
                         label="버전"
                         rightElement={
                             <div className="flex items-center gap-3">
-                                <span className="text-muted-foreground text-sm">{currentVersion ?? '1.0.0'}</span>
+                                <span className="text-muted-foreground text-label">{currentVersion ?? '1.0.0'}</span>
                                 {hasUpdate && (
                                     <button
                                         type="button"
                                         onClick={() => { void openAppStore() }}
-                                        className="text-primary text-sm font-medium hover:underline"
+                                        className="text-primary text-label font-medium hover:underline"
                                     >
                                         업데이트
                                     </button>

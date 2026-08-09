@@ -10,7 +10,7 @@ export function AccountSection({ email, isLoggingOut, onLogout }: AccountSection
   return (
     <>
       <div className="px-4 py-3 border-t border-border-subtle">
-        <p className="text-sm text-muted-foreground">로그인된 이메일</p>
+        <p className="text-label text-muted-foreground">로그인된 이메일</p>
         <p className="text-foreground font-medium mt-0.5">{email || '-'}</p>
       </div>
       <button

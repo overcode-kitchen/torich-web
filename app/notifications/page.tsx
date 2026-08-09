@@ -77,7 +77,7 @@ function NotificationsContent() {
         style={{ paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-foreground tracking-tight">
+          <h1 className="text-heading font-bold text-foreground tracking-tight">
             알림
           </h1>
           {isDev && !isDemo && (
@@ -85,7 +85,7 @@ function NotificationsContent() {
               type="button"
               variant="secondary"
               size="sm"
-              className="rounded-full h-8 px-3 text-xs font-medium"
+              className="rounded-full h-8 px-3 text-caption font-medium"
               onClick={() => router.push('/notifications?demo=1')}
             >
               알림 예시보기
@@ -95,10 +95,10 @@ function NotificationsContent() {
 
         {displayNotifications.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-base text-muted-foreground">
+            <p className="text-body text-muted-foreground">
               아직 알림이 없어요
             </p>
-            <p className="text-sm text-foreground-subtle mt-1">
+            <p className="text-label text-foreground-subtle mt-1">
               푸시 알림이 켜지면 여기에 알림이 쌓여요
             </p>
             {isDev && !isDemo && (
@@ -107,7 +107,7 @@ function NotificationsContent() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="rounded-full text-xs font-medium"
+                  className="rounded-full text-caption font-medium"
                   onClick={() => router.push('/notifications?demo=1')}
                 >
                   알림 예시보기
@@ -120,15 +120,15 @@ function NotificationsContent() {
             {displayNotifications.map((item) => (
               <li key={item.id}>
                 <div className="py-4 px-1 hover:bg-muted/50 transition-colors">
-                  <p className="text-base font-medium text-foreground">
+                  <p className="text-body font-medium text-foreground">
                     {item.title}
                   </p>
                   {item.body && (
-                    <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
+                    <p className="text-label text-muted-foreground mt-0.5 line-clamp-2">
                       {item.body}
                     </p>
                   )}
-                  <p className="text-xs text-foreground-subtle mt-1">
+                  <p className="text-caption text-foreground-subtle mt-1">
                     {formatNotificationTime(item.createdAt)}
                   </p>
                 </div>

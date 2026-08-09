@@ -66,14 +66,14 @@ export function PaymentEventRow({
         />
         <div className="min-w-0">
           <p
-            className={`text-base font-semibold truncate ${
+            className={`text-body font-semibold truncate ${
               isResolved ? 'text-muted-foreground' : 'text-foreground'
             }`}
           >
             {event.title}
           </p>
           {contribution && (
-            <p className="text-sm text-muted-foreground truncate">{contribution}</p>
+            <p className="text-label text-muted-foreground truncate">{contribution}</p>
           )}
         </div>
       </div>

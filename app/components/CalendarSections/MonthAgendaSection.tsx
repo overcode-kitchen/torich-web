@@ -108,7 +108,7 @@ export function MonthAgendaSection({
             className="mb-3 last:mb-0 scroll-mt-0"
           >
             <h4
-              className={`sticky top-0 z-10 -mx-4 px-4 bg-card py-3 text-xs transition-colors ${
+              className={`sticky top-0 z-10 -mx-4 px-4 bg-card py-3 text-caption transition-colors ${
                 isSelected ? 'font-semibold text-brand-600' : 'font-medium text-foreground-subtle'
               }`}
             >

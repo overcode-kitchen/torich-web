@@ -13,11 +13,11 @@ export function UndoToastSection({ pendingUndo, handleUndo, label = '완료됨' 
       className="fixed bottom-24 left-4 right-4 z-50 flex items-center justify-between gap-3 rounded-xl bg-surface-dark text-white px-4 py-3 shadow-lg"
       role="status"
     >
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-label font-medium">{label}</span>
       <button
         type="button"
         onClick={handleUndo}
-        className="text-sm font-semibold text-brand-300 hover:text-brand-200 transition-colors"
+        className="text-label font-semibold text-brand-300 hover:text-brand-200 transition-colors"
       >
         되돌리기
       </button>
