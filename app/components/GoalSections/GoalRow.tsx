@@ -49,7 +49,7 @@ export function GoalRow({
               aria-label="삭제"
             >
               <TrashSimple className="w-5 h-5 text-white" weight="bold" />
-              <span className="text-[11px] font-semibold text-white">삭제</span>
+              <span className="text-caption font-semibold text-white">삭제</span>
             </button>
           </div>
         )}

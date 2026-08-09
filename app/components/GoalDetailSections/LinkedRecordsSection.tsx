@@ -25,7 +25,7 @@ export function LinkedRecordsSection({
 }: LinkedRecordsSectionProps) {
   return (
     <section className="py-6">
-      <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
+      <h3 className="text-heading font-semibold tracking-tight text-foreground mb-4">
         묶인 투자 {records.length > 0 && `(${records.length})`}
       </h3>
       {records.length === 0 ? (
