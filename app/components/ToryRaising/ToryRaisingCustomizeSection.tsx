@@ -40,12 +40,12 @@ export default function ToryRaisingCustomizeSection({
     return (
       <div className="rounded-2xl border border-border-subtle bg-surface p-4 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <div className="text-sm font-semibold text-foreground-soft">{title}</div>
-          <div className="text-xs text-muted-foreground">{items.length}개 보유</div>
+          <div className="text-label font-semibold text-foreground-soft">{title}</div>
+          <div className="text-caption text-muted-foreground">{items.length}개 보유</div>
         </div>
 
         {items.length === 0 ? (
-          <div className="text-sm text-muted-foreground">아직 아이템이 없어요. 상점에서 구매해보세요.</div>
+          <div className="text-label text-muted-foreground">아직 아이템이 없어요. 상점에서 구매해보세요.</div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {items.map((item) => {
@@ -56,7 +56,7 @@ export default function ToryRaisingCustomizeSection({
                   <div className="aspect-square w-full rounded-lg border border-border-subtle bg-surface p-2 flex items-center justify-center text-muted-foreground">
                     {item.emoji}
                   </div>
-                  <div className="text-xs font-semibold text-foreground-soft">{item.name}</div>
+                  <div className="text-caption font-semibold text-foreground-soft">{item.name}</div>
                   <Button
                     size="sm"
                     variant={isEquipped ? 'secondary' : 'secondary'}
@@ -77,9 +77,9 @@ export default function ToryRaisingCustomizeSection({
   return (
     <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-1">
-        <div className="text-sm font-semibold text-foreground-soft">토리 꾸미기</div>
-        <div className="text-2xl font-bold tracking-tight text-foreground">장착으로 즉시 반영(데모)</div>
-        <div className="text-sm text-muted-foreground">각 카테고리당 1개씩 장착 가능, “벗기”도 항상 제공돼요.</div>
+        <div className="text-label font-semibold text-foreground-soft">토리 꾸미기</div>
+        <div className="text-title font-bold tracking-tight text-foreground">장착으로 즉시 반영(데모)</div>
+        <div className="text-label text-muted-foreground">각 카테고리당 1개씩 장착 가능, “벗기”도 항상 제공돼요.</div>
       </header>
 
       <div
@@ -88,8 +88,8 @@ export default function ToryRaisingCustomizeSection({
       >
         <div className="flex flex-col gap-2">
           <div className="font-semibold text-foreground-soft">토리 미리보기</div>
-          <div className="text-sm">{previewLabel || '아직 장착된 아이템이 없어요.'}</div>
-          <div className="text-xs">이미지 영역은 MVP에서 비워두었어요.</div>
+          <div className="text-label">{previewLabel || '아직 장착된 아이템이 없어요.'}</div>
+          <div className="text-caption">이미지 영역은 MVP에서 비워두었어요.</div>
         </div>
       </div>
 

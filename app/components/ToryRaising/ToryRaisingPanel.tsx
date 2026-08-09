@@ -83,8 +83,8 @@ export default function ToryRaisingPanel({ onLock }: { onLock: () => void }) {
     <section className="flex flex-col gap-4">
       <div className="rounded-2xl border border-border-subtle bg-surface p-4 flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-foreground-soft">토리 키우기 (비밀 데모)</div>
-          <div className="text-sm text-muted-foreground mt-1">버튼을 눌러 출석/투자/상점/꾸미기를 직접 조작해보세요.</div>
+          <div className="text-label font-semibold text-foreground-soft">토리 키우기 (비밀 데모)</div>
+          <div className="text-label text-muted-foreground mt-1">버튼을 눌러 출석/투자/상점/꾸미기를 직접 조작해보세요.</div>
         </div>
         <Button size="sm" variant="soft" onClick={onLock}>
           잠금

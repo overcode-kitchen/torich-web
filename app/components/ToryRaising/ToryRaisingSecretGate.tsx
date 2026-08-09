@@ -22,12 +22,12 @@ export default function ToryRaisingSecretGate() {
       ) : (
         <div className="rounded-2xl border border-border-subtle bg-surface p-4 flex flex-col gap-3">
           <div>
-            <div className="text-sm font-semibold text-foreground-soft">토리 키우기 (비밀 데모)</div>
-            <div className="text-sm text-muted-foreground mt-1">토큰을 입력하면 `/tory` 안에서 조작 데모가 열려요.</div>
+            <div className="text-label font-semibold text-foreground-soft">토리 키우기 (비밀 데모)</div>
+            <div className="text-label text-muted-foreground mt-1">토큰을 입력하면 `/tory` 안에서 조작 데모가 열려요.</div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold text-foreground-soft">비밀 토큰</label>
+            <label className="text-caption font-semibold text-foreground-soft">비밀 토큰</label>
             <div className="flex gap-2">
               <input
                 value={unlockToken}
@@ -40,8 +40,8 @@ export default function ToryRaisingSecretGate() {
                 열기
               </Button>
             </div>
-            {errorMessage && <div className="text-sm text-destructive">{errorMessage}</div>}
-            <div className="text-xs text-muted-foreground">{helperText}</div>
+            {errorMessage && <div className="text-label text-destructive">{errorMessage}</div>}
+            <div className="text-caption text-muted-foreground">{helperText}</div>
           </div>
         </div>
       )}

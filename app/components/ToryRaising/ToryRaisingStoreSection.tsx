@@ -33,9 +33,9 @@ export default function ToryRaisingStoreSection({
     <section className="flex flex-col gap-5">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-sm font-semibold text-foreground-soft">도토리 상점</div>
-          <div className="text-2xl font-bold tracking-tight text-foreground">🌰 보유: {balance}</div>
-          <div className="text-sm text-muted-foreground mt-1">카테고리를 골라 아이템을 구매해보세요.</div>
+          <div className="text-label font-semibold text-foreground-soft">도토리 상점</div>
+          <div className="text-title font-bold tracking-tight text-foreground">🌰 보유: {balance}</div>
+          <div className="text-label text-muted-foreground mt-1">카테고리를 골라 아이템을 구매해보세요.</div>
         </div>
       </header>
 
@@ -61,7 +61,7 @@ export default function ToryRaisingStoreSection({
       </div>
 
       {items.length === 0 ? (
-        <div className="text-sm text-muted-foreground">표시할 아이템이 없어요.</div>
+        <div className="text-label text-muted-foreground">표시할 아이템이 없어요.</div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {items.map((item) => {
@@ -76,10 +76,10 @@ export default function ToryRaisingStoreSection({
                 </div>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-sm font-semibold text-foreground-soft">
+                    <div className="text-label font-semibold text-foreground-soft">
                       {item.emoji} {item.name}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">🌰 {item.price}</div>
+                    <div className="text-caption text-muted-foreground mt-1">🌰 {item.price}</div>
                   </div>
                 </div>
                 <Button
