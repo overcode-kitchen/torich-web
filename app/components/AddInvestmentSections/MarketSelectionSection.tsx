@@ -11,7 +11,7 @@ export default function MarketSelectionSection({ market, onMarketChange }: Marke
       <button
         type="button"
         onClick={() => onMarketChange('KR')}
-        className={`py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+        className={`py-2 px-4 text-label font-medium rounded-md transition-colors ${
           market === 'KR'
             ? 'bg-card dark:bg-surface-strong-hover text-foreground shadow-sm'
             : 'text-foreground-soft hover:text-foreground'
@@ -22,7 +22,7 @@ export default function MarketSelectionSection({ market, onMarketChange }: Marke
       <button
         type="button"
         onClick={() => onMarketChange('US')}
-        className={`py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+        className={`py-2 px-4 text-label font-medium rounded-md transition-colors ${
           market === 'US'
             ? 'bg-card dark:bg-surface-strong-hover text-foreground shadow-sm'
             : 'text-foreground-soft hover:text-foreground'

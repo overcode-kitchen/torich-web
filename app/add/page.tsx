@@ -64,7 +64,7 @@ function AddRecordContent() {
     return (
       <SubPageScaffold onBack={goHome} contentClassName="py-6">
         <div className="flex flex-col items-center gap-4 py-16">
-          <p className="text-sm text-foreground-subtle">{editError}</p>
+          <p className="text-label text-foreground-subtle">{editError}</p>
           <Button onClick={goHome}>홈으로</Button>
         </div>
       </SubPageScaffold>
@@ -128,7 +128,7 @@ function AddRecordContent() {
               type="button"
               onClick={onSkip}
               disabled={isSubmitting}
-              className="w-full py-3 mt-1 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              className="w-full py-3 mt-1 text-label text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             >
               나중에 할게요
             </button>

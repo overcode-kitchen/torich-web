@@ -16,10 +16,10 @@ export default function InvestmentDaysField({
         <div className="rounded-2xl p-4 border border-border-subtle-lighter bg-card space-y-2.5">
             <div className="flex items-start justify-between gap-3">
                 <div>
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-label font-medium text-foreground">
                         매월 투자일
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-caption text-muted-foreground mt-1">
                         선택하면 다가오는 투자·캘린더에 일정이 표시돼요.
                     </p>
                 </div>
@@ -32,7 +32,7 @@ export default function InvestmentDaysField({
                         .map((day) => (
                             <span
                                 key={day}
-                                className="inline-flex items-center bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                className="inline-flex items-center bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] px-2.5 py-0.5 rounded-full text-caption font-medium"
                             >
                                 {day}일
                             </span>
@@ -44,7 +44,7 @@ export default function InvestmentDaysField({
                 type="button"
                 variant="outline"
                 onClick={onOpenDaysPicker}
-                className="w-full justify-between bg-card rounded-xl h-11 px-4 text-sm text-foreground border-border-subtle hover:bg-surface"
+                className="w-full justify-between bg-card rounded-xl h-11 px-4 text-label text-foreground border-border-subtle hover:bg-surface"
             >
                 <span>
                     {investmentDays.length > 0

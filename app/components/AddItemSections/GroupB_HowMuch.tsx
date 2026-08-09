@@ -64,12 +64,12 @@ function GoalEndDateField({
         minDate={startOfToday()}
       />
       <div className="mt-2 flex items-center justify-between gap-3 px-1">
-        <p className="text-xs text-muted-foreground">{helper}</p>
+        <p className="text-caption text-muted-foreground">{helper}</p>
         {!onGoalDeadline && goalDeadline && (
           <button
             type="button"
             onClick={() => onChange(goalDeadline)}
-            className="shrink-0 text-xs text-foreground-subtle underline underline-offset-2 hover:text-foreground-soft transition-colors"
+            className="shrink-0 text-caption text-foreground-subtle underline underline-offset-2 hover:text-foreground-soft transition-colors"
           >
             목적 마감일로
           </button>
@@ -197,7 +197,7 @@ function SavingsFields({ formState }: { formState: UseAddItemFormStateReturn }) 
           <FlowInput
             inputMode="decimal"
             suffix="%"
-            className="h-14 text-xl text-center font-semibold"
+            className="h-14 text-heading text-center font-semibold"
             value={formState.interestRate}
             onChange={formState.handleInterestRateChange}
             placeholder="예: 3.5"

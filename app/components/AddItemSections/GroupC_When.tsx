@@ -30,7 +30,7 @@ const formatStartDate = (d: Date): string =>
   })
 
 const fieldButtonClass =
-  'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-sm text-foreground border border-border-subtle hover:bg-surface transition-colors'
+  'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-label text-foreground border border-border-subtle hover:bg-surface transition-colors'
 
 /**
  * 그룹 C: "언제 모을까요?"
