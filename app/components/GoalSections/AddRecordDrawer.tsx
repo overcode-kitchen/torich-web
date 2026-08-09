@@ -97,7 +97,7 @@ export function AddRecordDrawer({
         {/* 펼쳐질수록 드러나는 라벨 (레이아웃에 영향 주지 않도록 absolute) */}
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-7 flex items-center justify-center gap-1 text-caption font-semibold"
+          className="pointer-events-none absolute inset-x-0 bottom-7 flex items-center justify-center gap-1 text-micro font-semibold"
           style={{ opacity: labelOpacity }}
         >
           <Plus className="h-3 w-3" weight="bold" />

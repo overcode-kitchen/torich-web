@@ -427,7 +427,7 @@ export default function ToryRaisingFullScreen() {
             type="button"
             onClick={resetDemo}
             disabled={!isUnlocked}
-            className="text-caption text-foreground-subtle underline disabled:opacity-50"
+            className="text-micro text-foreground-subtle underline disabled:opacity-50"
           >
             데모 초기화
           </button>

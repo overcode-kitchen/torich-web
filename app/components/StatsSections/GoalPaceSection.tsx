@@ -90,7 +90,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                   <div className="goal-well relative isolate h-[118px] overflow-hidden rounded-2xl">
                     <AcornPhysicsFill level={clampPercent(achieved)} seed={index + 1} />
                     <div className="relative z-10 px-3 pt-3">
-                      <div className="goal-well-label text-caption font-extrabold tracking-wide">달성</div>
+                      <div className="goal-well-label text-micro font-extrabold tracking-wide">달성</div>
                       <div className="goal-well-num mt-0.5 text-display font-extrabold leading-none tracking-tight tabular-nums">
                         {achieved}
                         <span className="text-body">%</span>
@@ -115,7 +115,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                         <span className="text-caption font-bold text-foreground-muted">기한</span>
                         <span className="text-label font-bold text-foreground-soft tabular-nums">
                           {elapsed}%
-                          <span className="ml-0.5 text-caption font-medium text-foreground-subtle">지남</span>
+                          <span className="ml-0.5 text-micro font-medium text-foreground-subtle">지남</span>
                         </span>
                       </div>
                       {/* 트랙을 border-subtle로 한 단계 눌러 흰 카드 위에서도 '전체 폭'이 보이게 한다.
@@ -133,7 +133,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                           style={{ width: `${elapsed}%` }}
                         />
                       </div>
-                      <div className="mt-2 text-caption font-semibold text-foreground-subtle">
+                      <div className="mt-2 text-micro font-semibold text-foreground-subtle">
                         {maturityLabel(goal.target_date)} 만기
                       </div>
                     </div>

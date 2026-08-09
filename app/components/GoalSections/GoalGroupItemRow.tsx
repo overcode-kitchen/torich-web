@@ -97,7 +97,7 @@ export function GoalGroupItemRow({
             aria-label="이번 달 납입 미루기"
           >
             <Clock className="h-5 w-5 text-foreground-soft" weight="bold" />
-            <span className="text-caption font-semibold text-foreground-soft">미루기</span>
+            <span className="text-micro font-semibold text-foreground-soft">미루기</span>
           </button>
         )}
         <button
@@ -107,7 +107,7 @@ export function GoalGroupItemRow({
           aria-label="삭제"
         >
           <TrashSimple className="h-5 w-5 text-white" weight="bold" />
-          <span className="text-caption font-semibold text-white">삭제</span>
+          <span className="text-micro font-semibold text-white">삭제</span>
         </button>
 
         <div
