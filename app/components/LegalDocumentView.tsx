@@ -12,7 +12,7 @@ export interface LegalDocumentViewProps {
 export default function LegalDocumentView({ title, sections, onBack }: LegalDocumentViewProps) {
     return (
         <SubPageScaffold onBack={onBack} contentClassName="py-2">
-            <h1 className="text-xl font-bold tracking-tight text-foreground mb-6">{title}</h1>
+            <h1 className="text-heading font-bold tracking-tight text-foreground mb-6">{title}</h1>
 
             <article className="space-y-8 text-foreground">
                 {sections.map((section, index) => (
@@ -26,7 +26,7 @@ export default function LegalDocumentView({ title, sections, onBack }: LegalDocu
                             {section.paragraphs.map((paragraph, pIndex) => (
                                 <p
                                     key={`${index}-${pIndex}`}
-                                    className="text-base leading-relaxed text-foreground"
+                                    className="text-body leading-relaxed text-foreground"
                                 >
                                     {paragraph}
                                 </p>
