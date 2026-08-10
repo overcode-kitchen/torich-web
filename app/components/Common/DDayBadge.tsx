@@ -7,14 +7,15 @@ export interface DDayBadgeProps {
 }
 
 /**
- * 목적 카드·통계에서 공통으로 쓰는 D-day 배지.
- * 홈 목적 카드(GoalGroupCard)와 통계 목적 진척 섹션이 동일 규격으로 사용한다.
+ * 목적 카드·통계에서 공통으로 쓰는 D-day 표기.
+ * 배포본(main GoalCard)의 은은한 민짜 텍스트를 규격으로 삼는다 — 배경·패딩 없는
+ * 옅은 회색 소형 텍스트. 홈 목적 카드(GoalGroupCard)와 통계 목적 진척 섹션이 함께 쓴다.
  */
 export function DDayBadge({ label, className }: DDayBadgeProps) {
   return (
     <span
       className={cn(
-        'shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-micro font-semibold text-foreground-soft tabular-nums',
+        'shrink-0 text-micro text-muted-foreground tabular-nums',
         className,
       )}
     >
