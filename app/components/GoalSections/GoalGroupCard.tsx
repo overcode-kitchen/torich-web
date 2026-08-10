@@ -158,13 +158,13 @@ export function GoalGroupCard({
       {isCompletedGoal ? (
         // 완료: 상태를 헤더가 먼저 선언한다. 달성이면 "완료", 미달 종료면 "기간 종료".
         // (D-day·%는 "연체/실패"처럼 읽혀 완료 톤과 어긋나므로 노출하지 않는다.)
-        <span className="shrink-0 text-micro font-medium text-muted-foreground">
+        <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-micro font-semibold text-foreground-soft">
           {progress?.isCompleted ? '완료' : '기간 종료'}
         </span>
       ) : (
         <>
           {isPendingSettlement && (
-            <span className="shrink-0 text-micro font-medium text-muted-foreground">
+            <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-micro font-semibold text-foreground-soft">
               정산 대기{settlementLabel && ` · ${settlementLabel}`}
             </span>
           )}
