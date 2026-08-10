@@ -1,5 +1,21 @@
 import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { extendTailwindMerge } from "tailwind-merge"
+
+/**
+ * 커스텀 타입 스케일 토큰을 tailwind-merge가 '폰트 크기'로 인식하도록 등록한다.
+ * 등록하지 않으면 tailwind-merge가 text-micro/caption/label/... 을 '색'으로 오인해
+ * 같은 cn() 안의 text-<color>(예: text-foreground-soft)와 충돌 처리하여 지워버린다.
+ * → 크기 클래스가 사라져 텍스트가 상속 크기(16px)로 렌더되는 버그가 난다.
+ */
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [
+        { text: ["micro", "caption", "label", "body", "heading", "title", "display", "display-lg"] },
+      ],
+    },
+  },
+})
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
