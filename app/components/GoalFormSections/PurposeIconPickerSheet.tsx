@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Plus, X } from '@phosphor-icons/react'
 import { PURPOSE_ICONS, resolvePurposeIcon } from '@/app/constants/goal'
 import { cn } from '@/lib/utils'
@@ -20,13 +20,16 @@ export default function PurposeIconPickerSheet({
   onApply,
 }: PurposeIconPickerSheetProps) {
   const [tempKey, setTempKey] = useState<string>('')
+  const [wasOpen, setWasOpen] = useState(false)
 
-  // 시트가 열릴 때마다 부모의 현재 값으로 임시 상태 동기화
-  useEffect(() => {
+  // 시트가 열리는 순간 부모의 현재 값으로 임시 상태를 맞춘다.
+  // effect 대신 렌더 중 상태 조정(React 권장) — 열린 뒤 부모 값이 바뀌어도 시트 내 선택을 덮지 않는다.
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen)
     if (isOpen) {
       setTempKey(resolvePurposeIcon(value)?.key ?? '')
     }
-  }, [isOpen, value])
+  }
 
   if (!isOpen) return null
 
@@ -45,7 +48,7 @@ export default function PurposeIconPickerSheet({
         </div>
 
         <div className="flex items-center justify-between px-6 pb-4">
-          <h2 className="text-lg font-bold text-foreground">아이콘 선택</h2>
+          <h2 className="text-heading font-bold text-foreground">아이콘 선택</h2>
           <button
             type="button"
             onClick={onClose}
