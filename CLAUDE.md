@@ -21,9 +21,14 @@
 5. **PR을 만든다.** base는 반드시 `integration`.
 6. **머지는 담당자가 정한다.** 지시받으면 수행하고, 아니면 PR 링크와 CI 결과를 보고하고 멈춘다.
    머지할 때는 **CI 통과를 확인한 뒤 Squash merge**로 한다 (이슈 브랜치 → `integration`).
+7. **머지된 브랜치는 지운다.** 남겨두면 어느 게 살아있는지 헷갈린다. 원격은 리포 설정
+   `delete_branch_on_merge`가 켜져 있어 **머지 즉시 자동 삭제**된다. **로컬은 수동**이니
+   머지가 확인되면 `git checkout integration && git pull` 후
+   `git branch -d <머지된브랜치>`로 정리한다 (squash 머지라 `-d`가 거부하면 `-D`).
+   Claude는 머지 완료를 확인하면 이 정리를 **먼저 챙긴다.**
 
 > 머지 이후는 전부 자동이다. `board.yml`이 카드를 `배포대기`로 옮기고 라벨을 바꾸며,
-> `main` 배포 때 `release.yml`이 이슈를 닫는다. 사람이 보드를 손댈 일은 없다.
+> `main` 배포 때 `release.yml`이 이슈를 닫고, 원격 브랜치는 자동 삭제된다. 사람이 보드를 손댈 일은 없다.
 >
 > 단 **`main`으로 가는 머지(배포)는 다르다.** 버전 3곳과 태그가 함께 가야 하고
 > Merge commit이어야 하므로, 배포 절차([docs/workflow.md](docs/workflow.md))를 따른다.
