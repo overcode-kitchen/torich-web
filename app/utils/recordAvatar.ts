@@ -18,7 +18,7 @@ export interface RecordAvatar {
 }
 
 const SIZE_CLASS: Record<RecordAvatarSize, string> = {
-  sm: 'h-6 w-6 text-[11px]',
+  sm: 'h-6 w-6 text-micro',
   lg: 'h-10 w-10 text-sm',
 }
 

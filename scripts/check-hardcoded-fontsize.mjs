@@ -36,12 +36,11 @@ const ALLOWLIST = [
  * 각 항목의 치환 목표 토큰은 04-GUARD.md §7 이관표에 있다.
  */
 const BASELINE = {
-  // Phase 2(#134)에서 실화면 임의 px 26곳 + text-lg 22곳을 토큰으로 전환하며 17항목 제거.
-  // 남은 8건은 실화면 className이 아니다 — 차트 라이브러리 인라인 fontSize, 스타일가이드 데모,
-  // .ts 유틸의 문자열, components/ui 프리미티브. 별도 판단 후 정리한다.
+  // Phase 2(#134)에서 실화면 임의 px 27곳 + text-lg 23곳을 토큰으로 전환하며 18항목 제거.
+  // 남은 7건은 실화면 className이 아니다 — 차트 라이브러리 인라인 fontSize, 스타일가이드 데모,
+  // components/ui 프리미티브. 별도 판단 후 정리한다.
   'app/components/StatsSections/MonthlyTrendSection.tsx': 1, // Recharts tick fontSize (차트 API)
   'app/components/design-system/DashboardListRowsPatternSection.tsx': 4, // 스타일가이드 데모
-  'app/utils/recordAvatar.ts': 1, // className 문자열 반환 유틸(.ts)
   'components/ui/calendar.tsx': 2, // shadcn 프리미티브
 }
 
