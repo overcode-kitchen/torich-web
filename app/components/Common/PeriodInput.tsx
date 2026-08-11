@@ -36,7 +36,7 @@ export default function PeriodInput({
         />
         {isHabitMode && (
           <div className="absolute inset-0 flex items-center px-4 rounded-2xl bg-card pointer-events-none">
-            <span className="text-sm font-medium text-foreground-soft">목표 기간 없이 적립 중</span>
+            <span className="text-label font-medium text-foreground-soft">목표 기간 없이 적립 중</span>
           </div>
         )}
       </div>
@@ -52,7 +52,7 @@ export default function PeriodInput({
             />
             <Label
               htmlFor="habit-toggle"
-              className="text-xs text-foreground-soft cursor-pointer font-normal"
+              className="text-caption text-foreground-soft cursor-pointer font-normal"
             >
               아직 목표 기간이 없어요
             </Label>
@@ -64,14 +64,14 @@ export default function PeriodInput({
             <button
               type="button"
               onClick={() => onAdjust(1)}
-              className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-xs px-3 py-1.5 transition-colors"
+              className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-caption px-3 py-1.5 transition-colors"
             >
               +1년
             </button>
             <button
               type="button"
               onClick={() => onAdjust(-1)}
-              className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-xs px-3 py-1.5 transition-colors"
+              className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-caption px-3 py-1.5 transition-colors"
             >
               -1년
             </button>

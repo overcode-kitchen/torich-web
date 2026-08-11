@@ -10,7 +10,7 @@ import { toggleMonthPayments } from '@/app/utils/payment-history'
  *
  * - 상단 sonner 토스트 대신 홈/캘린더와 같은 하단 배너로 통일한다.
  * - 되돌리기는 방금 바꾼 회차(toggleMonthPayments 반환)만 정확히 원복한다.
- * - togglePayment는 화면의 usePaymentHistory 인스턴스를 그대로 주입받아 표가 즉시 갱신된다.
+ * - togglePayment는 PaymentHistoryContext의 것을 주입받아 표·홈·통계가 함께 갱신된다.
  */
 
 const UNDO_TOAST_DURATION_MS = 5000

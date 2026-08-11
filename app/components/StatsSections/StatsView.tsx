@@ -1,67 +1,35 @@
 'use client'
 
+import { Suspense } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import MonthlyContributionSheet from './MonthlyContributionSheet'
-import type { Investment } from '@/app/types/investment'
 import { useMonthlyContribution } from '@/app/hooks/investment/calculations/useMonthlyContribution'
 import StatsContent from '@/app/components/StatsSections/StatsContent'
 import { APP_TAB_CONTENT_PADDING_BOTTOM } from '@/app/constants/layout-constants'
 
-import {
-    GoalStats,
-    HabitStats,
-} from '@/app/hooks/investment/calculations/useStatsCalculations'
-import type { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
-import type { ConsistencyInsight } from '@/app/hooks/chart/useChartData'
-import type { PeriodPreset } from '@/app/hooks/stats/usePeriodFilter'
-import type { DateRange } from 'react-day-picker'
+import type {
+    StatsCalculations,
+    StatsChart,
+    StatsData,
+    StatsFilter,
+    StatsPayment,
+} from '@/app/components/StatsSections/stats-props'
 
 interface StatsViewProps {
     isLoading: boolean
     user: { id: string; email?: string } | null
 
-    // Grouped Props
-    data: {
-        records: Investment[]
-        activeRecords: Investment[]
-        hasRecords: boolean
-    }
-    payment: {
-        completedPayments: PaymentHistoryMap
-        retroactivePayments: PaymentHistoryMap
-    }
+    // Grouped Props (stats-props.ts 공용 타입)
+    data: StatsData
+    payment: StatsPayment
     ui: {
         showContributionSheet: boolean
         handleCloseContribution: () => void
         handleShowContribution: () => void
     }
-    filter: {
-        periodPreset: PeriodPreset
-        setPeriodPreset: (preset: PeriodPreset) => void
-        periodLabel: string
-        customDateRange: DateRange | undefined
-        setCustomDateRange: (range: DateRange | undefined) => void
-        handleCustomPeriod: () => void
-    }
-    calculations: {
-        totalPaidPrincipal: number
-        totalMonthlyPayment: number
-        thisMonth: {
-            totalPayment: number
-            completedPayment: number
-            progress: number
-            remainingPayment: number
-        }
-        goalStats: GoalStats
-        habitStats: HabitStats
-    }
-    chart: {
-        periodCompletionRate: number
-        chartData: Array<{ name: string; rate: number; completed: number; total: number }>
-        chartBarColor: string
-        chartEmphasisColor: string
-        consistency: ConsistencyInsight | null
-    }
+    filter: StatsFilter
+    calculations: StatsCalculations
+    chart: StatsChart
 }
 
 export default function StatsView({
@@ -74,8 +42,10 @@ export default function StatsView({
     calculations,
     chart,
 }: StatsViewProps) {
+    // "이번 달 투자 내역"은 지금 매달 납입 중인 것만 — 배지(totalMonthlyPayment)와 같은 기준(activeRecords)으로
+    // 맞춰야 총액·비중이 어긋나지 않는다. 기간 종료된 기록은 제외 (#28).
     const { contributionItems } = useMonthlyContribution({
-        items: data.records,
+        items: data.activeRecords,
         totalAmount: calculations.totalMonthlyPayment,
     })
 
@@ -106,14 +76,17 @@ export default function StatsView({
             }}
         >
             <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto px-4">
-                <StatsContent
-                    data={data}
-                    payment={payment}
-                    ui={ui}
-                    calculations={calculations}
-                    filter={filter}
-                    chart={chart}
-                />
+                {/* StatsContent가 탭 상태를 useSearchParams로 읽는다 → 정적 export 프리렌더를 위해 Suspense 경계 필요 */}
+                <Suspense fallback={null}>
+                    <StatsContent
+                        data={data}
+                        payment={payment}
+                        ui={ui}
+                        calculations={calculations}
+                        filter={filter}
+                        chart={chart}
+                    />
+                </Suspense>
             </div>
 
             {showContributionSheet && (

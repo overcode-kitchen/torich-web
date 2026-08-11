@@ -14,6 +14,10 @@ import type { UseAddInvestmentFormReturn } from '../../types/useAddInvestmentFor
 export interface UseAddInvestmentFormOptions {
   /** 목적 만들기 흐름에서 넘어온 경우, 생성될 투자를 이 목적에 연결한다. */
   goalId?: string
+  /** 묶인 목적에 마감일이 있는지. true면 목표 기간(년) 입력 대신 종료 날짜 선택 UI를 쓴다. */
+  goalHasDeadline?: boolean
+  /** 사용자가 고른(기본값=목적 마감일) 종료 날짜(YYYY-MM-DD). 저장 시 만기로 쓴다. 비면 무기한. */
+  goalEndDate?: string
   /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
   mode?: 'create' | 'edit'
   /** edit 모드에서 수정할 records.id */
@@ -66,10 +70,24 @@ export function useAddInvestmentForm(
     unitType: ui.unitType,
     monthlyShares: ui.monthlyShares,
     goalId: options?.goalId,
+    goalEndDate: options?.goalEndDate,
     mode: options?.mode,
     recordId: options?.recordId,
     initData: options?.initData,
   })
+
+  // 목적 마감일이 있는 신규 투자: 목표 기간(년) 입력 대신 종료 날짜를 고른다.
+  // period 입력이 없으므로 습관 모드로 두어 검증/진행 게이트를 통과시키고,
+  // 저장 시 submit 훅이 종료 날짜 기준으로 period_years/maturity_date를 덮어쓴다.
+  // (종료 날짜를 비우면 override가 없어 그대로 무기한 적립으로 저장된다.)
+  const goalHasDeadline = options?.goalHasDeadline
+  const isCreateMode = options?.mode !== 'edit'
+  useEffect(() => {
+    if (goalHasDeadline && isCreateMode) {
+      ui.setIsHabitMode(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goalHasDeadline, isCreateMode])
 
   // 편집 모드 프리필: 기존 record로 폼을 채운다. (record당 1회)
   // 검색종목은 selectedStock을 원본에서 복원해 저장 시 종목코드·주수 시세(=monthly_amount)가

@@ -10,6 +10,8 @@ export interface Goal {
   completed_at: string | null;
   archived_at: string | null;
   notification_enabled: boolean;
+  /** 수동 드래그 순서. NULL이면 target_date 폴백 정렬 뒤로. 구버전 앱 호환 위해 nullable. */
+  sort_order: number | null;
   created_at: string;
   updated_at: string;
 }

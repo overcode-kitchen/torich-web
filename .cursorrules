@@ -333,3 +333,38 @@ When the user provides a screenshot/image:
 - When generating dummy text, use natural Korean sentences (not Lorem Ipsum).
 
 ---
+
+# Design Rules (Token Discipline)
+> 정본: docs/design-system/02-TOKENS.md · 03-RULES.md. 아래는 단정형 요약이다.
+
+## Color
+- 정의된 시맨틱 토큰만 쓴다: `bg-background` `bg-surface` `bg-card` `border-border` `text-foreground` `text-muted-foreground` `text-foreground-soft/-subtle` `bg-primary` `text-success` `bg-destructive`.
+- 임의 hex / `rgb()` / `hsl()` 를 className·style 에 쓰지 않는다.
+- `bg-white` `text-black` `bg-black` 직접 사용 금지. 흰 면은 `bg-card`, 검은 텍스트는 `text-foreground`. (유색 면 위 `bg-white/10` 오버레이만 예외.)
+- 장식용 그라디언트 금지. 페이드 마스크와 토큰화된 브랜드 패널(`--goal-well`)만 허용.
+- 차트 hex 폴백은 파일당 상수 1개, 케이싱 통일.
+- 한 화면에 primary 버튼 1개.
+
+## Typography
+- 스케일 토큰만: `text-caption`(12) `text-label`(14) `text-body`(16) `text-heading`(20) `text-title`(24) `text-display`(30). 랜딩만 `text-display-lg`.
+- 임의 px(`text-[11px]` `text-[2rem]`) 금지.
+- 본문 기본 `text-body`. 굵기는 `font-medium`·`font-semibold`·`font-bold` 3종만 명시(본문 미지정). `extralight`·`extrabold`·`black` 금지.
+- 헤딩엔 `tracking-tight`.
+
+## Spacing
+- 4배수 스텝만: `1 2 3 4 6 8 12`. 하프스텝은 칩/작은 버튼의 `1.5`·`2.5`만 예외.
+- 내부 `p-3~p-4` / 사이 `gap-2~gap-3` / 섹션 사이 `gap-6~gap-8`. 낱개 margin으로 간격 만들지 않는다(부모 `gap`/`space-y`).
+
+## Component / Layout
+- 만들기 전 `components/ui`·`app/components`에서 기존 확인.
+- 버튼은 `<Button>`, 카드는 `<Card>`. 화면/섹션 파일에 껍데기·raw `<button>` 스타일 인라인 금지.
+- 모바일 우선(`md:`에서 확장), 콘텐츠 최대 폭 제한.
+- `globals.css`·타입·기본 UI 변경 시 `app/design-system` 가이드 즉시 갱신.
+
+## Self-check
+- [ ] 임의 hex·`text-[..px]`·`bg-white` 없음
+- [ ] 폰트 6단 스케일 / 굵기 3종 이내 / 간격 4배수
+- [ ] `<Button>`·`<Card>` 사용, primary 1개
+- [ ] 라이트·다크 대비 유지
+
+---

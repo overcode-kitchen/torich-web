@@ -176,12 +176,12 @@ export default function ToryRaisingFullScreen() {
       <div className="px-5 pt-3 pb-2">
         <div className="flex items-end justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-base font-semibold text-foreground tabular-nums">
+            <span className="text-body font-semibold text-foreground tabular-nums">
               레벨 {progress.level}
             </span>
-            <span className="text-sm text-foreground-soft truncate">{titleLabel}</span>
+            <span className="text-label text-foreground-soft truncate">{titleLabel}</span>
           </div>
-          <div className="text-sm font-semibold text-foreground tabular-nums">
+          <div className="text-label font-semibold text-foreground tabular-nums">
             보유 도토리 : {state.balance}
           </div>
         </div>
@@ -209,7 +209,7 @@ export default function ToryRaisingFullScreen() {
                 type="button"
                 onClick={() => setView(t.id)}
                 disabled={!isUnlocked}
-                className={`relative py-3 text-sm font-semibold transition-colors ${
+                className={`relative py-3 text-label font-semibold transition-colors ${
                   active ? 'text-foreground' : 'text-foreground-subtle'
                 } disabled:opacity-50`}
               >
@@ -230,8 +230,8 @@ export default function ToryRaisingFullScreen() {
         {view === 'main' && (
           <div className="h-full flex flex-col gap-4 overflow-hidden">
             {/* 명언 카드 */}
-            <div className="rounded-2xl bg-[#ece4f7] px-4 py-3">
-              <div className="text-sm text-foreground leading-snug line-clamp-3">
+            <div className="rounded-2xl bg-tory-quote px-4 py-3">
+              <div className="text-label text-foreground leading-snug line-clamp-3">
                 {quoteLoading
                   ? '명언을 불러오는 중...'
                   : richQuote
@@ -239,14 +239,14 @@ export default function ToryRaisingFullScreen() {
                     : '명언을 불러오지 못했어요.'}
               </div>
               {!quoteLoading && richQuote && (
-                <div className="mt-1 text-xs text-foreground-soft">— {richQuote.author}</div>
+                <div className="mt-1 text-caption text-foreground-soft">— {richQuote.author}</div>
               )}
             </div>
 
             {/* 토리 캐릭터 + 말풍선 */}
             <div className="flex-1 min-h-0 flex flex-col items-center justify-start gap-3">
               <div
-                className={`min-h-[40px] px-4 py-2 rounded-full bg-coolgray-50 border border-coolgray-100 text-sm text-foreground transition-opacity ${
+                className={`min-h-[40px] px-4 py-2 rounded-full bg-coolgray-50 border border-coolgray-100 text-label text-foreground transition-opacity ${
                   bubble ? 'opacity-100' : 'opacity-0'
                 }`}
                 aria-live="polite"
@@ -272,7 +272,7 @@ export default function ToryRaisingFullScreen() {
                     priority
                   />
                 </div>
-                <div className="text-xs text-foreground-soft px-3 text-center line-clamp-2">
+                <div className="text-caption text-foreground-soft px-3 text-center line-clamp-2">
                   {equippedSummary}
                 </div>
               </button>
@@ -281,8 +281,8 @@ export default function ToryRaisingFullScreen() {
         )}
 
         {view === 'shop' && (
-          <div className="h-full rounded-2xl bg-white border border-coolgray-100 p-4 flex flex-col gap-3 overflow-hidden">
-            <div className="text-base font-semibold text-foreground">도토리 상점</div>
+          <div className="h-full rounded-2xl bg-card border border-border-subtle p-4 flex flex-col gap-3 overflow-hidden">
+            <div className="text-body font-semibold text-foreground">도토리 상점</div>
             <div className="flex flex-wrap gap-2">
               {(['background', 'hat', 'glasses', 'outfit'] as ToryShopCategory[]).map((c) => (
                 <Button
@@ -306,10 +306,10 @@ export default function ToryRaisingFullScreen() {
                     key={item.id}
                     className="rounded-xl border border-coolgray-100 bg-coolgray-25 p-3 flex flex-col gap-2"
                   >
-                    <div className="text-sm font-semibold text-foreground truncate">
+                    <div className="text-label font-semibold text-foreground truncate">
                       {item.emoji} {item.name}
                     </div>
-                    <div className="text-xs text-foreground-soft">🌰 {item.price}</div>
+                    <div className="text-caption text-foreground-soft">🌰 {item.price}</div>
                     <Button
                       size="sm"
                       variant="secondary"
@@ -330,8 +330,8 @@ export default function ToryRaisingFullScreen() {
         )}
 
         {view === 'customize' && (
-          <div className="h-full rounded-2xl bg-white border border-coolgray-100 p-4 flex flex-col gap-3 overflow-hidden">
-            <div className="text-base font-semibold text-foreground">토리 꾸미기</div>
+          <div className="h-full rounded-2xl bg-card border border-border-subtle p-4 flex flex-col gap-3 overflow-hidden">
+            <div className="text-body font-semibold text-foreground">토리 꾸미기</div>
             <div className="flex flex-wrap gap-2">
               {(['background', 'hat', 'glasses', 'outfit'] as const).map((c) => (
                 <Button
@@ -363,7 +363,7 @@ export default function ToryRaisingFullScreen() {
                     key={item.id}
                     className="rounded-xl border border-coolgray-100 bg-coolgray-25 p-3 flex flex-col gap-2"
                   >
-                    <div className="text-sm font-semibold text-foreground truncate">
+                    <div className="text-label font-semibold text-foreground truncate">
                       {item.emoji} {item.name}
                     </div>
                     <Button
@@ -384,7 +384,7 @@ export default function ToryRaisingFullScreen() {
                 )
               })}
               {equippedList.length === 0 && (
-                <div className="col-span-2 text-sm text-foreground-soft">
+                <div className="col-span-2 text-label text-foreground-soft">
                   보유한 아이템이 없어요. 상점에서 구매해보세요.
                 </div>
               )}
@@ -400,7 +400,7 @@ export default function ToryRaisingFullScreen() {
             type="button"
             onClick={() => handleActionResult(claimAttendance())}
             disabled={!isUnlocked}
-            className="h-12 rounded-full bg-white border border-coolgray-100 text-sm font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
+            className="h-12 rounded-full bg-card border border-border-subtle text-label font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
           >
             출석
           </button>
@@ -408,7 +408,7 @@ export default function ToryRaisingFullScreen() {
             type="button"
             onClick={() => handleActionResult(claimPlay())}
             disabled={!isUnlocked}
-            className="h-12 rounded-full bg-white border border-coolgray-100 text-sm font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
+            className="h-12 rounded-full bg-card border border-border-subtle text-label font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
           >
             놀아주기
           </button>
@@ -416,7 +416,7 @@ export default function ToryRaisingFullScreen() {
             type="button"
             onClick={() => handleActionResult(claimPet())}
             disabled={!isUnlocked}
-            className="h-12 rounded-full bg-white border border-coolgray-100 text-sm font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
+            className="h-12 rounded-full bg-card border border-border-subtle text-label font-semibold text-foreground active:scale-[0.99] transition-transform disabled:opacity-50"
           >
             쓰다듬기
           </button>
@@ -444,17 +444,17 @@ export default function ToryRaisingFullScreen() {
           <div className="relative z-[81] w-full max-w-md rounded-2xl border border-border-subtle bg-card p-6 shadow-lg">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-sm font-semibold text-foreground-soft tracking-tight">
+                <div className="text-label font-semibold text-foreground-soft tracking-tight">
                   토리 키우기 (비밀 데모)
                 </div>
-                <div className="text-2xl font-bold tracking-tight text-foreground mt-1">
+                <div className="text-title font-bold tracking-tight text-foreground mt-1">
                   열기 전용
                 </div>
               </div>
             </div>
 
             <div className="mt-4 flex flex-col gap-2">
-              <label className="text-xs font-semibold text-foreground-soft">비밀 토큰</label>
+              <label className="text-caption font-semibold text-foreground-soft">비밀 토큰</label>
               <div className="flex gap-2">
                 <input
                   value={unlockToken}
@@ -468,8 +468,8 @@ export default function ToryRaisingFullScreen() {
                   열기
                 </Button>
               </div>
-              {errorMessage && <div className="text-sm text-destructive">{errorMessage}</div>}
-              <div className="text-xs text-muted-foreground">
+              {errorMessage && <div className="text-label text-destructive">{errorMessage}</div>}
+              <div className="text-caption text-muted-foreground">
                 현재 데모 토큰: <span className="font-semibold">{DEFAULT_TORY_RAISE_DEMO_TOKEN}</span> (개발용)
               </div>
             </div>

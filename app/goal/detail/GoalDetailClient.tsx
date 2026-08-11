@@ -19,7 +19,8 @@ import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLi
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { scrollToDetailSection } from '@/app/utils/scrollToDetailSection'
-import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { deriveGoalStatus } from '@/app/utils/goal-status'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { amountBucket, daysBetween, track } from '@/app/lib/analytics'
 import { Button } from '@/components/ui/button'
 import {
@@ -58,7 +59,7 @@ export default function GoalDetailClient() {
 
   const { goal, records, unlinkedRecords, isLoading, refetch, setGoal } =
     useGoalDetail(goalId, userId)
-  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistory()
+  const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistoryContext()
   const progress = useGoalProgress(
     goal,
     records,
@@ -69,6 +70,17 @@ export default function GoalDetailClient() {
   const { updateGoal, archiveGoal, isUpdating } = useGoalUpdate(userId)
   const { deleteGoal, isDeleting } = useGoalDelete(userId)
   const { linkRecordToGoal, isLinking } = useInvestmentGoalLink(userId)
+
+  // 보관은 완료(기간 종료 포함)된 목적만 가능하다. 홈 카드와 동일한 파생 상태 기준.
+  const isCompletedGoal =
+    goal && progress
+      ? deriveGoalStatus({
+          goal,
+          linkedRecords: records,
+          accumulatedAmount: progress.currentValue,
+          now: new Date(),
+        }) === 'completed'
+      : false
 
   useEffect(() => {
     if (!goal || !progress) return
@@ -137,7 +149,7 @@ export default function GoalDetailClient() {
     return (
       <SubPageScaffold onBack={goBack} surfaceClassName="bg-background" contentClassName="px-6 py-6">
         <div className="flex flex-col items-center gap-4 py-16">
-          <p className="text-sm text-foreground-subtle">
+          <p className="text-label text-foreground-subtle">
             목적을 찾을 수 없습니다.
           </p>
           <Button onClick={() => router.push('/')}>홈으로</Button>
@@ -180,12 +192,14 @@ export default function GoalDetailClient() {
         <DropdownMenuItem onSelect={() => router.push(`/goal/detail/edit?id=${goal.id}`)}>
           수정하기
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={() => setShowArchiveModal(true)}
-          disabled={isUpdating}
-        >
-          보관하기
-        </DropdownMenuItem>
+        {isCompletedGoal && (
+          <DropdownMenuItem
+            onSelect={() => setShowArchiveModal(true)}
+            disabled={isUpdating}
+          >
+            보관하기
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onSelect={() => setShowDeleteModal(true)}
           disabled={isDeleting}
@@ -246,7 +260,7 @@ export default function GoalDetailClient() {
 
       {/* 메모: 이름 블록을 앱바로 올린 뒤, 목적 설명은 히어로 아래 보조 줄로 종속시킨다. */}
       {goal.memo?.trim() && (
-        <p className="-mt-2 mb-2 text-sm text-foreground-muted whitespace-pre-line break-words">
+        <p className="-mt-2 mb-2 text-label text-foreground-muted whitespace-pre-line break-words">
           {goal.memo}
         </p>
       )}
@@ -263,7 +277,15 @@ export default function GoalDetailClient() {
       />
 
       <div ref={infoRef}>
-        <GoalInfoSection goal={goal} progress={progress} />
+        <GoalInfoSection
+          goal={goal}
+          progress={progress}
+          // 값 하나 고치러 가는 길이므로 수정 화면 맨 위가 아니라 그 칸으로 데려간다.
+          // (적립 항목 상세 → /add?editId=&field= 와 같은 규칙)
+          onFieldTap={(field) =>
+            router.push(`/goal/detail/edit?id=${goal.id}&field=${field}`)
+          }
+        />
       </div>
 
       <div ref={linkedRef}>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { CaretDown, CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import { ko } from 'date-fns/locale'
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar'
@@ -30,6 +31,11 @@ interface DateSelectSheetProps {
   emptyLabel?: string
   /** 연도 휠을 올해보다 과거로 몇 년까지 열지 (시작일 등 과거 선택용). 기본 0(과거 불가). */
   pastYears?: number
+  /**
+   * 이 날짜보다 이전은 선택할 수 없게 한다 (만기일·종료일처럼 미래여야 하는 값).
+   * 이미 저장된 과거 날짜는 계속 보이고 선택 상태도 유지된다 — 새로 고를 수만 없다.
+   */
+  minDate?: Date
 }
 
 function shiftMonth(base: Date, delta: number): Date {
@@ -50,8 +56,10 @@ export default function DateSelectSheet({
   onClear,
   emptyLabel = '선택 안 함',
   pastYears = 0,
+  minDate,
 }: DateSelectSheetProps) {
-  const currentYear = new Date().getFullYear()
+  const today = new Date()
+  const currentYear = today.getFullYear()
   const selectedYear = selectedDate?.getFullYear() ?? currentYear
   // 휠 연도 범위: 과거 선택값·pastYears(과거 시작일 등)를 포괄하고, 장기 목표를 위해 +30년까지 노출.
   const startYear = Math.min(currentYear - pastYears, selectedYear)
@@ -63,7 +71,11 @@ export default function DateSelectSheet({
   const atStart = month.getFullYear() === startYear && month.getMonth() === 0
   const atEnd = month.getFullYear() === endYear && month.getMonth() === 11
 
-  return (
+  // 조상(SubPageScaffold의 animate-page-in transform 등)이 만드는 stacking context 밖으로
+  // 빼기 위해 body로 포털 렌더한다. 이래야 시트가 페이지 고정 하단 바 위로 온전히 덮인다.
+  if (typeof document === 'undefined') return null
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"
@@ -91,7 +103,7 @@ export default function DateSelectSheet({
           <button
             type="button"
             onClick={() => setPickerOpen((prev) => !prev)}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 -ml-2 text-base font-semibold text-foreground hover:bg-surface transition-colors"
+            className="flex items-center gap-1 rounded-lg px-2 py-1 -ml-2 text-body font-semibold text-foreground hover:bg-surface transition-colors"
             aria-expanded={pickerOpen}
           >
             <span>{`${month.getFullYear()}년 ${month.getMonth() + 1}월`}</span>
@@ -106,21 +118,28 @@ export default function DateSelectSheet({
           <div className={cn('flex items-center gap-1', pickerOpen && 'invisible')}>
             <button
               type="button"
+              onClick={() => setMonth(new Date(currentYear, today.getMonth(), 1))}
+              className="flex h-11 items-center rounded-xl px-3 text-label font-medium text-foreground-subtle hover:bg-surface transition-colors"
+            >
+              오늘
+            </button>
+            <button
+              type="button"
               onClick={() => setMonth((m) => shiftMonth(m, -1))}
               disabled={atStart}
-              className="p-1.5 rounded-lg text-foreground-subtle hover:bg-surface disabled:opacity-30 transition-colors"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-foreground-subtle hover:bg-surface disabled:opacity-30 transition-colors"
               aria-label="이전 달"
             >
-              <CaretLeft className="w-4 h-4" />
+              <CaretLeft className="w-6 h-6" />
             </button>
             <button
               type="button"
               onClick={() => setMonth((m) => shiftMonth(m, 1))}
               disabled={atEnd}
-              className="p-1.5 rounded-lg text-foreground-subtle hover:bg-surface disabled:opacity-30 transition-colors"
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-foreground-subtle hover:bg-surface disabled:opacity-30 transition-colors"
               aria-label="다음 달"
             >
-              <CaretRight className="w-4 h-4" />
+              <CaretRight className="w-6 h-6" />
             </button>
           </div>
         </div>
@@ -138,7 +157,7 @@ export default function DateSelectSheet({
             <button
               type="button"
               onClick={() => setPickerOpen(false)}
-              className="mt-2 w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="mt-2 w-full rounded-xl bg-primary py-2.5 text-label font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               완료
             </button>
@@ -154,6 +173,7 @@ export default function DateSelectSheet({
                 startMonth={new Date(startYear, 0, 1)}
                 endMonth={new Date(endYear, 11, 31)}
                 selected={selectedDate ?? undefined}
+                disabled={minDate ? { before: minDate } : undefined}
                 fixedWeeks
                 className="w-full"
                 classNames={{
@@ -179,7 +199,10 @@ export default function DateSelectSheet({
           </ScrollArea>
         )}
 
-        <div className="flex items-center justify-between px-6 py-4 border-t border-border-subtle shrink-0">
+        <div
+          className="flex items-center justify-between px-6 pt-4 border-t border-border-subtle shrink-0"
+          style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
+        >
           {onClear ? (
             <button
               type="button"
@@ -187,14 +210,14 @@ export default function DateSelectSheet({
                 onClear()
                 onClose()
               }}
-              className="text-sm font-medium text-foreground-subtle hover:text-foreground-soft transition-colors"
+              className="text-label font-medium text-foreground-subtle hover:text-foreground-soft transition-colors"
             >
               삭제
             </button>
           ) : (
             <span />
           )}
-          <p className="text-sm text-foreground-soft">
+          <p className="text-label text-foreground-soft">
             {selectedDate
               ? selectedDate.toLocaleDateString('ko-KR', {
                   year: 'numeric',
@@ -206,6 +229,7 @@ export default function DateSelectSheet({
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# 디자인 규칙 검사 — 규칙을 어긴 코드가 커밋되지 않게 막는다.
+# 규칙 근거: docs/design-system/03-RULES.md · 가드 설명: docs/design-system/04-GUARD.md
+#
+# lint-staged를 쓰지 않는 이유: 세 검사기를 저장소 전체에 돌려도 0.2초라
+# 스테이징 파일만 거르는 의존성을 추가할 이유가 없다. 전체 검사가 커버리지도 넓다.
+#
+# 우회가 필요하면 `git commit --no-verify` (권장하지 않음).
+# 정당한 예외는 각 스크립트 상단 allowlist 또는
+# `// design-guard-disable-next-line <rule> — 이유` 주석으로 등록한다.
+
+node scripts/check-hardcoded-color.mjs || exit 1
+node scripts/check-hardcoded-fontsize.mjs || exit 1
+node scripts/check-hardcoded-spacing.mjs || exit 1

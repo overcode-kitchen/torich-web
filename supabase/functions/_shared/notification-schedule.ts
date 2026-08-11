@@ -125,7 +125,9 @@ export function generatePaymentDates(
   const start = new Date(startDate)
   const effectivePeriodYears = periodYears && periodYears > 0 ? periodYears : HABIT_DEFAULT_YEARS
   const end = addYears(start, effectivePeriodYears)
-  const current = new Date(start)
+  // 커서는 그 달 1일로 고정한다. start의 일(日)을 그대로 들고 다니면 말일(예: 1/31)에서
+  // setMonth(+1)이 "2월 31일 → 3월 3일"로 튕겨 그 달 루프가 통째로 누락된다(#54).
+  const current = new Date(start.getFullYear(), start.getMonth(), 1)
 
   while (current < end) {
     const year = current.getFullYear()

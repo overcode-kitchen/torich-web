@@ -30,6 +30,11 @@ elif [ -f yarn.lock ]; then PM="yarn"
 elif [ -f package-lock.json ]; then PM="npm"
 else PM="npm"; fi
 
+# lock 파일이 있어도 그 매니저가 설치돼 있지 않을 수 있다.
+# 확인 없이 실행하면 "command not found"가 lint 실패로 둔갑해,
+# 있지도 않은 린트 에러를 찾게 만든다. node_modules는 이미 있으므로 npx로 폴백한다.
+if ! command -v "$PM" >/dev/null 2>&1; then PM="npm"; fi
+
 # 변경된 파일만 lint (전체 프로젝트 검사 대신 해당 파일만)
 case "$PM" in
   pnpm) CMD="pnpm exec eslint \"$FILE_PATH\"" ;;

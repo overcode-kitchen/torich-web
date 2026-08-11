@@ -13,7 +13,7 @@ export default function FAQList({ groups }: FAQListProps) {
           <section key={category.id} aria-labelledby={`faq-cat-${category.id}`}>
             <h2
               id={`faq-cat-${category.id}`}
-              className="text-sm font-semibold text-foreground-muted mb-3 px-1"
+              className="text-label font-semibold text-foreground-muted mb-3 px-1"
             >
               {category.label}
             </h2>

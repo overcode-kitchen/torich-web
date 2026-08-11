@@ -1,6 +1,7 @@
 'use client'
 
 import { X } from '@phosphor-icons/react'
+import { MAX_ITEM_NAME_LENGTH } from '@/app/constants/input-limits'
 
 interface Props {
   isOpen: boolean
@@ -43,11 +44,12 @@ export default function ManualInputModal({
         <div className="space-y-4 py-4">
           {/* 항목 이름 입력 */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">항목 이름</label>
+            <label className="text-label font-medium text-foreground">항목 이름</label>
             <input
               type="text"
               value={stockName}
               onChange={(e) => onStockNameChange(e.target.value)}
+              maxLength={MAX_ITEM_NAME_LENGTH}
               placeholder="예: 나만의 포트폴리오"
               className="w-full bg-card border border-border rounded-xl p-3 text-foreground placeholder-foreground-subtle focus:outline-none focus:ring-2 focus:ring-brand-500"
             />

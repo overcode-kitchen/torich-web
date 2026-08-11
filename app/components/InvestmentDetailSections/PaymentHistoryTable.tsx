@@ -70,10 +70,10 @@ export function PaymentHistoryTable({
       <Table>
         <TableHeader>
           <TableRow className="border-border hover:bg-transparent">
-            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-sm">월</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-sm">투자일</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-sm">납입 금액</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-sm">상태</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">월</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">투자일</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">납입 금액</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">상태</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -98,10 +98,10 @@ export function PaymentHistoryTable({
               >
                 {renderMonthLabel(yearMonth)}
                 {isRetro && (
-                  <span className="ml-1 text-xs font-normal text-foreground-subtle">(소급)</span>
+                  <span className="ml-1 text-caption font-normal text-foreground-subtle">(소급)</span>
                 )}
               </TableCell>
-              <TableCell className="px-3 py-3.5 text-foreground-muted text-sm">
+              <TableCell className="px-3 py-3.5 text-foreground-muted text-label">
                 {renderDateCell(yearMonth)}
               </TableCell>
               <TableCell
@@ -151,7 +151,7 @@ function StatusPill({
     if (completed) {
       return (
         <span
-          className="inline-flex items-center gap-1 rounded-md bg-surface-hover px-2.5 py-1 text-xs font-medium text-foreground-soft"
+          className="inline-flex items-center gap-1 rounded-md bg-surface-hover px-2.5 py-1 text-caption font-medium text-foreground-soft"
           title="소급 납입 기록됨"
         >
           <Check className="h-3.5 w-3.5" weight="bold" />
@@ -162,7 +162,7 @@ function StatusPill({
     return (
       <span
         className={cn(
-          'inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium',
+          'inline-flex items-center rounded-md px-2.5 py-1 text-caption font-medium',
           canToggle
             ? 'bg-surface-hover/60 text-foreground-muted ring-1 ring-inset ring-border-subtle'
             : 'text-foreground-subtle'
@@ -176,7 +176,7 @@ function StatusPill({
 
   return completed ? (
     <span
-      className="inline-flex items-center gap-1 rounded-md bg-brand-accent-bg px-2.5 py-1 text-xs font-medium text-brand-accent-text"
+      className="inline-flex items-center gap-1 rounded-md bg-brand-accent-bg px-2.5 py-1 text-caption font-medium text-brand-accent-text"
       title="해당 월 납입 완료됨"
     >
       <Check className="h-3.5 w-3.5" weight="bold" />
@@ -184,7 +184,7 @@ function StatusPill({
     </span>
   ) : (
     <span
-      className="inline-flex items-center rounded-md bg-surface-hover px-2.5 py-1 text-xs font-medium text-foreground-soft"
+      className="inline-flex items-center rounded-md bg-surface-hover px-2.5 py-1 text-caption font-medium text-foreground-soft"
       title="해당 월 납입 미완료"
     >
       미완료

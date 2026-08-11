@@ -22,6 +22,8 @@ export const TOAST_MESSAGES = {
   deleteFailed: '삭제에 실패했어요. 다시 시도해 주세요.',
   /** 수정 저장 실패 */
   updateSaveFailed: '수정 사항을 저장하지 못했어요. 다시 시도해 주세요.',
+  /** 목적 저장 실패 (생성) */
+  goalSaveFailed: '목적을 저장하지 못했어요. 다시 시도해 주세요.',
   /** 데이터 로드 실패 (일반) */
   dataLoadFailed: '데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
   /** 네트워크 오류 */

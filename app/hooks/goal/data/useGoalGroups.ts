@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useGoals } from './useGoals'
 import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
-import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import type { Goal, GoalProgress } from '@/app/types/goal'
 import type { Investment } from '@/app/types/investment'
 import { deriveGoalStatus, type GoalStatus } from '@/app/utils/goal-status'
@@ -27,13 +27,17 @@ export interface UseGoalGroupsReturn {
   userId: string | undefined
   /** 목적 목록 재조회 (보관 후 홈 카드 갱신용) */
   refetch: () => Promise<void>
+  /** 목적 목록 로컬 갱신 (드래그 순서 변경 낙관적 반영용) */
+  setGoals: React.Dispatch<React.SetStateAction<Goal[]>>
 }
 
 /**
  * 홈 목적 그룹 카드용 데이터 모음.
  * - userId는 자체적으로 supabase.auth에서 가져온다 (Dashboard에 props 추가 금지).
  * - records는 prop으로 받는다.
- * - useGoals / useGoalsProgress / usePaymentHistory를 재사용한다.
+ * - useGoals / useGoalsProgress / PaymentHistoryContext를 재사용한다.
+ *   납입 기록이 전역 상태라, 홈 카드의 완료 토글(useMonthlyPaymentStatus)과 여기서 계산하는
+ *   진척률이 같은 데이터를 본다.
  */
 export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
   const [userId, setUserId] = useState<string | undefined>(undefined)
@@ -45,9 +49,9 @@ export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
     })
   }, [])
 
-  const { goals, isLoading: goalsLoading, refetch } = useGoals(userId)
+  const { goals, isLoading: goalsLoading, refetch, setGoals } = useGoals(userId)
   const { completedPayments, retroactivePayments, capturedAmounts, isLoading: paymentsLoading } =
-    usePaymentHistory()
+    usePaymentHistoryContext()
   const progressMap = useGoalsProgress(
     goals,
     records,
@@ -87,5 +91,6 @@ export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
     isLoading: goalsLoading || paymentsLoading,
     userId,
     refetch,
+    setGoals,
   }
 }

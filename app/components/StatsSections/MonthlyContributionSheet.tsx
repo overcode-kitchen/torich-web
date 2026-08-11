@@ -47,7 +47,7 @@ export default function MonthlyContributionSheet({
 
         {/* 총액 안내 */}
         <div className="px-6 pb-4">
-          <p className="text-sm text-foreground-muted">
+          <p className="text-label text-foreground-muted">
             총 <span className="font-bold text-foreground">{formatCurrency(totalAmount)}</span>을 아래와 같이 투자하고 있어요.
           </p>
         </div>
@@ -66,21 +66,21 @@ export default function MonthlyContributionSheet({
                       {/* 좌측: 아이콘 + 종목명 */}
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="w-10 h-10 rounded-full bg-[var(--brand-accent-bg)] flex items-center justify-center flex-shrink-0">
-                          <span className="text-brand-600 font-bold text-sm">
+                          <span className="text-brand-600 font-bold text-label">
                             {item.initial}
                           </span>
                         </div>
-                        <h3 className="text-base font-semibold text-foreground truncate">
+                        <h3 className="text-body font-semibold text-foreground truncate">
                           {item.title}
                         </h3>
                       </div>
 
                       {/* 우측: 금액 + 비중 */}
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <p className="text-base font-bold text-foreground">
+                        <p className="text-body font-bold text-foreground">
                           {formatCurrency(item.amount)}
                         </p>
-                        <span className="bg-secondary text-foreground-muted text-xs font-medium px-2 py-0.5 rounded-full">
+                        <span className="bg-secondary text-foreground-muted text-caption font-medium px-2 py-0.5 rounded-full">
                           {item.percentage}%
                         </span>
                       </div>

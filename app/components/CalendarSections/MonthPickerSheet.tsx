@@ -82,7 +82,7 @@ export default function MonthPickerSheet({
           <button
             type="button"
             onClick={handleConfirm}
-            className="mt-2 w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="mt-2 w-full rounded-xl bg-primary py-3 text-label font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             완료
           </button>

@@ -2,38 +2,40 @@
 
 > 이 파일은 재진입 노트다. 세션 시작 시 훅이 자동으로 읽어준다.
 > 돌아오면 `/catchup` 으로 이 파일 + git 상태를 브리핑받고 시작하라.
-> _마지막 갱신: 2026-07-19 17:01 · 브랜치: develop/hansol_
+> _마지막 갱신: 2026-07-28 · 브랜치: style/104-goal-pace-ui_
 
 ## 🎯 지금 목표 (한 줄)
-완료 목표를 **삭제 대신 보관**하는 기능 구현이 끝났다(코드·커밋 완료). 남은 건 **실기기 검증**.
+이슈 #104 — '목표별 페이스' 섹션 UI 리디자인. **A안(목적당 카드 1장 + 모은 금액) 구현 완료**, 남은 건 실기기 눈검증 → `build:app` → PR(base `integration`).
 
 ## ✅ 마지막으로 한 것 (이번 세션)
-- **보관/복원/삭제 분리**: `useGoalUpdate`에 `archiveGoal`(=`archived_at` 세팅, **투자 링크 유지**)·`unarchiveGoal` 추가. "삭제"는 영구 삭제(`useGoalDelete`, hard delete)로 분리. 구버전 앱 호환 위해 `archive_goal` RPC는 DB에 존치.
-- **보관함 신규**: 설정 › 보관한 목표(`/settings/archived-goals`) — 목록·복원·영구삭제. `SettingsView`에 진입점 추가. (정적 라우트, `out/settings/archived-goals.html` 산출 확인)
-- **홈 완료 카드 UX 정리**(GoalGroupCard): ① 상태를 **헤더 pill**(`완료`/`기간 종료`)로 선언(D-day·% 대체) ② 박스 배너 → 하단 **무채색 보관 액션**(헤어라인+아이콘)으로 de-box ③ "적립 추가" 드로어 숨김 ④ 완료 목표 항목은 월 납입 완료 토글·미루기 **비활성**(GoalGroupItemRow `frozen`).
-- **상세 메뉴**: 보관하기/삭제하기 분리 + 각 확인 모달. `DeleteConfirmModal`에 `tone`(primary/destructive)·라벨 옵션 추가(하위 호환).
-- **분석 이벤트**: `goal_archive`/`goal_restore`/`goal_delete`(진짜 삭제) 구분.
-- 커밋 `fcf15c1` (10파일, +346/-38).
+- **A안 채택·구현**(#104). Claude 시안 3안(A 금액으로 채우기 / B 패널 낮추기 / C 전폭 배너) 중 A안 승인받아 진행. 시안 아트팩트: https://claude.ai/code/artifact/306ed04f-7cf3-490b-b710-939af7833c0b
+- 한 카드 안 `ul`+구분선 → **목적 하나당 흰 카드 하나**(`rounded-2xl bg-card p-5`, 카드 간 `gap-3`).
+- **목적명·D-day를 카드 머리로 승격** → 우측 상단 빈 자리 제거. 그 자리에 **모은 금액 / 목표 금액** 추가하고 우측을 `justify-between`으로 위아래로 벌려 채움.
+- 그린 패널 **132 → 118px**, 컬럼 `132px_1fr` → `118px_1fr`.
+- `shortWon()` 신설(`app/utils/goal-format.ts`) — `120만원` / `3,000만원` / `1억 2,000만원`. 만원 미만은 원 단위 그대로.
+- **다크모드 버그 수정**: 진행바 트랙 `bg-surface-hover`가 다크에서 카드(`bg-card`)와 같은 coolgray-900이라 안 보였다. `--progress-track` 시맨틱 신설(라이트 coolgray-50 / 다크 coolgray-800) 후 '목표별 페이스'와 '목적 진척' 두 곳 교체. globals.css를 고쳤으므로 `CoreSection.tsx` 컬러 목록에도 토큰 추가.
+- 커밋 4개(`1174dcb` `ab0cab8` `77caf6d` `bd6ea7a`) + 이 노트.
 
 ## 📍 지금 상태
-- 빌드/실행: `tsc --noEmit` ✅, `eslint` ✅. `npm run build:app`(placeholder env) ✅ — 정적 export 정상, `app/api`·`app/auth` 복구 확인, 백업 잔재 없음, `capacitor.config.ts` 안전(server.url 주석·`loggingBehavior:'production'`).
-- 미커밋 변경: **없음** (피처 `fcf15c1` + 이 HANDOFF 커밋).
+- 빌드/실행: `tsc --noEmit` ✅, `eslint`(변경 파일) ✅, 웹 dev 눈검증 ✅. **`build:app` 정적 export는 아직 안 돌림** — 라우팅/env 무변경(순수 스타일)이라 스킵. PR 열기 전에 돌릴 것.
+- 워크트리: `tickle-moa-w-B`에서 작업 중. 웹 확인은 이 워크트리의 dev 서버 `http://localhost:3002/stats` (3000=tickle-moa, 3001=워크트리 A가 점유).
+- 담당자: #104 @me 지정됨. PR은 아직 안 열음.
 
 ## ⏭️ 다음 할 일 (우선순위 순)
-1. **실기기 검증(이번 기능)**: 완료 목표 카드 → 헤더 `기간 종료` pill·프로즌 행 → `보관하기` → 설정 보관함 → **복원/영구삭제** 왕복. 특히 복원 시 투자 링크가 온전히 되살아나는지.
-2. **iOS 상단 잘림 실기기 검증**(이전 세션 이월, `5c0c951`) — WKWebView 전용 교정이라 웹 미검증. 안 잡히면 홈 진입 시 `resize` 강제 dispatch / 홈 body-scroll 구조 변경.
-3. `integration`/`main` 머지 전 **실제 `NEXT_PUBLIC_API_URL`**로 `npm run build:app` 돌려 `out/` 재확인.
-4. (별건, 담당 suni) 통계 v2 **Phase C — 전망 신호등** (`docs/stats-redesign-plan-v2.md`).
+1. **실기기 눈검증**: Xcode 빌드 → 통계 탭 '목표별 페이스'. ① 118px 패널에 도토리 쏟겨 쌓이는지 ② 달성% 흰 글자 가독성 ③ 카드 분리 후 스크롤 길이 ④ 다크모드 그린 명도·기한 바 트랙.
+2. **캘리브레이션(필요 시)**: 도토리 크기 `SPRITE_SCALE=2.7`(`app/utils/acorn-physics.ts`) — 패널이 줄었지만 웹에서는 그대로 두기로 결정, 기기에서 재판단. 그린 명도는 `app/globals.css` `--goal-well`.
+3. **PR 오픈**(base `integration`) → CI verify. 열기 전 `pnpm run build:app`로 localhost 누출 0·라우팅 확인.
+4. **머지**: 담당자 판단, CI 통과 후 Squash.
 
 ## 🧭 결정과 이유 (이번 세션)
-- **보관 = 링크 유지 / 삭제 = 영구삭제로 분리** — 왜: 완료 목표는 되살릴 수 있어야 하고(복원 시 투자 온전), 실수 목표는 완전 제거+투자 회수가 맞음. 버린 대안: 기존 `archive_goal`(unlink)을 보관에 재사용(복원 시 투자 유실).
-- **보관 시점 = 수동 + 완료 배너 유도**(자동 이동 X) — 왜: 완료 순간을 홈에 남겨 성취감 유지, 보관함이 설정 안이라 자동 이동 시 "사라졌다" 혼란.
-- **완료 신호를 헤더 pill로 끌어올림** — 왜: `D+45·0%`는 "연체/실패"로 읽혀 완료 톤과 충돌. 헤더가 먼저 "끝남"을 선언하면 아래 투자 행이 자연히 "지난 기록"이 됨(카드 문법=헤더→리스트→하단액션 유지, 리스트 순서는 안 뒤집음).
-- **완료 목표 항목 `frozen`** — 왜: 기간 종료된 목표에 이번 달 납입/미루기 조작은 모순.
+- **목적당 카드 1장** — 왜: 사용자 요청. 좌 그린패널/우 정보 2단에서 우측 상단에 큰 빈 자리가 생기던 문제를, 목적명·D-day를 카드 머리로 올려 구조적으로 없앴다.
+- **우측에 모은 금액 추가(A안)** — 왜: 남는 세로 공간을 여백으로 두지 않고 정보로 채운다. '목적 진척' 섹션이 원 단위 전체를 이미 보여주므로, 여기선 `shortWon` 만원 축약을 써서 두 섹션이 같은 말로 읽히지 않게 했다.
+- **섹션 제목·기울이기 토글을 카드 밖으로** — 왜: 한 번 반려됐다가 근거를 확인하고 유지하기로 한 지점이다. 앱의 규칙은 "제목은 흰 카드 안"이 아니라 **"한 섹션 = 한 카드면 안에, 섹션이 카드 여러 장으로 쪼개지면 밖에(`px-1`)"** 쪽이고, 그 선례가 `app/components/FAQSections/FAQList.tsx:16`(카드 밖 제목 + `bg-card` 카드 n장)이다. 설정 화면이 제목을 안에 두는 것도 한 섹션 = 한 카드이기 때문. 제목 자체를 없애는 안은 버렸다 — 바로 옆 '목적 진척'이 같은 목적들을 다르게 보여줘서 이름이 없으면 왜 두 번 나오는지 안 읽히고, 기울이기 토글도 갈 곳이 없다.
+- **`--progress-track` 신설** — 왜: 다크에서 `surface-hover`와 `card`가 같은 coolgray-900이라 트랙이 사라진다. 두 값을 한 토큰으로 겸하는 게 원인이라 역할을 분리했다.
 
 ## 🚧 막힌 것 / 열린 질문
-- **완료 목표에 "진행 중 투자"가 묶인 경우**: 지금은 월 납입 토글을 일괄 `frozen` 처리. 아직 납입 중인 적금이 완료 목표에 묶여 있으면 체크가 막히는데, 이게 맞는지(복원/재연결 유도가 필요한지)는 열린 질문.
-- iOS 상단 잘림(`5c0c951`) 실효성은 실기기 검증 전까지 미확정(이전 세션 이월).
+- 그린 명도·도토리 크기·패널 높이(118px)는 **웹 기준 잠정값**. 실기기에서 조정 가능성.
+- `app/components/ToryRaising/ToryRaisingGrowthSection.tsx:67`에도 `bg-surface-hover` 트랙이 있다. 거긴 `border-border-subtle`가 있어 다크에서도 윤곽이 보여 손대지 않았다. 정리하려면 별도 이슈.
 
 ## ▶️ 바로 이어가려면
-`git checkout develop/hansol`(이미 그 브랜치). Xcode로 앱 빌드 → 홈에서 완료 목표 카드 보관 → 설정 › 보관한 목표에서 복원/영구삭제 확인. 웹으로만 볼 거면 `npm run dev` 후 완료 상태 목표를 만들어 카드/보관함 흐름 확인.
+`git checkout style/104-goal-pace-ui`. 웹이면 `pnpm dev`(이 워크트리는 3002) 후 통계 탭. 앱이면 Xcode 빌드 → 눈검증(위 1번). 값 조정 위치: 레이아웃(패널 높이·컬럼·금액 표기) `app/components/StatsSections/GoalPaceSection.tsx`, 그린 `app/globals.css`의 `--goal-well`, 도토리 크기 `app/utils/acorn-physics.ts`의 `SPRITE_SCALE`. 시안은 위 아트팩트 링크 참고.

@@ -2,23 +2,17 @@
 
 import { createContext, useContext, ReactNode } from 'react'
 import { Investment } from '@/app/types/investment'
+import type { UseInvestmentDataReturn } from '@/app/hooks/types/useInvestmentData'
 
 interface InvestmentDetailContextType {
     item: Investment
-    isEditMode: boolean
-    investmentData: any
+    investmentData: UseInvestmentDataReturn
     ui: {
         isDeleting: boolean
-        isUpdating: boolean
         showDeleteModal: boolean
         setShowDeleteModal: (show: boolean) => void
-        setIsEditMode: (open: boolean) => void
-        isDaysPickerOpen: boolean
-        setIsDaysPickerOpen: (open: boolean) => void
     }
     handlers: {
-        onSave: () => Promise<void>
-        onCancel: () => void
         onDelete: () => Promise<void>
     }
 }

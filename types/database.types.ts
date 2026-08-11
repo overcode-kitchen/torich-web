@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      goal_presets: {
+        Row: {
+          created_at: string
+          display_from: string | null
+          display_to: string | null
+          icon_key: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_from?: string | null
+          display_to?: string | null
+          icon_key: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_from?: string | null
+          display_to?: string | null
+          icon_key?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           archived_at: string | null
@@ -25,6 +61,7 @@ export type Database = {
           memo: string | null
           name: string
           notification_enabled: boolean
+          sort_order: number | null
           target_amount: number
           target_date: string | null
           updated_at: string
@@ -40,6 +77,7 @@ export type Database = {
           memo?: string | null
           name: string
           notification_enabled?: boolean
+          sort_order?: number | null
           target_amount: number
           target_date?: string | null
           updated_at?: string
@@ -55,6 +93,7 @@ export type Database = {
           memo?: string | null
           name?: string
           notification_enabled?: boolean
+          sort_order?: number | null
           target_amount?: number
           target_date?: string | null
           updated_at?: string
@@ -157,6 +196,7 @@ export type Database = {
           rate_updated_at: string | null
           record_type: string
           settled_at: string | null
+          sort_order: number | null
           start_date: string | null
           symbol: string | null
           title: string
@@ -182,6 +222,7 @@ export type Database = {
           rate_updated_at?: string | null
           record_type?: string
           settled_at?: string | null
+          sort_order?: number | null
           start_date?: string | null
           symbol?: string | null
           title: string
@@ -207,6 +248,7 @@ export type Database = {
           rate_updated_at?: string | null
           record_type?: string
           settled_at?: string | null
+          sort_order?: number | null
           start_date?: string | null
           symbol?: string | null
           title?: string

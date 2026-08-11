@@ -56,8 +56,8 @@ export default function ArchivedGoalsView({
   return (
     <SubPageScaffold onBack={onBack} contentClassName="py-2 space-y-4">
       <div className="mb-2">
-        <h1 className="text-xl font-bold text-foreground mb-1">보관한 목표</h1>
-        <p className="text-sm text-foreground-subtle">
+        <h1 className="text-heading font-bold text-foreground mb-1">보관한 목표</h1>
+        <p className="text-label text-foreground-subtle">
           완료해서 보관한 목표예요. 복원하면 홈에서 다시 볼 수 있어요.
         </p>
       </div>
@@ -69,7 +69,7 @@ export default function ArchivedGoalsView({
       ) : sorted.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <Archive className="w-10 h-10 text-foreground-subtle" weight="light" />
-          <p className="text-sm text-foreground-muted">아직 보관한 목표가 없어요.</p>
+          <p className="text-label text-foreground-muted">아직 보관한 목표가 없어요.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -95,7 +95,7 @@ export default function ArchivedGoalsView({
                     <p className="truncate font-semibold text-foreground">
                       {goal.name}
                     </p>
-                    <p className="mt-0.5 text-xs text-foreground-muted">
+                    <p className="mt-0.5 text-caption text-foreground-muted">
                       {goal.completed_at ? '🎉 달성' : '보관'}
                       {dateLabel && ` · ${dateLabel}`}
                       {goal.target_amount > 0 &&

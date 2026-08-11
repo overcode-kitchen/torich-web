@@ -1,12 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, BellSlash, DotsThreeVertical } from '@phosphor-icons/react'
 import { Investment } from '@/app/types/investment'
 import { InvestmentTabProvider, useInvestmentTabContext } from '@/app/contexts/InvestmentTabContext'
 import { DetailHeaderTitle } from '@/app/components/Common/DetailHeaderTitle'
-import { getRecordAvatar } from '@/app/utils/recordAvatar'
+import { RecordAvatar } from '@/app/components/Common/RecordAvatar'
 import { useInvestmentDetailUI } from '@/app/hooks/investment/detail/useInvestmentDetailUI'
 import { useInvestmentDetailHandlers } from '@/app/hooks/investment/detail/useInvestmentDetailHandlers'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
@@ -29,17 +28,16 @@ import { cn } from '@/lib/utils'
 interface InvestmentDetailViewProps {
   item: Investment
   onBack: () => void
-  onUpdate: (data: { monthly_amount: number; period_years: number | null; annual_rate: number; investment_days?: number[] }) => Promise<void>
   onDelete: () => Promise<void>
 }
 
-import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
+import { useRefreshPaymentHistoryOnMount } from '@/app/hooks/payment/useRefreshPaymentHistoryOnMount'
 import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotification'
 
 function InternalInvestmentDetailView({
   item,
   onBack,
-  onUpdate,
   onDelete,
 }: InvestmentDetailViewProps) {
   const router = useRouter()
@@ -47,16 +45,15 @@ function InternalInvestmentDetailView({
   // Context (스크롤 컨테이너 ref만 필요. 탭 ref는 InvestmentDetailContent가 직접 사용)
   const { scrollContainerRef } = useInvestmentTabContext()
 
-  const headerAvatar = getRecordAvatar(item, 'sm')
-
-  // Payment History Hook
+  // Payment History (전역 상태) + 상세 진입 시 1회 갱신
   const {
     completedPayments,
     retroactivePayments,
     togglePayment,
     toggleRetroactivePayment,
     markAllRetroactivePaid,
-  } = usePaymentHistory()
+  } = usePaymentHistoryContext()
+  useRefreshPaymentHistoryOnMount()
 
   // 월 회차 토글 + 하단 되돌리기 토스트 (홈과 동일한 UndoToastSection 사용)
   const monthUndo = useMonthToggleUndo(togglePayment)
@@ -68,27 +65,16 @@ function InternalInvestmentDetailView({
   const {
     showDeleteModal,
     setShowDeleteModal,
-    isEditMode,
-    setIsEditMode,
-    isDaysPickerOpen,
-    setIsDaysPickerOpen,
   } = useInvestmentDetailUI()
 
   // 핸들러 훅
   const {
     investmentData,
     isDeleting,
-    isUpdating,
-    handleSave,
-    handleCancel,
     handleDelete,
   } = useInvestmentDetailHandlers({
     item,
-    onUpdate,
     onDelete,
-    isEditMode,
-    setIsEditMode,
-    setIsDaysPickerOpen,
     completedPayments,
     retroactivePayments,
     onToggleRetroactive: toggleRetroactivePayment,
@@ -96,15 +82,6 @@ function InternalInvestmentDetailView({
     onToggleAuto: (recordId, yearMonth, currentCompleted) =>
       monthUndo.onToggleAuto(item, completedPayments.get(recordId), yearMonth, currentCompleted),
   })
-
-  // 수정 모드 진입 시 초기화
-  useEffect(() => {
-    if (isEditMode) {
-      investmentData.initializeFromItem(item)
-      setIsDaysPickerOpen(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode, item])
 
   // 종목 상세 진입 시 시세 캐시 갱신 + shares 모드면 monthly_amount 동기화
   useShareModeSync(item)
@@ -116,8 +93,14 @@ function InternalInvestmentDetailView({
 
   const isNotificationDisabled = !isGlobalNotificationOn
 
-  // 헤더 우측 액션: 알림 토글 + 더보기 메뉴 (수정 모드에서는 숨김)
-  const headerActions = !isEditMode ? (
+  // 정보 행 탭 → 토스 스타일 편집 플로우(/add?editId=...&field=...)로 진입.
+  // 예적금·현금 상세(SavingsCashDetailView)와 동일한 규약. (이슈 #72)
+  const handleFieldTap = (field: string): void => {
+    router.push(`/add?editId=${item.id}&field=${field}`)
+  }
+
+  // 헤더 우측 액션: 알림 토글 + 더보기 메뉴
+  const headerActions = (
     <div className="flex items-center -mr-1">
       <button
         type="button"
@@ -157,26 +140,19 @@ function InternalInvestmentDetailView({
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  ) : undefined
+  )
 
   return (
     <InvestmentDetailProvider
       value={{
         item,
-        isEditMode,
         investmentData,
         ui: {
           isDeleting,
-          isUpdating,
           showDeleteModal,
           setShowDeleteModal,
-          setIsEditMode,
-          isDaysPickerOpen,
-          setIsDaysPickerOpen,
         },
         handlers: {
-          onSave: handleSave,
-          onCancel: handleCancel,
           onDelete: handleDelete,
         },
       }}
@@ -190,22 +166,11 @@ function InternalInvestmentDetailView({
         centerSlot={
           <DetailHeaderTitle
             title={item.title}
-            leading={
-              <span
-                className={cn(
-                  'flex shrink-0 items-center justify-center rounded-full font-semibold',
-                  headerAvatar.sizeClassName,
-                  headerAvatar.className,
-                )}
-                aria-hidden
-              >
-                {headerAvatar.label}
-              </span>
-            }
+            leading={<RecordAvatar record={item} size="sm" />}
           />
         }
       >
-        <InvestmentDetailContent />
+        <InvestmentDetailContent onFieldTap={handleFieldTap} />
 
         {/* 삭제 확인 모달 */}
         <DeleteConfirmModal

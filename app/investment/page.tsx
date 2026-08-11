@@ -16,7 +16,7 @@ function InvestmentDetail() {
   const router = useRouter()
   const isNativeApp = useIsNativeApp()
   const { user, isLoading: authLoading } = useAuth()
-  const { records, isLoading: dataLoading, updateInvestment, deleteInvestment } = useInvestmentsContext()
+  const { records, isLoading: dataLoading, deleteInvestment } = useInvestmentsContext()
   const { goBack } = useFlowBack({
     rootPath: '/',
     enableHistoryFallback: true,
@@ -91,9 +91,6 @@ function InvestmentDetail() {
     <InvestmentDetailView
       item={item}
       onBack={goBack}
-      onUpdate={async (data) => {
-        await updateInvestment(item.id, data)
-      }}
       onDelete={async () => {
         await deleteInvestment(item.id)
         router.replace('/')

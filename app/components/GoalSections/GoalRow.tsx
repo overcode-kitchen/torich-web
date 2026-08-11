@@ -86,10 +86,10 @@ export function GoalRow({
             )}
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 flex-col gap-1.5">
-                <h3 className="min-w-0 truncate text-base font-semibold text-foreground">
+                <h3 className="min-w-0 truncate text-body font-semibold text-foreground">
                   {goal.name}
                 </h3>
-                <p className="truncate text-sm text-muted-foreground">
+                <p className="truncate text-label text-muted-foreground">
                   현재 {fmt(progress.currentValue)}원
                   {progress.progressPercent !== null &&
                     ` · ${progress.progressPercent}%`}
@@ -97,7 +97,7 @@ export function GoalRow({
               </div>
             </div>
             {dDay && (
-              <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
+              <span className="shrink-0 text-label text-muted-foreground tabular-nums">
                 {dDay}
               </span>
             )}

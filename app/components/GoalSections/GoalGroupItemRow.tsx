@@ -4,10 +4,11 @@ import { Check, Clock, TrashSimple } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import { formatInvestmentDays } from '@/app/types/investment'
-import { getRecordAvatar } from '@/app/utils/recordAvatar'
+import { RecordAvatar } from '@/app/components/Common/RecordAvatar'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
+import type { SortableRenderProps } from '@/app/components/Common/DragSortable'
 import type { MonthlyRecordStatus } from '@/app/hooks/payment/useMonthlyPaymentStatus'
 import type { Investment } from '@/app/types/investment'
 
@@ -27,6 +28,10 @@ export interface GoalGroupItemRowProps {
   isLast?: boolean
   /** 묶인 목적이 완료(기간 종료)면 이번 달 납입 토글·미루기를 비활성(정적)으로 만든다. */
   frozen?: boolean
+  /** 드래그 손잡이(행 본문에 스프레드). 정렬 활성 카드에서만 전달. */
+  dragHandle?: SortableRenderProps['handle']
+  /** 이 행이 드래그 중인지. 드래그 중엔 스와이프 제스처를 억제한다. */
+  sortableDragging?: boolean
 }
 
 /**
@@ -45,6 +50,8 @@ export function GoalGroupItemRow({
   onSelect,
   isLast = false,
   frozen = false,
+  dragHandle,
+  sortableDragging = false,
 }: GoalGroupItemRowProps) {
   const { deleteInvestment } = useInvestmentsContext()
   const { total, completed, nextPendingDay, isFullyPaid } = status
@@ -54,7 +61,6 @@ export function GoalGroupItemRow({
     record.unit_type === 'shares' && record.monthly_shares
       ? `${record.monthly_shares}주`
       : formatCurrency(record.monthly_amount)
-  const avatar = getRecordAvatar(record)
   // 만기 정산이 끝난 적금: 더 이상 월 납입 없음 → "완료" 버튼 대신 "만기 완료" 배지.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
   const isSettled = !!record.settled_at
@@ -74,9 +80,10 @@ export function GoalGroupItemRow({
     <>
       <div
         className="relative overflow-hidden bg-card"
-        onTouchStart={swipe.onTouchStart}
-        onTouchMove={swipe.onTouchMove}
-        onTouchEnd={swipe.onTouchEnd}
+        // 드래그(롱프레스) 중엔 스와이프를 억제해 두 제스처가 겹치지 않게 한다.
+        onTouchStart={sortableDragging ? undefined : swipe.onTouchStart}
+        onTouchMove={sortableDragging ? undefined : swipe.onTouchMove}
+        onTouchEnd={sortableDragging ? undefined : swipe.onTouchEnd}
       >
         {/* 스와이프 액션: 훅의 노출 폭은 액션당 80px 슬롯. 버튼은 68px + 여백으로 슬롯 안에 띄운다. */}
         {showPostponeInSwipe && (
@@ -106,6 +113,9 @@ export function GoalGroupItemRow({
         <div
           role="button"
           tabIndex={0}
+          ref={dragHandle?.ref}
+          {...dragHandle?.attributes}
+          {...dragHandle?.listeners}
           onClick={() => {
             if (swipe.isRevealed) {
               swipe.close()
@@ -120,7 +130,7 @@ export function GoalGroupItemRow({
             }
           }}
           onContextMenu={(ev) => ev.preventDefault()}
-          aria-label={`${record.title} 상세 보기`}
+          aria-label={`${record.title} 상세 보기${dragHandle ? ' (길게 눌러 순서 변경)' : ''}`}
           className="relative flex cursor-pointer select-none items-center justify-between gap-3 bg-card py-2.5 transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           style={{
             transform: `translateX(${swipe.translateX}px)`,
@@ -132,18 +142,13 @@ export function GoalGroupItemRow({
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 flex-col gap-1.5">
               <div className="flex min-w-0 items-center gap-2">
-                <div
-                  className={`flex shrink-0 items-center justify-center rounded-full font-semibold ${avatar.sizeClassName} ${avatar.className}`}
-                  aria-hidden
-                >
-                  {avatar.label}
-                </div>
-                <h4 className="min-w-0 truncate text-base font-semibold text-foreground">
+                <RecordAvatar record={record} size="sm" />
+                <h4 className="min-w-0 truncate text-body font-semibold text-foreground">
                   {record.title}
                 </h4>
               </div>
               <div className="pl-2">
-                <p className="truncate text-sm text-muted-foreground">
+                <p className="truncate text-label text-muted-foreground">
                   {formatInvestmentDays(record.investment_days)}
                 </p>
               </div>
@@ -151,13 +156,13 @@ export function GoalGroupItemRow({
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
-            <span className="text-sm font-bold tabular-nums text-foreground">
+            <span className="text-label font-bold tabular-nums text-foreground">
               {amountLabel}
             </span>
             {isSettled ? (
               // 만기 완료: 종료된 항목 → 중립 회색 pill (비인터랙티브)
               <span
-                className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-xs font-medium text-foreground-soft"
+                className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-caption font-medium text-foreground-soft"
                 aria-label="만기 정산 완료"
               >
                 만기 완료
@@ -169,7 +174,7 @@ export function GoalGroupItemRow({
               // 전부 완료: 초록 pill. 탭하면 마지막 회차를 취소한다.
               <button
                 type="button"
-                className="inline-flex shrink-0 items-center gap-1 rounded-md bg-brand-accent-bg px-2.5 py-1 text-xs font-medium text-brand-accent-text"
+                className="inline-flex shrink-0 items-center gap-1 rounded-md bg-brand-accent-bg px-2.5 py-1 text-caption font-medium text-brand-accent-text"
                 onClick={(ev) => {
                   ev.stopPropagation()
                   onTogglePaid(record)
@@ -183,7 +188,7 @@ export function GoalGroupItemRow({
               // 미룸 상태(아직 한 회차도 완료 안 함): 중립 회색 pill. 탭하면 미룸을 해제한다.
               <button
                 type="button"
-                className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-xs font-medium text-foreground-soft"
+                className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-caption font-medium text-foreground-soft"
                 onClick={(ev) => {
                   ev.stopPropagation()
                   onTogglePostpone(record)

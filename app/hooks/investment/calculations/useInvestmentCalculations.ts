@@ -1,54 +1,32 @@
 import { Investment, getStartDate, isHabitMode } from '@/app/types/investment';
 import {
-  calculateEndDate,
   calculateProgress,
   getElapsedMonths,
   getNextPaymentDate,
+  getRecordEndDate,
   isCompleted,
 } from '@/app/utils/date';
 
 interface UseInvestmentCalculationsProps {
   item: Investment;
-  isEditMode: boolean;
-  editMonthlyAmount: string;
-  editPeriodYears: string;
-  editAnnualRate: string;
-  editInvestmentDays: number[];
-  editIsHabitMode?: boolean;
 }
 
 export function useInvestmentCalculations({
   item,
-  isEditMode,
-  editMonthlyAmount,
-  editPeriodYears,
-  editAnnualRate,
-  editInvestmentDays,
-  editIsHabitMode,
 }: UseInvestmentCalculationsProps) {
   const startDate = getStartDate(item);
 
-  const displayMonthlyAmount = isEditMode
-    ? parseInt(editMonthlyAmount.replace(/,/g, '') || '0') * 10000
-    : item.monthly_amount;
+  const displayMonthlyAmount = item.monthly_amount;
 
-  // 적립형 여부: 수정 모드에서는 editIsHabitMode 우선
-  const habitMode = isEditMode
-    ? (editIsHabitMode ?? isHabitMode(item))
-    : isHabitMode(item)
+  const habitMode = isHabitMode(item)
 
-  const parsedEditPeriod = parseInt(editPeriodYears || '0')
-  const displayPeriodYears: number | null = isEditMode
-    ? (habitMode ? null : parsedEditPeriod > 0 ? parsedEditPeriod : null)
-    : (item.period_years && item.period_years > 0 ? item.period_years : null);
+  const displayPeriodYears: number | null =
+    item.period_years && item.period_years > 0 ? item.period_years : null;
 
-  const displayAnnualRate = isEditMode
-    ? parseFloat(editAnnualRate || '0')
-    : item.annual_rate || 10;
+  const displayAnnualRate = item.annual_rate || 10;
 
-  const endDate = displayPeriodYears
-    ? calculateEndDate(startDate, displayPeriodYears)
-    : null;
+  // 종료일: maturity_date(목적 마감일에 맞춘 항목/예적금)를 우선한다.
+  const endDate = getRecordEndDate(item);
 
   // 납입 개월 수
   const elapsedMonths = getElapsedMonths(startDate);
@@ -63,9 +41,7 @@ export function useInvestmentCalculations({
     ? isCompleted(startDate, displayPeriodYears)
     : false;
 
-  const nextPaymentDate = getNextPaymentDate(
-    isEditMode ? editInvestmentDays : item.investment_days
-  );
+  const nextPaymentDate = getNextPaymentDate(item.investment_days)
 
   return {
     startDate,

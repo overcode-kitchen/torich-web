@@ -8,6 +8,7 @@ import {
   HANDLE_PEEK,
   OPEN_HEIGHT,
 } from '@/app/hooks/ui/useDrawerPull'
+import { getWiggleStyle } from '@/app/utils/wiggle'
 
 /** 서랍 상단이 카드 뒤로 파고드는 양(px). 이만큼은 카드에 가려 안 보인다. */
 const TUCK = 20
@@ -21,8 +22,6 @@ const COMMIT_DELAY = 200
 interface AddRecordDrawerProps {
   goalId: string
   onAddRecord: (goalId: string) => void
-  /** 여러 목적이 있을 때 최상단 카드에만: 5초마다 살짝 튀어 관심을 끄는 넛지 */
-  nudge?: boolean
 }
 
 /**
@@ -35,7 +34,6 @@ interface AddRecordDrawerProps {
 export function AddRecordDrawer({
   goalId,
   onAddRecord,
-  nudge = false,
 }: AddRecordDrawerProps) {
   const commitTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(
@@ -82,7 +80,7 @@ export function AddRecordDrawer({
       {/* 안쪽: 실제 보이는 초록 손잡이 (힌트가 아래로 넘치도록 overflow 미적용) */}
       <div
         className={`relative flex w-32 items-end justify-center rounded-b-3xl bg-primary text-primary-foreground motion-reduce:!transition-none ${
-          nudge && !isDragging ? 'animate-handle-nudge' : ''
+          isDragging ? '' : 'animate-handle-nudge'
         }`}
         style={{
           height: TUCK + revealed,
@@ -91,6 +89,9 @@ export function AddRecordDrawer({
           transition: isDragging
             ? 'height 110ms cubic-bezier(0.22, 1, 0.36, 1)'
             : 'height 460ms cubic-bezier(0.22, 1, 0.36, 1)',
+          // 목적마다 다른 주기·위상으로 손잡이 넛지를 흩뿌린다(아바타와 동일한 desync).
+          // 모든 카드가 서로 다른 랜덤 리듬으로 뜸하게 움직이고, 드래그 중엔 멈춘다.
+          ...(isDragging ? {} : getWiggleStyle(goalId)),
         }}
       >
         {/* 펼쳐질수록 드러나는 라벨 (레이아웃에 영향 주지 않도록 absolute) */}

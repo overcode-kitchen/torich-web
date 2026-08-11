@@ -26,7 +26,9 @@ const EMPTY: GoalFormValues = {
 function fromGoal(goal: Goal): GoalFormValues {
   return {
     name: goal.name,
-    target_amount: String(goal.target_amount),
+    // 0은 "미설정"이지 "0원 목표"가 아니다. 입력칸에 0을 박아두면 지우고 쓰라는 뜻이 되므로
+    // 비운 채로 placeholder를 보여준다. 저장 시 Number('') → 0이라 DB 값은 그대로 0.
+    target_amount: goal.target_amount > 0 ? String(goal.target_amount) : '',
     target_date: goal.target_date ?? '',
     emoji: goal.emoji ?? '',
     memo: goal.memo ?? '',

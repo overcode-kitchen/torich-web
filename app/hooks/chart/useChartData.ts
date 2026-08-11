@@ -5,12 +5,18 @@ import {
   getMonthlyCompletionRates,
   getMonthlyCompletionRatesForRange,
 } from '@/app/utils/stats'
-import { PaymentHistoryMap } from '../payment/usePaymentHistory'
+import type { PaymentHistoryMap } from '@/app/types/payment'
 import { PostponedPaymentsMap } from '../payment/usePostponedPayments'
+
+/** 차트 폴백 색 — CSS 토큰을 먼저 읽고 실패 시에만 쓰는 근사치. 케이싱은 대문자로 통일한다. */
+const CHART_FALLBACK_AXIS = '#9C9EA6' // --foreground-subtle 근사 (coolgray)
+const CHART_FALLBACK_EMPHASIS = '#16A34A' // --primary 근사 (브랜드 그린)
 
 interface UseChartDataProps {
   activeRecords: Investment[]
   completedPayments: PaymentHistoryMap
+  /** 소급 납입 — 그 달을 채운 것으로 세야 히트맵·hero와 같은 숫자가 나온다 */
+  retroactivePayments: PaymentHistoryMap
   /** 이번 달 미룸 처리된 회차 — 월별 완료율 분모에서 제외 */
   postponedPayments: PostponedPaymentsMap
   isCustomRange: boolean
@@ -54,6 +60,7 @@ export interface UseChartDataReturn {
 export function useChartData({
   activeRecords,
   completedPayments,
+  retroactivePayments,
   postponedPayments,
   isCustomRange,
   effectiveMonths,
@@ -61,10 +68,10 @@ export function useChartData({
 }: UseChartDataProps): UseChartDataReturn {
   const monthlyRates = useMemo(() => {
     if (isCustomRange && customDateRange?.from && customDateRange?.to) {
-      return getMonthlyCompletionRatesForRange(activeRecords, completedPayments, customDateRange.from, customDateRange.to, postponedPayments)
+      return getMonthlyCompletionRatesForRange(activeRecords, completedPayments, customDateRange.from, customDateRange.to, postponedPayments, retroactivePayments)
     }
-    return getMonthlyCompletionRates(activeRecords, completedPayments, effectiveMonths, postponedPayments)
-  }, [activeRecords, completedPayments, postponedPayments, effectiveMonths, isCustomRange, customDateRange])
+    return getMonthlyCompletionRates(activeRecords, completedPayments, effectiveMonths, postponedPayments, retroactivePayments)
+  }, [activeRecords, completedPayments, retroactivePayments, postponedPayments, effectiveMonths, isCustomRange, customDateRange])
 
   const periodCompletionRate = useMemo(() => {
     const rates = monthlyRates
@@ -114,21 +121,21 @@ export function useChartData({
   const chartBarColor = useMemo(() => {
     if (typeof window === 'undefined') {
       // 서버 사이드 렌더링 시에는 대략적인 coolgray 색상으로 fallback
-      return '#9c9ea6'
+      return CHART_FALLBACK_AXIS
     }
     const root = getComputedStyle(document.documentElement)
     const fromToken = root.getPropertyValue('--foreground-subtle').trim()
-    return fromToken || '#9c9ea6'
+    return fromToken || CHART_FALLBACK_AXIS
   }, [])
 
   const chartEmphasisColor = useMemo(() => {
     if (typeof window === 'undefined') {
       // SSR fallback — 브랜드 컬러 근사치
-      return '#16a34a'
+      return CHART_FALLBACK_EMPHASIS
     }
     const root = getComputedStyle(document.documentElement)
     const fromToken = root.getPropertyValue('--primary').trim()
-    return fromToken || '#16a34a'
+    return fromToken || CHART_FALLBACK_EMPHASIS
   }, [])
 
   return {

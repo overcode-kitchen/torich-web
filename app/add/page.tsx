@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
+import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
 import AddItemHeader from '@/app/components/AddItemSections/AddItemHeader'
@@ -11,6 +12,7 @@ import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialo
 import InvestmentDaysPickerSheet from '@/app/components/InvestmentDaysPickerSheet'
 import ManualInputModal from '@/app/components/ManualInputModal'
 import MaturityMismatchConfirmModal from '@/app/components/Common/MaturityMismatchConfirmModal'
+import { Button } from '@/components/ui/button'
 import { useAddRecordPage } from '@/app/hooks/investment/add/useAddRecordPage'
 
 function AddRecordContent() {
@@ -19,6 +21,9 @@ function AddRecordContent() {
     recordType,
     effectiveRecordType,
     setRecordType,
+    goalDeadline,
+    goalEndDate,
+    setGoalEndDate,
     isEditMode,
     flow,
     formState,
@@ -28,9 +33,12 @@ function AddRecordContent() {
     actions,
     isSubmitting,
     handleBack,
+    isEditLoading,
+    editError,
+    goHome,
     exitDialogOpen,
-    setExitDialogOpen,
-    goBackToRoot,
+    closeExitDialog,
+    confirmExit,
     onSkip,
     pendingMismatch,
     linkedGoal,
@@ -39,10 +47,35 @@ function AddRecordContent() {
     alignAndSubmit,
   } = page
 
+  // 편집 대상을 불러오는 중. 유형 선택이 잠긴 상태로 빈 폼을 먼저 보여주지 않는다.
+  if (isEditLoading) {
+    return (
+      <SubPageScaffold onBack={goHome} contentClassName="py-6">
+        <div className="flex items-center justify-center py-16">
+          <CircleNotch className="w-6 h-6 animate-spin text-foreground-subtle" />
+        </div>
+      </SubPageScaffold>
+    )
+  }
+
+  // 이미 지워졌거나 없는 항목의 편집 링크로 들어온 경우.
+  // 편집 모드라 유형 선택도 잠겨 있어, 안내하지 않으면 빠져나갈 방법이 없다.
+  if (editError) {
+    return (
+      <SubPageScaffold onBack={goHome} contentClassName="py-6">
+        <div className="flex flex-col items-center gap-4 py-16">
+          <p className="text-label text-foreground-subtle">{editError}</p>
+          <Button onClick={goHome}>홈으로</Button>
+        </div>
+      </SubPageScaffold>
+    )
+  }
+
   return (
     <>
       <SubPageScaffold onBack={handleBack} contentClassName="py-6 pb-40" enterAnimation>
-        <AddItemHeader currentGroup={flow.currentGroup} />
+        {/* 단일 필드 편집은 3단계 위저드가 아니므로 진행 표시를 숨긴다. */}
+        {!flow.isSingleFieldMode && <AddItemHeader currentGroup={flow.currentGroup} />}
 
         {flow.currentGroup === 'A' && (
           <GroupA_WhatToSave
@@ -60,6 +93,9 @@ function AddRecordContent() {
             recordType={effectiveRecordType}
             investmentForm={investmentForm}
             formState={formState}
+            goalDeadline={goalDeadline}
+            goalEndDate={goalEndDate}
+            onGoalEndDateChange={setGoalEndDate}
           />
         )}
         {flow.currentGroup === 'C' && (
@@ -70,6 +106,7 @@ function AddRecordContent() {
             isStartDatePickerOpen={modals.isDatePickerOpen}
             onStartDatePickerOpenChange={modals.setIsDatePickerOpen}
             onOpenDaysPicker={() => modals.setIsDaysPickerOpen(true)}
+            openDaysPickerOnMount={flow.entryField === 'investmentDays'}
           />
         )}
       </SubPageScaffold>
@@ -91,7 +128,7 @@ function AddRecordContent() {
               type="button"
               onClick={onSkip}
               disabled={isSubmitting}
-              className="w-full py-3 mt-1 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              className="w-full py-3 mt-1 text-label text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             >
               나중에 할게요
             </button>
@@ -134,11 +171,8 @@ function AddRecordContent() {
 
       <ExitConfirmDialog
         isOpen={exitDialogOpen}
-        onClose={() => setExitDialogOpen(false)}
-        onConfirm={() => {
-          setExitDialogOpen(false)
-          goBackToRoot()
-        }}
+        onClose={closeExitDialog}
+        onConfirm={confirmExit}
       />
 
       {pendingMismatch && linkedGoal?.target_date && (

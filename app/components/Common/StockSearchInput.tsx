@@ -2,6 +2,7 @@
 
 import { CircleNotch } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
+import { MAX_ITEM_NAME_LENGTH } from '@/app/constants/input-limits'
 import { type SearchResult } from '@/app/hooks/stock/useStockSearch'
 
 interface StockSearchInputProps {
@@ -37,6 +38,7 @@ export default function StockSearchInput({
         type="text"
         value={stockName}
         onChange={(e) => onStockNameChange(e.target.value)}
+        maxLength={MAX_ITEM_NAME_LENGTH}
         placeholder={market === 'KR' ? '삼성전자, TIGER...' : 'S&P 500, AAPL...'}
         className="w-full bg-card rounded-2xl py-3.5 pl-4 pr-12 text-foreground placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-ring"
         autoComplete="off"
@@ -65,7 +67,7 @@ export default function StockSearchInput({
               <div className="font-medium text-foreground">
                 {stock.name}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="text-label text-muted-foreground mt-1">
                 {stock.symbol}
                 {stock.group && ` · ${stock.group}`}
               </div>
@@ -81,7 +83,7 @@ export default function StockSearchInput({
         stockName.trim().length >= 2 && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle overflow-hidden z-10">
             <div className="px-5 py-4 text-center space-y-3">
-              <p className="text-base text-foreground">
+              <p className="text-body text-foreground">
                 지금 검색 결과를 불러오지 못했어요.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-center sm:flex-wrap">
@@ -121,7 +123,7 @@ export default function StockSearchInput({
         stockName.trim().length >= 2 && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle overflow-hidden z-10">
             <div className="px-5 py-4 text-center">
-              <p className="text-base text-muted-foreground mb-3">
+              <p className="text-body text-muted-foreground mb-3">
                 조건에 맞는 종목이 없어요
               </p>
               <button

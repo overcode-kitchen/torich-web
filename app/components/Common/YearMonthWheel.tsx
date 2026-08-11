@@ -72,7 +72,7 @@ function WheelColumn({
           type="button"
           onClick={() => selectAt(i)}
           className={cn(
-            'flex h-10 w-full snap-center items-center justify-center text-base transition-colors',
+            'flex h-10 w-full snap-center items-center justify-center text-body transition-colors',
             i === active ? 'font-bold text-foreground' : 'text-foreground-subtle',
           )}
         >

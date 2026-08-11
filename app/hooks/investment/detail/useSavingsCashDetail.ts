@@ -3,7 +3,8 @@
 import { useMemo, useState } from 'react'
 import { differenceInMonths } from 'date-fns'
 import { calculateSavingsMaturity } from '@/app/utils/savingsMaturity'
-import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
+import { useRefreshPaymentHistoryOnMount } from '@/app/hooks/payment/useRefreshPaymentHistoryOnMount'
 import { usePaymentPagination } from '@/app/hooks/payment/usePaymentPagination'
 import { getPaymentHistoryFromStart } from '@/app/utils/payment-history'
 import { useMonthToggleUndo } from '@/app/hooks/payment/useMonthToggleUndo'
@@ -79,7 +80,8 @@ export function useSavingsCashDetail(
     togglePayment,
     toggleRetroactivePayment,
     markAllRetroactivePaid,
-  } = usePaymentHistory()
+  } = usePaymentHistoryContext()
+  useRefreshPaymentHistoryOnMount()
 
   // 월 회차 토글 + 하단 되돌리기 토스트 (홈과 동일한 UndoToastSection 사용)
   const monthUndo = useMonthToggleUndo(togglePayment)

@@ -26,17 +26,38 @@ Organization 레벨에 만든다. 저장소 레벨 프로젝트는 나중에 저
 
 `배포대기`가 이 팀에 꼭 필요한 컬럼이다. 다음 릴리스에 무엇이 나가는지가 이 컬럼 그대로다.
 
-## 3. 자동화 토글 3개
+## 3. 자동화 토글
 
-보드 우측 상단 `···` → **Workflows**. 아래 3개만 켜고 나머지는 끈 채로 둔다.
+보드 우측 상단 `···` → **Workflows**. 아래 2개만 켜고 나머지는 끈다.
 
 | Workflow | 설정 |
 |---|---|
 | **Item added to project** | Status → `신규` |
-| **Pull request merged** | Status → `배포대기` |
-| **Issue closed** | Status → `완료` |
+| **Item closed** | Status → `완료` |
 
-여기에 GitHub Actions를 쓰지 말 것. 내장 워크플로로 충분하고, Actions로 하면 토큰 권한 관리가 따라붙는다.
+> 🚫 **`Pull request merged`는 켜지 말 것.** 이 내장 워크플로는 **보드에 올라온 PR 카드**의 상태를 바꾼다. 우리 보드는 이슈만 올리므로(PR까지 올리면 2인 팀에 카드가 두 배가 된다) 발동할 대상이 없다. 켜두면 "동작하고 있다"고 착각하게 된다.
+
+`진행중` → `배포대기` 이동은 [.github/workflows/board.yml](../.github/workflows/board.yml)이 처리한다. "연결된 이슈를 옮기는" 내장 워크플로가 없어서 직접 만들었다. 아래 토큰 설정이 필요하다.
+
+### `PROJECT_TOKEN` 시크릿 (board.yml 동작에 필수)
+
+`GITHUB_TOKEN`은 **조직 Projects에 쓸 수 없다.** 별도 PAT가 필요하다.
+
+1. <https://github.com/settings/personal-access-tokens/new> → **Fine-grained token**
+   - Resource owner: **overcode-kitchen** (개인 계정이 아니다)
+   - Expiration: 1년
+   - **Organization permissions** → **Projects: Read and write**
+   - Repository permissions는 건드리지 않아도 된다
+2. 조직 승인이 필요하다는 안내가 뜨면 Owner가 승인한다
+3. <https://github.com/overcode-kitchen/torich-web/settings/secrets/actions> → **New repository secret**
+   - Name: `PROJECT_TOKEN`
+   - Secret: 발급받은 토큰
+
+> **토큰이 두 개인 이유.** `PROJECT_TOKEN` 은 보드 카드를 옮기는 데만 쓴다. 이슈 **라벨** 수정은 저장소 권한이 필요하므로 Actions가 자동으로 주는 `GITHUB_TOKEN` 이 담당한다. 한쪽 권한만으로는 둘 다 못 한다 — 실제로 `PROJECT_TOKEN` 하나로 처리하려다 라벨이 조용히 안 바뀌는 문제를 겪었다.
+
+토큰이 없어도 CI는 실패하지 않는다. 경고만 남기고 넘어가므로, 만료됐을 때 배포가 막히지는 않는다 (대신 카드가 안 움직인다).
+
+> ⚠️ **`Closes #N`은 커밋 메시지에 쓴다.** 깃헙은 PR의 base가 기본 브랜치(`main`)일 때만 닫기 링크를 만든다. `integration` 대상 PR에서 `Closes #N`은 단순 언급으로만 남아 링크가 생기지 않는다. `board.yml`은 그래서 제목·본문·커밋 메시지를 직접 파싱하고, `main` 머지 시 이슈가 닫히는 것도 **커밋 메시지**가 담당한다.
 
 ## 4. 이슈 자동 등록
 
@@ -53,7 +74,7 @@ Organization 레벨에 만든다. 저장소 레벨 프로젝트는 나중에 저
 
 ## 이미 세팅된 것 (CLI로 완료됨)
 
-- 라벨 4개: `feat` `fix` `refactor` `docs` (커밋 type과 동일)
+- 라벨: 작업 종류 6개(`feat` `fix` `refactor` `docs` `chore` `style` — 커밋 type과 동일) + 상태 2개(`진행중` `배포대기` — board.yml이 자동 관리)
 - 이슈 템플릿: `.github/ISSUE_TEMPLATE/feature.yml`, `bug.yml`
 - 마일스톤 `v1.3.0` — **due date는 배포 예정일로 직접 설정할 것** ([milestones](https://github.com/overcode-kitchen/torich-web/milestones)). patch 마일스톤(`v1.2.1` 등)은 급한 수정이 실제로 생겼을 때 만든다
 - `.github/workflows/ci.yml` — PR 시 타입 체크 + 린트
@@ -64,9 +85,13 @@ Organization 레벨에 만든다. 저장소 레벨 프로젝트는 나중에 저
 
 **Settings → General → Pull Requests**
 
-- ☑️ **Allow squash merging** — 개인 브랜치 → `integration` 용. 중간 커밋을 남기지 않는다
+- ☑️ **Allow squash merging** — 이슈 브랜치 → `integration` 용. 중간 커밋을 남기지 않는다
 - ☑️ **Allow merge commits** — `integration` → `main`, `hotfix/*` → `main` 용
-- ☑️ **Automatically delete head branches**
+- ☐ **Automatically delete head branches** — **꺼 둔다**
+
+> 🚫 **auto-delete를 켜면 안 된다.** 이슈 브랜치(`type/이슈번호-설명`)는 일회용이라 지워져도 되지만, **이 옵션은 머지된 PR의 head를 예외 없이 지운다.** `integration` → `main` 을 머지하면 `integration` 이 head라서 **`integration` 자체가 사라진다.** (실제로 한 번 겪었고 `main` 기준으로 복구했다.)
+>
+> 이슈 브랜치는 머지 화면의 **Delete branch** 버튼으로 그때그때 지운다. 클릭 한 번이라 자동화할 값어치가 없고, `integration` 을 잃는 위험이 훨씬 크다.
 
 > ⚠️ **Squash만 허용하면 안 된다.** `integration` → `main` 을 squash로 머지하면 `main` 에 원본과 다른 새 커밋 하나가 생겨 두 브랜치가 영구히 갈라진다. 다음 릴리스마다 back-merge 충돌이 나고, `release.yml` 의 누락 검사도 계속 걸린다. **브랜치 간 머지(`integration`·`hotfix` → `main`)는 반드시 merge commit으로 한다.**
 

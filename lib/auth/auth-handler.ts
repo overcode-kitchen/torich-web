@@ -2,15 +2,15 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 
 export class AuthHandler {
-  private static logAuthStep(step: string, data: any) {
+  private static logAuthStep(step: string, data: unknown) {
     console.log(`${step}:`, data)
   }
 
-  private static logAuthError(step: string, error: any) {
+  private static logAuthError(step: string, error: unknown) {
     console.error(`❌ ${step}:`, error)
   }
 
-  static async handleCodeExchange(code: string): Promise<{ success: boolean; error?: any }> {
+  static async handleCodeExchange(code: string): Promise<{ success: boolean; error?: unknown }> {
     try {
       const supabase = await createClient()
       const { error } = await supabase.auth.exchangeCodeForSession(code)

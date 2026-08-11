@@ -1,4 +1,4 @@
-import { PaymentHistoryMap } from '@/app/hooks/payment/usePaymentHistory'
+import type { PaymentHistoryMap } from '@/app/types/payment'
 import { isPaymentCompleted } from './payment-completion'
 import { ymd, monthlyInstallmentDays } from './monthly-installments'
 import type { Investment } from '@/app/types/investment'
@@ -192,7 +192,7 @@ export function toggleableInstallmentDates(
  * 상세 표에서 그 달의 자동 납입 회차를 통째로 토글한다.
  * - currentCompleted=true(모두 완료 상태) → 완료된 회차를 모두 취소
  * - currentCompleted=false(미완료/부분) → 아직 안 된 회차를 모두 완료
- * 완료/취소는 호출한 화면의 usePaymentHistory 인스턴스(togglePayment)로 이뤄져 표가 즉시 갱신된다.
+ * 완료/취소는 PaymentHistoryContext의 togglePayment로 이뤄지므로 표·홈·통계가 함께 갱신된다.
  *
  * @returns 실제로 상태를 바꾼 회차 날짜(YYYY-MM-DD) 목록. 되돌리기 토스트가 정확히 이 회차만
  *   원복하도록 쓰인다(부분완료 → 완료로 채운 뒤 되돌려도 원래 부분완료 상태로 복원).

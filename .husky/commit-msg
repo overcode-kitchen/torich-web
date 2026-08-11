@@ -1,0 +1,48 @@
+#!/usr/bin/env sh
+# 커밋 메시지에 이슈 종료 트레일러(closes #NN)가 있는지 검사한다.
+# 규칙 근거: CLAUDE.md > Commit Convention > 이슈 연동 (필수)
+# 우회가 필요하면 `git commit --no-verify` (권장하지 않음).
+
+msg_file="$1"
+# 주석(#)과 빈 줄을 뺀 실제 메시지만 남긴다.
+msg=$(grep -v '^#' "$msg_file" | sed '/^[[:space:]]*$/d')
+
+# 머지·리버트·픽스업/스쿼시 커밋은 이슈 트레일러 예외.
+first_line=$(printf '%s\n' "$msg" | head -n1)
+case "$first_line" in
+  "Merge "*|"Revert "*|"fixup!"*|"squash!"*|"amend!"*) exit 0 ;;
+esac
+
+# 브랜치 경고 (경고만, 커밋은 통과) — 이슈별 브랜치 정책.
+# 규칙: type/이슈번호-설명 (예: feat/42-goal-reorder). hotfix/* 는 예외.
+branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+case "$branch" in
+  feat/[0-9]*-*|fix/[0-9]*-*|style/[0-9]*-*|refactor/[0-9]*-*|chore/[0-9]*-*|docs/[0-9]*-*|hotfix/*|HEAD) ;;
+  *)
+    echo "" >&2
+    echo "⚠ 경고: 이슈 브랜치가 아닌 '$branch' 에서 커밋하고 있습니다." >&2
+    echo "  이슈별로 브랜치를 파는 것을 권장합니다: type/이슈번호-설명 (예: feat/42-goal-reorder)" >&2
+    echo "  예) git checkout integration && git pull && git checkout -b fix/58-chart-loss" >&2
+    echo "  (경고일 뿐 커밋은 계속 진행됩니다. 자세한 내용: docs/workflow.md)" >&2
+    echo "" >&2
+    ;;
+esac
+
+# close/closes/closed/fix/fixes/fixed/resolve/resolves/resolved + #숫자 를 허용한다.
+if printf '%s\n' "$msg" | grep -qiE '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+'; then
+  exit 0
+fi
+
+echo ""
+echo "✖ 커밋이 거부되었습니다: 이슈 연동 트레일러가 없습니다."
+echo ""
+echo "  커밋 메시지 마지막 줄에 'Closes #N' 을 추가하세요. (docs/workflow.md)"
+echo "  예시:"
+echo "      feat(goal): 목적 카드 순서 변경 기능을 추가함"
+echo ""
+echo "      Closes #42"
+echo ""
+echo "  연결할 이슈가 없다면 먼저 이슈를 만드세요 (overcode-kitchen/torich-web)."
+echo "  (부득이한 경우에만 git commit --no-verify 로 우회)"
+echo ""
+exit 1

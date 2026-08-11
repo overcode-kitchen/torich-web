@@ -558,6 +558,8 @@ END; $$;
 ### 11.3 `scheduled_notifications.goal_id` (`:55-63`)
 `uuid REFERENCES goals(id) ON DELETE CASCADE`. Goal D-day 알림용. 인덱스 + partial unique(`(goal_id, scheduled_at, token) WHERE goal_id IS NOT NULL AND record_id IS NULL`)로 record 알림과 dedup.
 - **발견**: 스키마/인덱스는 준비됐으나, 분석 대상 앱 코드에 `scheduled_notifications.goal_id`를 **실제로 INSERT하는 producer가 없다**(목적 D-day 알림 스케줄링 미구현 또는 별도 미포함). `notification_enabled`는 폼/스위치로 저장만 되고 소비처가 보이지 않음.
+  - **확정(#59)**: 운영 DB에서 `select count(*) from scheduled_notifications where goal_id is not null` = **0**(대조군 `record_id` 기준 1,769건). Edge Function 5종 전체에 `goal` 문자열 0건, pg_cron에도 미등록. 서비스 시작 이래 목적 알림이 한 건도 예약된 적 없음이 확인됐다.
+  - **해소(#59)**: `schedule-goal-notifications` Edge Function을 추가해 producer를 구현했다. 마감일 D-7/D-1/당일에 `notification_type = 'goal_deadline'`, `record_id = null`, `goal_id = 목적 id`로 예약한다. `notification_enabled`가 드디어 소비된다. 동작·차이점은 [docs/features/notifications.md](notifications.md) 1.1절, 배포·cron 등록은 [docs/notification-infra.md](../notification-infra.md) 7절 참조.
 
 ### 11.4 의존 테이블
 - `records`(투자): `goal_id`, `monthly_amount`, `period_years`, `record_type`, `interest_rate`, `maturity_date`, `start_date`, `settled_at`, `created_at` 등이 진행도/상태 계산에 사용.

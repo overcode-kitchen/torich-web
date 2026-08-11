@@ -36,7 +36,7 @@ export default function GoalDateField({
         emptyLabel="마감일 없음"
       />
       {showHelp && (
-        <p className="text-xs text-foreground-subtle">{GOAL_DEADLINE_HELP}</p>
+        <p className="text-caption text-foreground-subtle">{GOAL_DEADLINE_HELP}</p>
       )}
     </div>
   )

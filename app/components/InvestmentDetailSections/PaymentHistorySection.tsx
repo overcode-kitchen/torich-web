@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
-import { usePaymentHistory } from '@/app/hooks/payment/usePaymentHistory'
+import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { buildCapturedByMonth } from '@/app/utils/realized-principal'
 import type { PaymentHistorySectionProps as OriginalPaymentHistorySectionProps } from './types'
 import { PaymentHistoryTable } from './PaymentHistoryTable'
@@ -25,7 +25,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
   }
 
   // 각 납입의 매수 시점 실제 금액(원) — 표에서 행별 금액을 현재 금액이 아닌 그때 금액으로 표시
-  const { capturedAmounts } = usePaymentHistory()
+  const { capturedAmounts } = usePaymentHistoryContext()
 
   const item = props.item || contextValue?.item
   const investmentData = props.paymentHistory !== undefined ? props : contextValue?.investmentData
@@ -82,10 +82,10 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
       {hasRetroactive && (
         <div className="space-y-2">
           <div className="flex items-baseline justify-between px-1">
-            <p className="text-sm font-medium text-foreground-muted">
+            <p className="text-label font-medium text-foreground-muted">
               소급 기록
             </p>
-            <p className="text-xs text-foreground-muted">
+            <p className="text-caption text-foreground-muted">
               앱 등록 이전 기간
             </p>
           </div>
@@ -97,7 +97,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             capturedByMonth={capturedByMonth}
           />
           <div className="flex items-center justify-between gap-2 px-1 pt-1">
-            <p className="text-xs text-foreground-muted">
+            <p className="text-caption text-foreground-muted">
               {onToggleRetroactive
                 ? '탭해서 당시 납입 여부를 기록할 수 있어요.'
                 : '앱 시작 전 기간은 자동 추적되지 않아요.'}
@@ -106,7 +106,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
               <button
                 type="button"
                 onClick={() => setShowBulkConfirm(true)}
-                className="shrink-0 text-xs font-medium text-foreground-soft bg-surface-hover hover:bg-secondary rounded-md px-2.5 py-1.5 transition-colors"
+                className="shrink-0 text-caption font-medium text-foreground-soft bg-surface-hover hover:bg-secondary rounded-md px-2.5 py-1.5 transition-colors"
               >
                 전체 완료 표시
               </button>
@@ -119,10 +119,10 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
         <div className="space-y-2">
           {hasRetroactive && (
             <div className="flex items-baseline justify-between px-1">
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-label font-medium text-foreground">
                 자동 추적
               </p>
-              <p className="text-xs text-foreground-muted">
+              <p className="text-caption text-foreground-muted">
                 앱 등록 이후
               </p>
             </div>
@@ -135,7 +135,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             capturedByMonth={capturedByMonth}
           />
           {onToggleAuto && (
-            <p className="px-1 pt-1.5 text-sm text-foreground-muted">
+            <p className="px-1 pt-1.5 text-label text-foreground-muted">
               각 달을 탭하면 그 달 납입을 완료하거나 되돌릴 수 있어요.
             </p>
           )}
@@ -143,7 +143,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
             <button
               type="button"
               onClick={loadMore}
-              className="mt-3 w-full py-2.5 text-sm font-medium text-foreground-muted bg-surface-hover hover:bg-secondary rounded-lg transition-colors"
+              className="mt-3 w-full py-2.5 text-label font-medium text-foreground-muted bg-surface-hover hover:bg-secondary rounded-lg transition-colors"
             >
               이어서 보기
             </button>

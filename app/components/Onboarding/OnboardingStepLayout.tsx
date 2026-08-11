@@ -52,8 +52,8 @@ export default function OnboardingStepLayout({
 
       {/* 타이틀 · 서브타이틀 */}
       <div className="mb-5 shrink-0 space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl whitespace-pre-line leading-tight">{title}</h1>
-        <p className="text-sm text-foreground-muted whitespace-pre-line leading-snug">{subtitle}</p>
+        <h1 className="text-title font-bold tracking-tight md:text-display whitespace-pre-line leading-tight">{title}</h1>
+        <p className="text-label text-foreground-muted whitespace-pre-line leading-snug">{subtitle}</p>
       </div>
 
       {/* 이미지 영역 - imageSlot 있으면 슬라이드 스트립, 없으면 단일 이미지 */}

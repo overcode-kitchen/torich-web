@@ -1,6 +1,12 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { isHabitMode as isRecordHabitMode } from '@/app/types/investment'
+import {
+  MAX_INTEREST_RATE,
+  clampAmountManwon,
+  normalizeAmountInput,
+} from '@/app/constants/input-limits'
 import type { Investment } from '@/app/types/investment'
 
 export interface UseAddItemFormStateProps {
@@ -22,11 +28,18 @@ export interface UseAddItemFormStateReturn {
   handleInterestRateChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   maturityDate: string
   setMaturityDate: (value: string) => void
-  /** 현금 목표 기간(년). 빈 문자열이면 habit(무기한 적립) */
+  /** 현금 목표 기간(년). */
   periodYears: string
   setPeriodYearsRaw: (value: string) => void
   handlePeriodYearsChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   adjustPeriodYears: (delta: number) => void
+  /**
+   * 적립형(목표 기간 없음) 여부. periodYears에서 파생하지 않고 독립 state로 둔다.
+   * 파생값이면 초기값 ''이 곧 habit이 되어 입력칸이 처음부터 잠기고 토글도 못 끈다.
+   * (투자 유형의 useAddInvestmentUI.isHabitMode와 같은 규약)
+   */
+  isHabitMode: boolean
+  setIsHabitMode: (value: boolean) => void
   /** 공통 필드를 모두 빈 상태로 리셋 (type 변경 시 사용) */
   resetAll: () => void
 }
@@ -46,10 +59,21 @@ export function useAddItemFormState({
   const [interestRate, setInterestRate] = useState<string>('')
   const [maturityDate, setMaturityDate] = useState<string>('')
   const [periodYears, setPeriodYears] = useState<string>('')
+  // 기본값 false — 신규 진입 시 목표 기간을 바로 입력할 수 있어야 한다.
+  const [isHabitMode, setIsHabitMode] = useState<boolean>(false)
 
-  // initData 변경 시 1회 초기화 (편집 모드 진입)
-  useEffect(() => {
-    if (!initData) return
+  // 편집 진입 시 기존 값으로 폼을 채운다. 기준은 "레코드가 바뀌었는가"(id)다.
+  //
+  // 이전에는 이 작업을 useEffect([initData])에서 했는데, initData는 목록이 갱신될 때마다
+  // 새 객체 참조로 다시 들어온다. 값이 그대로여도 참조만 바뀌면 effect가 또 돌아
+  // 사용자가 입력하던 내용을 서버 값으로 덮어썼다.
+  //
+  // 렌더 도중 state를 맞추는 건 React가 권장하는 패턴이다. 커밋 전에 곧바로 재렌더되므로
+  // effect처럼 화면이 한 번 깜빡였다가 바뀌지 않는다.
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prefilledId, setPrefilledId] = useState<string | null>(null)
+  if (initData && initData.id !== prefilledId) {
+    setPrefilledId(initData.id)
     setTitle(initData.title ?? '')
     setMonthlyAmount(
       initData.monthly_amount
@@ -61,34 +85,33 @@ export function useAddItemFormState({
       initData.interest_rate != null ? String(initData.interest_rate) : '',
     )
     setMaturityDate(initData.maturity_date ?? '')
-    setPeriodYears(
-      initData.period_years != null && initData.period_years > 0
-        ? String(initData.period_years)
-        : '',
-    )
-  }, [initData])
+    // 투자 편집(useAddInvestmentForm)과 동일하게 habit 여부를 먼저 정하고 기간을 채운다.
+    const habit = isRecordHabitMode(initData)
+    setIsHabitMode(habit)
+    setPeriodYears(habit ? '' : String(initData.period_years))
+  }
 
-  // 금액: 숫자만 허용, 천 단위 콤마 표기 (만원 단위)
+  // 금액: 숫자만 허용, 천 단위 콤마 표기 (만원 단위). 자릿수 상한은 normalizeAmountInput에서 강제.
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const digitsOnly = e.target.value.replace(/[^0-9]/g, '')
-    if (digitsOnly === '') {
-      setMonthlyAmount('')
-      return
-    }
-    setMonthlyAmount(parseInt(digitsOnly, 10).toLocaleString())
+    setMonthlyAmount(normalizeAmountInput(e.target.value))
   }
 
   const adjustAmount = (delta: number): void => {
     const current = parseInt(monthlyAmount.replace(/,/g, ''), 10) || 0
-    const next = Math.max(0, current + delta)
-    setMonthlyAmount(next === 0 ? '' : next.toLocaleString())
+    setMonthlyAmount(clampAmountManwon(current + delta))
   }
 
-  // 연이율: 숫자·소수점 1개만 허용
+  // 연이율: 숫자·소수점 1개만 허용, 상한(MAX_INTEREST_RATE)까지만.
   const handleInterestRateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const cleaned = e.target.value.replace(/[^0-9.]/g, '')
     const parts = cleaned.split('.')
-    setInterestRate(parts.length > 2 ? `${parts[0]}.${parts[1]}` : cleaned)
+    const normalized = parts.length > 2 ? `${parts[0]}.${parts[1]}` : cleaned
+    const parsed = parseFloat(normalized)
+    if (Number.isFinite(parsed) && parsed > MAX_INTEREST_RATE) {
+      setInterestRate(String(MAX_INTEREST_RATE))
+      return
+    }
+    setInterestRate(normalized)
   }
 
   // 목표 기간(년): 정수만 허용. 빈 문자열 허용 (habit 모드 의미).
@@ -110,6 +133,7 @@ export function useAddItemFormState({
     setInterestRate('')
     setMaturityDate('')
     setPeriodYears('')
+    setIsHabitMode(false)
   }, [])
 
   return {
@@ -130,6 +154,8 @@ export function useAddItemFormState({
     setPeriodYearsRaw: setPeriodYears,
     handlePeriodYearsChange,
     adjustPeriodYears,
+    isHabitMode,
+    setIsHabitMode,
     resetAll,
   }
 }

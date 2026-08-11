@@ -1,5 +1,9 @@
 # 기여 가이드
 
+> 🚀 **처음이라면 [docs/workflow.md](docs/workflow.md) 부터 읽으세요.**
+> 이슈 등록부터 배포까지의 흐름을, **사람이 하는 일과 자동으로 되는 일**로 나눠 한 장에 정리해 뒀습니다.
+> 이 문서는 그 규칙들의 **배경과 예외**를 다루는 참고 문서입니다.
+
 토리치 협업 규칙을 정리한 문서입니다. 코드 자체에 적용되는 **아키텍처/스키마 호환성 룰** 은 [CLAUDE.md](CLAUDE.md) 에 있고, 이 문서는 **사람 간 협업 절차** (브랜치 전략, 배포, 환경 설정 등) 를 다룹니다.
 
 ---
@@ -12,13 +16,15 @@
 |--------|------|
 | `main` | **지금 앱스토어에 있는 것** |
 | `integration` | **다음에 낼 것** |
-| `develop/<이름>` | 개인 작업 브랜치 (`develop/suni`, `develop/hansol`) |
-| `hotfix/<버전>` | 급한 수정 (`hotfix/1.2.1`) |
+| `type/이슈번호-설명` | 이슈 하나짜리 작업 브랜치 (`fix/58-chart-loss`). **머지하면 지운다** |
+| `hotfix/<버전>` | 급한 수정 (`hotfix/1.2.1`). 머지하면 지운다 |
 
 ```
-평소     :  develop/<이름> ──▶ integration ──▶ main  + 태그 v1.3.0
+평소     :  type/이슈번호-설명 ──▶ integration ──▶ main  + 태그 v1.3.0
 급할 때  :  main ──▶ hotfix/1.2.1 ──▶ main  + 태그 v1.2.1 ──▶ integration에 합치기
 ```
+
+오래 사는 브랜치는 `main`·`integration` 둘뿐이다. 작업 브랜치는 이슈마다 새로 판다 — 이슈 하나당 브랜치 하나라 PR 범위가 명확해지고, 브랜치 이름의 번호로 [board.yml](.github/workflows/board.yml)이 카드를 `진행중`으로 옮긴다.
 
 ### 규칙은 하나 — 급한 수정은 `main`에서 시작하고, 끝나면 `integration`에 합친다
 
@@ -33,7 +39,7 @@ git checkout integration && git pull && git merge origin/main && git push origin
 
 ### 1.3.0 만드는 중에 1.2.1 급한 수정이 생겼을 때
 
-1. 하던 작업은 개인 브랜치에 커밋해두고 둔다 (`git stash` 도 됨)
+1. 하던 작업은 작업 브랜치에 커밋해두고 둔다 (`git stash` 도 됨)
 2. `git checkout main && git pull && git checkout -b hotfix/1.2.1`
 3. 고쳐서 `main` 으로 PR → 머지 → 버전 올리고 태그 `v1.2.1` push
 4. 위의 합치기 명령 실행
@@ -82,39 +88,23 @@ git checkout integration && git pull && git merge origin/main && git push origin
 
 - 제목은 커밋 컨벤션과 동일하게: `fix(stats): 손실이 차트에서 0으로 표시됨`
 - 템플릿 2종(기능 / 버그)이 자동으로 뜨고, 라벨도 자동으로 붙는다.
-- **라벨은 `feat` `fix` `refactor` `docs` 4개뿐이고, 커밋 type과 같다.** 그 외 정보는 마일스톤이 말해준다.
+- **작업 종류 라벨은 커밋 type과 1:1이다** — `feat` `fix` `refactor` `docs` `chore` `style`. 템플릿이 알아서 붙인다.
+- **`진행중`·`배포대기` 라벨은 손대지 않는다.** 보드 Status를 복사한 것이고 [board.yml](.github/workflows/board.yml)이 자동으로 붙였다 뗀다.
 - 지금 나갈 게 정해진 작업은 마일스톤을 지정한다. 언젠가 해야 하지만 버전을 못 박을 수 없는 것은 비워둔다 — 보드의 `백로그` 뷰가 모아 보여주고, 다음 버전 계획 때 끌어온다.
 
-### 한 사이클
+### 한 사이클 · 릴리스 절차
 
-```
-이슈 생성 (마일스톤 + type 라벨)
-  → self-assign, Status: 진행중
-  → develop/<이름> 에서 작업
-  → integration 으로 PR (본문에 "Closes #42")
-  → 머지 → Status: 배포대기
-  → 릴리스: integration → main 머지 후 v1.3.0 태그 push
-  → 이슈 자동 close + 마일스톤 자동 close
-```
+→ **[docs/workflow.md](docs/workflow.md)** 에 단계별로 정리돼 있다. 절차를 두 곳에 적으면 반드시 어긋나므로 여기서는 반복하지 않는다.
 
-> `Closes #42`는 **기본 브랜치(`main`)에 머지될 때만** 이슈를 닫는다. `integration` 머지로는 닫히지 않는데, 이게 의도한 동작이다 — integration 머지는 "코드는 들어갔지만 사용자에게는 아직 안 나간" 상태이고, 보드의 `배포대기`가 정확히 그 상태다. 다음 릴리스에 무엇이 나가는지가 이 컬럼에 그대로 보인다.
+아래는 그 절차가 **왜 그렇게 생겼는지**에 대한 배경이다.
 
-### 릴리스
+#### `배포대기` 상태가 따로 있는 이유
 
-1. 마일스톤의 열린 이슈를 정리한다 (남은 건 다음 마일스톤 또는 백로그로).
-2. `main` 으로 PR 머지 — 기능이면 `integration` 에서, 급한 수정이면 `hotfix/*` 에서.
-3. 버전 3군데를 올려 커밋하고 태그를 push한다.
+`integration` 머지로는 이슈가 닫히지 않는다. 이건 의도한 동작이다 — **"코드는 들어갔지만 사용자에게는 아직 안 나간"** 상태가 이 저장소에는 실재하기 때문이다. iOS 앱은 심사를 거쳐야 사용자에게 닿는다. 다음 배포에 무엇이 나가는지가 이 컬럼에 그대로 보인다.
 
-   ```bash
-   git checkout main && git pull && git tag v1.3.0 && git push origin v1.3.0
-   ```
+#### 심사 지연을 감안한다
 
-4. `release.yml` 이 릴리스 노트 생성 + 합치기 누락 검사 + 마일스톤 close를 처리한다.
-5. **급한 수정이었다면 `integration` 에 합친다** (위 [규칙](#규칙은-하나--급한-수정은-main에서-시작하고-끝나면-integration에-합친다) 참고).
-6. iOS 아카이빙·심사 ([CLAUDE.md의 빌드 함정 섹션](CLAUDE.md) 확인 필수).
-7. 다음 마일스톤을 만든다.
-
-> 심사에 며칠 걸린다. 급한 장애일수록 **서버에서 우회할 수 있는지 먼저 검토**하는 게 빠를 때가 많다.
+앱 심사에 며칠 걸린다. 급한 장애일수록 **서버에서 우회할 수 있는지 먼저 검토**하는 게 빠를 때가 많다. 앱 재빌드가 필요한 수정과 그렇지 않은 수정을 구분해서 판단한다.
 
 ---
 
@@ -141,16 +131,27 @@ git checkout integration && git pull && git merge origin/main && git push origin
 
 ## 로컬 환경
 
-`.env.local` 의 키는 `.env.example` 을 기준으로 통일합니다. "내 로컬에서만 되는 상태" 를 만들지 않습니다.
+키 구성은 [`.env.example`](.env.example) 을 기준으로 통일합니다. "내 로컬에서만 되는 상태" 를 만들지 않습니다.
+
+**파일은 두 개를 만듭니다.** 키 구성은 같고 값만 다릅니다.
+
+```bash
+cp .env.example .env.development.local    # pnpm dev 에서만 읽힘
+cp .env.example .env.production           # pnpm build:app 에서만 읽힘
+```
+
+> 🚫 **`.env.local` 은 만들지 마세요.**
+> dev·build 양쪽에서 읽히고 `.env.production` 보다 **우선**하기 때문에, 개발용 값이 앱 번들에 조용히 구워집니다. 빌드는 성공하고 경고도 없어서 **앱스토어에 올린 뒤에야 드러납니다.** 이 저장소에서 실제로 두 번 발생했습니다 (잘못된 API 주소가 구워짐, Dev GA 속성으로 운영 데이터 유입).
+> 자세한 우선순위는 [CLAUDE.md의 "앱 빌드 환경변수" 섹션](CLAUDE.md) 참고.
 
 | 변수 | 설명 |
 |------|------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase Anon Key |
-| `SUPABASE_SERVICE_ROLE_KEY` | 서비스 Role Key (서버 전용) |
+| `SUPABASE_SERVICE_ROLE_KEY` | 서비스 Role Key (서버 전용). `.env.production` 에서는 비워둡니다 |
 | `NEXT_PUBLIC_FIREBASE_*` | Firebase 설정 |
-| `NEXT_PUBLIC_GA_ID` | Google Analytics 측정 ID |
-| `NEXT_PUBLIC_API_URL` | `npm run build:app` 빌드 시 필수 |
+| `NEXT_PUBLIC_GA_ID` | Google Analytics 측정 ID (dev/prod 속성 분리) |
+| `NEXT_PUBLIC_API_URL` | `pnpm build:app` 빌드 시 필수 |
 
 ---
 
