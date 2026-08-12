@@ -39,3 +39,17 @@ export const APP_TAB_CONTENT_PADDING_BOTTOM = APP_BOTTOM_NAV_TOTAL_HEIGHT
 
 /** true면 하단 네비 구역별 디버그 색. 운영은 false */
 export const DEBUG_VISUALIZE_BOTTOM_NAV_REGIONS = false
+
+// ── 토스트(sonner) 오프셋 ──
+/** 토스트와 탭바 사이 간격 */
+const APP_TOAST_GAP_PX = 12
+
+/**
+ * 하단 토스트가 탭바 위에 뜨도록 하는 offset.
+ * = APP_BOTTOM_NAV_TOTAL_HEIGHT + 간격. 탭바가 없는 서브 페이지에서도 같은 높이로 뜬다.
+ * (calc 중첩 없이 한 줄 — APP_BOTTOM_NAV_TOTAL_HEIGHT와 동일한 규칙)
+ */
+export const APP_TOAST_OFFSET_BOTTOM = `calc(${parseInt(APP_BOTTOM_NAV_PADDING_TOP, 10) + APP_BOTTOM_NAV_ICON_ROW_PX + APP_TOAST_GAP_PX}px + max(0px, env(safe-area-inset-bottom, 0px) - ${APP_BOTTOM_NAV_SAFE_AREA_TRIM_PX}px))`
+
+/** 토스트 좌우 여백 (sonner는 이 값으로 폭도 계산한다: 100% - 좌우*2) */
+export const APP_TOAST_OFFSET_X = '16px'
