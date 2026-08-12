@@ -253,10 +253,55 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 2-2. 전체 알림을 끈 사용자에게는 보내지 않는다 (record·goal 필터와 대칭).
+    // 전역 스위치는 user_settings 깃발만 바꿀 뿐 이미 쌓인 예약을 지우는 경로가 없어,
+    // 예약 시각이 되면 그대로 발송돼 왔다. 클라이언트가 아니라 발송 직전 여기서 거르므로
+    // 구버전 앱 사용자에게도 그대로 적용된다.
+    const userIds = [
+      ...new Set(
+        (rawNotifications as ScheduledNotification[]).map((n) => n.user_id)
+      ),
+    ]
+    const globallyDisabledUserIds = new Set<string>()
+    if (userIds.length > 0) {
+      // 행이 없는 사용자(신규)는 기본값(전역 ON)으로 간주한다 — schedule-goal-notifications와 동일.
+      const { data: settingsOff, error: settingsError } = await supabase
+        .from('user_settings')
+        .select('user_id')
+        .in('user_id', userIds)
+        .eq('notification_global_enabled', false)
+      if (settingsError) {
+        // 설정 조회 실패로 전체 발송을 멈추지는 않는다(fail-open). 다음 배치에서 다시 걸러진다.
+        console.warn('Failed to fetch user_settings for global flag:', settingsError)
+      }
+      for (const s of settingsOff ?? []) {
+        globallyDisabledUserIds.add((s as { user_id: string }).user_id)
+      }
+      if (globallyDisabledUserIds.size > 0) {
+        // 이번 배치에 걸린 행(발송 시각이 이미 지난 것)만 지운다. 미래 예약은 남겨두므로
+        // 사용자가 알림을 다시 켜면 백필 없이 그대로 발송된다(#50 상태에 빠지지 않는다).
+        const staleIds = (rawNotifications as ScheduledNotification[])
+          .filter((n) => globallyDisabledUserIds.has(n.user_id))
+          .map((n) => n.id)
+        const { error: cancelGlobalError } = await supabase
+          .from('scheduled_notifications')
+          .delete()
+          .in('id', staleIds)
+          .eq('status', 'pending')
+        if (cancelGlobalError) {
+          console.warn(
+            'Failed to cancel notifications for globally disabled users:',
+            cancelGlobalError
+          )
+        }
+      }
+    }
+
     const notifications = (rawNotifications as ScheduledNotification[]).filter(
       (n) =>
         (n.record_id == null || n.record_id === '' || !disabledRecordIds.has(n.record_id)) &&
-        (n.goal_id == null || n.goal_id === '' || !inactiveGoalIds.has(n.goal_id))
+        (n.goal_id == null || n.goal_id === '' || !inactiveGoalIds.has(n.goal_id)) &&
+        !globallyDisabledUserIds.has(n.user_id)
     )
 
     if (notifications.length === 0) {
@@ -264,7 +309,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: true,
           processed_count: 0,
-          message: 'No pending notifications to send (all disabled per record)',
+          message: 'No pending notifications to send (all filtered by notification settings)',
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       )
