@@ -64,3 +64,24 @@ export function toastError(message: string): void {
 export function toastSuccess(message: string): void {
   sonnerToast.success(message)
 }
+
+/** 아이콘 없는 안내 토스트 (성공·에러 어느 쪽도 아닌 알림). */
+export function toastInfo(message: string): void {
+  sonnerToast(message)
+}
+
+/** '되돌리기' 토스트가 떠 있는 시간 */
+const UNDO_TOAST_DURATION_MS = 5000
+
+/**
+ * 되돌릴 수 있는 동작을 알리는 토스트.
+ *
+ * 되돌리기는 액션 버튼으로 흡수했다 — 호출 측에서 pending 상태·타이머를 들고 있을 필요가 없고,
+ * 토스트가 사라지면 그대로 확정된다. onUndo는 토스트를 닫은 뒤 실행된다.
+ */
+export function toastUndo(message: string, onUndo: () => void): void {
+  sonnerToast(message, {
+    duration: UNDO_TOAST_DURATION_MS,
+    action: { label: '되돌리기', onClick: onUndo },
+  })
+}

@@ -50,8 +50,6 @@ export default function CalendarPage() {
     handleUncomplete,
     handlePostpone,
     handleUnpostpone,
-    handleUndo,
-    pendingUndo,
   } = usePaymentCompletion()
 
   // 캘린더 이벤트 훅 — 월 전체 이벤트와 일자별 상태
@@ -102,8 +100,6 @@ export default function CalendarPage() {
       handleUncomplete={handleUncomplete}
       handlePostpone={handlePostpone}
       handleUnpostpone={handleUnpostpone}
-      pendingUndo={!!pendingUndo}
-      handleUndo={handleUndo}
     />
   )
 }
