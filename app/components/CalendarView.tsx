@@ -5,7 +5,6 @@ import { CalendarHeaderSection } from '@/app/components/CalendarSections/Calenda
 import { CalendarGridSection } from '@/app/components/CalendarSections/CalendarGridSection'
 import MonthPickerSheet from '@/app/components/CalendarSections/MonthPickerSheet'
 import { MonthAgendaSection } from '@/app/components/CalendarSections/MonthAgendaSection'
-import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import type { PaymentEvent } from '@/app/utils/stats'
 import type { Investment } from '@/app/types/investment'
 import type { CalendarSlideDirection } from '@/app/hooks/calendar/useCalendar'
@@ -55,10 +54,6 @@ interface CalendarViewProps {
     handleUncomplete: (e: PaymentEvent) => void
     handlePostpone: (e: PaymentEvent) => void
     handleUnpostpone: (e: PaymentEvent) => void
-
-    // Undo
-    pendingUndo: boolean
-    handleUndo: () => void
 }
 
 export default function CalendarView({
@@ -89,8 +84,6 @@ export default function CalendarView({
     handleUncomplete,
     handlePostpone,
     handleUnpostpone,
-    pendingUndo,
-    handleUndo,
 }: CalendarViewProps) {
     const isNativeApp = useIsNativeApp()
 
@@ -191,11 +184,6 @@ export default function CalendarView({
                     </div>
                 </div>
             </div>
-
-            <UndoToastSection
-                pendingUndo={pendingUndo}
-                handleUndo={handleUndo}
-            />
 
             {isPickerOpen && (
                 <MonthPickerSheet

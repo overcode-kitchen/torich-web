@@ -57,12 +57,6 @@ export interface UseSavingsCashDetailReturn {
   onMarkAllRetroactive: (yearMonths: string[]) => Promise<void>
   /** 자동 기록 한 줄(그 달 회차 전체) 토글 → 상세에서 완료 되돌리기 */
   onToggleAuto: (yearMonth: string, currentCompleted: boolean) => Promise<void>
-  /** 하단 되돌리기 토스트 노출 여부 */
-  pendingUndo: boolean
-  /** 되돌리기 토스트 좌측 문구 */
-  undoLabel: string | undefined
-  /** 방금 토글한 회차 되돌리기 */
-  handleUndo: () => Promise<void>
 }
 
 /**
@@ -83,7 +77,7 @@ export function useSavingsCashDetail(
   } = usePaymentHistoryContext()
   useRefreshPaymentHistoryOnMount()
 
-  // 월 회차 토글 + 하단 되돌리기 토스트 (홈과 동일한 UndoToastSection 사용)
+  // 월 회차 토글 + 되돌리기 토스트 (홈과 동일한 앱 공통 토스트)
   const monthUndo = useMonthToggleUndo(togglePayment)
 
   const maturity = useMemo(
@@ -193,8 +187,5 @@ export function useSavingsCashDetail(
     onToggleRetroactive,
     onMarkAllRetroactive,
     onToggleAuto,
-    pendingUndo: monthUndo.pendingUndo,
-    undoLabel: monthUndo.undoLabel,
-    handleUndo: monthUndo.handleUndo,
   }
 }
