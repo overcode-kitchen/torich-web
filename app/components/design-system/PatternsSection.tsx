@@ -12,6 +12,7 @@ import {
     WarningCircle,
 } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
+import { toastSuccess, toastError, toastInfo, toastUndo } from "@/app/utils/toast"
 
 import { NameLabel } from "./DesignSystemShared"
 import { DashboardListRowsPatternSection } from "./DashboardListRowsPatternSection"
@@ -322,16 +323,36 @@ export function PatternsSection() {
                     토스트
                 </h2>
                 <div className="space-y-2">
-                    <NameLabel label="토스트 · 기본" token="pattern-toast-base" />
-                    <div className="rounded-xl border border-coolgray-200 bg-white px-4 py-3 shadow-sm flex items-center gap-3">
-                        <span className="text-lg">🐿️</span>
-                        <div>
-                            <p className="text-sm font-medium text-coolgray-900">알림 제목입니다.</p>
-                            <p className="text-xs text-muted-foreground">토스트 메시지 예시입니다.</p>
-                        </div>
+                    <NameLabel label="토스트 · 성공/에러/되돌리기" token="pattern-toast-base" />
+                    <div className="flex flex-wrap gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => toastSuccess("저장했어요.")}
+                        >
+                            성공
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => toastError("저장하지 못했어요.")}
+                        >
+                            에러
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => toastInfo("입력한 내용을 초기화했어요.")}
+                        >
+                            안내
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => toastUndo("10일 완료됨", () => toastInfo("되돌렸어요."))}
+                        >
+                            되돌리기
+                        </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        토스트는 화면 상단 중앙 혹은 하단에 표시되며 3~4초 후 자동 종료됩니다.
+                        토스트는 하단 중앙(탭바 위 + safe-area 위)에 한 규격으로 표시되며 자동 종료됩니다.
+                        호출은 <code>app/utils/toast.ts</code>를 통해서만 한다.
                     </p>
                 </div>
             </section>
