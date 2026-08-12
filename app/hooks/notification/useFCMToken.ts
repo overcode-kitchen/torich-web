@@ -50,8 +50,6 @@ export function useFCMToken() {
         return false
       }
 
-      console.log(`✅ FCM Token received (${platform}):`, token)
-
       // DB에 저장
       const success = await saveTokenToDB(user, token, platform, deviceId)
       return success

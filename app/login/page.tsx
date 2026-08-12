@@ -5,7 +5,7 @@ import LoginView from '@/app/components/LoginSections/LoginView'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 
 export default function LoginPage() {
-  const { isLoading, handleGoogleLogin, handleAppleLogin, handleTestLogin } = useLoginAuth()
+  const { isLoading, handleGoogleLogin, handleAppleLogin } = useLoginAuth()
   const { goBack } = useFlowBack({
     rootPath: '/',
     enableHistoryFallback: true,
@@ -16,9 +16,7 @@ export default function LoginPage() {
       isLoading={isLoading}
       onGoogleLogin={handleGoogleLogin}
       onAppleLogin={handleAppleLogin}
-      onTestLogin={handleTestLogin}
       onBack={goBack}
-      showTestLogin={process.env.NODE_ENV === 'development'}
     />
   )
 }
