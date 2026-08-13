@@ -148,17 +148,6 @@ export default function SettingsView({
                     />
                 </SettingsSection>
 
-                {/* 회원 탈퇴 */}
-                <SettingsSection title="계정 삭제" className="mt-6">
-                    <SettingsItem
-                        label={isDeletingAccount ? '회원 탈퇴 중...' : '회원 탈퇴'}
-                        onClick={() => setShowDeleteModal(true)}
-                        disabled={isDeletingAccount || isLoggingOut}
-                        destructive
-                        showChevron={false}
-                    />
-                </SettingsSection>
-
                 {/* 브랜드 스토리 */}
                 <SettingsSection title="브랜드 스토리">
                     <SettingsItem
@@ -208,6 +197,20 @@ export default function SettingsView({
                     <SettingsItem
                         label="개인정보처리방침"
                         href="/settings/privacy"
+                    />
+                </SettingsSection>
+
+                {/* 회원 탈퇴 — 되돌릴 수 없는 액션이라 화면 최하단에 둔다.
+                    끝까지 내려가야 나오는 자리여야 무게가 맞고, 훑어 내려가다 잘못 누를 일도 줄어든다.
+                    숨기는 게 아니라 순서만 바꾼 것이다 — 앱 내 접근 경로는 App Store 심사 요건이라 유지한다.
+                    앞 섹션과 시각적으로 떨어뜨리는 mt-6은 그대로 둔다. */}
+                <SettingsSection title="계정 삭제" className="mt-6">
+                    <SettingsItem
+                        label={isDeletingAccount ? '회원 탈퇴 중...' : '회원 탈퇴'}
+                        onClick={() => setShowDeleteModal(true)}
+                        disabled={isDeletingAccount || isLoggingOut}
+                        destructive
+                        showChevron={false}
                     />
                 </SettingsSection>
             </div>
