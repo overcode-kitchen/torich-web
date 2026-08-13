@@ -239,7 +239,6 @@ export default function GoalDetailClient() {
           유지한다. 진행 바(모은/목표 금액)를 별도 카드 대신 히어로에 종속시킨다.
           투자 상세("총 납입액")와 동일 규격. */}
       <DetailHero
-        className="pt-6"
         label="모은 금액"
         amount={formatCurrency(progress.currentValue)}
         progress={
