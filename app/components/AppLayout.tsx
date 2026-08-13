@@ -65,12 +65,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // 앱 스타일 상단 헤더(Safe Area + 48px 앱바)를 사용하는 화면 여부
   // - 메인 탭 화면(홈/통계/캘린더/설정 등)
   // - 투자 상세 등 상단 고정 앱바를 사용하는 화면
-  // /add: SubPageScaffold가 safe area + 앱바를 처리하므로 SafeArea 상단 패딩 비활성화
+  // /add·/goal: SubPageScaffold가 safe area + 앱바를 처리하므로 SafeArea 상단 패딩 비활성화.
+  // 빠뜨리면 safe area가 이중으로 얹혀 앱에서만 상단 여백이 벌어진다(웹은 env가 0이라 16px만 더해져
+  // 잘 드러나지 않는다). 목적 상세/수정/만들기 3화면 모두 SubPageScaffold를 쓴다.
   const usesAppHeader =
     !hideNav ||
     pathname.startsWith('/investment') ||
     pathname === '/add' ||
     pathname.startsWith('/add/') ||
+    pathname === '/goal' ||
+    pathname.startsWith('/goal/') ||
     pathname === '/tory' ||
     pathname.startsWith('/tory/')
 
