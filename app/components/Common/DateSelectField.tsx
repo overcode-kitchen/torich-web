@@ -17,7 +17,7 @@ interface DateSelectFieldProps {
   sheetTitle?: string
   /** true면 시트에서 날짜 비우기(삭제) 허용 */
   clearable?: boolean
-  /** clearable일 때 미선택 푸터 문구 */
+  /** clearable일 때 미선택 푸터 문구. clearable이 아니면 푸터에 문구를 띄우지 않는다. */
   emptyLabel?: string
   /** 이 날짜보다 이전은 고를 수 없게 한다 (만기일·종료일 등 미래여야 하는 값) */
   minDate?: Date
