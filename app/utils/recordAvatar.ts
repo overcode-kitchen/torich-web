@@ -17,9 +17,16 @@ export interface RecordAvatar {
   sizeClassName: string
 }
 
+// 박스 크기는 그대로 두고 마스크 viewBox 여백을 줄여 얼굴 자체를 키웠다.
+// 박스를 h-7 로 올려도 봤는데 행 대비 과하게 무거워져 되돌렸다.
 const SIZE_CLASS: Record<RecordAvatarSize, string> = {
   sm: 'h-6 w-6 text-[11px]',
   lg: 'h-10 w-10 text-sm',
+}
+
+/** record 없이 라벨만 있는 호출부(캘린더 등)도 같은 사이즈 규칙을 쓰도록 노출한다. */
+export function getRecordAvatarSizeClass(size: RecordAvatarSize): string {
+  return SIZE_CLASS[size]
 }
 
 /** 유형·시장별 배경/글자 색 클래스 */

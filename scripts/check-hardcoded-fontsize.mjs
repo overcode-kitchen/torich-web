@@ -38,7 +38,6 @@ const ALLOWLIST = [
 const BASELINE = {
   'app/components/Common/DDayBadge.tsx': 1,
   'app/components/Common/Investments/InvestmentItem.tsx': 2,
-  'app/components/Common/RecordAvatar.tsx': 1,
   'app/components/GoalSections/AddRecordDrawer.tsx': 1,
   'app/components/GoalSections/GoalGroupCard.tsx': 2,
   'app/components/GoalSections/GoalGroupItemRow.tsx': 2,
