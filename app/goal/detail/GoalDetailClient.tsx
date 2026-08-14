@@ -16,6 +16,7 @@ import { useGoalProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useGoalDelete } from '@/app/hooks/goal/data/useGoalDelete'
 import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLink'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { scrollToDetailSection } from '@/app/utils/scrollToDetailSection'
@@ -32,13 +33,15 @@ import {
 import { resolvePurposeIcon } from '@/app/constants/goal'
 import { formatKoreanDate } from '@/app/utils/date'
 import { formatCurrency } from '@/lib/utils'
-import { createClient } from '@/utils/supabase/client'
 
 export default function GoalDetailClient() {
   const searchParams = useSearchParams()
   const goalId = searchParams.get('id') ?? undefined
   const router = useRouter()
-  const [userId, setUserId] = useState<string | undefined>(undefined)
+  // userId는 AuthProvider가 이미 들고 있다. getUser로 다시 받아오면 인증이 오기 전 구간이
+  // '유저 없음'과 구분되지 않아, 존재하는 목적에 "찾을 수 없습니다"가 스친다 (#177).
+  const { user } = useAuth()
+  const userId = user?.id
   const [showArchiveModal, setShowArchiveModal] = useState<boolean>(false)
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>('info')
@@ -50,15 +53,7 @@ export default function GoalDetailClient() {
     enableHistoryFallback: true,
   })
 
-  useEffect(() => {
-    const supabase = createClient()
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id)
-    })
-  }, [])
-
-  const { goal, records, unlinkedRecords, isLoading, setGoal } =
-    useGoalDetail(goalId, userId)
+  const { goal, records, unlinkedRecords, isLoading, setGoal } = useGoalDetail(goalId)
   const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistoryContext()
   const progress = useGoalProgress(
     goal,
