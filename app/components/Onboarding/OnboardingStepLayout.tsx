@@ -4,8 +4,6 @@ import Image from 'next/image'
 import { ReactNode } from 'react'
 
 export interface OnboardingStepLayoutProps {
-  /** 1스텝에서만 true 권장 */
-  showLogo?: boolean
   title: string
   subtitle: string
   /** 이미지 경로. imageSlot 없을 때만 사용 */
@@ -24,7 +22,6 @@ const IMAGE_WIDTH = 320
 const IMAGE_HEIGHT = 427 // 320 * (4/3)
 
 export default function OnboardingStepLayout({
-  showLogo = false,
   title,
   subtitle,
   imageSrc,
@@ -33,23 +30,9 @@ export default function OnboardingStepLayout({
   paginationSlot,
   children,
 }: OnboardingStepLayoutProps) {
+  // 상단 로고를 뺐으므로 타이틀이 상태바에 붙지 않도록 pt를 한 스텝(20→32) 키웠다
   return (
-    <section className="flex h-full min-h-0 flex-col overflow-hidden px-4 pt-5" aria-label={title}>
-      {/* 상단: 로고 */}
-      {showLogo && (
-        <header className="mb-4 shrink-0">
-          <div className="relative h-9 w-32">
-            <Image
-              src="/images/torich-logo.png"
-              alt="토리치 로고"
-              fill
-              className="object-contain object-left"
-              priority
-            />
-          </div>
-        </header>
-      )}
-
+    <section className="flex h-full min-h-0 flex-col overflow-hidden px-4 pt-8" aria-label={title}>
       {/* 타이틀 · 서브타이틀 */}
       <div className="mb-5 shrink-0 space-y-2">
         <h1 className="text-title font-bold tracking-tight md:text-display whitespace-pre-line leading-tight">{title}</h1>

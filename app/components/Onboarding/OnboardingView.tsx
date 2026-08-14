@@ -63,7 +63,6 @@ export default function OnboardingView() {
           onWheel={handleWheel}
         >
         <OnboardingStepLayout
-          showLogo={config.showLogo}
           title={config.title}
           subtitle={config.subtitle}
           imageSlot={
