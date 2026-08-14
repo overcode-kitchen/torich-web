@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { toast } from 'sonner'
+import { toastInfo } from '@/app/utils/toast'
 import type { RecordType } from '@/app/types/investment'
 import type { UseAddItemFlowReturn } from './useAddItemFlow'
 import type { UseAddItemFormStateReturn } from './useAddItemFormState'
@@ -57,14 +57,14 @@ export function useAddItemResetPolicy({
       formState.resetAll()
       resetInvestmentSpecific?.()
       flow.goToGroup('A')
-      toast(RESET_TOAST_MESSAGE)
+      toastInfo(RESET_TOAST_MESSAGE)
     } else {
       // 그룹 A 내부 변경: 공통 state도 깨끗하게 초기화 (이전 type의 입력값 유지하지 않음).
       // 이미 입력한 내용(이름/종목명 등)이 있었다면 조용히 지우지 말고 안내한다.
       // 첫 유형 선택처럼 지울 내용이 없을 땐 토스트를 띄우지 않는다.
       formState.resetAll()
       resetInvestmentSpecific?.()
-      if (groupAHasContent) toast(RESET_TOAST_MESSAGE)
+      if (groupAHasContent) toastInfo(RESET_TOAST_MESSAGE)
     }
 
     prevTypeRef.current = recordType

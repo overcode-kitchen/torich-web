@@ -20,7 +20,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { GoalGroupCard } from './GoalGroupCard'
 import { Sortable, useReorderSensors } from '@/app/components/Common/DragSortable'
-import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import EmptyState from '@/app/components/DashboardSections/EmptyState'
 import { useGoalGroups } from '@/app/hooks/goal/data/useGoalGroups'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
@@ -48,8 +47,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
   const router = useRouter()
   const { groups, unassignedRecords, isLoading, userId, refetch, setGoals } =
     useGoalGroups(records)
-  const { getStatus, isPostponed, toggle, togglePostpone, pendingUndo, handleUndo } =
-    useMonthlyPaymentStatus()
+  const { getStatus, isPostponed, toggle, togglePostpone } = useMonthlyPaymentStatus()
   const { archiveGoal, reorderGoals } = useGoalUpdate(userId)
   const { deleteGoal, isDeleting } = useGoalDelete(userId)
 
@@ -190,11 +188,6 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
         목적 만들기
       </Button>
 
-      <UndoToastSection
-        pendingUndo={!!pendingUndo}
-        handleUndo={() => void handleUndo()}
-        label={pendingUndo?.label}
-      />
     </div>
   )
 }
