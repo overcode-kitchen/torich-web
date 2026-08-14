@@ -24,10 +24,15 @@ export interface UseAddInvestmentFormOptions {
   recordId?: string
   /** edit 모드에서 기존 record로 폼을 프리필하기 위한 원본 데이터 */
   initData?: Investment | null
+  /**
+   * 저장 성공 후 화면 이동. `null`이면 들어온 자리로 되감고, 경로면 그 화면으로 이동한다.
+   * 라우팅을 페이지가 쥐고 있어야 저장 뒤 히스토리가 어긋나지 않는다.
+   */
+  onFinish: (href: string | null) => void
 }
 
 export function useAddInvestmentForm(
-  options?: UseAddInvestmentFormOptions,
+  options: UseAddInvestmentFormOptions,
 ): UseAddInvestmentFormReturn {
   // 기존 훅들 사용
   const stockSearch = useStockSearch('', false)
@@ -74,6 +79,7 @@ export function useAddInvestmentForm(
     mode: options?.mode,
     recordId: options?.recordId,
     initData: options?.initData,
+    onFinish: options.onFinish,
   })
 
   // 목적 마감일이 있는 신규 투자: 목표 기간(년) 입력 대신 종료 날짜를 고른다.
