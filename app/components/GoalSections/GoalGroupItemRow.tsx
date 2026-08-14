@@ -78,8 +78,13 @@ export function GoalGroupItemRow({
 
   return (
     <>
+      {/* -ml-1 pl-1: 스와이프용 overflow-hidden 경계가 아바타 왼쪽 끝과 정확히 겹쳐 있어서,
+          아바타가 꿈틀거릴 때(animate-tory-nudge, 최대 -9° 회전) 볼이 0.58px 만큼
+          경계 밖으로 나가 세로로 잘렸다. 클리핑 경계만 4px 왼쪽으로 밀고
+          같은 크기의 패딩으로 내용을 제자리에 돌려놓는다(정지 상태 레이아웃 변화 없음).
+          구분선은 이 div 의 형제라 함께 늘어나지 않는다. */}
       <div
-        className="relative overflow-hidden bg-card"
+        className="relative -ml-1 overflow-hidden bg-card pl-1"
         // 드래그(롱프레스) 중엔 스와이프를 억제해 두 제스처가 겹치지 않게 한다.
         onTouchStart={sortableDragging ? undefined : swipe.onTouchStart}
         onTouchMove={sortableDragging ? undefined : swipe.onTouchMove}
