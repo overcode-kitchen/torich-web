@@ -57,7 +57,7 @@ export default function GoalDetailClient() {
     })
   }, [])
 
-  const { goal, records, unlinkedRecords, isLoading, refetch, setGoal } =
+  const { goal, records, unlinkedRecords, isLoading, setGoal } =
     useGoalDetail(goalId, userId)
   const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistoryContext()
   const progress = useGoalProgress(
@@ -69,7 +69,7 @@ export default function GoalDetailClient() {
   )
   const { updateGoal, archiveGoal, isUpdating } = useGoalUpdate(userId)
   const { deleteGoal, isDeleting } = useGoalDelete(userId)
-  const { linkRecordToGoal, isLinking } = useInvestmentGoalLink(userId)
+  const { linkRecordToGoal, isLinking } = useInvestmentGoalLink()
 
   // 보관은 완료(기간 종료 포함)된 목적만 가능하다. 홈 카드와 동일한 파생 상태 기준.
   const isCompletedGoal =
@@ -127,12 +127,12 @@ export default function GoalDetailClient() {
         monthly_amount_bucket: amountBucket(linked.monthly_amount),
       })
     }
-    await refetch()
+    // 화면 갱신을 위한 재조회는 필요 없다. linkRecordToGoal이 context를 갱신하고
+    // records/unlinkedRecords는 그 context에서 파생되므로 곧바로 다시 그려진다.
   }
 
   async function handleUnlink(recordId: string): Promise<void> {
     await linkRecordToGoal(recordId, null)
-    await refetch()
   }
 
   if (isLoading) {

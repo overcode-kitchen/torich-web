@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import type { Goal } from '@/app/types/goal'
 import type { Investment } from '@/app/types/investment'
 
@@ -10,32 +11,31 @@ export interface UseGoalDetailReturn {
   records: Investment[]
   unlinkedRecords: Investment[]
   isLoading: boolean
-  refetch: () => Promise<void>
   setGoal: React.Dispatch<React.SetStateAction<Goal | null>>
 }
 
 /**
- * 목적 detail 페이지용 fetch.
- * - goal 1건
- * - records: 이 goal에 묶인 records
- * - unlinkedRecords: goal_id == null인 records (이 목적에 새로 묶을 수 있는 후보)
+ * 목적 detail 페이지용 데이터.
+ * - goal 1건: 이 훅이 직접 조회한다.
+ * - records / unlinkedRecords: **직접 조회하지 않고 `InvestmentsContext`에서 파생**한다.
+ *
+ * 예전에는 records도 여기서 따로 조회했다. 그래서 상세에서 묶기/풀기를 하면
+ * 이 화면만 갱신되고, 같은 데이터를 쓰는 메인·통계·캘린더는 옛 `goal_id`를 계속
+ * 들고 있었다 (#162). 적립 항목의 단일 진실 출처는 context 하나로 둔다.
  */
 export function useGoalDetail(
   id: string | undefined,
   userId: string | undefined,
 ): UseGoalDetailReturn {
   const supabase = useMemo(() => createClient(), [])
+  const { records: allRecords, isLoading: isRecordsLoading } = useInvestmentsContext()
   const [goal, setGoal] = useState<Goal | null>(null)
-  const [records, setRecords] = useState<Investment[]>([])
-  const [unlinkedRecords, setUnlinkedRecords] = useState<Investment[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  /** 조회를 끝낸 goal id. 별도 loading 플래그 없이 로딩 여부를 여기서 파생한다. */
+  const [loadedId, setLoadedId] = useState<string | null>(null)
 
-  const fetchAll = useCallback(async (): Promise<void> => {
-    if (!id || !userId) {
-      setIsLoading(false)
-      return
-    }
-    setIsLoading(true)
+  /** 조회만 하고 상태는 건드리지 않는다. 결과를 어디에 반영할지는 호출한 쪽이 정한다. */
+  const fetchGoal = useCallback(async (): Promise<Goal | null> => {
+    if (!id || !userId) return null
     try {
       const goalRes = await supabase
         .from('goals')
@@ -44,33 +44,46 @@ export function useGoalDetail(
         .eq('user_id', userId)
         .single()
       if (goalRes.error) throw goalRes.error
-      setGoal(goalRes.data as Goal)
-
-      const recRes = await supabase
-        .from('records')
-        .select('*')
-        .eq('user_id', userId)
-      if (recRes.error) throw recRes.error
-      const all = (recRes.data ?? []) as Investment[]
-      setRecords(all.filter((r) => r.goal_id === id))
-      setUnlinkedRecords(all.filter((r) => !r.goal_id))
+      return goalRes.data as Goal
     } catch (e) {
       console.error('useGoalDetail fetch failed:', e)
-    } finally {
-      setIsLoading(false)
+      return null
     }
-  }, [id, userId, supabase])
+  }, [supabase, id, userId])
 
   useEffect(() => {
-    void fetchAll()
-  }, [fetchAll])
+    let cancelled = false
+    void (async () => {
+      const row = await fetchGoal()
+      // id가 바뀐 뒤 늦게 도착한 응답으로 남의 목적을 그리지 않는다.
+      if (cancelled) return
+      setGoal(row)
+      setLoadedId(id ?? null)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [fetchGoal, id])
+
+  const records = useMemo(
+    (): Investment[] => allRecords.filter((r) => r.goal_id === id),
+    [allRecords, id],
+  )
+  /** goal_id가 비어 있는 항목 = 이 목적에 새로 묶을 수 있는 후보 */
+  const unlinkedRecords = useMemo(
+    (): Investment[] => allRecords.filter((r) => !r.goal_id),
+    [allRecords],
+  )
+
+  // id가 있는데 아직 그 id를 조회하지 못했다면 로딩이다. userId가 늦게 도착하는
+  // 구간도 여기에 포함되어, 데이터가 오기 전에 "찾을 수 없음"이 스치지 않는다.
+  const isGoalLoading = id !== undefined && loadedId !== id
 
   return {
     goal,
     records,
     unlinkedRecords,
-    isLoading,
-    refetch: fetchAll,
+    isLoading: isGoalLoading || isRecordsLoading,
     setGoal,
   }
 }
