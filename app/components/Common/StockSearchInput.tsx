@@ -11,6 +11,8 @@ interface StockSearchInputProps {
   market: 'KR' | 'US'
   isSearching: boolean
   searchResults: SearchResult[]
+  /** 결과가 상위 N건으로 잘렸는지 — 더 있다는 사실을 감추지 않기 위해 안내를 띄운다 */
+  hasMoreResults: boolean
   searchFetchFailed: boolean
   onRetrySearch: () => void
   showDropdown: boolean
@@ -25,6 +27,7 @@ export default function StockSearchInput({
   market,
   isSearching,
   searchResults,
+  hasMoreResults,
   searchFetchFailed,
   onRetrySearch,
   showDropdown,
@@ -73,6 +76,13 @@ export default function StockSearchInput({
               </div>
             </button>
           ))}
+
+          {/* 잘린 결과가 남아 있으면 그 사실을 알린다 — 20건 안에 없으면 사용자는 '없다'고 오해한다 */}
+          {hasMoreResults && (
+            <p className="px-5 py-3 text-caption text-muted-foreground text-center border-t border-border-subtle">
+              결과가 더 있어요. 검색어를 더 자세히 입력해 보세요
+            </p>
+          )}
         </div>
       )}
 
