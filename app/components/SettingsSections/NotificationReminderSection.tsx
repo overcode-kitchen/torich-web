@@ -106,7 +106,7 @@ export function NotificationReminderSection({
         <div className="flex flex-col">
           <span className="text-foreground font-medium">미완료 재알림</span>
           <span className="text-caption text-muted-foreground mt-1">
-            투자일이 지나도 완료 안 하면 다시 알려드려요.
+            적립일이 지나도 완료 안 하면 다시 알려드려요.
           </span>
         </div>
         <Switch checked={reReminderOn} onCheckedChange={onToggleReReminder} />

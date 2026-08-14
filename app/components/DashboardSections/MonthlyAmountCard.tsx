@@ -22,7 +22,7 @@ export default function MonthlyAmountCard({
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-2xl border border-card-border bg-card px-4 py-3">
-      <p className="text-label font-medium text-muted-foreground">이번 달 투자금액</p>
+      <p className="text-label font-medium text-muted-foreground">이번 달 적립금액</p>
       <div className="flex items-center gap-2">
         {showMonthlyAmount ? (
           <span className="text-body font-semibold text-foreground">

@@ -268,7 +268,7 @@ export default function GoalDetailClient() {
       <DetailTabs
         tabs={[
           { key: 'info', label: '목적 정보' },
-          { key: 'linked', label: `묶인 투자${records.length > 0 ? ` (${records.length})` : ''}` },
+          { key: 'linked', label: `묶인 적립 항목${records.length > 0 ? ` (${records.length})` : ''}` },
         ]}
         activeTab={activeTab}
         onTabClick={handleTabClick}
@@ -312,7 +312,7 @@ export default function GoalDetailClient() {
         confirmLabel="보관"
         confirmingLabel="보관 중..."
         title="목적을 보관할까요?"
-        description={`"${goal.name}"을(를) 보관함으로 옮겨요. 묶인 투자는 그대로 유지되고, 설정 › 보관한 목표에서 언제든 다시 꺼낼 수 있어요.`}
+        description={`"${goal.name}"을(를) 보관함으로 옮겨요. 묶인 적립 항목은 그대로 유지되고, 설정 › 보관한 목표에서 언제든 다시 꺼낼 수 있어요.`}
       />
 
       <DeleteConfirmModal
@@ -321,7 +321,7 @@ export default function GoalDetailClient() {
         onConfirm={confirmDelete}
         isDeleting={isDeleting}
         title="목적을 삭제할까요?"
-        description={`"${goal.name}"을(를) 영구 삭제해요. 되돌릴 수 없고, 묶였던 투자는 자유 상태로 돌아가요.`}
+        description={`"${goal.name}"을(를) 영구 삭제해요. 되돌릴 수 없고, 묶였던 적립 항목은 자유 상태로 돌아가요.`}
       />
     </SubPageScaffold>
   )

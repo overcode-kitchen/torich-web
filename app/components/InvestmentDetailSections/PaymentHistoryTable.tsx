@@ -71,7 +71,7 @@ export function PaymentHistoryTable({
         <TableHeader>
           <TableRow className="border-border hover:bg-transparent">
             <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">월</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">투자일</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">적립일</TableHead>
             <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">납입 금액</TableHead>
             <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">상태</TableHead>
           </TableRow>

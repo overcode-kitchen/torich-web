@@ -109,7 +109,7 @@ export default function InvestmentItem({
         onConfirm={swipe.onDeleteConfirm}
         isDeleting={swipe.isSubmitting}
         title={`'${item.title}' 삭제`}
-        description="삭제된 투자 기록은 복구할 수 없습니다."
+        description="삭제된 적립 항목은 복구할 수 없습니다."
       />
     </>
   )

@@ -8,7 +8,7 @@ export interface UnlinkedRecordsSectionProps {
   records: Investment[]
   isLinking: boolean
   onLink: (recordId: string) => void
-  /** 행 탭 시 해당 투자 상세로 이동 */
+  /** 행 탭 시 해당 적립 항목 상세로 이동 */
   onOpenRecord: (recordId: string) => void
 }
 
@@ -29,7 +29,7 @@ export function UnlinkedRecordsSection({
     <section className="py-6 border-t border-border-subtle-lighter">
       <div className="mb-4">
         <h3 className="text-lg font-semibold tracking-tight text-foreground">
-          묶을 수 있는 투자
+          묶을 수 있는 적립 항목
         </h3>
         <p className="text-caption text-foreground-muted mt-1">
           &lsquo;묶기&rsquo;를 누르면 이 목적의 진척도에 합산돼요.
