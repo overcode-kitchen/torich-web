@@ -19,6 +19,7 @@ import {
 } from '@dnd-kit/modifiers'
 import { Button } from '@/components/ui/button'
 import { GoalGroupCard } from './GoalGroupCard'
+import GoalGroupSkeleton from './GoalGroupSkeleton'
 import { Sortable, useReorderSensors } from '@/app/components/Common/DragSortable'
 import EmptyState from '@/app/components/DashboardSections/EmptyState'
 import { useGoalGroups } from '@/app/hooks/goal/data/useGoalGroups'
@@ -97,7 +98,32 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
     }
   }
 
-  if (isLoading) return null
+  // 로딩 중에도 눌러도 되는 액션이라, 카드 골격과 함께 진짜 버튼을 그린다.
+  const addGoalButton = (
+    <Button
+      size="lg"
+      className="w-full rounded-2xl"
+      onClick={() => {
+        track('goal_add_click', { entry_point: 'dashboard_group' })
+        router.push('/goal/new')
+      }}
+    >
+      <Plus className="h-5 w-5" weight="bold" />
+      목적 만들기
+    </Button>
+  )
+
+  // 로딩 중이라고 화면을 비우지 않는다. 한 번이라도 보여준 게 있으면 그대로 두고 값만 갱신한다.
+  // (HomeView.tsx의 '초기 로딩에만 풀스크린 로딩' 원칙과 같은 규칙 — 위층만 지키면 무효가 된다)
+  // 보여줄 게 아무것도 없는 최초 로딩에서만 골격을 그린다.
+  if (isLoading && groups.length === 0 && unassignedRecords.length === 0) {
+    return (
+      <div className="space-y-4">
+        <GoalGroupSkeleton />
+        {addGoalButton}
+      </div>
+    )
+  }
   // 목적·투자가 모두 없는 신규 사용자에게만 빈 화면을 보여준다.
   // (목적만 있고 투자가 없어도 목적 카드는 그려야 한다)
   if (groups.length === 0 && records.length === 0) {
@@ -176,18 +202,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
         />
       )}
 
-      <Button
-        size="lg"
-        className="w-full rounded-2xl"
-        onClick={() => {
-          track('goal_add_click', { entry_point: 'dashboard_group' })
-          router.push('/goal/new')
-        }}
-      >
-        <Plus className="h-5 w-5" weight="bold" />
-        목적 만들기
-      </Button>
-
+      {addGoalButton}
     </div>
   )
 }
