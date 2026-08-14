@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
 import { SettingsSection } from './SettingsSection'
 import { ThemeSelector } from '@/app/components/ThemeSections/ThemeSelector'
 import { BrandStorySheet } from '@/app/components/BrandStorySheet'
@@ -22,8 +23,11 @@ interface SettingsViewProps {
     handleDeleteAccount: () => Promise<void>
 
     // Notification
-    notificationOn: boolean
+    /** null = 아직 값을 확정하지 못함(로딩·조회 실패) */
+    notificationOn: boolean | null
     toggleNotification: () => void
+    notificationLoadFailed: boolean
+    onRetryNotificationLoad: () => void | Promise<void>
 
     // Theme
     theme: Theme
@@ -51,6 +55,8 @@ export default function SettingsView({
     handleDeleteAccount,
     notificationOn,
     toggleNotification,
+    notificationLoadFailed,
+    onRetryNotificationLoad,
     theme,
     setTheme,
     isBrandStoryOpen,
@@ -113,11 +119,26 @@ export default function SettingsView({
                     <SettingsItem
                         label="전체 알림"
                         rightElement={
-                            <Switch
-                                checked={notificationOn}
-                                onCheckedChange={toggleNotification}
-                                aria-label="전체 알림"
-                            />
+                            // 값을 확정하지 못했으면 스위치를 확정 상태로 보여주지 않는다.
+                            // 실패는 '켜짐/꺼짐' 대신 재시도 자리로 바꿔, 틀린 값을 누르게 두지 않는다.
+                            notificationLoadFailed ? (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="xs"
+                                    onClick={() => void onRetryNotificationLoad()}
+                                    className="text-muted-foreground hover:text-foreground-soft hover:bg-secondary h-auto py-1 px-2"
+                                >
+                                    불러오지 못했어요 · 다시 시도
+                                </Button>
+                            ) : (
+                                <Switch
+                                    checked={notificationOn ?? false}
+                                    disabled={notificationOn === null}
+                                    onCheckedChange={toggleNotification}
+                                    aria-label="전체 알림"
+                                />
+                            )
                         }
                     />
                     <SettingsItem

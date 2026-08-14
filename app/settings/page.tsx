@@ -11,7 +11,10 @@ import { useAppUpdateCheck } from '@/app/hooks/platform/useAppUpdateCheck'
 
 export default function SettingsPage() {
   const { user, isLoading, isLoggingOut, handleLogout } = useSettingsAuth()
-  const { notificationOn, toggleNotification } = useGlobalNotification()
+  // 값을 조작하는 화면이므로 조회 실패를 사용자에게 알린다(상세 화면들은 조용히 읽기만 한다).
+  const { notificationOn, toggleNotification, loadFailed, retryLoad } = useGlobalNotification({
+    notifyOnLoadFailure: true,
+  })
   const { theme, setTheme } = useTheme()
   const { isBrandStoryOpen, openBrandStory, closeBrandStory } = useSettingsPageUI()
   const { isDeletingAccount, handleDeleteAccount } = useAccountDeletion()
@@ -26,6 +29,8 @@ export default function SettingsPage() {
       handleLogout={handleLogout}
       notificationOn={notificationOn}
       toggleNotification={toggleNotification}
+      notificationLoadFailed={loadFailed}
+      onRetryNotificationLoad={retryLoad}
       theme={theme}
       setTheme={setTheme}
       isDeletingAccount={isDeletingAccount}
