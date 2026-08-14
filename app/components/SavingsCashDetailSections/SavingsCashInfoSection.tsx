@@ -48,7 +48,7 @@ export function SavingsCashInfoSection({
           onTap={tap('monthlyAmount')}
         />
         <TappableField
-          label="납입일"
+          label="적립일"
           value={formatInvestmentDays(item.investment_days)}
           onTap={tap('investmentDays')}
         />
