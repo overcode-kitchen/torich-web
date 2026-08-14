@@ -215,6 +215,7 @@ app/foo/[id]/
 - **[docs/architecture.md](docs/architecture.md)** — 파일 구조·네이밍·커스텀 훅 패턴·파일 크기 규칙·새 페이지/리팩터링 순서. *(페이지 생성·구조 변경 시 필독)*
 - **[docs/design-system.md](docs/design-system.md)** — 디자인 바이브·컬러 3-Layer·다크모드·차트 색·shadcn·아이콘·이미지 변환 워크플로우. *(UI 작업 시 필독)*
 - **[docs/coding-style.md](docs/coding-style.md)** — 기술 스택 제약·코딩 스타일·경로/컴포넌트 규칙·한국어 처리.
+- **[docs/wording.md](docs/wording.md)** — 사용자 문구 용어 기준. 투자·적금·현금 전체는 **"적립 항목"**, "투자"는 주식·ETF만. *(user-facing 문구 작성·수정 시 필독)*
 
 ---
 

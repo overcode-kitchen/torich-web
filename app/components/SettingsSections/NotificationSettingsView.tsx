@@ -24,12 +24,12 @@ export default function NotificationSettingsView({
             <div className="mb-4">
                 <h1 className="text-heading font-bold text-foreground mb-1">알림 설정</h1>
                 <p className="text-label text-foreground-subtle">
-                    투자 리마인더와 서비스 알림을 한 번에 관리해요.
+                    적립 리마인더와 서비스 알림을 한 번에 관리해요.
                 </p>
             </div>
 
-            {/* 투자 리마인더 */}
-            <SettingsSection title="투자 리마인더">
+            {/* 적립 리마인더 */}
+            <SettingsSection title="적립 리마인더">
                 <NotificationReminderSection
                     defaultTime={settings.defaultTime}
                     onDefaultTimeChange={setDefaultTime}

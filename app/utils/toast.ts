@@ -5,7 +5,7 @@ export const TOAST_MESSAGES = {
   /** 로드 실패 (목록, 통계 등) */
   loadFailed: '잠시 후 다시 시도해 주세요.',
   /** 투자 목록 로드 실패 */
-  investmentListLoadFailed: '투자 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
+  investmentListLoadFailed: '적립 항목을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
   /** 통계 데이터 로드 실패 */
   statsLoadFailed: '통계 데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
   /** 설정 로드 실패 */

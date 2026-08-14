@@ -23,7 +23,7 @@ export default function DeleteConfirmModal({
   onConfirm,
   isDeleting,
   title = '정말 삭제하시겠습니까?',
-  description = '삭제된 투자 기록은 복구할 수 없습니다.',
+  description = '삭제된 적립 항목은 복구할 수 없습니다.',
   tone = 'destructive',
   confirmLabel = '삭제',
   confirmingLabel = '삭제 중...',
