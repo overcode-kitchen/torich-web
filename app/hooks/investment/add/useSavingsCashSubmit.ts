@@ -41,6 +41,13 @@ export interface UseSavingsCashSubmitProps {
   mode?: 'create' | 'edit'
   /** edit 모드에서 수정할 records.id */
   recordId?: string
+  /**
+   * 저장에 성공해 이 화면을 떠날 때 호출한다. 라우팅은 페이지가 책임진다.
+   * - `null`: 들어온 자리로 되감기(편집 저장). 새 엔트리를 얹으면 복귀 화면의 ←가
+   *   방금 나온 수정 화면을 다시 연다.
+   * - 경로 문자열: 그 화면으로 자리를 갈아끼우며 이동(신규 저장).
+   */
+  onFinish: (href: string | null) => void
 }
 
 export interface UseSavingsCashSubmitReturn {
@@ -65,6 +72,7 @@ export function useSavingsCashSubmit({
   goalEndDate,
   mode = 'create',
   recordId,
+  onFinish,
 }: UseSavingsCashSubmitProps): UseSavingsCashSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
@@ -140,7 +148,7 @@ export function useSavingsCashSubmit({
           has_rate: recordType === 'savings',
         })
 
-        router.push(`/investment?id=${recordId}`)
+        onFinish(null)
         return
       }
 
@@ -180,7 +188,7 @@ export function useSavingsCashSubmit({
         cycle_type: investmentDays.length > 0 ? 'custom' : 'monthly',
         has_rate: recordType === 'savings',
       })
-      router.push('/')
+      onFinish('/')
     } catch {
       toastError(TOAST_MESSAGES.updateSaveFailed)
     } finally {
@@ -203,6 +211,7 @@ export function useSavingsCashSubmit({
     router,
     addInvestment,
     updateInvestment,
+    onFinish,
   ])
 
   return { handleSubmit, isSubmitting }

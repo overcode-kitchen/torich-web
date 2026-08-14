@@ -78,7 +78,7 @@ function NewGoalContent() {
       ? '건너뛰기'
       : '다음으로'
 
-  const { runWithoutGuard } = guard
+  const { exitWith } = guard
   const handleSubmit = useCallback(async (): Promise<void> => {
     // createGoal은 실패를 throw로, 세션이 없으면 null로 알린다.
     // 둘 다 잡아서 알리지 않으면 화면이 그대로라 저장된 줄 알고 나가게 된다.
@@ -101,21 +101,21 @@ function NewGoalContent() {
       })
       // 방금 만든 목적을 보여준다. 홈으로 튕기면 뭘 만들었는지 확인하러
       // 사용자가 다시 찾아 들어가야 한다(적립 항목 수정도 상세로 돌아간다).
-      router.replace(`/goal/detail?id=${goal.id}`)
+      // 만들기 화면은 되감을 원본이 없으므로 replace로 자리를 갈아끼운다.
+      exitWith(() => router.replace(`/goal/detail?id=${goal.id}`))
     } catch (e) {
       showErrorToast(TOAST_MESSAGES.goalSaveFailed, e)
     }
-  }, [createGoal, router, toCreateInput, values, presets])
+  }, [createGoal, router, toCreateInput, values, presets, exitWith])
 
   const handleAction = useCallback((): void => {
     if (isCreating) return
     if (flow.isAtLastStep) {
-      // 저장은 스스로 화면을 옮기므로 감시 항목을 먼저 걷어내고 실행한다.
-      void runWithoutGuard(handleSubmit)
+      void handleSubmit()
       return
     }
     flow.goNextStep()
-  }, [flow, handleSubmit, isCreating, runWithoutGuard])
+  }, [flow, handleSubmit, isCreating])
 
   const handleBack = useCallback((): void => {
     if (flow.isAtFirstStep) {

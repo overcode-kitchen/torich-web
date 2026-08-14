@@ -29,7 +29,6 @@ interface EditFormProps {
 }
 
 function EditForm({ goal, userId, onExit, focusField }: EditFormProps) {
-  const router = useRouter()
   const { values, setField, isValid, toCreateInput } = useGoalForm(goal)
   const { updateGoal, isUpdating } = useGoalUpdate(userId)
   const { records } = useInvestmentsContext()
@@ -40,7 +39,7 @@ function EditForm({ goal, userId, onExit, focusField }: EditFormProps) {
     signature: JSON.stringify(values),
     onExit,
   })
-  const { requestExit, runWithoutGuard } = guard
+  const { requestExit, exitWith } = guard
 
   // 케이스 A 사전 안내: 새 종료일이 묶인 적금 만기보다 빠른지 검사.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
@@ -53,24 +52,23 @@ function EditForm({ goal, userId, onExit, focusField }: EditFormProps) {
     [values.target_date, linkedRecords],
   )
 
-  // 저장은 스스로 화면을 옮기므로 감시 항목을 먼저 걷어내고 실행한다.
   async function doSubmit(override?: Partial<GoalCreateInput>): Promise<void> {
-    await runWithoutGuard(async () => {
-      const payload = { ...toCreateInput(), ...override }
-      // updateGoal은 실패를 throw로, 세션이 없으면 null로 알린다.
-      // 둘 다 잡아서 알리지 않으면 화면이 그대로라 저장된 줄 알고 나가게 된다.
-      // 여기서 삼키면 runWithoutGuard가 "화면에 남았다"를 인지해 이탈 감시를 복구한다.
-      try {
-        const updated = await updateGoal(goal.id, payload)
-        if (!updated) {
-          toastError(TOAST_MESSAGES.updateSaveFailed)
-          return
-        }
-        router.replace(`/goal/detail?id=${goal.id}`)
-      } catch (e) {
-        showErrorToast(TOAST_MESSAGES.updateSaveFailed, e)
+    const payload = { ...toCreateInput(), ...override }
+    // updateGoal은 실패를 throw로, 세션이 없으면 null로 알린다.
+    // 둘 다 잡아서 알리지 않으면 화면이 그대로라 저장된 줄 알고 나가게 된다.
+    // 실패해서 화면에 남을 땐 exitWith를 부르지 않으므로 이탈 감시가 그대로 유지된다.
+    try {
+      const updated = await updateGoal(goal.id, payload)
+      if (!updated) {
+        toastError(TOAST_MESSAGES.updateSaveFailed)
+        return
       }
-    })
+      // 상세를 새로 얹지 않고 들어온 자리로 되감는다. 얹으면 상세의 ←가
+      // 방금 나온 수정 화면(또는 중복된 상세)으로 되돌아간다.
+      exitWith(onExit)
+    } catch (e) {
+      showErrorToast(TOAST_MESSAGES.updateSaveFailed, e)
+    }
   }
 
   function handleSubmit(): void {
