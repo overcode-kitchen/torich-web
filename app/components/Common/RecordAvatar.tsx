@@ -66,10 +66,12 @@ export function RecordAvatar({
       <div className={cn('absolute inset-0', resolvedBg)} style={TORY_FACE_MASK} />
       {/* 얼굴 실루엣을 따라가는 은은한 외곽선. 마스크와 같은 viewBox·정렬이라 정확히 겹친다.
           보더 색은 글자색과 같은 톤(currentColor)을 낮은 투명도로 써서 배경색 변형(초록·파랑·회색)에 자동으로 맞춘다.
-          non-scaling-stroke 로 사이즈와 무관하게 약 1px 두께를 유지한다. */}
+          non-scaling-stroke 로 사이즈와 무관하게 약 1px 두께를 유지한다.
+          마스크 여백이 얇아(24px 기준 0.65px) stroke 바깥쪽 절반이 뷰포트 가장자리에 닿을 수 있으므로
+          overflow-visible 로 잘림을 막는다. */}
       <svg
         viewBox={TORY_FACE_MASK_VIEWBOX}
-        className={cn('absolute inset-0 h-full w-full', resolvedText)}
+        className={cn('absolute inset-0 h-full w-full overflow-visible', resolvedText)}
         fill="none"
       >
         <path
