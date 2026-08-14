@@ -62,7 +62,9 @@ export default function Home() {
     }
   }
 
-  // 다른 페이지에서 돌아올 때(삭제/수정 후 복귀 등) 목록 자동 갱신
+  // 앱이 백그라운드에서 돌아올 때 목록을 다시 읽는다. `visibilitychange`는
+  // 포그라운드 전환에서만 발생하고 앱 안 화면 이동(뒤로가기)에서는 발생하지 않으므로,
+  // 다른 화면에서 한 변경은 이 훅이 아니라 InvestmentsContext 갱신으로 반영된다.
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
