@@ -33,9 +33,9 @@ const fieldButtonClass =
   'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-label text-foreground border border-border-subtle hover:bg-surface transition-colors'
 
 /**
- * 그룹 C: "언제 모을까요?"
+ * 그룹 C: "언제 모으나요?"
  * - 투자: 시작일 + 매월 투자일
- * - 예적금/현금: 매월 납입일
+ * - 예적금/현금: 매월 적립일
  *
  * 각 필드는 ProgressiveField 라벨 하나 + 단순 버튼 1개로 단순화.
  */
@@ -50,7 +50,9 @@ export default function GroupC_When({
 }: GroupC_WhenProps) {
   const isInvestment = recordType === 'investment'
   const days = isInvestment ? investmentForm.investmentDays : formState.investmentDays
-  const daysLabel = isInvestment ? '매월 언제 투자할까요?' : '매월 언제 모을까요?'
+  // 자동이체일·매수일은 사용자가 지금 정하는 값이 아니라 이미 정해져 있는 사실이라
+  // 제안형(~할까요?)이 아니라 사실 확인형(~하나요?)으로 묻는다. 기준: docs/wording.md
+  const daysLabel = isInvestment ? '매월 언제 투자하나요?' : '매월 언제 모으나요?'
   const daysButtonLabel =
     days.length > 0 ? formatInvestmentDays(days) : '날짜 선택하기'
 
