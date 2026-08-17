@@ -24,9 +24,20 @@ const SIZE_CLASS: Record<RecordAvatarSize, string> = {
   lg: 'h-10 w-10 text-sm',
 }
 
+// 첫 글자 대신 아이콘이 들어갈 때(적립 종료 체크)의 크기. 박스의 약 60%로 얼굴 안에 여백을 남긴다.
+const ICON_CLASS: Record<RecordAvatarSize, string> = {
+  sm: 'h-3.5 w-3.5',
+  lg: 'h-5 w-5',
+}
+
 /** record 없이 라벨만 있는 호출부(캘린더 등)도 같은 사이즈 규칙을 쓰도록 노출한다. */
 export function getRecordAvatarSizeClass(size: RecordAvatarSize): string {
   return SIZE_CLASS[size]
+}
+
+/** 얼굴 안에 들어가는 아이콘의 사이즈별 클래스 */
+export function getRecordAvatarIconSizeClass(size: RecordAvatarSize): string {
+  return ICON_CLASS[size]
 }
 
 /** 유형·시장별 배경/글자 색 클래스 */

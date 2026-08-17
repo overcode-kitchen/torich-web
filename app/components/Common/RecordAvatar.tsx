@@ -1,10 +1,13 @@
+import { Check } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 import {
   getRecordAvatar,
+  getRecordAvatarIconSizeClass,
   getRecordAvatarSizeClass,
   type RecordAvatarSize,
 } from '@/app/utils/recordAvatar'
 import { getWiggleStyle } from '@/app/utils/wiggle'
+import { isContributionEnded, type ContributionEndInput } from '@/app/utils/contribution-end'
 import type { Investment } from '@/app/types/investment'
 import { TORY_FACE_MASK_PATH, TORY_FACE_MASK_VIEWBOX } from './toryFaceMaskPath'
 
@@ -21,8 +24,12 @@ const TORY_FACE_MASK: React.CSSProperties = {
 }
 
 export interface RecordAvatarProps {
-  /** 적립 항목. 라벨·시장별 색을 여기서 계산한다. */
-  record?: Pick<Investment, 'title' | 'market' | 'record_type'>
+  /**
+   * 적립 항목. 라벨·시장별 색을 여기서 계산한다.
+   * 적립 종료 판정에 쓰는 기간·정산 필드까지 함께 받는다 — 없으면 끝난 항목을
+   * 진행 중처럼 보여주게 되므로, 부분 객체를 넘기는 호출부는 타입에서 막는다.
+   */
+  record?: Pick<Investment, 'title' | 'market' | 'record_type'> & ContributionEndInput
   size?: RecordAvatarSize
   /** record 없이 종목 첫 글자만 있을 때 (캘린더 event 전용) */
   label?: string
@@ -39,6 +46,10 @@ export interface RecordAvatarProps {
  * 적립 항목 아바타 — 토리 얼굴 실루엣 안에 이름 첫 글자를 표시한다.
  * 시장별 배경색(미국 파랑·국내 브랜드액센트·현금 회색)을 얼굴 모양으로 마스킹한다.
  * 인라인으로 중복되던 원형 아바타를 한 곳으로 통일한 공통 컴포넌트.
+ *
+ * 적립이 끝난 항목(적금 만기·정산, 투자·현금의 적립 기간 종료)은 첫 글자 대신
+ * **그린 filled + 체크**로 바꿔 "이건 다 됐다"를 색과 아이콘으로 선언한다.
+ * 판정은 `isContributionEnded` 하나만 쓰므로 아바타를 쓰는 모든 화면이 같은 기준으로 읽힌다.
  */
 export function RecordAvatar({
   record,
@@ -50,20 +61,30 @@ export function RecordAvatar({
   className,
 }: RecordAvatarProps) {
   const avatar = record ? getRecordAvatar(record, size) : null
+  const isEnded = record ? isContributionEnded(record) : false
 
   const resolvedLabel = label ?? avatar?.label ?? '?'
-  const resolvedBg = bgClassName ?? avatar?.bgClassName ?? 'bg-coolgray-50'
-  const resolvedText = textClassName ?? avatar?.textClassName ?? 'text-coolgray-700'
+  // 종료 상태는 유형별 색을 덮되, 호출부가 명시한 색(캘린더의 완료·미룸 회색)에는 양보한다.
+  const resolvedBg = bgClassName ?? (isEnded ? 'bg-primary' : avatar?.bgClassName) ?? 'bg-coolgray-50'
+  const resolvedText =
+    textClassName ?? (isEnded ? 'text-primary-foreground' : avatar?.textClassName) ?? 'text-coolgray-700'
   const sizeClassName = avatar?.sizeClassName ?? getRecordAvatarSizeClass(size)
 
+  // 끝난 항목은 꿈틀거림을 멈춘다 — 계속 움직이면 아직 진행 중인 것으로 읽힌다.
+  const isWiggling = wiggle && !isEnded
   // 종목명(없으면 라벨)으로 박자를 정해 서로 다른 리듬으로 뒤뚱거리게 한다.
-  const wiggleStyle = wiggle
+  const wiggleStyle = isWiggling
     ? getWiggleStyle(`${record?.title ?? label ?? resolvedLabel}${record?.market ?? ''}`)
     : undefined
 
   return (
     <div
-      className={cn('relative shrink-0', sizeClassName, wiggle && 'animate-tory-nudge', className)}
+      className={cn(
+        'relative shrink-0',
+        sizeClassName,
+        isWiggling && 'animate-tory-nudge',
+        className,
+      )}
       style={wiggleStyle}
       aria-hidden
     >
@@ -92,7 +113,11 @@ export function RecordAvatar({
           resolvedText,
         )}
       >
-        {resolvedLabel}
+        {isEnded ? (
+          <Check className={getRecordAvatarIconSizeClass(size)} weight="bold" />
+        ) : (
+          resolvedLabel
+        )}
       </span>
     </div>
   )

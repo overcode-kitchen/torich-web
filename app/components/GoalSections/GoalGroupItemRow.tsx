@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
 import { formatInvestmentDays } from '@/app/types/investment'
 import { RecordAvatar } from '@/app/components/Common/RecordAvatar'
+import { isContributionEnded } from '@/app/utils/contribution-end'
 import { useSwipeToDelete } from '@/app/hooks/ui/useSwipeToDelete'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import DeleteConfirmModal from '@/app/components/Common/DeleteConfirmModal'
@@ -38,7 +39,7 @@ export interface GoalGroupItemRowProps {
  * 목적 그룹 카드 안의 적립 항목 1행.
  * - 좌측 스와이프 → [미루기(대기 상태)] + [삭제] 노출. 삭제는 확인 모달, 미루기는 즉시 토글.
  * - 좌: 아바타 + 항목명 / 납입일
- * - 우: 월 납입액 + 상태별 단일 요소(대기=완료 버튼 / 완료·미룸·만기완료=상태 pill)
+ * - 우: 월 납입액 + 상태별 단일 요소(대기=완료 버튼 / 완료·미룸·적립종료=상태 pill)
  * - 버튼 외 행 영역 탭 → 상세 (스와이프 노출 상태에선 닫기)
  */
 export function GoalGroupItemRow({
@@ -61,14 +62,16 @@ export function GoalGroupItemRow({
     record.unit_type === 'shares' && record.monthly_shares
       ? `${record.monthly_shares}주`
       : formatCurrency(record.monthly_amount)
-  // 만기 정산이 끝난 적금: 더 이상 월 납입 없음 → "완료" 버튼 대신 "만기 완료" 배지.
+  // 적립이 끝난 항목(적금 만기·정산, 투자·현금의 적립 기간 종료): 더 이상 월 납입이 없다
+  // → "완료" 버튼 대신 "적립 종료" 배지. 예전엔 settled_at만 봐서 적금 말고는 이 분기를 타지 않았다.
+  // "적립 종료"(영구)와 "완료"(이번 달, 매달 리셋)는 서로 다른 말이므로 문구를 겹치지 않게 둔다.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
-  const isSettled = !!record.settled_at
+  const isEnded = isContributionEnded(record)
 
-  // 아직 한 회차도 완료하지 않았고·미룸아님·정산끝아님이면 스와이프에 "미루기"를 함께 노출한다.
+  // 아직 한 회차도 완료하지 않았고·미룸아님·적립끝아님이면 스와이프에 "미루기"를 함께 노출한다.
   // 납입일 도래 여부와 무관하게 노출 — 사용자가 이번 달 납입을 미리 미룰 수 있어야 한다.
   // 이미 한 회차라도 완료했거나(진행 중), 완료(기간 종료)된 목적의 항목은 미루기를 접는다.
-  const showPostponeInSwipe = completed === 0 && !isPostponed && !isSettled && !frozen
+  const showPostponeInSwipe = completed === 0 && !isPostponed && !isEnded && !frozen
   const swipe = useSwipeToDelete({
     onDelete: async () => {
       await deleteInvestment(record.id)
@@ -164,13 +167,15 @@ export function GoalGroupItemRow({
             <span className="text-label font-bold tabular-nums text-foreground">
               {amountLabel}
             </span>
-            {isSettled ? (
-              // 만기 완료: 종료된 항목 → 중립 회색 pill (비인터랙티브)
+            {isEnded ? (
+              // 적립 종료: 끝난 항목 → 중립 회색 pill (비인터랙티브).
+              // 좌측 아바타가 그린 체크로 같은 말을 하고, pill이 왜 완료 버튼이 없는지를 설명한다.
+              // 적금 전용 표현("만기")을 피해 투자·현금 기간 만료에도 맞는 유형 중립 문구를 쓴다.
               <span
                 className="shrink-0 rounded-md bg-surface-hover px-2.5 py-1 text-caption font-medium text-foreground-soft"
-                aria-label="만기 정산 완료"
+                aria-label="적립 종료"
               >
-                만기 완료
+                적립 종료
               </span>
             ) : frozen ? (
               // 완료된 목적의 항목: 이번 달 납입 토글 비활성 (지난 내역 → 금액만 표시)
