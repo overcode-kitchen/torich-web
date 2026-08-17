@@ -14,7 +14,11 @@ import {
 import { createClient } from '@/utils/supabase/client'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { usePaymentHistoryFetch } from '@/app/hooks/payment/usePaymentHistoryFetch'
-import { bulkUpsertRetroactiveRows, writePaymentHistoryRow } from '@/app/utils/payment-history-db'
+import {
+  bulkUpsertRetroactiveRows,
+  updatePaymentCapturedPrice,
+  writePaymentHistoryRow,
+} from '@/app/utils/payment-history-db'
 import { capturePriceForPayment } from '@/app/utils/payment-capture'
 import { countBucket, monthOffset, track } from '@/app/lib/analytics'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
@@ -94,11 +98,10 @@ export function PaymentHistoryProvider({ children }: { children: ReactNode }) {
       if (!user) return
       applyOptimistic(setCompletedPayments, recordId, date, currentCompleted)
 
-      // 새 ✓ 시점에만 시세 캡처. 취소(currentCompleted=true)는 행 자체를 DELETE.
-      const captured = currentCompleted
-        ? { capturedShares: null, capturedPrice: null, priceFailed: false }
-        : await capturePriceForPayment(supabase, user.id, recordId)
-
+      // 체크부터 확정한다. 시세는 기다리지 않는다.
+      // payment_history 행의 본질은 record_id + payment_date("이 날 납입했다")이고
+      // captured_* 는 원래도 NULL 가능한 부가 정보다. 시세 조회를 먼저 await 하면
+      // 응답이 끝내 안 오는 네트워크에서 그 사이 앱이 닫힐 때 체크가 통째로 유실된다.
       try {
         await writePaymentHistoryRow(supabase, {
           userId: user.id,
@@ -106,12 +109,7 @@ export function PaymentHistoryProvider({ children }: { children: ReactNode }) {
           paymentDate: date,
           isRetroactive: false,
           shouldDelete: currentCompleted,
-          capturedShares: captured.capturedShares,
-          capturedPrice: captured.capturedPrice,
         })
-        if (captured.priceFailed) {
-          toastError(TOAST_MESSAGES.priceCaptureFailed)
-        }
         track(currentCompleted ? 'payment_uncheck' : 'payment_complete', {
           month_offset: monthOffset(date),
           is_retroactive: false,
@@ -119,7 +117,31 @@ export function PaymentHistoryProvider({ children }: { children: ReactNode }) {
       } catch {
         toastError(TOAST_MESSAGES.paymentToggleFailed)
         void refetch()
+        return
       }
+
+      // 새 ✓ 시점에만 시세 캡처. 취소(currentCompleted=true)는 행 자체를 DELETE라 채울 대상이 없다.
+      // 백그라운드로 띄우고 나중에 UPDATE 하는 방식은 syncSharesMonthlyAmount와 같다.
+      if (currentCompleted) return
+      void (async () => {
+        const captured = await capturePriceForPayment(supabase, user.id, recordId)
+        if (captured.priceFailed) {
+          toastError(TOAST_MESSAGES.priceCaptureFailed)
+        }
+        // 종목이 없거나 시세를 못 받은 경우. 이미 NULL로 저장돼 있어 갱신할 게 없다.
+        if (captured.capturedShares === null && captured.capturedPrice === null) return
+        try {
+          await updatePaymentCapturedPrice(supabase, {
+            userId: user.id,
+            recordId,
+            paymentDate: date,
+            capturedShares: captured.capturedShares,
+            capturedPrice: captured.capturedPrice,
+          })
+        } catch {
+          // 부가 정보다. 실패해도 체크는 남고, 실현 원금은 monthly_amount로 폴백된다.
+        }
+      })()
     },
     [user, supabase, refetch],
   )
