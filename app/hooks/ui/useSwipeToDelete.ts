@@ -3,7 +3,16 @@
 import { useRef, useState, useCallback } from 'react'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
+/** 닫힌 상태에서 열기까지 끌어야 하는 거리(px). 삭제가 드러나는 동작이라 신중하게 받는다. */
 const SWIPE_THRESHOLD = 40
+/**
+ * 열린 상태에서 되돌려 닫기까지 끌어야 하는 거리(px).
+ *
+ * 여는 값보다 작다 — 되돌리는 제스처는 이미 드러난 것을 숨기려는 의도가 분명하므로
+ * 가볍게 받아준다. 다만 너무 작으면 열어둔 채 세로로 스크롤하다 손가락이 가로로
+ * 흔들리는 것만으로 닫히므로, 20 전후를 넘겨 내리지 않는다.
+ */
+const CLOSE_THRESHOLD = 20
 /** 액션 버튼 1개 폭(px). 노출 폭 = actionCount * 이 값. */
 const ACTION_WIDTH = 80
 
@@ -94,14 +103,24 @@ export function useSwipeToDelete({
     if (!enabled) return
     setIsDragging(false)
 
-    if (translateX < -SWIPE_THRESHOLD) {
-      setTranslateX(-revealWidth)
-      setIsRevealed(true)
-    } else {
-      setTranslateX(0)
-      setIsRevealed(false)
+    // 최종 위치가 아니라 "이번 제스처가 얼마나 움직였는지"로 판정한다.
+    // 위치만 보면 열린 상태(-revealWidth)에서 되돌릴 때도 위치가 여전히 임계값 바깥이라,
+    // 닫으려는 의도가 다시 열림으로 뒤집혔다.
+    // (세로 스크롤로 취소된 제스처는 translateX가 base 그대로라 moved=0 → 직전 상태 유지)
+    const base = isRevealed ? -revealWidth : 0
+    const moved = translateX - base
+
+    if (isRevealed) {
+      const shouldClose = moved > CLOSE_THRESHOLD
+      setTranslateX(shouldClose ? 0 : -revealWidth)
+      setIsRevealed(!shouldClose)
+      return
     }
-  }, [enabled, translateX, revealWidth])
+
+    const shouldOpen = moved < -SWIPE_THRESHOLD
+    setTranslateX(shouldOpen ? -revealWidth : 0)
+    setIsRevealed(shouldOpen)
+  }, [enabled, isRevealed, translateX, revealWidth])
 
   const onDeleteButtonClick = useCallback(() => {
     setIsDeleteModalOpen(true)
