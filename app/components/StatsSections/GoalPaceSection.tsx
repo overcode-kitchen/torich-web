@@ -30,7 +30,7 @@ function maturityLabel(targetDate: string): string {
 }
 
 export interface GoalPaceSectionProps {
-  /** 도착 예정이 계산된 목적들 — hero에 올라간 목적은 호출측에서 빼고 넘긴다 */
+  /** 도착 예정이 계산된 목적 전부 — hero에 오른 목적도 빼지 않는다(아래 주석 참고) */
   arrivals: GoalArrival[]
 }
 
@@ -42,6 +42,10 @@ export interface GoalPaceSectionProps {
  * 좌측 그린 패널이 도토리를 달성률만큼 쌓아 시각화를 맡고(달성% 오버레이), 우측이 모은 금액과
  * 기한(회색 바)·만기를 위아래로 벌려 채운다. 카드 밑단에는 도착 예정 한 줄을 얹는다.
  * 그린은 좌측 한 곳에만 강하게 주고 기한은 회색으로 눌러 "판정 없는 대비" 톤을 지킨다.
+ *
+ * hero(가장 먼저 달성)에 오른 목적도 여기 그대로 나온다. 이름이 "목표별"인 섹션에서 하나가
+ * 빠지면 비교가 성립하지 않고, 목적이 하나뿐인 사용자는 섹션 자체를 못 본다.
+ * 겹침이 아니라 요약(hero)과 목록(여기)의 관계다.
  */
 export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
   const router = useRouter()
@@ -88,13 +92,18 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                 {/* 좌: 그린 패널(도토리가 달성률만큼 쌓임 + 달성%) · 우: 모은 금액 / 기한·만기 */}
                 <div className="grid grid-cols-[118px_1fr] items-stretch gap-3.5">
                   <div className="goal-well relative isolate h-[118px] overflow-hidden rounded-2xl">
+                    {/* 도토리가 겨냥하는 높이를 면으로도 깔아 준다 — 알갱이만으로는 눈대중이 어렵다 */}
+                    {achieved > 0 && (
+                      <div
+                        className="goal-well-fill absolute inset-x-0 bottom-0"
+                        style={{ height: `${clampPercent(achieved)}%` }}
+                      />
+                    )}
                     <AcornPhysicsFill level={clampPercent(achieved)} seed={index + 1} />
-                    <div className="relative z-10 px-3 pt-3">
-                      <div className="goal-well-label text-[11px] font-extrabold tracking-wide">달성</div>
-                      <div className="goal-well-num mt-0.5 text-[34px] font-extrabold leading-none tracking-tight tabular-nums">
-                        {achieved}
-                        <span className="text-body">%</span>
-                      </div>
+                    {/* 라벨은 두지 않는다 — 섹션 제목과 옆 칸이 이미 달성률임을 말한다 */}
+                    <div className="goal-well-num relative z-10 px-3 pt-3 text-display font-extrabold leading-none tracking-tight tabular-nums">
+                      {achieved}
+                      <span className="text-body">%</span>
                     </div>
                   </div>
 
