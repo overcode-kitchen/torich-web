@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AcornStaticFill } from './AcornStaticFill'
 import { useTiltGravity } from '@/app/hooks/stats/useTiltGravity'
 import {
+  GRAVITY,
   createWorld,
   drawWorld,
   isSettled,
@@ -57,7 +58,7 @@ export function AcornPhysicsFill({ level, seed }: { level: number; seed: number 
 /** 실제 물리 루프. 화면 밖·안정 시 rAF를 멈추고, 기울기가 켜지면 다시 깨어난다. */
 function AcornCanvas({ level, seed }: { level: number; seed: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { gxRef, activeRef, onResume } = useTiltGravity()
+  const { gravityRef, activeRef, onResume } = useTiltGravity()
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -89,7 +90,9 @@ function AcornCanvas({ level, seed }: { level: number; seed: number }) {
 
     const loop = () => {
       if (!world) return
-      stepWorld(world, gxRef.current)
+      // 방향은 기울기에서, 세기는 GRAVITY에서 온다 — 기울기 off면 (0,1)이라 그대로 아래로 쌓인다
+      const g = gravityRef.current
+      stepWorld(world, g.x * GRAVITY, g.y * GRAVITY)
       drawWorld(ctx, world, sprite)
       settledFrames = isSettled(world) ? settledFrames + 1 : 0
       // 안정 + 기울기 미사용 → 정지(배터리). 기울기 켜지면 onResume이 다시 깨운다.
@@ -166,7 +169,7 @@ function AcornCanvas({ level, seed }: { level: number; seed: number }) {
       teardownResume()
       teardownSprite()
     }
-  }, [level, seed, gxRef, activeRef, onResume])
+  }, [level, seed, gravityRef, activeRef, onResume])
 
   return (
     <canvas
