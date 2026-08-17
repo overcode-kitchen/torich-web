@@ -36,10 +36,8 @@ const ALLOWLIST = [
  * 각 항목의 치환 목표 토큰은 04-GUARD.md §7 이관표에 있다.
  */
 const BASELINE = {
-  'app/components/Common/DDayBadge.tsx': 1,
   'app/components/Common/Investments/InvestmentItem.tsx': 2,
   'app/components/GoalSections/AddRecordDrawer.tsx': 1,
-  'app/components/GoalSections/GoalGroupCard.tsx': 2,
   'app/components/GoalSections/GoalGroupItemRow.tsx': 2,
   'app/components/GoalSections/GoalRow.tsx': 1,
   'app/components/InvestmentDetailSections/PaymentHistoryTable.tsx': 2,

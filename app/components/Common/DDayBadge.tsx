@@ -14,7 +14,7 @@ export function DDayBadge({ label, className }: DDayBadgeProps) {
   return (
     <span
       className={cn(
-        'shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-[11px] font-semibold text-foreground-soft tabular-nums',
+        'shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-caption font-semibold text-foreground-soft tabular-nums',
         className,
       )}
     >

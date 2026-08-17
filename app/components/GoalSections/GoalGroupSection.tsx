@@ -105,7 +105,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -128,7 +128,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
           items={groups.map((g) => g.goal.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-4">
+          <div className="space-y-6">
             {groups.map(({ goal, progress, records: groupRecords, status }) => (
               <Sortable key={goal.id} id={goal.id}>
                 {({ setNodeRef, style, isDragging, handle }) => (
