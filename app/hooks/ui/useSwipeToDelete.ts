@@ -3,16 +3,17 @@
 import { useRef, useState, useCallback } from 'react'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
-/** 닫힌 상태에서 열기까지 끌어야 하는 거리(px). 삭제가 드러나는 동작이라 신중하게 받는다. */
-const SWIPE_THRESHOLD = 40
 /**
- * 열린 상태에서 되돌려 닫기까지 끌어야 하는 거리(px).
+ * 열기·닫기 공통 임계값. 노출 폭 대비 비율이다.
  *
- * 여는 값보다 작다 — 되돌리는 제스처는 이미 드러난 것을 숨기려는 의도가 분명하므로
- * 가볍게 받아준다. 다만 너무 작으면 열어둔 채 세로로 스크롤하다 손가락이 가로로
- * 흔들리는 것만으로 닫히므로, 20 전후를 넘겨 내리지 않는다.
+ * 고정 px이 아니라 비율인 이유: 액션이 1개(삭제)냐 2개(미루기+삭제)냐에 따라 노출 폭이
+ * 80px·160px로 갈리는데, 고정 px을 쓰면 같은 제스처가 행마다 다른 비율로 판정된다.
+ * 비율로 두면 "끝까지의 1/4을 끌면 넘어간다"가 어느 행에서나 같다.
+ *
+ * 열기와 닫기가 같은 값인 이유: 두 방향의 감도가 다르면 방금 연 것을 같은 크기로
+ * 되돌렸는데 안 닫히는 비대칭이 생긴다. 이 이슈의 원인이 그 비대칭이었다.
  */
-const CLOSE_THRESHOLD = 20
+const THRESHOLD_RATIO = 0.25
 /** 액션 버튼 1개 폭(px). 노출 폭 = actionCount * 이 값. */
 const ACTION_WIDTH = 80
 
@@ -109,15 +110,16 @@ export function useSwipeToDelete({
     // (세로 스크롤로 취소된 제스처는 translateX가 base 그대로라 moved=0 → 직전 상태 유지)
     const base = isRevealed ? -revealWidth : 0
     const moved = translateX - base
+    const threshold = revealWidth * THRESHOLD_RATIO
 
     if (isRevealed) {
-      const shouldClose = moved > CLOSE_THRESHOLD
+      const shouldClose = moved > threshold
       setTranslateX(shouldClose ? 0 : -revealWidth)
       setIsRevealed(!shouldClose)
       return
     }
 
-    const shouldOpen = moved < -SWIPE_THRESHOLD
+    const shouldOpen = moved < -threshold
     setTranslateX(shouldOpen ? -revealWidth : 0)
     setIsRevealed(shouldOpen)
   }, [enabled, isRevealed, translateX, revealWidth])
