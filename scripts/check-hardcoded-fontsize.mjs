@@ -45,7 +45,7 @@ const BASELINE = {
   'app/components/StatsSections/ArrivalHeroSection.tsx': 2,
   'app/components/StatsSections/CumulativePrincipalChart.tsx': 1,
   'app/components/StatsSections/FulfillmentHeatmapSection.tsx': 1,
-  'app/components/StatsSections/GoalPaceSection.tsx': 5,
+  'app/components/StatsSections/GoalPaceSection.tsx': 3,
   'app/components/StatsSections/MonthlyTrendSection.tsx': 1,
   'app/components/StatsSections/SavedMoneyHeroSection.tsx': 1,
   'app/components/StatsSections/StreakHeroSection.tsx': 1,
