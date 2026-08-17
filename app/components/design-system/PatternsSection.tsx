@@ -345,7 +345,7 @@ export function PatternsSection() {
                         </Button>
                         <Button
                             variant="outline"
-                            onClick={() => toastUndo("10일 완료됨", () => toastInfo("되돌렸어요."))}
+                            onClick={() => toastUndo("미래적금 50만원 완료", () => toastInfo("되돌렸어요."))}
                         >
                             되돌리기
                         </Button>

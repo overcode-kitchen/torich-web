@@ -7,6 +7,7 @@ import { hapticSuccess, hapticLightImpact } from '@/app/utils/haptics'
 import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { usePostponedPayments } from './usePostponedPayments'
 import { toastUndo } from '@/app/utils/toast'
+import { paymentToastMessage, paymentAmountLabelFromRecord } from '@/app/utils/payment-toast-message'
 
 /**
  * 이번 달 납입 완료 상태(투자별) 판단 + 토글.
@@ -119,8 +120,10 @@ export function useMonthlyPaymentStatus(): MonthlyPaymentStatus {
       const date = ymd(year, month, day)
       await togglePayment(record.id, date, false)
       hapticSuccess()
-      // 회차가 여럿이면 어떤 회차를 되돌리는지 명시("10일 완료됨").
-      toastUndo(days.length > 1 ? `${day}일 완료됨` : '완료됨', () => {
+      // 어떤 항목이 완료됐는지 문구에 담는다 — 이름 + 대상. (이슈 #196)
+      // 회차가 여럿이면 어떤 회차인지("10일 회차"), 하나면 금액을 붙인다.
+      const detail = days.length > 1 ? `${day}일 회차` : paymentAmountLabelFromRecord(record)
+      toastUndo(paymentToastMessage(record.title, detail, 'completed'), () => {
         void (async () => {
           await togglePayment(record.id, date, true)
           hapticLightImpact()
