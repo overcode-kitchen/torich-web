@@ -147,13 +147,17 @@ function StatusPill({
   isRetro: boolean
   canToggle: boolean
 }) {
+  // 한 표 안의 상태 pill은 문구 길이가 달라도 폭을 통일한다(좌우 끝 정렬).
+  // 자동 표는 완료/미완료로 짧고, 소급 표는 '탭하여 기록'이 가장 넓어 더 넓게 잡는다.
+  const pillBase = cn(
+    'inline-flex items-center justify-center rounded-md px-2.5 py-1 text-caption font-medium',
+    isRetro ? 'min-w-24' : 'min-w-16'
+  )
+
   if (isRetro) {
     if (completed) {
       return (
-        <span
-          className="inline-flex items-center gap-1 rounded-md bg-surface-hover px-2.5 py-1 text-caption font-medium text-foreground-soft"
-          title="소급 납입 기록됨"
-        >
+        <span className={cn(pillBase, 'gap-1 bg-surface-hover text-foreground-soft')} title="소급 납입 기록됨">
           <Check className="h-3.5 w-3.5" weight="bold" />
           기록됨
         </span>
@@ -162,7 +166,7 @@ function StatusPill({
     return (
       <span
         className={cn(
-          'inline-flex items-center rounded-md px-2.5 py-1 text-caption font-medium',
+          pillBase,
           canToggle
             ? 'bg-surface-hover/60 text-foreground-muted ring-1 ring-inset ring-border-subtle'
             : 'text-foreground-subtle'
@@ -175,18 +179,12 @@ function StatusPill({
   }
 
   return completed ? (
-    <span
-      className="inline-flex items-center gap-1 rounded-md bg-brand-accent-bg px-2.5 py-1 text-caption font-medium text-brand-accent-text"
-      title="해당 월 납입 완료됨"
-    >
+    <span className={cn(pillBase, 'gap-1 bg-brand-accent-bg text-brand-accent-text')} title="해당 월 납입 완료됨">
       <Check className="h-3.5 w-3.5" weight="bold" />
       완료
     </span>
   ) : (
-    <span
-      className="inline-flex items-center rounded-md bg-surface-hover px-2.5 py-1 text-caption font-medium text-foreground-soft"
-      title="해당 월 납입 미완료"
-    >
+    <span className={cn(pillBase, 'bg-surface-hover text-foreground-soft')} title="해당 월 납입 미완료">
       미완료
     </span>
   )
