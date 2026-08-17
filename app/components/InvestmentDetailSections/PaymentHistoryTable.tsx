@@ -72,8 +72,8 @@ export function PaymentHistoryTable({
           <TableRow className="border-border hover:bg-transparent">
             <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">월</TableHead>
             <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">적립일</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-right text-foreground-muted font-semibold text-label">납입 금액</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-right text-foreground-muted font-semibold text-label">상태</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">납입 금액</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-foreground-muted font-semibold text-label">상태</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -106,13 +106,13 @@ export function PaymentHistoryTable({
               </TableCell>
               <TableCell
                 className={cn(
-                  'px-3 py-3.5 text-right text-[15px] tabular-nums',
+                  'px-3 py-3.5 text-[15px] tabular-nums',
                   isRetro ? 'text-foreground-subtle' : 'text-foreground-muted'
                 )}
               >
                 {formatCurrency(capturedByMonth?.get(yearMonth) ?? item.monthly_amount)}
               </TableCell>
-              <TableCell className="px-3 py-3.5 text-right">
+              <TableCell className="px-3 py-3.5">
                 <StatusPill completed={completed} isRetro={isRetro} canToggle={canToggle} />
               </TableCell>
             </TableRow>
