@@ -188,14 +188,16 @@ export function GoalGroupCard({
       >
         <div className="p-6 pb-4">
           {goal ? (
-            <div className="mb-2 flex w-full items-center gap-1">
+            // gap-0: "…" 버튼이 h-9 w-9(36px)에 아이콘 20px이라 좌우 8px 여백을 이미 갖는다.
+            // 여기에 gap을 더하면 앞쪽 요소 간격(8px)보다 넓어져 헤더 리듬이 깨진다.
+            <div className="mb-2 flex w-full items-center gap-0">
               <button
                 type="button"
                 ref={dragHandle?.ref}
                 {...dragHandle?.attributes}
                 {...dragHandle?.listeners}
                 onClick={() => onSelectGoal?.(goal.id)}
-                className="flex min-w-0 flex-1 items-center gap-1 text-left select-none [-webkit-touch-callout:none]"
+                className="flex min-w-0 flex-1 items-center gap-2 text-left select-none [-webkit-touch-callout:none]"
                 aria-label={`${name} 목적 상세 보기${
                   dragHandle ? ' (길게 눌러 순서 변경)' : ''
                 }`}
@@ -214,7 +216,7 @@ export function GoalGroupCard({
               )}
             </div>
           ) : (
-            <div className="mb-2 flex w-full items-center gap-1">{HeaderInner}</div>
+            <div className="mb-2 flex w-full items-center gap-2">{HeaderInner}</div>
           )}
 
           {records.length > 0 ? (
