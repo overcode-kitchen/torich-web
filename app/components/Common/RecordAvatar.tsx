@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import {
   getRecordAvatar,
   getRecordAvatarIconSizeClass,
+  getRecordAvatarIconNudgeY,
   getRecordAvatarSizeClass,
   type RecordAvatarSize,
 } from '@/app/utils/recordAvatar'
@@ -114,7 +115,12 @@ export function RecordAvatar({
         )}
       >
         {isEnded ? (
-          <Check className={getRecordAvatarIconSizeClass(size)} weight="bold" />
+          // 얼굴 시각 중심(귀 때문에 기하 중심보다 아래)으로 살짝 내려 정렬한다.
+          <Check
+            className={getRecordAvatarIconSizeClass(size)}
+            weight="bold"
+            style={{ transform: `translateY(${getRecordAvatarIconNudgeY(size)})` }}
+          />
         ) : (
           resolvedLabel
         )}
