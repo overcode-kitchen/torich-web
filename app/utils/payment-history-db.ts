@@ -55,6 +55,36 @@ export async function writePaymentHistoryRow(
 }
 
 /**
+ * 이미 저장된 자동 추적 행에 매수 시점 시세만 뒤늦게 채운다.
+ *
+ * 체크 저장이 시세 조회를 기다리지 않도록 두 단계로 나눈 결과다. 1단계에서 captured_* 없이
+ * 행을 확정하고, 시세가 도착하면 이 함수로 그 두 컬럼만 갱신한다.
+ * 사용자가 곧바로 완료를 취소해 행이 사라졌다면 갱신 대상이 없어 조용히 끝난다.
+ */
+export async function updatePaymentCapturedPrice(
+  supabase: SupabaseClient,
+  params: {
+    userId: string
+    recordId: string
+    paymentDate: string
+    capturedShares: number | null
+    capturedPrice: number | null
+  }
+) {
+  const { error } = await supabase
+    .from('payment_history')
+    .update({
+      captured_shares: params.capturedShares,
+      captured_price: params.capturedPrice,
+    })
+    .eq('user_id', params.userId)
+    .eq('record_id', params.recordId)
+    .eq('payment_date', params.paymentDate)
+    .eq('is_retroactive', false)
+  if (error) throw error
+}
+
+/**
  * 소급(앱 등록 이전) 구간의 여러 월을 한 번의 upsert로 완료 처리한다.
  * 이미 기록된 월은 ignoreDuplicates 로 자동 스킵된다.
  */

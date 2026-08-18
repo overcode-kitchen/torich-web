@@ -6,6 +6,7 @@ import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { usePostponedPayments } from './usePostponedPayments'
 import { isPaymentCompleted, isPaymentPostponed } from '@/app/utils/payment-completion'
 import { toastSuccess, toastUndo } from '@/app/utils/toast'
+import { paymentToastMessage, paymentAmountLabel } from '@/app/utils/payment-toast-message'
 import { awardToryInvestmentComplete } from '@/app/utils/tory-raising/awardToryInvestmentComplete'
 import { hapticSuccess, hapticLightImpact } from '@/app/utils/haptics'
 
@@ -43,7 +44,13 @@ export function usePaymentCompletion() {
     if (reward.awarded) toastSuccess(`🌰 +${reward.amount} 도토리`)
 
     // 되돌릴 회차는 토스트 액션 클로저가 들고 있다 — pending 상태·타이머가 따로 필요 없다.
-    toastUndo('완료됨', () => {
+    // 문구는 "어떤 항목이 완료됐는지"를 담는다 — 이름 + 금액. (이슈 #196)
+    const amount = paymentAmountLabel({
+      unitType: e.unitType,
+      monthlyShares: e.monthlyShares,
+      monthlyAmount: e.monthlyAmount,
+    })
+    toastUndo(paymentToastMessage(e.title, amount, 'completed'), () => {
       void (async () => {
         // Toggle to false (currently true)
         await togglePayment(e.investmentId, dateStr, true)

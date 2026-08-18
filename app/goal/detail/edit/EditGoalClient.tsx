@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
@@ -10,6 +10,7 @@ import MaturityMismatchConfirmModal from '@/app/components/Common/MaturityMismat
 import ExitConfirmDialog from '@/app/components/AddItemSections/ExitConfirmDialog'
 import { useGoalForm } from '@/app/hooks/goal/add/useGoalForm'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { useUnsavedChangesGuard } from '@/app/hooks/navigation/useUnsavedChangesGuard'
@@ -17,7 +18,6 @@ import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import { detectMaturityMismatch } from '@/app/utils/goal-status'
 import { showErrorToast, toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { Button } from '@/components/ui/button'
-import { createClient } from '@/utils/supabase/client'
 import type { Goal, GoalCreateInput } from '@/app/types/goal'
 
 interface EditFormProps {
@@ -154,20 +154,16 @@ export default function EditGoalClient() {
   const goalId = searchParams.get('id') ?? undefined
   const focusField = searchParams.get('field')
   const router = useRouter()
-  const [userId, setUserId] = useState<string | undefined>(undefined)
+  // userId는 AuthProvider가 이미 들고 있다. getUser로 다시 받아오면 인증이 오기 전 구간이
+  // '유저 없음'과 구분되지 않아, 존재하는 목적에 "찾을 수 없습니다"가 스친다 (#177).
+  const { user } = useAuth()
+  const userId = user?.id
   const { goBack } = useFlowBack({
     rootPath: goalId ? `/goal/detail?id=${goalId}` : '/',
     enableHistoryFallback: true,
   })
 
-  useEffect(() => {
-    const supabase = createClient()
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id)
-    })
-  }, [])
-
-  const { goal, isLoading } = useGoalDetail(goalId, userId)
+  const { goal, isLoading } = useGoalDetail(goalId)
 
   if (isLoading) {
     return (

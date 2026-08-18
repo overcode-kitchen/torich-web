@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import type { Investment } from '@/app/types/investment'
 import { toggleMonthPayments } from '@/app/utils/payment-history'
 import { toastUndo } from '@/app/utils/toast'
+import { paymentToastMessage } from '@/app/utils/payment-toast-message'
 
 /**
  * 상세 '월별 납입 기록' 표에서 그 달 회차를 통째로 토글한 뒤,
@@ -44,8 +45,9 @@ export function useMonthToggleUndo(
       const month = parseInt(yearMonth.split('-')[1], 10)
       // 되돌릴 때 각 회차에 넘길 currentCompleted(= 방금 만들어진 상태)
       const undoCurrentCompleted = !currentCompleted
+      // 그 달 회차를 통째로 토글하므로 대상은 "몇 월". 어떤 항목인지 이름을 함께 담는다. (이슈 #196)
       toastUndo(
-        currentCompleted ? `${month}월 적립 취소됨` : `${month}월 적립 완료됨`,
+        paymentToastMessage(item.title, `${month}월`, currentCompleted ? 'canceled' : 'completed'),
         () => {
           void (async () => {
             for (const date of toggled) {

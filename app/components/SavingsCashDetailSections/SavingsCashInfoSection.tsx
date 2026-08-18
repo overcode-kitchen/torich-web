@@ -48,7 +48,7 @@ export function SavingsCashInfoSection({
           onTap={tap('monthlyAmount')}
         />
         <TappableField
-          label="납입일"
+          label="적립일"
           value={formatInvestmentDays(item.investment_days)}
           onTap={tap('investmentDays')}
         />
@@ -70,19 +70,23 @@ export function SavingsCashInfoSection({
 
       {/* 예적금: 만기 예상 수령액 */}
       {isSavings && maturity && (
-        <div className="mt-6 rounded-2xl bg-secondary p-5">
+        <div className="mt-6 rounded-2xl bg-surface p-5 ring-1 ring-border-subtle">
           <p className="text-label text-muted-foreground mb-1">만기 예상 수령액</p>
           <p className="text-title font-bold tracking-tight text-foreground tabular-nums">
             {formatCurrency(maturity.total)}
           </p>
-          <div className="mt-3 space-y-1 text-label text-muted-foreground">
+          <div className="mt-3 space-y-1 text-label">
             <div className="flex justify-between">
-              <span>넣은 원금</span>
-              <span className="tabular-nums">{formatCurrency(maturity.principal)}</span>
+              <span className="text-muted-foreground">넣은 원금</span>
+              <span className="tabular-nums font-medium text-foreground">
+                {formatCurrency(maturity.principal)}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span>예상 이자</span>
-              <span className="tabular-nums">{formatCurrency(maturity.interest)}</span>
+              <span className="text-muted-foreground">예상 이자</span>
+              <span className="tabular-nums font-medium text-foreground">
+                {formatCurrency(maturity.interest)}
+              </span>
             </div>
           </div>
           <p className="mt-3 text-caption text-foreground-muted">

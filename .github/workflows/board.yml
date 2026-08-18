@@ -36,11 +36,18 @@ on:
 
 # 토큰이 두 개다. 하나로는 안 된다.
 #   PROJECT_TOKEN  조직 Projects 읽기·쓰기 (보드 카드 이동). GITHUB_TOKEN으로는 불가.
-#   GITHUB_TOKEN   저장소 Issues 쓰기 (라벨 수정). PROJECT_TOKEN은 조직 Projects
-#                  권한만 가지고 발급했으므로 gh issue edit이 통하지 않는다.
+#   GITHUB_TOKEN   저장소 Issues 쓰기(라벨 수정) + PR 읽기. PROJECT_TOKEN은 조직
+#                  Projects 권한만 가지고 발급했으므로 저장소 API가 통하지 않는다.
 # 발급 방법은 docs/github-projects-setup.md 참고.
+#
+# 저장소 API를 부를 때는 GH_TOKEN 기본값(PROJECT_TOKEN)에 기대지 말고 REPO_TOKEN을
+# 명시한다. 권한 없는 fine-grained PAT은 403이 아니라 404를 돌려주므로, 실수하면
+# "PR을 못 찾음"처럼 보여 원인 추적이 오래 걸린다.
 permissions:
   issues: write
+  # permissions 블록을 선언하면 명시하지 않은 스코프는 none이 된다.
+  # merged 잡이 PR 커밋 목록을 읽으므로 이 줄이 없으면 GITHUB_TOKEN으로도 404다.
+  pull-requests: read
 
 env:
   GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
@@ -70,7 +77,7 @@ jobs:
           # 제목·본문·커밋 메시지를 모두 훑어 어디에 썼든 잡히게 한다.
           text=$(
             printf '%s\n%s\n' "$PR_TITLE" "${PR_BODY:-}"
-            gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" --paginate --jq '.[].commit.message'
+            GH_TOKEN="$REPO_TOKEN" gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits" --paginate --jq '.[].commit.message'
           )
           numbers=$(printf '%s' "$text" \
             | grep -oiE '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]*#[0-9]+' \

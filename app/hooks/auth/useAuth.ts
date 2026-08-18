@@ -21,6 +21,12 @@ type AuthContextValue = {
   connectionError: boolean
   /** 연결 실패 후 세션 확인을 다시 시도 */
   retry: () => void
+  /**
+   * OAuth 콜백 처리 시작을 알린다. 딥링크 복귀 직후 인앱 브라우저가 닫히고 세션 교환이
+   * 끝날 때까지 `isLoading`을 true로 올려, 아래 깔린 로그인 화면이 버튼 대신 로딩을 그리게 한다
+   * (교환 완료 시 onAuthStateChange가 다시 false로 내린다).
+   */
+  beginAuthExchange: () => void
   logout: () => Promise<void>
 }
 
@@ -66,6 +72,10 @@ export function AuthProvider({ children, onLogout }: AuthProviderProps) {
     setConnectionError(false)
     setIsLoading(true)
     setRetryTick((t) => t + 1)
+  }, [])
+
+  const beginAuthExchange = useCallback((): void => {
+    setIsLoading(true)
   }, [])
 
   useEffect((): (() => void) => {
@@ -141,9 +151,10 @@ export function AuthProvider({ children, onLogout }: AuthProviderProps) {
       isLoggingOut,
       connectionError,
       retry,
+      beginAuthExchange,
       logout,
     }),
-    [user, isLoading, isLoggingOut, connectionError, retry, logout],
+    [user, isLoading, isLoggingOut, connectionError, retry, beginAuthExchange, logout],
   )
 
   return React.createElement(AuthContext.Provider, { value }, children)
