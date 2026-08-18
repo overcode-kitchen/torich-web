@@ -8,6 +8,7 @@ import { Calendar, CalendarDayButton } from '@/components/ui/calendar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import YearMonthWheel from './YearMonthWheel'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 // aspect-square를 제거해 너비만 가변되고 높이는 고정되게 함
 function AdaptiveDayButton(props: React.ComponentProps<typeof CalendarDayButton>) {
@@ -88,12 +89,14 @@ export default function DateSelectSheet({
       ? emptyLabel
       : null
 
+  useBodyScrollLock()
+
   // 조상(SubPageScaffold의 animate-page-in transform 등)이 만드는 stacking context 밖으로
   // 빼기 위해 body로 포털 렌더한다. 이래야 시트가 페이지 고정 하단 바 위로 온전히 덮인다.
   if (typeof document === 'undefined') return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div data-overlay className="fixed inset-0 z-50 flex items-end justify-center">
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"
         onClick={onClose}

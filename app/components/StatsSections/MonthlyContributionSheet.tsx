@@ -4,6 +4,7 @@ import { formatCurrency } from '@/lib/utils'
 import { X } from '@phosphor-icons/react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { MonthlyContributionItemVM } from '@/app/hooks/investment/calculations/useMonthlyContribution'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface MonthlyContributionSheetProps {
   contributionItems: MonthlyContributionItemVM[]
@@ -16,8 +17,10 @@ export default function MonthlyContributionSheet({
   totalAmount,
   onClose,
 }: MonthlyContributionSheetProps) {
+  useBodyScrollLock()
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div data-overlay className="fixed inset-0 z-50 flex items-end justify-center">
       {/* 오버레이 */}
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"

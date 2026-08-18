@@ -2,6 +2,7 @@
 
 import { X } from '@phosphor-icons/react'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface InvestmentDaysPickerSheetProps {
   /** 현재 선택된 날짜들 (1~31) */
@@ -20,8 +21,10 @@ export default function InvestmentDaysPickerSheet({
   onClose,
 }: InvestmentDaysPickerSheetProps) {
 
+  useBodyScrollLock()
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div data-overlay className="fixed inset-0 z-50 flex items-end justify-center">
       {/* 오버레이 */}
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"

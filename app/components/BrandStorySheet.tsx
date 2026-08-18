@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface BrandStorySheetProps {
   isOpen: boolean
@@ -10,10 +11,13 @@ interface BrandStorySheetProps {
 }
 
 export function BrandStorySheet({ isOpen, onClose }: BrandStorySheetProps) {
+  useBodyScrollLock(isOpen)
+
   if (!isOpen) return null
 
   return (
     <div
+      data-overlay
       className="fixed inset-0 z-50 flex flex-col justify-end bg-black/30 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"

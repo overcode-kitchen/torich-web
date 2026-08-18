@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 export interface BrandStoryBottomSheetProps {
   isBrandStoryOpen: boolean
@@ -13,6 +14,8 @@ export default function BrandStoryBottomSheet({
   isBrandStoryOpen,
   onCloseBrandStory,
 }: BrandStoryBottomSheetProps) {
+  useBodyScrollLock(isBrandStoryOpen)
+
   if (!isBrandStoryOpen) return null
 
   return (
