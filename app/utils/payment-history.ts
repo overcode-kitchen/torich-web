@@ -110,16 +110,20 @@ export function getPaymentHistoryFromStart(
 
   const today = new Date()
   const startDate = start_date ? new Date(start_date) : today
+  // 계약 종료일. 기간(period_years)이 없으면 끝이 정해지지 않은 것이므로 null이다.
+  // 여기에 today를 넣으면 "아직 오지 않은 이번 달 회차"가 "계약이 끝나 존재하지 않는 회차"로
+  // 둔갑해, 회차 0개 → completed=true 경로를 타고 미도래 회차가 '완료'로 표시된다.
+  // 표에 보여줄 행의 범위는 아래 endLimit이 따로 담당하므로 표시 범위는 달라지지 않는다.
   const endDate =
     startDate && period_years
       ? new Date(startDate.getFullYear() + period_years, startDate.getMonth(), startDate.getDate())
-      : today
+      : null
 
   const results: PaymentHistoryEntry[] = []
   const days = investment_days && investment_days.length > 0 ? investment_days : []
 
   const current = new Date(startDate.getFullYear(), startDate.getMonth(), 1)
-  const endLimit = today < endDate ? today : endDate
+  const endLimit = endDate && endDate < today ? endDate : today
   const end = new Date(endLimit.getFullYear(), endLimit.getMonth(), 1)
   if (current > end) return []
 
@@ -140,6 +144,9 @@ export function getPaymentHistoryFromStart(
     } else {
       const paymentDatesInRange = installmentDaysInRange(days, year, month, startDate, endDate)
 
+      // 회차가 하나도 없는 달(가입 첫 달의 납입일이 시작일보다 앞서거나, 만기 달의 납입일이
+      // 종료일을 넘는 경우)은 "밀린 것이 없다"는 뜻이라 완료로 표기한다.
+      // 미도래 회차가 여기로 새지 않도록 막는 것은 위 endDate=null 쪽 책임이다.
       if (paymentDatesInRange.length === 0) {
         completed = true
       } else {
