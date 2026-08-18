@@ -17,6 +17,7 @@ export default function BrandStoryBottomSheet({
 
   return (
     <div
+      data-overlay
       className="fixed inset-0 z-50 flex flex-col justify-end bg-black/30 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
