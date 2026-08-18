@@ -67,11 +67,12 @@ export function BrandStorySheet({ isOpen, onClose }: BrandStorySheetProps) {
           </div>
         </ScrollArea>
         {/* 바닥에 붙는 시트라 하단 모서리는 깎지 않는다 — 둥글게 두면 좌우 아래
-            모서리로 딤이 비친다. 하단 여백은 홈 인디케이터(safe area)를 시트 색으로
-            채우되, safe area가 0인 웹에서는 기존 24px를 유지한다. */}
+            모서리로 딤이 비친다. 하단 여백은 공용 SafeArea(:53)와 같은 calc(env + 24px)다.
+            max()로 두면 safe area가 기존 여백을 잡아먹어 24px → 34px로 10px밖에 안 늘고,
+            닫기 버튼이 홈 인디케이터에 붙는다. safe area가 0인 웹에서는 24px 그대로다. */}
         <div
           className="shrink-0 px-6 pt-4 bg-card"
-          style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1.5rem)' }}
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
         >
           <Button
             type="button"
