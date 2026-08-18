@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { useMemo } from 'react'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useGoals } from './useGoals'
 import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
@@ -40,14 +40,10 @@ export interface UseGoalGroupsReturn {
  *   진척률이 같은 데이터를 본다.
  */
 export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
-  const [userId, setUserId] = useState<string | undefined>(undefined)
-
-  useEffect(() => {
-    const supabase = createClient()
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id)
-    })
-  }, [])
+  // userId는 AuthProvider가 이미 들고 있는 값을 쓴다. getUser로 다시 받아오면 홈 진입 때마다
+  // userId가 undefined → 확정으로 바뀌며 조회가 두 번 돌고, 그 사이 '목적 0개'인 중간 프레임이 생긴다.
+  const { user, isLoading: authLoading } = useAuth()
+  const userId = user?.id
 
   const { goals, isLoading: goalsLoading, refetch, setGoals } = useGoals(userId)
   const { completedPayments, retroactivePayments, capturedAmounts, isLoading: paymentsLoading } =
@@ -88,7 +84,8 @@ export function useGoalGroups(records: Investment[]): UseGoalGroupsReturn {
   return {
     groups,
     unassignedRecords,
-    isLoading: goalsLoading || paymentsLoading,
+    // authLoading을 포함해야 '아직 사용자를 모르는' 구간이 '목적 0개'로 오해되지 않는다.
+    isLoading: authLoading || goalsLoading || paymentsLoading,
     userId,
     refetch,
     setGoals,
