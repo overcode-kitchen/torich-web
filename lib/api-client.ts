@@ -4,10 +4,15 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
  * 요청 상한(ms).
  *
  * 지하철·엘리베이터처럼 요청은 나갔는데 응답이 끝내 오지 않는 네트워크에서, 호출부가
- * 무한정 매달리지 않게 한다. 이 클라이언트를 쓰는 곳은 시세·검색 API뿐이라 5초면 넉넉하고,
- * 세 호출부 모두 실패를 이미 폴백(캐시·에러 상태)으로 처리한다.
+ * 무한정 매달리지 않게 한다.
+ *
+ * 값이 넉넉한 이유: 이 상한은 납입 시세 캡처뿐 아니라 종목 검색·수익률 조회에도 함께
+ * 걸린다. 캡처는 실패해도 안전하지만(captured_* NULL + monthly_amount 폴백), 검색과
+ * 수익률은 사용자가 화면에서 곧바로 겪는 실패가 된다. /api/stock이 Supabase 조회와
+ * yahooFinance.quote()를 직렬로 돌고 여기에 서버리스 콜드 스타트까지 겹치면 5초는
+ * 빠듯하다. 캡처가 늦어지는 건 이제 문제가 아니다 — 체크 저장은 이미 끝나 있다(#90).
  */
-const REQUEST_TIMEOUT_MS = 5000;
+const REQUEST_TIMEOUT_MS = 8000;
 
 function isNativeApp(): boolean {
   if (typeof window === 'undefined') return false;
