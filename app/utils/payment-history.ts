@@ -71,6 +71,32 @@ export interface PaymentHistoryEntry {
  *   생략 시 start_date와 동일하게 간주 (기존 동작).
  * @param retroactivePayments 소급 납입 완료 맵 (record_id -> Set<YYYY-MM-01>). 소급 구간 완료 판단에 사용.
  */
+/**
+ * 이 달이 소급 구간인가 — 자동 추적 시작(보통 created_at) 월보다 이전인가.
+ *
+ * 소급 구간은 자동 추적과 저장 키가 다르다(YYYY-MM-01 + is_retroactive).
+ * 캘린더가 이 구간에 자동 키로 기록해 버리면 상세 소급 표에는 보이지 않고,
+ * 나중에 상세에서 다시 기록하면 같은 달이 두 벌로 남아 납입액이 두 배가 된다.
+ * 그래서 "여기가 소급 구간인가"의 답을 이 함수 하나로 모은다.
+ */
+export function isRetroactiveMonth(
+  year: number,
+  month: number,
+  start_date?: string | null,
+  tracking_start_date?: string | null,
+): boolean {
+  const today = new Date()
+  const startDate = start_date ? new Date(start_date) : today
+  const trackingStart = tracking_start_date ? new Date(tracking_start_date) : startDate
+  const effectiveTrackingStart = trackingStart < startDate ? startDate : trackingStart
+  const trackingStartMonth = new Date(
+    effectiveTrackingStart.getFullYear(),
+    effectiveTrackingStart.getMonth(),
+    1
+  )
+  return new Date(year, month - 1, 1) < trackingStartMonth
+}
+
 export function getPaymentHistoryFromStart(
   investmentId: string,
   completedPayments: PaymentHistoryMap,
@@ -89,16 +115,6 @@ export function getPaymentHistoryFromStart(
       ? new Date(startDate.getFullYear() + period_years, startDate.getMonth(), startDate.getDate())
       : today
 
-  // 자동 추적 시작일: 미지정이면 start_date와 동일 (기존 동작 유지)
-  // start_date가 tracking_start_date보다 미래이면 tracking_start_date를 start_date로 올림 (엣지 케이스)
-  const trackingStart = tracking_start_date ? new Date(tracking_start_date) : startDate
-  const effectiveTrackingStart = trackingStart < startDate ? startDate : trackingStart
-  const trackingStartMonth = new Date(
-    effectiveTrackingStart.getFullYear(),
-    effectiveTrackingStart.getMonth(),
-    1
-  )
-
   const results: PaymentHistoryEntry[] = []
   const days = investment_days && investment_days.length > 0 ? investment_days : []
 
@@ -113,7 +129,7 @@ export function getPaymentHistoryFromStart(
     const yearMonth = `${year}-${String(month).padStart(2, '0')}`
     const monthLabel = `${month}월`
 
-    const isRetroactive = current < trackingStartMonth
+    const isRetroactive = isRetroactiveMonth(year, month, start_date, tracking_start_date)
 
     let completed: boolean
     if (isRetroactive) {

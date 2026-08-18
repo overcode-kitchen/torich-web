@@ -15,12 +15,29 @@ function eventDateStr(e: PaymentEvent): string {
 }
 
 export function usePaymentCompletion() {
-  const { completedPayments, togglePayment } = usePaymentHistoryContext()
+  const { completedPayments, retroactivePayments, togglePayment } = usePaymentHistoryContext()
   const { postponedPayments, togglePostpone } = usePostponedPayments()
 
-  const isEventCompleted = useCallback((e: PaymentEvent) => {
+  /**
+   * 소급 기록은 record-월당 1건(YYYY-MM-01)이 그 달 전체를 완료로 만든다.
+   * 저장 키가 자동 추적(YYYY-MM-DD)과 달라, 이 판정을 빠뜨리면 캘린더만 미완료로 보인다.
+   */
+  const isEventRetroactivelyCompleted = useCallback((e: PaymentEvent) => {
+    return isPaymentCompleted(retroactivePayments, e.investmentId, e.year, e.month, 1)
+  }, [retroactivePayments])
+
+  /** 자동 추적(YYYY-MM-DD) 기록만 본다 */
+  const isEventAutoCompleted = useCallback((e: PaymentEvent) => {
     return isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)
   }, [completedPayments])
+
+  // 구간별로 볼 맵이 다르다 — 소급 구간은 소급 맵, 자동 구간은 자동 맵.
+  // 두 맵을 무조건 OR하면, 소급 구간에 잘못 남은 자동 기록까지 완료로 쳐서
+  // 상세는 "미기록"인데 캘린더만 "완료"로 보인다(오염을 가린다).
+  // 구간 판정에 필요한 created_at은 이 훅에 없으므로 호출부가 조합한다.
+  const isEventCompleted = useCallback((e: PaymentEvent) => {
+    return isEventAutoCompleted(e) || isEventRetroactivelyCompleted(e)
+  }, [isEventAutoCompleted, isEventRetroactivelyCompleted])
 
   const isEventPostponed = useCallback((e: PaymentEvent) => {
     return isPaymentPostponed(postponedPayments, e.investmentId, e.year, e.month, e.day)
@@ -81,6 +98,8 @@ export function usePaymentCompletion() {
 
   return {
     isEventCompleted,
+    isEventAutoCompleted,
+    isEventRetroactivelyCompleted,
     isEventPostponed,
     handleComplete,
     handleUncomplete,
