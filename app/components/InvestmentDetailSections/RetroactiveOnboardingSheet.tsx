@@ -53,7 +53,7 @@ export function RetroactiveOnboardingSheet({
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              <h2 className="text-heading font-semibold tracking-tight text-foreground">
                 앱 이전 기간이 있어요
               </h2>
               <p className="mt-1.5 text-label leading-relaxed text-foreground-soft">

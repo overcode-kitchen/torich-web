@@ -63,7 +63,7 @@ export default function MonthPickerSheet({
 
         {/* 헤더 */}
         <div className="flex items-center justify-between px-6 pb-2 shrink-0">
-          <h2 className="text-lg font-bold text-foreground">연도·월 선택</h2>
+          <h2 className="text-heading font-bold text-foreground">연도·월 선택</h2>
           <button
             onClick={requestClose}
             className="p-1 text-foreground-subtle hover:text-foreground-muted transition-colors"

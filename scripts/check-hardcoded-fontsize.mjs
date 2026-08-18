@@ -36,24 +36,13 @@ const ALLOWLIST = [
  * 각 항목의 치환 목표 토큰은 04-GUARD.md §7 이관표에 있다.
  */
 const BASELINE = {
-  'app/components/Common/Investments/InvestmentItem.tsx': 2,
-  'app/components/GoalSections/AddRecordDrawer.tsx': 1,
-  'app/components/GoalSections/GoalGroupItemRow.tsx': 2,
-  'app/components/GoalSections/GoalRow.tsx': 1,
-  'app/components/InvestmentDetailSections/PaymentHistoryTable.tsx': 2,
-  'app/components/LandingPageSections/HeroSection.tsx': 1,
-  'app/components/StatsSections/ArrivalHeroSection.tsx': 2,
-  'app/components/StatsSections/CumulativePrincipalChart.tsx': 1,
-  'app/components/StatsSections/FulfillmentHeatmapSection.tsx': 1,
-  'app/components/StatsSections/GoalPaceSection.tsx': 3,
-  'app/components/StatsSections/MonthlyTrendSection.tsx': 1,
-  'app/components/StatsSections/SavedMoneyHeroSection.tsx': 1,
-  'app/components/StatsSections/StreakHeroSection.tsx': 1,
-  'app/components/StatsSections/TiltToggle.tsx': 1,
-  'app/components/ToryRaising/ToryRaisingFullScreen.tsx': 1,
-  'app/components/design-system/DashboardListRowsPatternSection.tsx': 4,
-  'app/utils/recordAvatar.ts': 1,
-  'components/ui/calendar.tsx': 2,
+  // Phase 2(#134)에서 실화면 임의 px 27곳 + text-lg 23곳을 토큰으로 전환하며 18항목 제거.
+  // integration 병합 뒤 실측한 잔여는 아래 7건뿐이고, 셋 다 실화면 className이 아니다 —
+  // 차트 라이브러리 인라인 fontSize, 스타일가이드 데모, components/ui 프리미티브.
+  // 별도 판단 후 정리한다.
+  'app/components/StatsSections/MonthlyTrendSection.tsx': 1, // Recharts tick fontSize (차트 API)
+  'app/components/design-system/DashboardListRowsPatternSection.tsx': 4, // 스타일가이드 데모
+  'components/ui/calendar.tsx': 2, // shadcn 프리미티브
 }
 
 /** text-[...] 중 '길이 값'만. var()·#hex·calc()는 폰트 크기가 아니므로 제외된다. */
@@ -63,6 +52,7 @@ const INLINE_FONT_SIZE = /\bfontSize\s*:\s*(['"`]?)(\d[\d.]*(?:px|rem|em|pt)?)\1
 
 /** px 기준 스케일 토큰. 안내에 '가장 가까운 토큰'을 찍어주려고 쓴다. */
 const SCALE = [
+  { token: 'text-micro', px: 11 },
   { token: 'text-caption', px: 12 },
   { token: 'text-label', px: 14 },
   { token: 'text-body', px: 16 },

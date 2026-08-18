@@ -92,7 +92,7 @@ export function PaymentHistoryTable({
             >
               <TableCell
                 className={cn(
-                  'px-3 py-3.5 font-semibold text-[15px]',
+                  'px-3 py-3.5 font-semibold text-body',
                   isRetro ? 'text-foreground-muted' : 'text-foreground'
                 )}
               >
@@ -106,7 +106,7 @@ export function PaymentHistoryTable({
               </TableCell>
               <TableCell
                 className={cn(
-                  'px-3 py-3.5 text-[15px] tabular-nums',
+                  'px-3 py-3.5 text-body tabular-nums',
                   isRetro ? 'text-foreground-subtle' : 'text-foreground-muted'
                 )}
               >

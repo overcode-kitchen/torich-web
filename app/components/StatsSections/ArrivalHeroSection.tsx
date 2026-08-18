@@ -77,7 +77,7 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
               className="h-7 w-7 shrink-0 object-contain"
             />
           )}
-          <h2 className="min-w-0 flex-1 truncate text-[15px] font-bold tracking-tight text-foreground">
+          <h2 className="min-w-0 flex-1 truncate text-body font-bold tracking-tight text-foreground">
             {goal.name}
           </h2>
           <span className="shrink-0 text-caption font-semibold text-foreground-subtle tabular-nums">
@@ -87,12 +87,12 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
 
         {/* 큰 숫자는 하나 — 달성 예정 월 */}
         {arrival.arrivalDate ? (
-          <p className="mt-3 text-[26px] font-extrabold leading-none tracking-tight text-foreground tabular-nums">
+          <p className="mt-3 text-title font-extrabold leading-none tracking-tight text-foreground tabular-nums">
             {arrivalMonthLabel(arrival.arrivalDate)}
             <span className="ml-1.5 text-label font-bold text-foreground-muted">달성 예정</span>
           </p>
         ) : (
-          <p className="mt-3 text-lg font-bold leading-snug tracking-tight text-foreground">
+          <p className="mt-3 text-heading font-bold leading-snug tracking-tight text-foreground">
             달성 시점을 아직 알 수 없어요
           </p>
         )}

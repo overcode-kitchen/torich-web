@@ -28,7 +28,7 @@ export function UnlinkedRecordsSection({
   return (
     <section className="py-6 border-t border-border-subtle-lighter">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold tracking-tight text-foreground">
+        <h3 className="text-heading font-semibold tracking-tight text-foreground">
           묶을 수 있는 적립 항목
         </h3>
         <p className="text-caption text-foreground-muted mt-1">

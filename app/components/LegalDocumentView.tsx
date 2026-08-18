@@ -18,7 +18,7 @@ export default function LegalDocumentView({ title, sections, onBack }: LegalDocu
                 {sections.map((section, index) => (
                     <section key={`legal-section-${index}`}>
                         {section.heading && (
-                            <h2 className="text-lg font-semibold tracking-tight text-foreground mb-3">
+                            <h2 className="text-heading font-semibold tracking-tight text-foreground mb-3">
                                 {section.heading}
                             </h2>
                         )}

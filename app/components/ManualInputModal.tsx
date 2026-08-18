@@ -41,7 +41,7 @@ export default function ManualInputModal({
 
         {/* 헤더 */}
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-foreground">적립할 항목 직접 입력</h2>
+          <h2 className="text-heading font-semibold text-foreground">적립할 항목 직접 입력</h2>
         </div>
 
         <div className="space-y-4 py-4">

@@ -12,6 +12,7 @@ import { extendTailwindMerge } from "tailwind-merge"
  * `scripts/check-font-token-sync.mjs`가 커밋 시점에 그 일치를 강제한다.
  */
 export const FONT_SIZE_TOKENS = [
+  'micro',
   'caption',
   'label',
   'body',

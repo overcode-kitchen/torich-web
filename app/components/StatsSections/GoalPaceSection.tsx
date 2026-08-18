@@ -83,7 +83,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                 className="w-full rounded-2xl bg-card p-5 text-left"
               >
                 <div className="mb-3 flex items-center gap-2">
-                  <h3 className="min-w-0 flex-1 truncate text-[17px] font-bold tracking-tight text-foreground">
+                  <h3 className="min-w-0 flex-1 truncate text-body font-bold tracking-tight text-foreground">
                     {goal.name}
                   </h3>
                   {dday && <DDayBadge label={dday} />}
@@ -124,7 +124,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                         <span className="text-caption font-bold text-foreground-muted">기한</span>
                         <span className="text-label font-bold text-foreground-soft tabular-nums">
                           {elapsed}%
-                          <span className="ml-0.5 text-[10px] font-medium text-foreground-subtle">지남</span>
+                          <span className="ml-0.5 text-micro font-medium text-foreground-subtle">지남</span>
                         </span>
                       </div>
                       {/* 트랙을 border-subtle로 한 단계 눌러 흰 카드 위에서도 '전체 폭'이 보이게 한다.
@@ -142,7 +142,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
                           style={{ width: `${elapsed}%` }}
                         />
                       </div>
-                      <div className="mt-2 text-[11px] font-semibold text-foreground-subtle">
+                      <div className="mt-2 text-micro font-semibold text-foreground-subtle">
                         {maturityLabel(goal.target_date)} 만기
                       </div>
                     </div>

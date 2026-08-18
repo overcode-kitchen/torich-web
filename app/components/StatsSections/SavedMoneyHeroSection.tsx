@@ -87,7 +87,7 @@ export default function SavedMoneyHeroSection({
       </div>
 
       <MaskedAmount visible={amountsVisible} variant="coins">
-        <p className="text-[28px] font-extrabold leading-none tracking-tight text-foreground tabular-nums">
+        <p className="text-display font-extrabold leading-none tracking-tight text-foreground tabular-nums">
           {formatCurrency(totalPaidPrincipal)}
         </p>
       </MaskedAmount>

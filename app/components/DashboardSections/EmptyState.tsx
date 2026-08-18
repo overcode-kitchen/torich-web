@@ -24,7 +24,7 @@ export default function EmptyState() {
   return (
     <div className="bg-card rounded-3xl p-10 flex flex-col items-center text-center gap-6">
       <div className="space-y-2">
-        <p className="text-lg font-bold text-foreground">
+        <p className="text-heading font-bold text-foreground">
           무엇을 위해 모으고 있나요?
         </p>
         <p className="text-label text-muted-foreground">
