@@ -38,7 +38,7 @@ export default function GoalActionSheet({
   if (!isOpen || typeof document === 'undefined') return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex flex-col justify-end">
+    <div data-overlay className="fixed inset-0 z-[60] flex flex-col justify-end">
       {/* 오버레이 */}
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
 

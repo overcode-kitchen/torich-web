@@ -41,7 +41,7 @@ export default function DeleteConfirmModal({
   // 조상 안에서 렌더되는 경우가 많아, 그대로 두면 z-[60]이 그 컨텍스트에 갇혀
   // 헤더(z-30)·다른 카드 뒤로 dim이 깔리고 바깥 영역에 터치가 새어 나간다.
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+    <div data-overlay className="fixed inset-0 z-[60] flex items-center justify-center">
       {/* 오버레이 */}
       <div 
         className="fixed inset-0 bg-black/50"
