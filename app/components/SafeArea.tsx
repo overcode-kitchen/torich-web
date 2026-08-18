@@ -16,9 +16,25 @@ interface SafeAreaProps {
    * - false/undefined: 기본 상단 safe area + 여백 적용
    */
   disableTopPadding?: boolean
+  /**
+   * 하단 Safe Area 패딩을 비활성화할지 여부
+   * - true: 하단 padding-bottom을 적용하지 않음 (화면 자체 스캐폴드가 처리)
+   * - false/undefined: 기본 하단 safe area + 여백 적용
+   *
+   * 하단 탭이 없는(hasBottomNav=false) 서브페이지에서, 화면이 이미 자체적으로 하단 여백을
+   * 넣는데 여기서 또 붙으면 세 가지가 한꺼번에 깨진다 — 패딩 중복 / 자식보다 큰 높이로 body
+   * 스크롤 발생 / SafeArea 배경(bg-surface)이 자식 배경 밖으로 삐져나와 색 띠 노출.
+   */
+  disableBottomPadding?: boolean
 }
 
-export default function SafeArea({ children, hasBottomNav, className, disableTopPadding }: SafeAreaProps) {
+export default function SafeArea({
+  children,
+  hasBottomNav,
+  className,
+  disableTopPadding,
+  disableBottomPadding,
+}: SafeAreaProps) {
   return (
     <div
       // SafeArea 자체에 배경색을 지정하면, 상단 padding 영역까지 같은 색으로 채워져서
@@ -31,7 +47,10 @@ export default function SafeArea({ children, hasBottomNav, className, disableTop
       // 렌더가 달라져 하이드레이션 불일치가 나므로, JS 분기 없이 CSS env로만 처리한다.
       style={{
         paddingTop: disableTopPadding ? undefined : 'calc(env(safe-area-inset-top, 0px) + 16px)',
-        paddingBottom: hasBottomNav ? undefined : 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
+        paddingBottom:
+          hasBottomNav || disableBottomPadding
+            ? undefined
+            : 'calc(env(safe-area-inset-bottom, 0px) + 24px)',
       }}
     >
       {children}

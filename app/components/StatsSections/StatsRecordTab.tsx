@@ -59,9 +59,9 @@ export default function StatsRecordTab({ data, payment, filter, chart }: StatsRe
   if (!data.hasRecords) {
     return (
       <StatsEmptyCard
-        title="아직 투자 기록이 없어요"
-        description="첫 투자를 등록하고 매달 적립을 챙겨보세요."
-        actionLabel="첫 투자 등록하기"
+        title="아직 적립 항목이 없어요"
+        description="첫 적립 항목을 등록하고 매달 챙겨보세요."
+        actionLabel="첫 적립 항목 등록하기"
         onAction={() => router.push('/add')}
       />
     )

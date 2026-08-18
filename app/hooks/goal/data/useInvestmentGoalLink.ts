@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { useCallback, useState } from 'react'
+import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 
 export interface UseInvestmentGoalLinkReturn {
   linkRecordToGoal: (recordId: string, goalId: string | null) => Promise<void>
@@ -9,26 +9,22 @@ export interface UseInvestmentGoalLinkReturn {
 }
 
 /**
- * 단일 record의 goal_id를 set/null로 업데이트하는 가벼운 훅.
- * useInvestmentsUpdate.validColumns에 'goal_id'가 추가되어 있어 안전.
+ * 적립 항목 하나를 목적에 묶거나(goalId) 푼다(null).
+ *
+ * 반드시 `InvestmentsContext`의 `updateInvestment`를 거친다. 예전에는 여기서
+ * supabase를 직접 호출해 DB만 바꿨고, 그 결과 메인·통계·캘린더가 읽는 context는
+ * 옛 `goal_id`를 그대로 들고 있었다 (#162). `goal_id`는 UPDATABLE_COLUMNS에
+ * 있으므로 DB와 로컬 상태가 함께 갱신된다.
  */
-export function useInvestmentGoalLink(
-  userId: string | undefined,
-): UseInvestmentGoalLinkReturn {
-  const supabase = useMemo(() => createClient(), [])
+export function useInvestmentGoalLink(): UseInvestmentGoalLinkReturn {
+  const { updateInvestment } = useInvestmentsContext()
   const [isLinking, setIsLinking] = useState<boolean>(false)
 
   const linkRecordToGoal = useCallback(
     async (recordId: string, goalId: string | null): Promise<void> => {
-      if (!userId) return
       setIsLinking(true)
       try {
-        const { error } = await supabase
-          .from('records')
-          .update({ goal_id: goalId })
-          .eq('id', recordId)
-          .eq('user_id', userId)
-        if (error) throw error
+        await updateInvestment(recordId, { goal_id: goalId })
       } catch (e) {
         console.error('linkRecordToGoal failed:', e)
         throw e
@@ -36,7 +32,7 @@ export function useInvestmentGoalLink(
         setIsLinking(false)
       }
     },
-    [userId, supabase],
+    [updateInvestment],
   )
 
   return { linkRecordToGoal, isLinking }

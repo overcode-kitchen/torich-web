@@ -15,6 +15,8 @@ export type Market = 'KR' | 'US'
 
 export type SearchApiResponse = {
   stocks?: SearchResult[]
+  /** 상위 N건으로 잘려 더 있는 결과가 남았는지 (구버전 서버 응답엔 없다) */
+  hasMore?: boolean
 }
 
 export type StockApiResponse = Partial<StockDetail> & {
@@ -24,6 +26,7 @@ export type StockApiResponse = Partial<StockDetail> & {
 export type UseStockSearchReturn = {
   isSearching: boolean
   searchResults: SearchResult[]
+  hasMoreResults: boolean
   searchFetchFailed: boolean
   retrySearch: () => void
   showDropdown: boolean

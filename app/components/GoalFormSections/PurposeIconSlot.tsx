@@ -57,12 +57,13 @@ export default function PurposeIconSlot({
         </button>
       </div>
 
-      <PurposeIconPickerSheet
-        isOpen={open}
-        value={value}
-        onClose={() => setOpen(false)}
-        onApply={(iconKey) => onChange(iconKey)}
-      />
+      {open && (
+        <PurposeIconPickerSheet
+          value={value}
+          onClose={() => setOpen(false)}
+          onApply={(iconKey) => onChange(iconKey)}
+        />
+      )}
     </>
   )
 }

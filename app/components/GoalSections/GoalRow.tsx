@@ -120,7 +120,7 @@ export function GoalRow({
         onConfirm={swipe.onDeleteConfirm}
         isDeleting={swipe.isSubmitting}
         title={`'${goal.name}' 정리`}
-        description="목적을 정리하면 묶였던 투자는 자유 상태로 돌아갑니다."
+        description="목적을 정리하면 묶였던 적립 항목은 자유 상태로 돌아갑니다."
       />
     </>
   )

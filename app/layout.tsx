@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import AppLayout from "./components/AppLayout";
 import BootGate from "./components/BootGate";
@@ -82,7 +82,7 @@ export default function RootLayout({
                     <AppLayout>{children}</AppLayout>
                   </PaymentHistoryProvider>
                 </InvestmentsProvider>
-                <Toaster richColors position="top-center" closeButton />
+                <Toaster />
               </NotificationProvider>
               {process.env.NEXT_PUBLIC_GA_ID && (
                 <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />

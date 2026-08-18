@@ -50,11 +50,14 @@ export interface UseUnsavedChangesGuardReturn {
   /** 다이얼로그의 "계속하기" */
   cancelExit: () => void
   /**
-   * 저장처럼 스스로 화면을 옮기는 동작을 감쌀 때 쓴다.
-   * 감시 항목을 먼저 걷어내고 실행하므로 히스토리에 빈 항목이 남지 않는다.
-   * 동작이 끝났는데 화면에 그대로 남아 있으면(저장 실패·모달 취소) 감시를 복구한다.
+   * 저장이 끝나 스스로 화면을 옮길 때 쓴다.
+   * 감시 항목을 걷어낸 **뒤에** navigate를 실행하므로 히스토리에 빈 항목이 남지 않고,
+   * navigate가 `router.back()`이어도 되감을 칸을 잘못 세지 않는다.
+   *
+   * 저장하기 전에 미리 걷어내지 않는 게 핵심이다. 저장이 실패해 화면에 남는 경우
+   * 이 함수를 호출하지 않으면 그만이라, 감시를 "복구"할 일 자체가 생기지 않는다.
    */
-  runWithoutGuard: <T>(action: () => T | Promise<T>) => Promise<T>
+  exitWith: (navigate: () => void) => void
 }
 
 /**
@@ -96,6 +99,9 @@ export function useUnsavedChangesGuard({
   // 감시 항목을 걷어낸 popstate 직후에 실행할 동작.
   const pendingActionRef = useRef<(() => void) | null>(null)
   const guardActiveRef = useRef<boolean>(false)
+  // 떠나기로 확정됐는지. 이 뒤에 오는 popstate는 우리가 일으킨 이동이라
+  // 감시를 다시 심으면 안 된다. (심으면 도착한 화면 위에 빈 항목이 얹힌다)
+  const leavingRef = useRef<boolean>(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -111,6 +117,8 @@ export function useUnsavedChangesGuard({
         pending()
         return
       }
+      // 이동 중에 뒤따라 오는 popstate는 흘려보낸다.
+      if (leavingRef.current) return
       // 사용자가 뒤로가기를 눌러 감시 항목이 빠졌다. 화면은 그대로 두고 확인만 띄운다.
       pushGuardEntry()
       setIsConfirmOpen(true)
@@ -148,15 +156,21 @@ export function useUnsavedChangesGuard({
     }
   }, [isDirty])
 
-  const exitNow = useCallback((): void => {
-    const exit = (): void => onExitRef.current()
+  const exitWith = useCallback((navigate: () => void): void => {
+    leavingRef.current = true
     if (guardActiveRef.current && hasGuardEntry()) {
-      pendingActionRef.current = exit
+      // 감시 항목을 되감고, 그게 실제로 반영된 popstate 다음에 이동한다.
+      // 먼저 이동시키면 두 히스토리 조작이 겹쳐 되감을 칸 수가 어긋난다.
+      pendingActionRef.current = navigate
       window.history.back()
       return
     }
-    exit()
+    navigate()
   }, [])
+
+  const exitNow = useCallback((): void => {
+    exitWith(() => onExitRef.current())
+  }, [exitWith])
 
   const requestExit = useCallback((): void => {
     if (isDirty) {
@@ -175,39 +189,12 @@ export function useUnsavedChangesGuard({
     setIsConfirmOpen(false)
   }, [])
 
-  const runWithoutGuard = useCallback(
-    async <T,>(action: () => T | Promise<T>): Promise<T> => {
-      const hrefBefore = typeof window === 'undefined' ? '' : window.location.href
-
-      if (guardActiveRef.current && hasGuardEntry()) {
-        await new Promise<void>((resolve) => {
-          pendingActionRef.current = resolve
-          window.history.back()
-        })
-      }
-
-      const result = await action()
-
-      // 화면에 그대로 남아 있고(저장 실패·확인 모달 취소) 여전히 작성 중이면 감시를 복구한다.
-      if (
-        guardActiveRef.current &&
-        typeof window !== 'undefined' &&
-        window.location.href === hrefBefore &&
-        !hasGuardEntry()
-      ) {
-        pushGuardEntry()
-      }
-      return result
-    },
-    [],
-  )
-
   return {
     isDirty,
     isConfirmOpen,
     requestExit,
     confirmExit,
     cancelExit,
-    runWithoutGuard,
+    exitWith,
   }
 }

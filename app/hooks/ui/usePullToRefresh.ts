@@ -58,6 +58,13 @@ export function usePullToRefresh({
 
     const handleTouchStart = (e: TouchEvent) => {
       if (isRefreshingRef.current) return
+      // 오버레이 안에서 시작한 터치는 당김으로 보지 않는다.
+      // 리스너가 document에 달려 있고 isAtTop()은 뒤 화면(스크롤 0에 멈춘)만 보므로,
+      // 가드가 없으면 시트를 스크롤할 때마다 뒤 홈이 새로고침되고
+      // touchmove의 preventDefault가 시트 내부 스크롤까지 막는다.
+      // 호출부 disabled가 아니라 여기서 막아야 새 오버레이를 추가해도 재발하지 않는다.
+      // createPortal로 body에 그려진 오버레이도 closest()는 DOM 트리를 타므로 잡힌다.
+      if ((e.target as Element | null)?.closest?.('[data-overlay]')) return
       if (!isAtTop()) return
       startYRef.current = e.touches[0].clientY
       isPullingRef.current = true

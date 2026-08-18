@@ -188,8 +188,22 @@ export default function MonthlyTrendSection({
     handleCustomPeriod()
   }
 
-  // 추세로 볼 만한 데이터(2개월 이상 납입 활동)가 있는지 — 없으면 빈 차트 대신 안내.
-  const hasTrend = !!consistency && consistency.activeMonths >= 2
+  // 선택한 기간이 덮는 개월 수. '이번 달'이나 한 달 안쪽 기간 선택이면 1이다.
+  const windowMonths = chartData.length
+
+  // 추세는 2개월 이상 쌓여야 읽히지만, 한 달짜리 기간은 사용자가 직접 고른 것이다.
+  // 그 창에까지 2개월을 요구하면 기록이 있어도 영영 "다음 달부터 쌓여요"만 나와,
+  // 있는 기록을 없다고 말하게 된다. 한 달 창에서는 그 달에 활동이 있으면 막대 하나라도 그린다.
+  const minActiveMonths = windowMonths <= 1 ? 1 : 2
+  const showChart = !!consistency && consistency.activeMonths >= minActiveMonths
+
+  // 안내 문구도 창 길이에 맞춘다 — 한 달 창에서 비었다면 '아직 안 쌓인' 게 아니라 '그 달에 없는' 것이다.
+  const emptyMessage =
+    windowMonths <= 1
+      ? periodPreset === '1'
+        ? '이번 달에는 아직 적립 기록이 없어요.'
+        : '선택한 기간에는 적립 기록이 없어요.'
+      : '다음 달부터 월별 적립 기록이 쌓여요.'
 
   return (
     <div>
@@ -226,7 +240,7 @@ export default function MonthlyTrendSection({
         </div>
       )}
 
-      {hasTrend ? (
+      {showChart ? (
         <>
           {/* 차트 위 문장 0줄 — 스트릭·기간 중 N개월 100%·가장 잘한 달은 전부 걷어냈다.
               연속 적립은 기간 필터에 흔들리지 않는 hero(StreakHeroSection)가 이어받는다. */}
@@ -301,10 +315,8 @@ export default function MonthlyTrendSection({
           )}
         </>
       ) : (
-        // 추세를 그릴 만큼 쌓이지 않은 신규/단월 상태 — 빈 차트 대신 격려 문구.
-        <p className="text-label text-muted-foreground py-6 text-center">
-          다음 달부터 월별 적립 기록이 쌓여요.
-        </p>
+        // 그릴 게 없는 상태 — 빈 차트 대신 안내. 창 길이에 따라 문구가 갈린다(위 emptyMessage).
+        <p className="text-label text-muted-foreground py-6 text-center">{emptyMessage}</p>
       )}
     </div>
   )

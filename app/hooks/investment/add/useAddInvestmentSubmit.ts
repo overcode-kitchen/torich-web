@@ -40,6 +40,13 @@ export interface UseAddInvestmentSubmitProps {
   recordId?: string
   /** edit 모드 원본 record — 저장 시 폼으로 복원 불가한 값(종목코드·사용자지정 수익률) 보존용 */
   initData?: Investment | null
+  /**
+   * 저장에 성공해 이 화면을 떠날 때 호출한다. 라우팅은 페이지가 책임진다.
+   * - `null`: 들어온 자리로 되감기(편집 저장). 새 엔트리를 얹으면 복귀 화면의 ←가
+   *   방금 나온 수정 화면을 다시 연다.
+   * - 경로 문자열: 그 화면으로 자리를 갈아끼우며 이동(신규 저장).
+   */
+  onFinish: (href: string | null) => void
 }
 
 export interface UseAddInvestmentSubmitReturn {
@@ -67,6 +74,7 @@ export function useAddInvestmentSubmit({
   mode = 'create',
   recordId,
   initData,
+  onFinish,
 }: UseAddInvestmentSubmitProps): UseAddInvestmentSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
@@ -143,7 +151,7 @@ export function useAddInvestmentSubmit({
           has_rate: annualRate > 0,
         })
 
-        router.push(`/investment?id=${recordId}`)
+        onFinish(null)
         return
       }
 
@@ -193,9 +201,9 @@ export function useAddInvestmentSubmit({
       const isPastStartDate = startDate < currentMonthStart
 
       if (isPastStartDate) {
-        router.push(`/investment?id=${inserted.id}&retroHint=1`)
+        onFinish(`/investment?id=${inserted.id}&retroHint=1`)
       } else {
-        router.push('/')
+        onFinish('/')
       }
     } catch {
       toastError(TOAST_MESSAGES.updateSaveFailed)
@@ -224,6 +232,8 @@ export function useAddInvestmentSubmit({
     router,
     addInvestment,
     updateInvestment,
+    initData,
+    onFinish,
   ])
 
   return {

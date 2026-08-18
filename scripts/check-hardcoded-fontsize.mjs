@@ -37,8 +37,9 @@ const ALLOWLIST = [
  */
 const BASELINE = {
   // Phase 2(#134)에서 실화면 임의 px 27곳 + text-lg 23곳을 토큰으로 전환하며 18항목 제거.
-  // 남은 7건은 실화면 className이 아니다 — 차트 라이브러리 인라인 fontSize, 스타일가이드 데모,
-  // components/ui 프리미티브. 별도 판단 후 정리한다.
+  // integration 병합 뒤 실측한 잔여는 아래 7건뿐이고, 셋 다 실화면 className이 아니다 —
+  // 차트 라이브러리 인라인 fontSize, 스타일가이드 데모, components/ui 프리미티브.
+  // 별도 판단 후 정리한다.
   'app/components/StatsSections/MonthlyTrendSection.tsx': 1, // Recharts tick fontSize (차트 API)
   'app/components/design-system/DashboardListRowsPatternSection.tsx': 4, // 스타일가이드 데모
   'components/ui/calendar.tsx': 2, // shadcn 프리미티브

@@ -33,6 +33,7 @@ export interface UseAddInvestmentFormReturn {
   // 주식 검색 관련
   isSearching: boolean
   searchResults: SearchResult[]
+  hasMoreResults: boolean
   searchFetchFailed: boolean
   retrySearch: () => void
   showDropdown: boolean

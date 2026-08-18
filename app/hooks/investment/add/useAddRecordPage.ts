@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAddInvestmentForm } from './useAddInvestmentForm'
 import { useSavingsCashSubmit } from './useSavingsCashSubmit'
@@ -72,7 +72,23 @@ export function useAddRecordPage() {
   const goalEndDate: string = endDateOverride ?? goalDeadline ?? ''
   const setGoalEndDate = useCallback((v: string) => setEndDateOverride(v), [])
 
+  // 이 화면을 끝냈을 때 돌아갈 자리. 편집은 들어온 항목 상세, 신규는 홈이다.
+  // (되감을 히스토리가 없는 직접 진입에만 쓰이는 폴백이다.)
+  const { goBack: leaveFlow } = useFlowBack({
+    rootPath: editId ? `/investment?id=${editId}` : '/',
+  })
+  const { goBack: goBackToRoot } = useFlowBack({ rootPath: '/' })
+
+  // 저장이 끝나면 이탈 감시를 먼저 걷어낸 뒤 화면을 옮긴다.
+  // 편집(href=null)은 새 엔트리를 얹지 않고 되감는다. 얹으면 복귀한 항목 상세의 ←가
+  // 방금 나온 수정 화면을 그대로 다시 연다.
+  const finishFlowRef = useRef<((href: string | null) => void) | null>(null)
+  const finishFlow = useCallback((href: string | null): void => {
+    finishFlowRef.current?.(href)
+  }, [])
+
   const investmentForm = useAddInvestmentForm({
+    onFinish: finishFlow,
     goalId,
     goalHasDeadline: !!goalDeadline,
     goalEndDate,
@@ -82,6 +98,7 @@ export function useAddRecordPage() {
   })
 
   const savingsCashSubmit = useSavingsCashSubmit({
+    onFinish: finishFlow,
     recordType: effectiveRecordType === 'cash' ? 'cash' : 'savings',
     title: formState.title,
     monthlyAmount: formState.monthlyAmount,
@@ -130,8 +147,6 @@ export function useAddRecordPage() {
     },
   })
 
-  const { goBack: goBackToRoot } = useFlowBack({ rootPath: '/' })
-
   // 이탈 확인: 입력이 실제로 바뀐 경우에만 붙잡는다. (← 버튼·브라우저 뒤로가기 동일 규칙)
   // 편집 모드는 프리필이 끝난 뒤를 기준으로 삼아야 "안 고쳤는데 확인이 뜨는" 오판이 없다.
   const dirtySignature = useMemo(
@@ -178,9 +193,23 @@ export function useAddRecordPage() {
     signature: dirtySignature,
     ready: !isEditMode || !!edit.initData,
     deferBaseline: isEditMode,
-    onExit: goBackToRoot,
+    onExit: leaveFlow,
   })
-  const { runWithoutGuard } = guard
+  const { exitWith } = guard
+
+  // 폼 훅보다 뒤에 만들어지는 guard를 써야 해서, 위에서 넘긴 finishFlow의 실제 구현을
+  // 여기서 채워 넣는다.
+  useEffect(() => {
+    finishFlowRef.current = (href: string | null): void => {
+      exitWith(() => {
+        // 편집: 들어온 자리로 되감는다.
+        // 신규: 되감을 원본이 없으므로 입력 화면 자리를 갈아끼운다.
+        //       push로 얹으면 도착한 화면의 ←가 방금 저장한 입력 화면을 다시 연다.
+        if (href === null) leaveFlow()
+        else router.replace(href)
+      })
+    }
+  }, [exitWith, leaveFlow, router])
 
   // 케이스 A 사전 안내 — 적금 신규/수정 시 묶인 목적의 종료일이 만기보다 빠른지 검사.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
@@ -239,9 +268,9 @@ export function useAddRecordPage() {
     flow,
     investmentForm,
     formState,
-    // 저장은 스스로 화면을 옮기므로 감시 항목을 먼저 걷어내고 실행한다.
-    onSubmitInvestment: () => runWithoutGuard(investmentForm.handleSubmit),
-    onSubmitSavingsCash: () => runWithoutGuard(guardedOnSubmitSavingsCash),
+    // 화면 이동은 저장에 성공했을 때 submit 훅이 onFinish로 알려온다.
+    onSubmitInvestment: investmentForm.handleSubmit,
+    onSubmitSavingsCash: guardedOnSubmitSavingsCash,
     isSubmitting,
   })
 
@@ -258,7 +287,7 @@ export function useAddRecordPage() {
   }, [flow, guard])
 
   const onSkip = goalId && !isEditMode
-    ? () => void runWithoutGuard(() => router.replace('/'))
+    ? () => exitWith(() => router.replace('/'))
     : undefined
 
   const daysPicker = isInvestment ? investmentDaysPicker : savingsCashDaysPicker

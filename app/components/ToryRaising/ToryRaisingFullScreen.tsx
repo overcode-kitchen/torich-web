@@ -18,6 +18,7 @@ import {
 import { type ToryShopCategory, type ToryShopItem } from './ToryRaisingStoreSection'
 import ToryRaisingModal from './ToryRaisingModal'
 import { TORY_SHOP_CATALOG } from './toryShopCatalog'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 const TORY_BUBBLE_LINES = [
   '오늘도 와줘서 고마워!',
@@ -161,6 +162,9 @@ export default function ToryRaisingFullScreen() {
       if (result.modal) setModalPayload(result.modal)
     }
   }
+
+  // 잠금 오버레이(비밀 데모 게이트)가 떠 있는 동안 뒤 화면 스크롤을 막는다
+  useBodyScrollLock(unlockHydrated && !isUnlocked)
 
   if (!toryHydrated && quoteLoading) {
     return (
@@ -439,7 +443,7 @@ export default function ToryRaisingFullScreen() {
 
       {/* 잠금 오버레이(비밀 토큰) */}
       {unlockHydrated && !isUnlocked && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+        <div data-overlay className="fixed inset-0 z-[80] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/45" />
           <div className="relative z-[81] w-full max-w-md rounded-2xl border border-border-subtle bg-card p-6 shadow-lg">
             <div className="flex items-start justify-between gap-4">

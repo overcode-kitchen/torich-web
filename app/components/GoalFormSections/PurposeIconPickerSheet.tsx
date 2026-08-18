@@ -5,38 +5,29 @@ import { useState } from 'react'
 import { Plus, X } from '@phosphor-icons/react'
 import { PURPOSE_ICONS, resolvePurposeIcon } from '@/app/constants/goal'
 import { cn } from '@/lib/utils'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 export interface PurposeIconPickerSheetProps {
-  isOpen: boolean
   value: string
   onClose: () => void
   onApply: (iconKey: string) => void
 }
 
 export default function PurposeIconPickerSheet({
-  isOpen,
   value,
   onClose,
   onApply,
 }: PurposeIconPickerSheetProps) {
-  const [tempKey, setTempKey] = useState<string>('')
-  const [wasOpen, setWasOpen] = useState(false)
+  // 부모가 열릴 때만 마운트하므로 초기값 한 번으로 부모 값과 맞는다.
+  // 열릴 때마다 effect로 setState하던 것을 마운트로 대신한다 (#3 규칙 위반 해소).
+  const [tempKey, setTempKey] = useState<string>(() => resolvePurposeIcon(value)?.key ?? '')
 
-  // 시트가 열리는 순간 부모의 현재 값으로 임시 상태를 맞춘다.
-  // effect 대신 렌더 중 상태 조정(React 권장) — 열린 뒤 부모 값이 바뀌어도 시트 내 선택을 덮지 않는다.
-  if (isOpen !== wasOpen) {
-    setWasOpen(isOpen)
-    if (isOpen) {
-      setTempKey(resolvePurposeIcon(value)?.key ?? '')
-    }
-  }
-
-  if (!isOpen) return null
+  useBodyScrollLock()
 
   const preview = resolvePurposeIcon(tempKey)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div data-overlay className="fixed inset-0 z-50 flex items-end justify-center">
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"
         onClick={onClose}

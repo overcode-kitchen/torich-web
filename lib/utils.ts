@@ -2,17 +2,30 @@ import { clsx, type ClassValue } from "clsx"
 import { extendTailwindMerge } from "tailwind-merge"
 
 /**
- * 커스텀 타입 스케일 토큰을 tailwind-merge가 '폰트 크기'로 인식하도록 등록한다.
- * 등록하지 않으면 tailwind-merge가 text-micro/caption/label/... 을 '색'으로 오인해
- * 같은 cn() 안의 text-<color>(예: text-foreground-soft)와 충돌 처리하여 지워버린다.
- * → 크기 클래스가 사라져 텍스트가 상속 크기(16px)로 렌더되는 버그가 난다.
+ * 이 저장소가 `app/globals.css`의 `@theme`에 정의한 폰트 스케일 토큰(`--text-*`).
+ *
+ * tailwind-merge는 CSS에 정의된 Tailwind v4 테마를 읽지 못한다. 그래서 등록하지 않으면
+ * `text-caption` 같은 토큰을 font-size가 아니라 **text-color로 오인**해,
+ * `cn('text-primary-foreground', 'text-body')` 에서 글자색이 조용히 사라진다(반대로 크기가 사라지기도 한다).
+ *
+ * 이 배열은 `globals.css`의 `--text-*`와 1:1로 같아야 하며,
+ * `scripts/check-font-token-sync.mjs`가 커밋 시점에 그 일치를 강제한다.
  */
+export const FONT_SIZE_TOKENS = [
+  'micro',
+  'caption',
+  'label',
+  'body',
+  'heading',
+  'title',
+  'display',
+  'display-lg',
+] as const
+
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {
-      "font-size": [
-        { text: ["micro", "caption", "label", "body", "heading", "title", "display", "display-lg"] },
-      ],
+      'font-size': [{ text: [...FONT_SIZE_TOKENS] }],
     },
   },
 })

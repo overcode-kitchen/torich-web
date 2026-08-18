@@ -1,9 +1,11 @@
 'use client'
 
+import { useRef } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { MAX_ITEM_NAME_LENGTH } from '@/app/constants/input-limits'
 import { type SearchResult } from '@/app/hooks/stock/useStockSearch'
+import { useDropdownMaxHeight } from '@/app/hooks/ui/useDropdownMaxHeight'
 
 interface StockSearchInputProps {
   stockName: string
@@ -11,6 +13,8 @@ interface StockSearchInputProps {
   market: 'KR' | 'US'
   isSearching: boolean
   searchResults: SearchResult[]
+  /** 결과가 상위 N건으로 잘렸는지 — 더 있다는 사실을 감추지 않기 위해 안내를 띄운다 */
+  hasMoreResults: boolean
   searchFetchFailed: boolean
   onRetrySearch: () => void
   showDropdown: boolean
@@ -25,6 +29,7 @@ export default function StockSearchInput({
   market,
   isSearching,
   searchResults,
+  hasMoreResults,
   searchFetchFailed,
   onRetrySearch,
   showDropdown,
@@ -32,8 +37,13 @@ export default function StockSearchInput({
   onManualInputClick,
   onDropdownClose,
 }: StockSearchInputProps) {
+  // 드롭다운은 하단 고정 CTA 바보다 아래(z-index)에 그려지므로, 높이를 고정하면 끝부분이 덮인다.
+  // 입력창 위치를 기준으로 실제 남은 공간만큼만 펼친다. (#207)
+  const anchorRef = useRef<HTMLDivElement>(null)
+  const dropdownMaxHeight = useDropdownMaxHeight(anchorRef, showDropdown)
+
   return (
-    <div className="relative stock-search-container">
+    <div ref={anchorRef} className="relative stock-search-container">
       <input
         type="text"
         value={stockName}
@@ -53,7 +63,10 @@ export default function StockSearchInput({
 
       {/* 드롭다운 검색 결과 */}
       {showDropdown && searchResults.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle overflow-hidden z-10 max-h-80 overflow-y-auto">
+        <div
+          className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle z-10 overflow-y-auto overscroll-contain"
+          style={{ maxHeight: dropdownMaxHeight }}
+        >
           {searchResults.map((stock) => (
             <button
               key={stock.symbol}
@@ -73,6 +86,13 @@ export default function StockSearchInput({
               </div>
             </button>
           ))}
+
+          {/* 잘린 결과가 남아 있으면 그 사실을 알린다 — 20건 안에 없으면 사용자는 '없다'고 오해한다 */}
+          {hasMoreResults && (
+            <p className="px-5 py-3 text-caption text-muted-foreground text-center border-t border-border-subtle">
+              결과가 더 있어요. 검색어를 더 자세히 입력해 보세요
+            </p>
+          )}
         </div>
       )}
 
@@ -81,7 +101,10 @@ export default function StockSearchInput({
         searchFetchFailed &&
         !isSearching &&
         stockName.trim().length >= 2 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle overflow-hidden z-10">
+          <div
+            className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle z-10 overflow-y-auto overscroll-contain"
+            style={{ maxHeight: dropdownMaxHeight }}
+          >
             <div className="px-5 py-4 text-center space-y-3">
               <p className="text-body text-foreground">
                 지금 검색 결과를 불러오지 못했어요.
@@ -121,7 +144,10 @@ export default function StockSearchInput({
         searchResults.length === 0 &&
         !isSearching &&
         stockName.trim().length >= 2 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle overflow-hidden z-10">
+          <div
+            className="absolute top-full left-0 right-0 mt-2 bg-card rounded-2xl shadow-lg border border-border-subtle z-10 overflow-y-auto overscroll-contain"
+            style={{ maxHeight: dropdownMaxHeight }}
+          >
             <div className="px-5 py-4 text-center">
               <p className="text-body text-muted-foreground mb-3">
                 조건에 맞는 종목이 없어요

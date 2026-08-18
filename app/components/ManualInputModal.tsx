@@ -2,6 +2,7 @@
 
 import { X } from '@phosphor-icons/react'
 import { MAX_ITEM_NAME_LENGTH } from '@/app/constants/input-limits'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface Props {
   isOpen: boolean
@@ -18,10 +19,12 @@ export default function ManualInputModal({
   onStockNameChange,
   onConfirm,
 }: Props) {
+  useBodyScrollLock(isOpen)
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div data-overlay className="fixed inset-0 z-50 flex items-center justify-center">
       {/* 오버레이 */}
       <div className="fixed inset-0 bg-black/50 animate-in fade-in-0" onClick={onClose} />
 
