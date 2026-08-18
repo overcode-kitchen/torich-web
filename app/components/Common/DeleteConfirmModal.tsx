@@ -1,6 +1,7 @@
 'use client'
 
 import { createPortal } from 'react-dom'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface DeleteConfirmModalProps {
   isOpen: boolean
@@ -28,6 +29,8 @@ export default function DeleteConfirmModal({
   confirmLabel = '삭제',
   confirmingLabel = '삭제 중...',
 }: DeleteConfirmModalProps) {
+  useBodyScrollLock(isOpen)
+
   // 정적 export(prerender) 단계엔 document가 없다. 모든 호출부가 isOpen=false로 시작하므로
   // 이 가드로 하이드레이션 불일치 없이 서버 렌더만 건너뛴다.
   if (!isOpen || typeof document === 'undefined') return null

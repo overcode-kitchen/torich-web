@@ -5,6 +5,7 @@ import { ko } from 'date-fns/locale'
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 export interface MaturityMismatchConfirmModalProps {
   isOpen: boolean
@@ -43,13 +44,15 @@ export default function MaturityMismatchConfirmModal({
   onCancel,
   isProcessing = false,
 }: MaturityMismatchConfirmModalProps) {
+  useBodyScrollLock(isOpen)
+
   if (!isOpen) return null
 
   const goalDateLabel = formatDate(goalTargetDate)
   const recordDateLabel = formatDate(recordMaturityDate)
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+    <div data-overlay className="fixed inset-0 z-[60] flex items-center justify-center">
       <div
         className="fixed inset-0 bg-black/50"
         onClick={() => {

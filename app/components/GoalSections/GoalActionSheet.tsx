@@ -2,6 +2,7 @@
 
 import { createPortal } from 'react-dom'
 import { PencilSimple, Archive, Trash } from '@phosphor-icons/react'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface GoalActionSheetProps {
   isOpen: boolean
@@ -33,6 +34,8 @@ export default function GoalActionSheet({
   onArchive,
   onDelete,
 }: GoalActionSheetProps) {
+  useBodyScrollLock(isOpen)
+
   // 정적 export(prerender) 단계엔 document가 없다. 모든 호출부가 isOpen=false로
   // 시작하므로 이 가드로 하이드레이션 불일치 없이 서버 렌더만 건너뛴다.
   if (!isOpen || typeof document === 'undefined') return null

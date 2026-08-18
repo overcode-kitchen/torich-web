@@ -1,5 +1,7 @@
 'use client'
 
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
+
 interface BulkCompleteRetroactiveModalProps {
   isOpen: boolean
   count: number
@@ -15,10 +17,12 @@ export default function BulkCompleteRetroactiveModal({
   onConfirm,
   isPending,
 }: BulkCompleteRetroactiveModalProps) {
+  useBodyScrollLock(isOpen)
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+    <div data-overlay className="fixed inset-0 z-[60] flex items-center justify-center">
       <div
         className="fixed inset-0 bg-black/50"
         onClick={() => {
