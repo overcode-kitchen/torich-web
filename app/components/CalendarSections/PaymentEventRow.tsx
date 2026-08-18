@@ -12,6 +12,12 @@ interface PaymentEventRowProps {
   event: PaymentEvent
   investment?: Investment
   isCompleted: boolean
+  /**
+   * 소급 구간(자동 추적 시작 이전)의 회차.
+   * 저장 키가 달라 캘린더에서 자동 추적으로 기록하면 안 되고,
+   * 기록·해제 모두 상세 납입 기록 표에서만 한다.
+   */
+  isRetroactive?: boolean
   isPostponed: boolean
   onClick: () => void
   onComplete: () => void
@@ -25,6 +31,7 @@ export function PaymentEventRow({
   event,
   investment,
   isCompleted,
+  isRetroactive = false,
   isPostponed,
   onClick,
   onComplete,
@@ -79,7 +86,42 @@ export function PaymentEventRow({
       </div>
       {/* 버튼은 항상 하나의 우측 클러스터로 묶어 오른쪽 정렬을 유지한다. */}
       <div className="flex shrink-0 items-center gap-2">
-        {isCompleted ? (
+        {isRetroactive && isCompleted ? (
+          // 소급은 record-월 단위 기록이라 하루치만 취소하는 개념이 성립하지 않는다.
+          // 되돌리기 경로가 상세 납입 기록 표 하나뿐이라, 여기서는 토글 대신 그리로 보낸다.
+          // 모양은 아래 완료 버튼과 같은 규격을 쓴다 — 완료 상태가 둘로 보이면 안 된다.
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            className="shrink-0 gap-1 px-3 text-muted-foreground"
+            onClick={(ev) => {
+              ev.stopPropagation()
+              onClick()
+            }}
+            aria-label="소급 완료 — 납입 기록에서 해제"
+          >
+            <Check className="h-3.5 w-3.5" weight="bold" />
+            완료
+          </Button>
+        ) : isRetroactive ? (
+          // 소급 구간의 미기록 회차. 여기서 완료를 누르면 자동 추적 키로 저장돼
+          // 상세 소급 표에는 안 보이고, 나중에 거기서 또 기록하면 두 벌이 된다.
+          // 미룸도 소급에는 없는 개념이라, 기록할 수 있는 곳으로 보내기만 한다.
+          <Button
+            type="button"
+            variant="soft"
+            size="xs"
+            className="shrink-0 px-3"
+            onClick={(ev) => {
+              ev.stopPropagation()
+              onClick()
+            }}
+            aria-label="소급 기록하기 — 납입 기록으로 이동"
+          >
+            소급 기록
+          </Button>
+        ) : isCompleted ? (
           // 홈(GoalGroupItemRow)과 동일하게 ghost 버튼 + 체크 아이콘 + '완료' 텍스트로 통일하고,
           // 다시 누르면 미완료로 되돌린다.
           <Button

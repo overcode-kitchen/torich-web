@@ -6,6 +6,7 @@ import type { PaymentEvent } from '@/app/utils/stats'
 import type { Investment } from '@/app/types/investment'
 import { buildMonthDayGroups, formatGroupLabel } from '@/app/utils/calendar-agenda'
 import { PaymentEventRow } from './PaymentEventRow'
+import { isRetroactiveMonth } from '@/app/utils/payment-history'
 
 interface MonthAgendaSectionProps {
   year: number
@@ -88,6 +89,14 @@ export function MonthAgendaSection({
     router.push(`/investment?id=${investmentId}`)
   }
 
+  // 소급 구간 판정은 상세 납입 기록 표와 같은 규칙(isRetroactiveMonth)을 쓴다.
+  // 여기서만 다르게 답하면 캘린더가 소급 구간에 자동 추적 키로 기록해 이중 계상이 생긴다.
+  const isRetroactiveEvent = (e: PaymentEvent): boolean => {
+    const inv = investmentMap.get(e.investmentId)
+    if (!inv) return false
+    return isRetroactiveMonth(e.year, e.month, inv.start_date ?? inv.created_at, inv.created_at)
+  }
+
   return (
     <div ref={rootRef}>
       {dayGroups.map(({ date, dayKey, events }) => {
@@ -125,6 +134,7 @@ export function MonthAgendaSection({
                   event={e}
                   investment={investmentMap.get(e.investmentId)}
                   isCompleted={isEventCompleted(e)}
+                  isRetroactive={isRetroactiveEvent(e)}
                   isPostponed={isEventPostponed(e)}
                   onClick={() => goToDetail(e.investmentId)}
                   onComplete={() => handleComplete(e)}
