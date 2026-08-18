@@ -16,7 +16,16 @@ export default function NotificationProvider({
     const { user } = useAuth();
     const { registerFCMToken } = useFCMToken();
     const userRef = useRef(user);
-    userRef.current = user;
+    /**
+     * 최신 user를 ref에 담아 둔다. 렌더 중에 쓰면 React 규칙 위반이라 커밋 후
+     * effect에서 넣는다. 아래 등록 effect가 user 객체 전체를 필요로 하지만
+     * 토큰 갱신 등으로 객체 신원만 바뀔 때마다 재실행되면 권한 프롬프트
+     * 이벤트가 반복 발화하므로, 의존성은 user.id로 두고 값은 ref로 읽는다.
+     * 선언 순서상 이 effect가 먼저 돌아 등록 effect는 항상 최신 값을 본다.
+     */
+    useEffect(() => {
+        userRef.current = user;
+    });
 
     /**
      * 리스너 등록을 시도했는지 (성공·실패 무관).
