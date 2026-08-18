@@ -118,7 +118,7 @@ export default function GoalGroupSection({ records }: GoalGroupSectionProps) {
   // 보여줄 게 아무것도 없는 최초 로딩에서만 골격을 그린다.
   if (isLoading && groups.length === 0 && unassignedRecords.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <GoalGroupSkeleton />
         {addGoalButton}
       </div>
