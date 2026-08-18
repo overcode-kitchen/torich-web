@@ -65,7 +65,7 @@ export default function GoalPaceSection({ arrivals }: GoalPaceSectionProps) {
         <ul className="flex flex-col gap-3">
         {arrivals.map((arrival, index) => {
           const { goal, progress } = arrival
-          const achieved = progress.progressPercent ?? 0
+          const achieved = progress.displayPercent ?? 0
           const elapsed = elapsedPercent(goal.created_at, goal.target_date)
           const dday = dDayLabel(progress.dDay)
           // 이미 목표를 채운 목적은 '달성 예정'이 성립하지 않고, 월 적립이 없으면 계산 자체가 안 된다

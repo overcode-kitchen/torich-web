@@ -91,8 +91,8 @@ export function GoalRow({
                 </h3>
                 <p className="truncate text-label text-muted-foreground">
                   현재 {fmt(progress.currentValue)}원
-                  {progress.progressPercent !== null &&
-                    ` · ${progress.progressPercent}%`}
+                  {progress.displayPercent !== null &&
+                    ` · ${progress.displayPercent}%`}
                 </p>
               </div>
             </div>

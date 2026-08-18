@@ -97,7 +97,7 @@ export function GoalGroupCard({
 }: GoalGroupCardProps) {
   const name = goal?.name ?? fallbackName ?? '목적 미지정'
   const dDay = dDayLabel(progress?.dDay ?? null)
-  const percent = progress?.progressPercent ?? null
+  const percent = progress?.displayPercent ?? null
   const icon = resolvePurposeIcon(goal?.emoji)
   const isPendingSettlement = status === 'pending_settlement'
   // 완료(기간 종료 포함) 목적: 적립 추가 유도는 접고, 카드 하단에 가벼운 "보관하기" 액션만 남긴다.

@@ -113,11 +113,22 @@ function calculateGoalProgress(
   const dDay = targetDate ? diffDays(today, targetDate) : null
   const isCompleted = hasTarget && currentValue >= goal.target_amount
 
+  // 화면에 찍는 값. 바는 이미 0~100으로 클램프되는데 숫자만 안 해서
+  // "바는 꽉 찼는데 490%"가 나왔다. 반대로 Math.round는 99.6%를 100%로 올려
+  // "100%인데 완료가 아닌" 화면을 만든다 — 달성 전에는 내림으로 둔다.
+  const displayPercent =
+    progressPercent === null
+      ? null
+      : isCompleted
+        ? 100
+        : Math.max(0, Math.min(99, Math.floor((currentValue / goal.target_amount) * 100)))
+
   return {
     goalId: goal.id,
     currentValue: Math.round(currentValue),
     projectedValue: projectedValue !== null ? Math.round(projectedValue) : null,
     progressPercent,
+    displayPercent,
     projectedProgressPercent,
     dDay,
     isCompleted,

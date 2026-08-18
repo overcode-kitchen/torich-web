@@ -52,7 +52,7 @@ export default function ArrivalHeroSection({ arrival }: { arrival: GoalArrival }
 
   // goals.emoji에는 3D 아이콘 키(예: 'airplane')가 들어 있다 — 그대로 그리면 글자로 보인다
   const icon = resolvePurposeIcon(goal.emoji)
-  const percent = Math.max(0, Math.min(progress.progressPercent ?? 0, 100))
+  const percent = progress.displayPercent ?? 0
   const remaining = Math.max(0, goal.target_amount - progress.currentValue)
 
   return (
