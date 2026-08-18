@@ -8,6 +8,7 @@ import {
   APP_BOTTOM_NAV_ICON_ROW_PX,
   APP_BOTTOM_NAV_PADDING_TOP,
 } from '@/app/constants/layout-constants'
+import { hapticLightImpact } from '@/app/utils/haptics'
 
 const NAV_ITEMS = [
   { href: '/', label: '홈', icon: House },
@@ -15,6 +16,21 @@ const NAV_ITEMS = [
   { href: '/stats', label: '통계', icon: ChartBar },
   { href: '/settings', label: '설정', icon: Gear },
 ] as const
+
+/**
+ * 활성 탭을 다시 눌렀을 때 최상단으로 되돌린다.
+ *
+ * iOS 탭바의 학습된 기대(재탭 = 맨 위로)라, 없으면 긴 화면에서 손으로 쓸어 올리는 수밖에 없다.
+ * 네 탭 모두 body 스크롤을 쓰므로(캘린더의 overflow-y-auto는 월 선택 모달 전용) window 스크롤만 다룬다.
+ */
+function scrollActiveTabToTop(): void {
+  // 이미 맨 위면 스크롤도 햅틱도 건너뛴다 — 안 움직이는데 진동만 울리는 건 노이즈다
+  if (window.scrollY <= 0) return
+
+  const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
+  hapticLightImpact()
+}
 
 export default function BottomNavigation() {
   const pathname = usePathname()
@@ -44,9 +60,15 @@ export default function BottomNavigation() {
                 isActive ? 'text-brand-600' : 'text-foreground-subtle'
               }`}
               aria-current={isActive ? 'page' : undefined}
+              onClick={(e) => {
+                // 다른 탭이면 평소대로 이동한다. 같은 탭은 라우터가 무시하므로 스크롤로 대신 응답한다
+                if (!isActive) return
+                e.preventDefault()
+                scrollActiveTabToTop()
+              }}
             >
               <Icon className="w-6 h-6 shrink-0" weight={isActive ? 'fill' : 'regular'} />
-              <span className="text-xs font-medium truncate w-full text-center">{label}</span>
+              <span className="text-caption font-medium truncate w-full text-center">{label}</span>
             </Link>
           )
         })}

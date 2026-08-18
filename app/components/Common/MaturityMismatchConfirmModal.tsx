@@ -3,6 +3,10 @@
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
+
 export interface MaturityMismatchConfirmModalProps {
   isOpen: boolean
   /** 목적 이름 (예: "집 사기") */
@@ -13,9 +17,9 @@ export interface MaturityMismatchConfirmModalProps {
   recordTitle: string
   /** 그 적금의 만기일 (YYYY-MM-DD) */
   recordMaturityDate: string
-  /** "그대로 진행" — 입력된 값 그대로 저장 (런타임 정산 대기로 이어짐) */
+  /** "만기까지 기다리기" — 입력된 값 그대로 저장 (런타임 정산 대기로 이어짐) */
   onProceed: () => void
-  /** "종료일을 적금 만기로 맞추기" — target_date를 적금 만기로 자동 조정 후 저장 */
+  /** "목적 종료일 미루기" — target_date를 적금 만기로 자동 조정 후 저장 */
   onAlignDate: () => void
   /** "취소" — 모달만 닫고 폼 유지 */
   onCancel: () => void
@@ -40,13 +44,15 @@ export default function MaturityMismatchConfirmModal({
   onCancel,
   isProcessing = false,
 }: MaturityMismatchConfirmModalProps) {
+  useBodyScrollLock(isOpen)
+
   if (!isOpen) return null
 
   const goalDateLabel = formatDate(goalTargetDate)
   const recordDateLabel = formatDate(recordMaturityDate)
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+    <div data-overlay className="fixed inset-0 z-[60] flex items-center justify-center">
       <div
         className="fixed inset-0 bg-black/50"
         onClick={() => {
@@ -54,49 +60,55 @@ export default function MaturityMismatchConfirmModal({
         }}
       />
 
-      <div className="relative z-[60] w-full max-w-md mx-4 bg-card rounded-2xl shadow-lg p-6">
+      <Card className="relative z-[60] w-full max-w-md mx-4 p-6 shadow-lg">
         <div className="mb-5">
-          <h2 className="text-xl font-semibold tracking-tight text-foreground mb-3">
+          <h2 className="text-heading font-semibold tracking-tight text-foreground mb-3">
             묶인 적금이 더 늦게 만기돼요
           </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-label text-muted-foreground leading-relaxed">
             <span className="font-medium text-foreground">&ldquo;{goalName}&rdquo;</span>의
             종료일은 <span className="tabular-nums">{goalDateLabel}</span>이고,
             묶은 <span className="font-medium text-foreground">&ldquo;{recordTitle}&rdquo;</span>
             의 만기는 <span className="tabular-nums">{recordDateLabel}</span>예요.
-            <br />
-            <br />
+          </p>
+          <p className="mt-3 text-label text-muted-foreground leading-relaxed">
             적금 만기까지 토리치가 자동으로 기다려드릴 수 있어요.
           </p>
+          <div className="mt-3 space-y-1 text-label text-muted-foreground">
+            <p>· 기다리면 종료일은 그대로예요.</p>
+            <p>· 미루면 종료일이 적금 만기일로 바뀌어요.</p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          <button
+          <Button
             type="button"
             onClick={onProceed}
             disabled={isProcessing}
-            className="w-full py-3 text-base font-semibold text-primary-foreground bg-primary rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full h-12 rounded-xl text-body font-semibold"
           >
-            그대로 진행
-          </button>
-          <button
+            만기까지 기다리기
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
             onClick={onAlignDate}
             disabled={isProcessing}
-            className="w-full py-3 text-base font-medium text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors disabled:opacity-50"
+            className="w-full h-12 rounded-xl text-body"
           >
-            종료일을 적금 만기로 맞추기
-          </button>
-          <button
+            목적 종료일 미루기
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
             onClick={onCancel}
             disabled={isProcessing}
-            className="w-full py-2 text-sm text-foreground-subtle hover:text-foreground transition-colors disabled:opacity-50"
+            className="w-full h-10 rounded-xl text-label text-foreground-subtle hover:text-foreground"
           >
             취소
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

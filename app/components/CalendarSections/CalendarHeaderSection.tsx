@@ -40,7 +40,7 @@ export function CalendarHeaderSection({
               type="button"
               onClick={openPicker}
               aria-label="연도·월 선택"
-              className="text-base font-semibold text-foreground"
+              className="text-body font-semibold text-foreground"
             >
               {format(
                 currentMonth,

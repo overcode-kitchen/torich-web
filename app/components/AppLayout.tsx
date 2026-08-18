@@ -21,6 +21,27 @@ const HIDE_NAV_PATHS = [
   '/settings/terms',
 ]
 
+/**
+ * 자체 스캐폴드(SubPageScaffold 등)가 safe area를 직접 처리하는 경로.
+ * 여기 없는 화면만 SafeArea가 상·하단 패딩을 대신 넣는다.
+ *
+ * 빠뜨리면 safe area가 이중으로 얹힌다. 상단은 여백이 벌어지고(#180), 하단은 SafeArea 배경이
+ * 자식 배경 밖으로 삐져나와 색 띠가 드러난다(#192). 둘 다 웹에서는 env()가 0이라 16·24px만
+ * 더해져 잘 드러나지 않고 노치 기기에서만 커지므로, 새 서브페이지를 만들면 여기 등록부터 한다.
+ *
+ * /notifications는 SubPageScaffold를 쓰지 않고 SafeArea 패딩에 기대므로 제외한다.
+ */
+const OWN_SCAFFOLD_PATHS = [
+  '/investment',
+  '/add',
+  '/goal',
+  '/tory',
+  '/faq',
+  '/settings/notifications',
+  '/settings/privacy',
+  '/settings/terms',
+]
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { user } = useAuth()
@@ -62,17 +83,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const hideNav =
     HIDE_NAV_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/')) ||
     (pathname === '/' && !user)
-  // 앱 스타일 상단 헤더(Safe Area + 48px 앱바)를 사용하는 화면 여부
-  // - 메인 탭 화면(홈/통계/캘린더/설정 등)
-  // - 투자 상세 등 상단 고정 앱바를 사용하는 화면
-  // /add: SubPageScaffold가 safe area + 앱바를 처리하므로 SafeArea 상단 패딩 비활성화
-  const usesAppHeader =
+  // 화면이 safe area를 자기 스캐폴드로 처리하는지 여부.
+  // - 메인 탭 화면(홈/통계/캘린더/설정 등)은 자체 앱바가 있다
+  // - 서브페이지는 SubPageScaffold가 상단 safe area + 앱바와 하단 여백을 모두 넣는다
+  const usesOwnScaffold =
     !hideNav ||
-    pathname.startsWith('/investment') ||
-    pathname === '/add' ||
-    pathname.startsWith('/add/') ||
-    pathname === '/tory' ||
-    pathname.startsWith('/tory/')
+    OWN_SCAFFOLD_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))
 
   // 하단 탭은 웹/앱 공통으로 hideNav가 아닐 때 항상 표시
   const showBottomNav = !hideNav
@@ -81,9 +97,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <>
       <SafeArea
         hasBottomNav={showBottomNav}
-        // 앱 스타일 상단 헤더가 있는 화면은 SafeArea에서 상단 패딩을 비활성화하고,
-        // 각 화면 헤더가 직접 Safe Area + 앱바 높이를 처리한다.
-        disableTopPadding={usesAppHeader}
+        // 자체 스캐폴드가 있는 화면은 상·하단 모두 SafeArea가 손대지 않는다.
+        // 한쪽만 끄면 반대쪽에 이중 적용이 남는다 — #180(상단)을 고친 뒤 하단이 그대로 남아
+        // 회색 띠로 드러난 것이 #192다.
+        disableTopPadding={usesOwnScaffold}
+        disableBottomPadding={usesOwnScaffold}
       >
         {children}
       </SafeArea>

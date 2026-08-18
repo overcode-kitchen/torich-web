@@ -27,6 +27,12 @@
 - 목적: 추가는 [3단계 위저드](../app/goal/new/page.tsx#L20-L24) / 수정은 [단일 폼](../app/goal/detail/edit/EditGoalClient.tsx#L79-L84) → 추가 때 배운 조작이 수정 때 무효.
 - 적립항목: 예적금은 위저드 수정, 투자는 인라인 토글 수정 → "투자는 왜 화면이 안 바뀌지?" 인지 부조화.
 
+> **2026-07-28 갱신 (#72 완료)** — 위 표의 '투자' 행은 옛 상태다. 인플레이스 토글 편집은 제거되어
+> 세 상세 화면 모두 **정보 행을 탭하면 그 필드 편집으로** 들어간다. 행 마크업은 공용
+> [`TappableField`](../app/components/Common/TappableField.tsx) 하나를 쓰고(높이·셰브런·hover 동일),
+> 진입 경로는 적립항목 `/add?editId=&field=` · 목적 `/goal/detail/edit?id=&field=`.
+> 목적은 단일 폼이라 그룹 진입 대신 해당 칸으로 스크롤·포커스한다. 계산값 행(남은 금액·만기 예상 수령액)은 탭 불가.
+
 **P0-2. 투자 수정 시 고칠 수 있는 필드가 추가보다 적다**
 
 - 투자 인플레이스 편집 = 금액/기간/투자일만. 종목명은 ["수정할 수 없습니다"](../app/components/InvestmentDetailSections/InvestmentDetailOverview.tsx#L60), 시장·시작일·연수익률은 편집 UI 자체가 없음.
@@ -80,7 +86,9 @@
 - **P2-2** 알림 토글 비대칭 — 투자 상세엔 알림 Bell, 예적금/현금 상세엔 없음.
 - **P2-3** 헤더 중복 — [`GoalFlowHeader`](../app/components/GoalFormSections/GoalFlowHeader.tsx) ↔ [`AddItemHeader`](../app/components/AddItemSections/AddItemHeader.tsx) 거의 동일, 채움색 `muted-foreground` vs `foreground` 미세 차이.
 - **P2-4** 상세 정보 중복 — 목적 상세에서 마감일이 [헤더 Alert](../app/goal/detail/GoalDetailClient.tsx#L177-L192) + [정보 섹션](../app/components/GoalDetailSections/GoalInfoSection.tsx#L29-L33) 두 곳.
-- **P2-5** 목적 추가 시 메모·이미 모은 돈·알림 입력 불가 → 만들자마자 [수정 화면](../app/components/GoalFormSections/GoalFormSection.tsx#L172-L225) 재진입 필요.
+- ~~**P2-5** 목적 추가 시 메모·이미 모은 돈·알림 입력 불가.~~ → **부채가 아니라 결정이다(#70에서 재확인, 이 항목은 닫는다).**
+  목적을 만드는 데 꼭 필요한 값이 아닌데 만들기 흐름에서 물으면, **답할 필요 없는 칸 앞에서 사용자가 멈추고 이탈한다.** 만든 뒤 채워도 되는 값이므로 [`GoalOptionalFields`](../app/components/GoalFormSections/fields/GoalOptionalFields.tsx)는 수정 화면에만 둔다. 접이식으로 접어서 넣는 안도 검토했으나 같은 이유로 채택하지 않았다 — 접혀 있어도 "아직 뭔가 남았다"는 신호를 준다.
+  ⚠️ 앞으로 "추가엔 없고 수정엔 있으니 불일치"로 보이면, 그건 통일할 대상이 아니다. 통일해야 할 것은 **입력 컴포넌트와 검증 규칙**이고 그건 이미 100% 공유돼 있다.
 - **P2-6** 죽은 코드 (검증 완료) — `InvestmentEditSections/`(EditView·EditSheet), `InvestmentView.tsx`+`InvestmentViewSections/`가 import 0. 이 때문에 [`InfoSection.tsx:16-42`](../app/components/InvestmentDetailSections/InfoSection.tsx#L16-L42)가 불필요한 props/try-catch 분기 + `any`를 떠안음.
 - **P2-7** 하드코딩 색 — `bg-red-500`(위험), `text-green-600`/`bg-green-500`(성공)이 토큰(`bg-destructive` 등) 미사용.
 

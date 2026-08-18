@@ -208,3 +208,91 @@ select cron.schedule(
 ```sql
 select cron.unschedule('schedule-re-reminders-daily');
 ```
+
+## 7. pg_cron 등록 (목적 마감일 알림)
+
+`schedule-goal-notifications`는 마감일이 **D-7 / D-1 / 당일**인 목적(`goals`)에 대해 알림을 예약합니다.
+`schedule-re-reminders`와 동일한 pg_cron + pg_net 방식이며, **6.1의 Vault 시크릿을 그대로 재사용**합니다 (새 시크릿 불필요).
+
+### 7.1 배포 전 확인 — `notification_type` 제약
+
+이 함수는 `notification_type = 'goal_deadline'` 으로 행을 넣습니다.
+기존 값은 `reminder` / `re_reminder` / `service_announcement` 뿐이므로, **CHECK 제약이 걸려 있으면 INSERT가 실패합니다.**
+배포 전에 SQL Editor에서 확인하세요.
+
+```sql
+select conname, pg_get_constraintdef(oid)
+from pg_constraint
+where conrelid = 'scheduled_notifications'::regclass
+  and contype = 'c';
+```
+
+- **결과가 비어 있으면** 제약이 없다는 뜻이므로 그대로 진행합니다.
+- **`notification_type` 관련 CHECK가 나오면** 값 목록에 `goal_deadline`을 추가하는 마이그레이션이 먼저 필요합니다.
+  (기존 값을 제거하지 말고 **추가만** 해야 구버전 앱·기존 행이 안전합니다.)
+
+### 7.2 Edge Function 배포
+
+```bash
+supabase functions deploy schedule-goal-notifications
+supabase functions deploy send-push   # 목적 알림 취소·GA 라벨 처리가 추가됨
+```
+
+> `send-push`도 같이 배포해야 합니다. 목적이 보관·달성되거나 알림이 꺼진 경우의 취소 처리와
+> GA `notification_type = 'goal_deadline'` 라벨이 `send-push`에 들어 있습니다.
+> 배포하지 않아도 알림 발송 자체는 동작하지만, 취소가 되지 않고 GA에서 공지로 잘못 집계됩니다.
+
+### 7.3 cron 등록 (매일 KST 00:20 = UTC 15:20)
+
+```sql
+select cron.schedule(
+  'schedule-goal-notifications-daily',
+  '20 15 * * *',
+  $$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets where name = 'schedule_re_reminders_project_url') || '/functions/v1/schedule-goal-notifications',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'schedule_re_reminders_service_role_key')
+    ),
+    body := '{}'::jsonb
+  ) as request_id;
+  $$
+);
+```
+
+- **스케줄**: `20 15 * * *` = 매일 **UTC 15:20** = **KST 00:20**.
+- `schedule-re-reminders`(KST 00:10)보다 **10분 뒤**로 두어 두 잡이 겹치지 않게 합니다.
+- 하루 한 번만 돌기 때문에, 알림은 **당일 자정 이후 ~ 사용자 기본 알림 시간(기본 09:00)** 사이에 예약됩니다.
+
+### 7.4 동작 확인
+
+등록 직후 수동으로 한 번 호출해 볼 수 있습니다.
+
+```bash
+curl -X POST 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/schedule-goal-notifications' \
+  -H 'Authorization: Bearer YOUR_SERVICE_ROLE_KEY' \
+  -H 'Content-Type: application/json' -d '{}'
+```
+
+응답 예시 — `goals_checked`는 알림 대상 목적 수, `goals_due`는 오늘이 D-7/D-1/당일인 목적 수입니다.
+
+```json
+{ "success": true, "scheduled_count": 2, "goals_due": 1, "goals_checked": 14, "today": "2026-07-26" }
+```
+
+예약이 쌓였는지는 아래로 확인합니다.
+
+```sql
+select goal_id, title, body, scheduled_at, status
+from scheduled_notifications
+where goal_id is not null
+order by scheduled_at desc
+limit 20;
+```
+
+### 7.5 cron 작업 제거
+
+```sql
+select cron.unschedule('schedule-goal-notifications-daily');
+```

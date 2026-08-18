@@ -13,7 +13,6 @@ import {
 import { SavingsCashInfoSection } from '@/app/components/SavingsCashDetailSections/SavingsCashInfoSection'
 import { ProgressSection } from '@/app/components/InvestmentDetailSections/ProgressSection'
 import { PaymentHistorySection } from '@/app/components/InvestmentDetailSections/PaymentHistorySection'
-import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import { DetailHeaderTitle } from '@/app/components/Common/DetailHeaderTitle'
 import { DetailTabs } from '@/app/components/Common/DetailTabs'
 import {
@@ -188,13 +187,6 @@ function SavingsCashDetailViewInner({
         onConfirm={detail.handleDelete}
         isDeleting={detail.isDeleting}
         description="삭제된 적립 기록은 복구할 수 없습니다."
-      />
-
-      {/* 월 회차 되돌리기 토스트 (하단) */}
-      <UndoToastSection
-        pendingUndo={detail.pendingUndo}
-        handleUndo={() => void detail.handleUndo()}
-        label={detail.undoLabel}
       />
     </>
   )

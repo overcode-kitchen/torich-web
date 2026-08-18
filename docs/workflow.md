@@ -137,31 +137,75 @@ git push -u origin fix/58-chart-loss
 
 **① 마일스톤 정리** — [v1.3.0 마일스톤](https://github.com/overcode-kitchen/torich-web/milestones)의 열린 이슈를 다음 마일스톤이나 백로그로 옮긴다.
 
+> **`main`에는 직접 push할 수 없다.** `protect-main` 룰셋이 PR을 요구한다. 아래 ②·③은 **둘 다 PR**이고, 순서를 지키지 않으면 태그가 `main`에 없는 커밋을 가리키게 된다. → [룰셋이 막는 것](#룰셋이-막는-것)
+
 **② `integration` → `main` PR 머지** — 반드시 **Merge commit**으로 (Squash 아님).
 
-**③ 버전 3군데를 올려 커밋**
+**③ 버전 3군데를 올려 PR로 머지** — `main`에 직접 커밋할 수 없으므로 **브랜치를 파서 PR을 올린다.**
 
 | 위치 | 예시 | 규칙 |
 |---|---|---|
 | `package.json` 의 `version` | `1.3.0` | 단일 소스 |
 | `MARKETING_VERSION` (`ios/App/App.xcodeproj/project.pbxproj`) | `1.3.0` | package.json과 항상 동일 |
-| `CURRENT_PROJECT_VERSION` (같은 파일) | `4` | **심사 제출마다 +1.** 버전과 무관, 되돌리면 안 됨 |
-
-**④ 태그 push**
+| `CURRENT_PROJECT_VERSION` (같은 파일) | `1` | **마케팅 버전이 바뀌면 `1`로 리셋**, 같은 버전으로 재제출하면 `+1` |
 
 ```bash
-git checkout main && git pull && git tag v1.3.0 && git push origin v1.3.0
+git checkout main && git pull && git checkout -b chore/<이슈번호>-release-v130
+# 위 3곳 수정 후 커밋 (Closes #N)
+git push -u origin chore/<이슈번호>-release-v130
+gh pr create --base main       # Merge commit으로 머지
 ```
+
+> **빌드번호는 마케팅 버전 안에서만 유일하면 된다.** 애플은 `MARKETING_VERSION` + `CURRENT_PROJECT_VERSION` 조합을 보므로, 버전이 올라가면 빌드번호는 `1`부터 다시 시작한다. 같은 `1.3.0`을 두 번째로 제출할 때만 `2`, `3`으로 올린다.
+
+**④ 태그 push — ③의 PR이 머지된 뒤에** 붙인다.
+
+```bash
+git checkout main && git pull        # ③ 머지 커밋을 받아온 뒤
+git tag v1.3.0 && git push origin v1.3.0
+```
+
+> ⚠️ **순서를 바꾸면 조용히 깨진다.** `main` push는 룰셋이 막지만 **태그 push는 막히지 않는다.** ③을 건너뛰거나 실패한 채로 ④를 하면, `main`에 없는 로컬 커밋을 가리키는 태그가 올라가고 `release.yml`이 그 태그로 릴리스를 발행한다. v1.3.0에서 실제로 일어났다 (#147).
+>
+> ③을 **Squash로 머지해도 같은 문제**가 생긴다. Squash는 새 SHA를 만들므로 로컬에서 태그를 붙였던 커밋이 `main` 이력에 존재하지 않게 된다. **Merge commit으로 머지하고, `git pull` 후에 태그를 붙인다.**
 
 **자동**: [release.yml](../.github/workflows/release.yml)이 릴리스 노트를 만들고, 마일스톤을 닫고, `main`에만 있고 `integration`에 없는 커밋이 있으면 이슈를 만들어 알려준다. 커밋 메시지의 `Closes #N`으로 **이슈가 닫히고, 카드가 `완료`로 넘어간다.**
 
-**⑤ iOS 아카이빙·심사** — [CLAUDE.md의 빌드 함정 섹션](../CLAUDE.md)을 반드시 확인한다. 특히 아카이빙 직전:
+**⑤ iOS 아카이빙·심사** — [CLAUDE.md의 빌드 함정 섹션](../CLAUDE.md)을 반드시 확인한다.
 
 ```bash
+NEXT_PUBLIC_API_URL=https://torich.vercel.app pnpm build:app
+pnpm exec cap sync ios
 grep -ro "localhost:3000" out/ | wc -l   # 반드시 0
 ```
 
-**⑥ 다음 마일스톤 생성**
+> ⚠️ **`pnpm sync:app`을 릴리즈에 쓰지 않는다.** 이 스크립트는 개발 전용이라 맥의 LAN IP를 `server.url`로 주입한다. 릴리즈에는 위처럼 **`pnpm exec cap sync ios`**를 쓴다.
+>
+> ⚠️ **`cap sync ios`(내부 `pod install`)가 `CURRENT_PROJECT_VERSION`을 `1`로 되돌린다.** 새 버전 첫 제출이면 결과적으로 맞는 값이라 눈치채지 못하지만, **같은 버전 재제출이면 sync 뒤에 빌드번호를 다시 올려야 한다.** 아카이빙 직전에 Xcode에서 값을 눈으로 확인한다.
+
+**⑥ `integration` 동기화 + 다음 마일스톤 생성** — ③의 버전 커밋은 `main`에만 있다. `integration`으로 되돌려 넣지 않으면 다음 배포에서 버전이 되돌아간다.
+
+```bash
+git checkout integration && git pull && git merge origin/main && git push origin integration
+```
+
+### 룰셋이 막는 것
+
+브랜치 보호는 저장소 **룰셋**으로 걸려 있다 ([Settings → Rules](https://github.com/overcode-kitchen/torich-web/settings/rules)). 절차가 막히면 여기부터 본다.
+
+| 룰셋 | 대상 | 막는 것 |
+|---|---|---|
+| `protect-main` | `main` | **직접 push 금지 (PR 필수)** · `verify` 체크 통과 필수 · **Merge commit만 허용** (Squash·Rebase 불가) · 삭제·force push 금지 |
+| `protect-integration` | `integration` | 삭제·force push 금지 (직접 push는 가능) |
+| `protect-release-tags` | `v*` 태그 | 태그 삭제·덮어쓰기 금지 — **한 번 붙인 릴리스 태그는 옮길 수 없다** |
+
+`main` push가 거부되면 이렇게 나온다.
+
+```
+! [remote rejected] main -> main (push declined due to repository rule violations)
+```
+
+**태그는 이 검사를 받지 않는다.** `protect-release-tags`는 *덮어쓰기*만 막을 뿐 새 태그 push는 통과시키므로, `main` push가 실패한 상황에서도 ④는 성공한다. ④를 ③에 종속시키는 이유가 이것이다.
 
 ---
 
@@ -173,7 +217,7 @@ grep -ro "localhost:3000" out/ | wc -l   # 반드시 0
 git checkout main && git pull && git checkout -b hotfix/1.2.1
 ```
 
-고쳐서 **`main`으로** PR → 머지 → 버전 올리고 태그 `v1.2.1` push. 그리고 **잊지 말고:**
+고쳐서 **`main`으로** PR → **Merge commit**으로 머지 → 버전 3곳을 올리는 **두 번째 PR**을 머지 → `git pull` 후 태그 `v1.2.1` push. **핫픽스도 `main` 직접 push는 막힌다** — 배포 절차 ③·④와 순서가 같다. 그리고 **잊지 말고:**
 
 ```bash
 git checkout integration && git pull && git merge origin/main && git push origin integration
@@ -200,6 +244,9 @@ git checkout integration && git pull && git merge origin/main && git push origin
 | 이슈 브랜치(`type/#-설명`) → `integration` | **Squash** | 중간 커밋을 남기지 않는다 |
 | `integration` → `main` | **Merge commit** | Squash하면 두 브랜치가 영구히 갈라진다 |
 | `hotfix/*` → `main` | **Merge commit** | 위와 같음 |
+| 버전 올리기(`chore/#-release-*`) → `main` | **Merge commit** | Squash는 새 SHA를 만들어 **태그가 가리킬 커밋이 사라진다** |
+
+`main` 쪽은 외울 필요가 없다. `protect-main` 룰셋이 **Merge commit 외의 버튼을 아예 비활성화**한다. → [룰셋이 막는 것](#룰셋이-막는-것)
 
 ### 3. 이슈 브랜치는 머지 후 지운다
 
@@ -217,6 +264,9 @@ git checkout integration && git pull && git merge origin/main && git push origin
 | 위 로그에 `PROJECT_TOKEN 시크릿이 없어` 경고 | 토큰 만료. [발급 절차](github-projects-setup.md#project_token-시크릿-boardyml-동작에-필수) |
 | 새 이슈가 보드에 안 올라옴 | 보드 `···` → Workflows → **Auto-add to project**가 켜져 있나 |
 | 배포했는데 이슈가 안 닫힘 | 커밋 메시지의 `Closes #N`이 `main`까지 갔나 (`git log main --grep "Closes #N"`) |
+| `main` push가 `remote rejected`로 거부됨 | **정상이다.** `protect-main`이 PR을 요구한다 → [룰셋이 막는 것](#룰셋이-막는-것). 브랜치를 파서 PR로 올린다 |
+| 릴리스 태그가 `main`에 없는 커밋을 가리킴 | 배포 절차 ③(버전 PR)보다 ④(태그)를 먼저 했다. 태그는 덮어쓸 수 없으므로(`protect-release-tags`) **그 커밋을 PR로 `main`에 넣어 수습한다** (v1.3.0 사례: #146) |
+| 재제출했는데 애플이 빌드번호 중복이라고 거부 | `cap sync ios`가 `CURRENT_PROJECT_VERSION`을 `1`로 되돌렸다. **sync 이후에** 올린다 |
 | CI 린트가 이상한 파일을 잡음 | 변경 파일만 검사한다. base 브랜치가 `integration`이 맞는지 확인 |
 
 보드 카드가 안 보이면 **뷰 필터**를 먼저 의심한다. `v1.3.0` 뷰는 그 마일스톤만, `백로그` 뷰는 마일스톤 없는 것만 보여준다.

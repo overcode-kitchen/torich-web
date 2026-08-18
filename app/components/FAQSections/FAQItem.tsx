@@ -22,7 +22,7 @@ export default function FAQItem({ item }: FAQItemProps) {
           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring rounded-xl
         "
       >
-        <span className="text-base font-medium text-foreground">
+        <span className="text-body font-medium text-foreground">
           {item.question}
         </span>
         <CaretDown
@@ -30,7 +30,7 @@ export default function FAQItem({ item }: FAQItemProps) {
           className="w-5 h-5 text-foreground-subtle shrink-0 transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none"
         />
       </summary>
-      <div className="px-4 pb-4 pt-0 space-y-3 text-base text-foreground-soft leading-relaxed">
+      <div className="px-4 pb-4 pt-0 space-y-3 text-body text-foreground-soft leading-relaxed">
         {item.answer.map((para, idx) => (
           <p key={idx}>{para}</p>
         ))}

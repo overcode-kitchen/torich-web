@@ -23,7 +23,7 @@ export default function GoalStepName({
 }: GoalStepNameProps) {
   return (
     <div className="py-4">
-      <h2 className="text-2xl font-bold text-foreground tracking-tight mb-8">
+      <h2 className="text-title font-bold text-foreground tracking-tight mb-8">
         어떤 목적을 만들까요?
       </h2>
       <GoalNameField values={values} setField={setField} disabled={disabled} />

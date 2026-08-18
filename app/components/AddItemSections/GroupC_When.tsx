@@ -18,6 +18,8 @@ interface GroupC_WhenProps {
   onStartDatePickerOpenChange: (open: boolean) => void
   /** 매월 투자/납입일 시트 열기 */
   onOpenDaysPicker: () => void
+  /** 납입일을 고치러 진입한 경우(단일 필드 편집) — 값이 이미 있어도 시트를 연다 */
+  openDaysPickerOnMount?: boolean
 }
 
 const formatStartDate = (d: Date): string =>
@@ -28,12 +30,12 @@ const formatStartDate = (d: Date): string =>
   })
 
 const fieldButtonClass =
-  'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-sm text-foreground border border-border-subtle hover:bg-surface transition-colors'
+  'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-label text-foreground border border-border-subtle hover:bg-surface transition-colors'
 
 /**
- * 그룹 C: "언제 모을까요?"
+ * 그룹 C: "언제 모으나요?"
  * - 투자: 시작일 + 매월 투자일
- * - 예적금/현금: 매월 납입일
+ * - 예적금/현금: 매월 적립일
  *
  * 각 필드는 ProgressiveField 라벨 하나 + 단순 버튼 1개로 단순화.
  */
@@ -44,22 +46,28 @@ export default function GroupC_When({
   isStartDatePickerOpen,
   onStartDatePickerOpenChange,
   onOpenDaysPicker,
+  openDaysPickerOnMount = false,
 }: GroupC_WhenProps) {
   const isInvestment = recordType === 'investment'
   const days = isInvestment ? investmentForm.investmentDays : formState.investmentDays
-  const daysLabel = isInvestment ? '매월 언제 투자할까요?' : '매월 언제 모을까요?'
+  // 자동이체일·매수일은 사용자가 지금 정하는 값이 아니라 이미 정해져 있는 사실이라
+  // 제안형(~할까요?)이 아니라 사실 확인형(~하나요?)으로 묻는다. 기준: docs/wording.md
+  const daysLabel = isInvestment ? '매월 언제 투자하나요?' : '매월 언제 모으나요?'
   const daysButtonLabel =
     days.length > 0 ? formatInvestmentDays(days) : '날짜 선택하기'
 
-  // 예적금/현금은 그룹 C에 필드가 하나뿐이라 진입 즉시 시트를 자동으로 띄운다.
-  // 마운트 시 1회만 발화 (사용자가 닫고 다시 열 수 있도록).
+  // 시트 자동 노출 조건 — 마운트 시 1회만 발화 (사용자가 닫고 다시 열 수 있도록).
+  // - 신규: 예적금/현금은 그룹 C에 필드가 하나뿐이라 진입 즉시 띄운다.
+  // - 납입일을 고치러 온 단일 필드 편집: 이미 값이 있어도 띄운다. 그 필드를 고치러
+  //   들어왔는데 한 번 더 탭하게 만들 이유가 없다.
   const autoOpenedRef = useRef<boolean>(false)
   useEffect(() => {
-    if (!isInvestment && days.length === 0 && !autoOpenedRef.current) {
-      autoOpenedRef.current = true
-      onOpenDaysPicker()
-    }
-  }, [isInvestment, days.length, onOpenDaysPicker])
+    if (autoOpenedRef.current) return
+    const shouldOpen = openDaysPickerOnMount || (!isInvestment && days.length === 0)
+    if (!shouldOpen) return
+    autoOpenedRef.current = true
+    onOpenDaysPicker()
+  }, [isInvestment, days.length, openDaysPickerOnMount, onOpenDaysPicker])
 
   return (
     <div>

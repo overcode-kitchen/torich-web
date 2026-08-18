@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, BellSlash, DotsThreeVertical } from '@phosphor-icons/react'
 import { Investment } from '@/app/types/investment'
@@ -23,13 +22,11 @@ import { RetroactiveOnboardingSheet } from '@/app/components/InvestmentDetailSec
 import { useRetroactiveOnboarding } from '@/app/hooks/investment/detail/useRetroactiveOnboarding'
 import { useShareModeSync } from '@/app/hooks/investment/detail/useShareModeSync'
 import { useMonthToggleUndo } from '@/app/hooks/payment/useMonthToggleUndo'
-import { UndoToastSection } from '@/app/components/CalendarSections/UndoToastSection'
 import { cn } from '@/lib/utils'
 
 interface InvestmentDetailViewProps {
   item: Investment
   onBack: () => void
-  onUpdate: (data: { monthly_amount: number; period_years: number | null; annual_rate: number; investment_days?: number[] }) => Promise<void>
   onDelete: () => Promise<void>
 }
 
@@ -40,7 +37,6 @@ import { useGlobalNotification } from '@/app/hooks/notification/useGlobalNotific
 function InternalInvestmentDetailView({
   item,
   onBack,
-  onUpdate,
   onDelete,
 }: InvestmentDetailViewProps) {
   const router = useRouter()
@@ -58,7 +54,7 @@ function InternalInvestmentDetailView({
   } = usePaymentHistoryContext()
   useRefreshPaymentHistoryOnMount()
 
-  // 월 회차 토글 + 하단 되돌리기 토스트 (홈과 동일한 UndoToastSection 사용)
+  // 월 회차 토글 + 되돌리기 토스트 (홈과 동일한 앱 공통 토스트)
   const monthUndo = useMonthToggleUndo(togglePayment)
 
   // Global notification setting (read-only)
@@ -68,27 +64,16 @@ function InternalInvestmentDetailView({
   const {
     showDeleteModal,
     setShowDeleteModal,
-    isEditMode,
-    setIsEditMode,
-    isDaysPickerOpen,
-    setIsDaysPickerOpen,
   } = useInvestmentDetailUI()
 
   // 핸들러 훅
   const {
     investmentData,
     isDeleting,
-    isUpdating,
-    handleSave,
-    handleCancel,
     handleDelete,
   } = useInvestmentDetailHandlers({
     item,
-    onUpdate,
     onDelete,
-    isEditMode,
-    setIsEditMode,
-    setIsDaysPickerOpen,
     completedPayments,
     retroactivePayments,
     onToggleRetroactive: toggleRetroactivePayment,
@@ -96,15 +81,6 @@ function InternalInvestmentDetailView({
     onToggleAuto: (recordId, yearMonth, currentCompleted) =>
       monthUndo.onToggleAuto(item, completedPayments.get(recordId), yearMonth, currentCompleted),
   })
-
-  // 수정 모드 진입 시 초기화
-  useEffect(() => {
-    if (isEditMode) {
-      investmentData.initializeFromItem(item)
-      setIsDaysPickerOpen(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode, item])
 
   // 종목 상세 진입 시 시세 캐시 갱신 + shares 모드면 monthly_amount 동기화
   useShareModeSync(item)
@@ -116,8 +92,14 @@ function InternalInvestmentDetailView({
 
   const isNotificationDisabled = !isGlobalNotificationOn
 
-  // 헤더 우측 액션: 알림 토글 + 더보기 메뉴 (수정 모드에서는 숨김)
-  const headerActions = !isEditMode ? (
+  // 정보 행 탭 → 토스 스타일 편집 플로우(/add?editId=...&field=...)로 진입.
+  // 예적금·현금 상세(SavingsCashDetailView)와 동일한 규약. (이슈 #72)
+  const handleFieldTap = (field: string): void => {
+    router.push(`/add?editId=${item.id}&field=${field}`)
+  }
+
+  // 헤더 우측 액션: 알림 토글 + 더보기 메뉴
+  const headerActions = (
     <div className="flex items-center -mr-1">
       <button
         type="button"
@@ -157,26 +139,19 @@ function InternalInvestmentDetailView({
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  ) : undefined
+  )
 
   return (
     <InvestmentDetailProvider
       value={{
         item,
-        isEditMode,
         investmentData,
         ui: {
           isDeleting,
-          isUpdating,
           showDeleteModal,
           setShowDeleteModal,
-          setIsEditMode,
-          isDaysPickerOpen,
-          setIsDaysPickerOpen,
         },
         handlers: {
-          onSave: handleSave,
-          onCancel: handleCancel,
           onDelete: handleDelete,
         },
       }}
@@ -194,7 +169,7 @@ function InternalInvestmentDetailView({
           />
         }
       >
-        <InvestmentDetailContent />
+        <InvestmentDetailContent onFieldTap={handleFieldTap} />
 
         {/* 삭제 확인 모달 */}
         <DeleteConfirmModal
@@ -204,13 +179,6 @@ function InternalInvestmentDetailView({
           isDeleting={isDeleting}
         />
       </SubPageScaffold>
-
-      {/* 월 회차 되돌리기 토스트 (하단) */}
-      <UndoToastSection
-        pendingUndo={monthUndo.pendingUndo}
-        handleUndo={() => void monthUndo.handleUndo()}
-        label={monthUndo.undoLabel}
-      />
 
       {/* 소급 안내 시트 (과거 시작일로 등록 후 진입 시) */}
       <RetroactiveOnboardingSheet

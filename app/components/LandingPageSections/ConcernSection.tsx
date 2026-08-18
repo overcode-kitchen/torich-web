@@ -14,16 +14,16 @@ export default function ConcernSection({ onScrollToTop }: ConcernSectionProps) {
       id="landing-section-2"
       className="flex h-dvh shrink-0 snap-start snap-always flex-col overflow-y-auto overflow-x-hidden px-4 pt-10"
       style={{
-        background: '#292A2E',
+        background: 'var(--palette-landing-dark)',
       }}
       aria-label="고민 공감"
     >
       {/* 상단 텍스트 영역 - mb-8으로 말풍선과 최소 간격 확보, 겹침 방지 */}
       <div className="mb-8 shrink-0 space-y-3 pl-4 pr-4">
-        <h2 className="text-3xl font-semibold tracking-tight text-primary-foreground">
+        <h2 className="text-display font-semibold tracking-tight text-primary-foreground">
           이런 고민 있지 않아?
         </h2>
-        <p className="text-base text-primary-foreground/85">
+        <p className="text-body text-primary-foreground/85">
           적립식 투자, 마음은 있는데
           <br />
           막상 매달 챙기는 건 쉽지 않죠.
@@ -36,13 +36,13 @@ export default function ConcernSection({ onScrollToTop }: ConcernSectionProps) {
         <div className="relative z-10 flex flex-col">
           {/* 말풍선 리스트 - overflow-visible로 버블버블이 아래로 나가도 잘리지 않게 */}
           <div className="relative mt-4 h-48 overflow-visible">
-            <div className="absolute left-1 top-0 inline-flex max-w-[260px] -rotate-6 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground shadow-sm">
+            <div className="absolute left-1 top-0 inline-flex max-w-[260px] -rotate-6 rounded-full border border-border bg-card px-5 py-2.5 text-label font-medium text-foreground shadow-sm">
             매달 몇 일에 넣어야 했더라...
             </div>
-            <div className="absolute right-0 top-14 inline-flex max-w-[260px] rotate-4 justify-end rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground shadow-sm text-right">
+            <div className="absolute right-0 top-14 inline-flex max-w-[260px] rotate-4 justify-end rounded-full border border-border bg-card px-5 py-2.5 text-label font-medium text-foreground shadow-sm text-right">
             이번 달 빠뜨린 거 같은데...
             </div>
-            <div className="absolute left-6 bottom-10 inline-flex max-w-[260px] -rotate-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium text-foreground shadow-sm">
+            <div className="absolute left-6 bottom-10 inline-flex max-w-[260px] -rotate-2 rounded-full border border-border bg-card px-5 py-2.5 text-label font-medium text-foreground shadow-sm">
             내가 총 얼마나 넣었지...?
             </div>
             {/* bubblebubble.svg - z-20으로 그래픽 래퍼와 겹쳐도 위에 보이게 */}
@@ -74,7 +74,7 @@ export default function ConcernSection({ onScrollToTop }: ConcernSectionProps) {
                 className="pointer-events-none absolute inset-x-0 top-0 bottom-0 z-10"
                 style={{
                   background:
-                    'linear-gradient(to bottom, #292A2E 0%, #292A2E 18%, rgba(41,42,46,0.92) 38%, rgba(41,42,46,0.5) 60%, transparent 100%)',
+                    'linear-gradient(to bottom, var(--palette-landing-dark) 0%, var(--palette-landing-dark) 18%, hsl(var(--palette-landing-dark-hsl) / 0.92) 38%, hsl(var(--palette-landing-dark-hsl) / 0.5) 60%, transparent 100%)',
                 }}
                 aria-hidden
               />

@@ -7,6 +7,7 @@ import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 import { validateInvestmentForm, validateAndHandleError } from '@/app/utils/validation'
 import { createClient } from '@/utils/supabase/client'
 import { formatInvestmentData } from '@/app/utils/investment-formatter'
+import { periodYearsUntil } from '@/app/utils/date'
 import { track, amountBucket } from '@/app/lib/analytics'
 import { useInvestmentsContext } from '@/app/contexts/InvestmentsContext'
 import type { Investment, InvestmentUnitType } from '@/app/types/investment'
@@ -31,12 +32,21 @@ export interface UseAddInvestmentSubmitProps {
   monthlyShares?: string
   /** 목적 만들기 흐름에서 넘어온 경우, 생성될 투자를 이 목적에 연결한다. */
   goalId?: string
+  /** 선택된 종료 날짜(YYYY-MM-DD, 기본값=목적 마감일). goalId와 함께 있으면 이 날짜에 만기시킨다. 비면 무기한. */
+  goalEndDate?: string
   /** 'create'(기본) | 'edit' — edit 모드면 recordId 필수 */
   mode?: 'create' | 'edit'
   /** edit 모드에서 수정할 records.id */
   recordId?: string
   /** edit 모드 원본 record — 저장 시 폼으로 복원 불가한 값(종목코드·사용자지정 수익률) 보존용 */
   initData?: Investment | null
+  /**
+   * 저장에 성공해 이 화면을 떠날 때 호출한다. 라우팅은 페이지가 책임진다.
+   * - `null`: 들어온 자리로 되감기(편집 저장). 새 엔트리를 얹으면 복귀 화면의 ←가
+   *   방금 나온 수정 화면을 다시 연다.
+   * - 경로 문자열: 그 화면으로 자리를 갈아끼우며 이동(신규 저장).
+   */
+  onFinish: (href: string | null) => void
 }
 
 export interface UseAddInvestmentSubmitReturn {
@@ -60,9 +70,11 @@ export function useAddInvestmentSubmit({
   unitType,
   monthlyShares,
   goalId,
+  goalEndDate,
   mode = 'create',
   recordId,
   initData,
+  onFinish,
 }: UseAddInvestmentSubmitProps): UseAddInvestmentSubmitReturn {
   const router = useRouter()
   const { userId } = useUserData()
@@ -139,11 +151,23 @@ export function useAddInvestmentSubmit({
           has_rate: annualRate > 0,
         })
 
-        router.push(`/investment?id=${recordId}`)
+        onFinish(null)
         return
       }
 
       // 신규 추가
+      // 목적에 연결되고 종료 날짜(기본=목적 마감일, 사용자 변경 가능)가 있으면 그 날짜에 만기시킨다.
+      // - maturity_date = 선택된 종료 날짜
+      // - period_years = 대략적 fallback(양수)로 덮어써 '목적형' 분류 유지
+      // 종료 날짜를 비웠으면(override 없음) 그대로 무기한 적립으로 저장된다.
+      const goalLinkedToEndDate = !!goalId && !!goalEndDate
+      const goalDeadlineOverride = goalLinkedToEndDate
+        ? {
+            maturity_date: goalEndDate,
+            period_years: periodYearsUntil(startDate, new Date(goalEndDate!)),
+          }
+        : {}
+
       const supabase = createClient()
       const { data: inserted, error } = await supabase
         .from('records')
@@ -152,6 +176,7 @@ export function useAddInvestmentSubmit({
           ...formattedData,
           notification_enabled: true,
           ...(goalId ? { goal_id: goalId } : {}),
+          ...goalDeadlineOverride,
         })
         .select('*')
         .single<Investment>()
@@ -176,9 +201,9 @@ export function useAddInvestmentSubmit({
       const isPastStartDate = startDate < currentMonthStart
 
       if (isPastStartDate) {
-        router.push(`/investment?id=${inserted.id}&retroHint=1`)
+        onFinish(`/investment?id=${inserted.id}&retroHint=1`)
       } else {
-        router.push('/')
+        onFinish('/')
       }
     } catch {
       toastError(TOAST_MESSAGES.updateSaveFailed)
@@ -200,12 +225,15 @@ export function useAddInvestmentSubmit({
     unitType,
     monthlyShares,
     goalId,
+    goalEndDate,
     mode,
     recordId,
     userId,
     router,
     addInvestment,
     updateInvestment,
+    initData,
+    onFinish,
   ])
 
   return {

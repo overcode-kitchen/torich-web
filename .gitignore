@@ -64,3 +64,7 @@ supabase/.temp/
 # pnpm 전용 저장소. npm으로 설치하면 lockfile이 어긋나 CI가 깨진다.
 package-lock.json
 yarn.lock
+
+# 디자인 비포/애프터 캡처 산출물. capture.mjs로 언제든 재생성되고,
+# 96장 6.5MB 바이너리가 히스토리에 영구히 남는 것을 피한다.
+screenshots/

@@ -10,6 +10,8 @@ interface ScheduledNotification {
   id: string
   user_id: string
   record_id: string | null
+  /** 목적 마감일 알림(schedule-goal-notifications)에만 채워진다. record 알림은 null. */
+  goal_id: string | null
   token: string
   title: string
   body: string
@@ -214,8 +216,92 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 2-1. 목적 알림도 같은 방식으로 취소·제외한다 (record 경로와 대칭).
+    // 목적 알림은 당일 예약이라 예약~발송 간격이 짧지만, 그 사이에 사용자가 알림을 끄거나
+    // 목적을 보관·달성했다면 보내지 않아야 한다. 클라이언트가 아니라 여기서 처리하므로
+    // 구버전 앱 사용자에게도 그대로 적용된다.
+    const goalIds = [
+      ...new Set(
+        (rawNotifications as ScheduledNotification[])
+          .map((n) => n.goal_id)
+          .filter((id): id is string => id != null && id !== '')
+      ),
+    ]
+    const inactiveGoalIds = new Set<string>()
+    if (goalIds.length > 0) {
+      const { data: goalsAlive } = await supabase
+        .from('goals')
+        .select('id')
+        .in('id', goalIds)
+        .eq('notification_enabled', true)
+        .is('archived_at', null)
+        .is('completed_at', null)
+      const aliveIds = new Set((goalsAlive ?? []).map((g) => g.id))
+      // 조회에 걸리지 않은 목적 = 알림 OFF / 보관 / 달성 / 삭제됨
+      for (const id of goalIds) {
+        if (!aliveIds.has(id)) inactiveGoalIds.add(id)
+      }
+      if (inactiveGoalIds.size > 0) {
+        const { error: cancelGoalError } = await supabase
+          .from('scheduled_notifications')
+          .delete()
+          .in('goal_id', [...inactiveGoalIds])
+          .eq('status', 'pending')
+        if (cancelGoalError) {
+          console.warn('Failed to cancel notifications for inactive goals:', cancelGoalError)
+        }
+      }
+    }
+
+    // 2-2. 전체 알림을 끈 사용자에게는 보내지 않는다 (record·goal 필터와 대칭).
+    // 전역 스위치는 user_settings 깃발만 바꿀 뿐 이미 쌓인 예약을 지우는 경로가 없어,
+    // 예약 시각이 되면 그대로 발송돼 왔다. 클라이언트가 아니라 발송 직전 여기서 거르므로
+    // 구버전 앱 사용자에게도 그대로 적용된다.
+    const userIds = [
+      ...new Set(
+        (rawNotifications as ScheduledNotification[]).map((n) => n.user_id)
+      ),
+    ]
+    const globallyDisabledUserIds = new Set<string>()
+    if (userIds.length > 0) {
+      // 행이 없는 사용자(신규)는 기본값(전역 ON)으로 간주한다 — schedule-goal-notifications와 동일.
+      const { data: settingsOff, error: settingsError } = await supabase
+        .from('user_settings')
+        .select('user_id')
+        .in('user_id', userIds)
+        .eq('notification_global_enabled', false)
+      if (settingsError) {
+        // 설정 조회 실패로 전체 발송을 멈추지는 않는다(fail-open). 다음 배치에서 다시 걸러진다.
+        console.warn('Failed to fetch user_settings for global flag:', settingsError)
+      }
+      for (const s of settingsOff ?? []) {
+        globallyDisabledUserIds.add((s as { user_id: string }).user_id)
+      }
+      if (globallyDisabledUserIds.size > 0) {
+        // 이번 배치에 걸린 행(발송 시각이 이미 지난 것)만 지운다. 미래 예약은 남겨두므로
+        // 사용자가 알림을 다시 켜면 백필 없이 그대로 발송된다(#50 상태에 빠지지 않는다).
+        const staleIds = (rawNotifications as ScheduledNotification[])
+          .filter((n) => globallyDisabledUserIds.has(n.user_id))
+          .map((n) => n.id)
+        const { error: cancelGlobalError } = await supabase
+          .from('scheduled_notifications')
+          .delete()
+          .in('id', staleIds)
+          .eq('status', 'pending')
+        if (cancelGlobalError) {
+          console.warn(
+            'Failed to cancel notifications for globally disabled users:',
+            cancelGlobalError
+          )
+        }
+      }
+    }
+
     const notifications = (rawNotifications as ScheduledNotification[]).filter(
-      (n) => n.record_id == null || n.record_id === '' || !disabledRecordIds.has(n.record_id)
+      (n) =>
+        (n.record_id == null || n.record_id === '' || !disabledRecordIds.has(n.record_id)) &&
+        (n.goal_id == null || n.goal_id === '' || !inactiveGoalIds.has(n.goal_id)) &&
+        !globallyDisabledUserIds.has(n.user_id)
     )
 
     if (notifications.length === 0) {
@@ -223,7 +309,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: true,
           processed_count: 0,
-          message: 'No pending notifications to send (all disabled per record)',
+          message: 'No pending notifications to send (all filtered by notification settings)',
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } }
       )
@@ -267,10 +353,13 @@ Deno.serve(async (req) => {
 
             // 6. GA4에 notification_sent 송신 (시크릿 둘 다 있을 때만, 실패해도 메인 흐름에 영향 없음)
             if (gaMeasurementId && gaApiSecret) {
+              // goal_id가 있으면 목적 마감일 알림. 없으면 기존 분기(record 유무)를 그대로 따른다.
               const notificationType =
-                notification.record_id != null && notification.record_id !== ''
-                  ? 'monthly_reminder'
-                  : 'announcement'
+                notification.goal_id != null && notification.goal_id !== ''
+                  ? 'goal_deadline'
+                  : notification.record_id != null && notification.record_id !== ''
+                    ? 'monthly_reminder'
+                    : 'announcement'
               try {
                 await sendGAEvent({
                   measurementId: gaMeasurementId,

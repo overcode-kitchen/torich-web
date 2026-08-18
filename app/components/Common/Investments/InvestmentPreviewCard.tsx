@@ -26,19 +26,19 @@ export default function InvestmentPreviewCard({
   return (
     <div className={CARD_CLASS}>
       <div className="mb-3 flex items-start gap-1.5">
-        <span className="text-sm leading-none pt-0.5">📌</span>
-        <h3 className="text-sm font-semibold text-foreground">적립 요약</h3>
+        <span className="text-label leading-none pt-0.5">📌</span>
+        <h3 className="text-label font-semibold text-foreground">적립 요약</h3>
       </div>
       <div className="space-y-3">
         <div className="flex justify-between items-baseline gap-3">
-          <span className="text-sm text-foreground-muted shrink-0">매달 납입액</span>
-          <span className="text-base font-semibold text-foreground tabular-nums whitespace-nowrap">
+          <span className="text-label text-foreground-muted shrink-0">매달 납입액</span>
+          <span className="text-body font-semibold text-foreground tabular-nums whitespace-nowrap">
             {formatCurrency(monthlyAmountNum)}
           </span>
         </div>
         <div className="flex justify-between items-baseline gap-3">
-          <span className="text-sm text-foreground-muted shrink-0">목표 기간</span>
-          <span className="text-base font-semibold text-foreground tabular-nums whitespace-nowrap">
+          <span className="text-label text-foreground-muted shrink-0">목표 기간</span>
+          <span className="text-body font-semibold text-foreground tabular-nums whitespace-nowrap">
             {isHabitMode || !period ? '없음 (계속 적립)' : `${period}년`}
           </span>
         </div>

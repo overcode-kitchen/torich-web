@@ -4,11 +4,13 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Target } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
-import { GOAL_PRESETS, resolvePurposeIcon } from '@/app/constants/goal'
+import { resolvePurposeIcon } from '@/app/constants/goal'
+import { useGoalPresets } from '@/app/hooks/goal/data/useGoalPresets'
 import { track } from '@/app/lib/analytics'
 
 export default function EmptyState() {
   const router = useRouter()
+  const { presets } = useGoalPresets()
 
   function goToNewGoal(preset?: string): void {
     track('goal_create_click', {
@@ -22,10 +24,10 @@ export default function EmptyState() {
   return (
     <div className="bg-card rounded-3xl p-10 flex flex-col items-center text-center gap-6">
       <div className="space-y-2">
-        <p className="text-lg font-bold text-foreground">
+        <p className="text-heading font-bold text-foreground">
           무엇을 위해 모으고 있나요?
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-label text-muted-foreground">
           목적을 정하면 무엇을, 얼마나 모을지 한눈에 보여요.
         </p>
       </div>
@@ -40,14 +42,14 @@ export default function EmptyState() {
       </Button>
 
       <div className="flex flex-wrap justify-center gap-2">
-        {GOAL_PRESETS.map((preset) => {
+        {presets.map((preset) => {
           const icon = resolvePurposeIcon(preset.iconKey)
           return (
             <button
               key={preset.name}
               type="button"
               onClick={() => goToNewGoal(preset.name)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle-lighter bg-card px-3 py-1.5 text-xs font-medium text-foreground-soft hover:bg-muted transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle-lighter bg-card px-3 py-1.5 text-caption font-medium text-foreground-soft hover:bg-muted transition-colors"
             >
               {icon && (
                 <Image

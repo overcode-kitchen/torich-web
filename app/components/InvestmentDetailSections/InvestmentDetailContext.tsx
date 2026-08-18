@@ -6,20 +6,13 @@ import type { UseInvestmentDataReturn } from '@/app/hooks/types/useInvestmentDat
 
 interface InvestmentDetailContextType {
     item: Investment
-    isEditMode: boolean
     investmentData: UseInvestmentDataReturn
     ui: {
         isDeleting: boolean
-        isUpdating: boolean
         showDeleteModal: boolean
         setShowDeleteModal: (show: boolean) => void
-        setIsEditMode: (open: boolean) => void
-        isDaysPickerOpen: boolean
-        setIsDaysPickerOpen: (open: boolean) => void
     }
     handlers: {
-        onSave: () => Promise<void>
-        onCancel: () => void
         onDelete: () => Promise<void>
     }
 }

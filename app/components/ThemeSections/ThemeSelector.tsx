@@ -27,8 +27,8 @@ export function ThemeSelector({ theme, setTheme }: ThemeSelectorProps) {
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="flex flex-col">
-        <p className="text-sm font-medium text-foreground">테마</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <p className="text-label font-medium text-foreground">테마</p>
+        <p className="text-caption text-muted-foreground mt-0.5">
           라이트/다크 또는 시스템 설정을 선택해요.
         </p>
       </div>
@@ -36,7 +36,7 @@ export function ThemeSelector({ theme, setTheme }: ThemeSelectorProps) {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-xl border border-border-subtle bg-surface px-3 py-2 text-sm text-foreground-soft hover:bg-surface-hover transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl border border-border-subtle bg-surface px-3 py-2 text-label text-foreground-soft hover:bg-surface-hover transition-colors"
           >
             <CurrentIcon
               className="w-4 h-4 text-foreground"
@@ -58,8 +58,8 @@ export function ThemeSelector({ theme, setTheme }: ThemeSelectorProps) {
                 weight={theme === value ? 'fill' : 'regular'}
               />
               <div className="flex flex-col items-start">
-                <span className="text-sm">{label}</span>
-                <span className="text-xs text-muted-foreground">{description}</span>
+                <span className="text-label">{label}</span>
+                <span className="text-caption text-muted-foreground">{description}</span>
               </div>
             </DropdownMenuItem>
           ))}

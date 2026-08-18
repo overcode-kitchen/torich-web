@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface BrandStorySheetProps {
   isOpen: boolean
@@ -10,10 +11,13 @@ interface BrandStorySheetProps {
 }
 
 export function BrandStorySheet({ isOpen, onClose }: BrandStorySheetProps) {
+  useBodyScrollLock(isOpen)
+
   if (!isOpen) return null
 
   return (
     <div
+      data-overlay
       className="fixed inset-0 z-50 flex flex-col justify-end bg-black/30 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
@@ -38,10 +42,10 @@ export function BrandStorySheet({ isOpen, onClose }: BrandStorySheetProps) {
               />
             </div>
           </div>
-          <h2 className="text-lg font-semibold text-foreground mb-3">
+          <h2 className="text-heading font-semibold text-foreground mb-3">
             토리치(Torich)는 &quot;(도)토리 + 리치&quot;의 합성어예요.
           </h2>
-          <div className="space-y-3 text-sm leading-relaxed text-foreground-soft">
+          <div className="space-y-3 text-label leading-relaxed text-foreground-soft">
             <p>
               도토리를 조금씩 모으듯, 작은 투자와 저축이 쌓여 언젠가 &quot;리치&quot;한 삶으로 이어진다는 믿음에서
               시작된 이름이에요. 한 번에 큰 결심을 요구하기보다는, 오늘 할 수 있는 가장 작고 부드러운 한 걸음을

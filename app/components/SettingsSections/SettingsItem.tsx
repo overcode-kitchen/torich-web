@@ -45,12 +45,12 @@ export function SettingsItem({
                 >
                     {label}
                 </span>
-                {subLabel && <span className="text-sm text-foreground-muted mt-0.5">{subLabel}</span>}
+                {subLabel && <span className="text-label text-foreground-muted mt-0.5">{subLabel}</span>}
             </div>
             <div className="flex items-center">
                 {rightElement}
                 {shouldShowChevron && (
-                    <span className="ml-3 text-foreground-subtle text-lg" aria-hidden="true">
+                    <span className="ml-3 text-foreground-subtle text-heading" aria-hidden="true">
                         ›
                     </span>
                 )}

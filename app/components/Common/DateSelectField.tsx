@@ -17,8 +17,10 @@ interface DateSelectFieldProps {
   sheetTitle?: string
   /** true면 시트에서 날짜 비우기(삭제) 허용 */
   clearable?: boolean
-  /** clearable일 때 미선택 푸터 문구 */
+  /** clearable일 때 미선택 푸터 문구. clearable이 아니면 푸터에 문구를 띄우지 않는다. */
   emptyLabel?: string
+  /** 이 날짜보다 이전은 고를 수 없게 한다 (만기일·종료일 등 미래여야 하는 값) */
+  minDate?: Date
 }
 
 function toIsoDate(date: Date): string {
@@ -48,14 +50,15 @@ export default function DateSelectField({
   sheetTitle,
   clearable = false,
   emptyLabel,
+  minDate,
 }: DateSelectFieldProps) {
   const [isOpen, setIsOpen] = useState(false)
   const selectedDate = parseIsoDate(value)
 
   const buttonClass =
     variant === 'flow'
-      ? 'w-full flex items-center justify-between bg-field-bg rounded-xl h-12 px-4 text-base text-foreground border border-border-subtle/50 hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-ring/60 transition-all disabled:opacity-50'
-      : 'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-sm text-foreground border border-input hover:bg-surface transition-colors disabled:opacity-50'
+      ? 'w-full flex items-center justify-between bg-field-bg rounded-xl h-12 px-4 text-body text-foreground border border-border-subtle/50 hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-ring/60 transition-all disabled:opacity-50'
+      : 'w-full flex items-center justify-between bg-card rounded-xl h-12 px-4 text-label text-foreground border border-input hover:bg-surface transition-colors disabled:opacity-50'
 
   return (
     <>
@@ -82,6 +85,7 @@ export default function DateSelectField({
           selectedDate={selectedDate}
           title={sheetTitle ?? placeholder}
           emptyLabel={emptyLabel}
+          minDate={minDate}
           onSelect={(date) => onChange(toIsoDate(date))}
           onClear={clearable ? () => onChange('') : undefined}
           onClose={() => setIsOpen(false)}

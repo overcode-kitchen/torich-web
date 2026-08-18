@@ -37,9 +37,9 @@ export default function AmountInput({
           value={value}
           onChange={onChange}
           placeholder="0"
-          className="w-full h-16 rounded-xl bg-field-bg px-4 pr-16 text-2xl font-bold text-center tracking-tight text-foreground placeholder:text-foreground-subtle border border-border-subtle/50 focus:outline-none focus:ring-2 focus:ring-ring/60 transition-all"
+          className="w-full h-16 rounded-xl bg-field-bg px-4 pr-16 text-title font-bold text-center tracking-tight text-foreground placeholder:text-foreground-subtle border border-border-subtle/50 focus:outline-none focus:ring-2 focus:ring-ring/60 transition-all"
         />
-        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-base font-medium text-foreground-soft pointer-events-none">
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-body font-medium text-foreground-soft pointer-events-none">
           만원
         </span>
       </div>
@@ -50,7 +50,7 @@ export default function AmountInput({
           <button
             type="button"
             onClick={onUnitTypeToggle}
-            className="mr-auto flex items-center gap-1 rounded-full bg-surface-hover hover:bg-muted px-3 py-1.5 text-xs font-medium text-foreground-soft transition-colors"
+            className="mr-auto flex items-center gap-1 rounded-full bg-surface-hover hover:bg-muted px-3 py-1.5 text-caption font-medium text-foreground-soft transition-colors"
             aria-label="주수 모드로 전환"
           >
             만원
@@ -63,7 +63,7 @@ export default function AmountInput({
             key={label}
             type="button"
             onClick={() => onAdjust(delta)}
-            className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-xs px-3 py-1.5 transition-colors"
+            className="rounded-full bg-surface-hover hover:bg-muted text-foreground-soft font-medium text-caption px-3 py-1.5 transition-colors"
           >
             {label}
           </button>

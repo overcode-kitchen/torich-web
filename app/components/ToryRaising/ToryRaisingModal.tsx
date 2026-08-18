@@ -2,6 +2,7 @@
 
 import type { ToryRaisingModalPayload } from '@/app/hooks/tory-raising/useToryRaisingData'
 import { Button } from '@/components/ui/button'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 export default function ToryRaisingModal({
   payload,
@@ -10,10 +11,12 @@ export default function ToryRaisingModal({
   payload: ToryRaisingModalPayload | null
   onClose: () => void
 }) {
+  useBodyScrollLock(payload !== null)
+
   if (!payload) return null
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+    <div data-overlay className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-foreground-subtle/30"
         onClick={onClose}
@@ -27,19 +30,19 @@ export default function ToryRaisingModal({
       >
         <div className="flex flex-col gap-3">
           <div>
-            <div className="text-sm font-semibold text-foreground-soft tracking-tight">
+            <div className="text-label font-semibold text-foreground-soft tracking-tight">
               🌟 레벨업!
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">
+            <h2 className="text-title font-bold tracking-tight text-foreground">
               토리가 Lv.{payload.toLevel}가 됐어요
             </h2>
           </div>
 
           <div className="rounded-xl border border-border-subtle bg-surface-hover p-4">
-            <div className="text-base font-semibold text-foreground">
+            <div className="text-body font-semibold text-foreground">
               {payload.title.emoji} {payload.title.name}
             </div>
-            <div className="mt-2 text-sm text-muted-foreground">
+            <div className="mt-2 text-label text-muted-foreground">
               {payload.nextAppearanceStageLevelsRemaining !== null
                 ? `다음 외형 단계까지 ${payload.nextAppearanceStageLevelsRemaining}레벨 남았어요!`
                 : '더 성장 중이에요!'}

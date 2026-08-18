@@ -49,7 +49,7 @@ export default function InvestmentItem({
               aria-label="삭제"
             >
               <TrashSimple className="w-5 h-5 text-white" weight="bold" />
-              <span className="text-[11px] font-semibold text-white">삭제</span>
+              <span className="text-micro font-semibold text-white">삭제</span>
             </button>
           </div>
         )}
@@ -78,14 +78,14 @@ export default function InvestmentItem({
               {/* 1줄: 아바타 + 종목명 */}
               <div className="flex items-center gap-2 min-w-0">
                 <RecordAvatar record={item} size="sm" />
-                <h3 className="text-base font-semibold text-foreground truncate">
+                <h3 className="text-body font-semibold text-foreground truncate">
                   {item.title}
                 </h3>
               </div>
 
               {/* 2줄: 월 투자금 · 투자일 · 모드 뱃지 */}
               <div className="pl-2 flex items-center gap-2 flex-wrap">
-                <p className={`text-sm ${completed ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+                <p className={`text-label ${completed ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                   {contribution.main}
                   {contribution.sub && (
                     <span className="text-foreground-subtle"> ({contribution.sub})</span>
@@ -94,7 +94,7 @@ export default function InvestmentItem({
                     <> · {formatInvestmentDays(item.investment_days)}</>
                   )}
                 </p>
-                <span className="inline-flex items-center rounded-full px-1.5 py-px text-[10px] font-medium bg-surface text-foreground-subtle">
+                <span className="inline-flex items-center rounded-full px-1.5 py-px text-micro font-medium bg-surface text-foreground-subtle">
                   {habit ? '자유 적립' : '목표 적립'}
                 </span>
               </div>
@@ -109,7 +109,7 @@ export default function InvestmentItem({
         onConfirm={swipe.onDeleteConfirm}
         isDeleting={swipe.isSubmitting}
         title={`'${item.title}' 삭제`}
-        description="삭제된 투자 기록은 복구할 수 없습니다."
+        description="삭제된 적립 항목은 복구할 수 없습니다."
       />
     </>
   )

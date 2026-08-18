@@ -62,8 +62,6 @@ export interface GoalGroupCardProps {
   isDeleting?: boolean
   /** 파생 상태. 'pending_settlement'일 때 헤더에 "정산 대기" 배지 노출. */
   status?: GoalStatus
-  /** 최상단 카드 등에서 손잡이에 관심 유도 넛지(띠용띠용)를 켠다. */
-  nudge?: boolean
   /** 홈 목적 정렬 드래그 손잡이(카드 헤더에 스프레드). 미지정 카드엔 미전달. */
   dragHandle?: SortableRenderProps['handle']
   /** 이 카드가 드래그 중인지 여부(스타일 훅). */
@@ -94,7 +92,6 @@ export function GoalGroupCard({
   onDeleteGoal,
   isDeleting = false,
   status,
-  nudge = false,
   dragHandle,
   isDragging = false,
 }: GoalGroupCardProps) {
@@ -155,25 +152,25 @@ export function GoalGroupCard({
           className="h-7 w-7 shrink-0 object-contain"
         />
       )}
-      <h3 className="min-w-0 flex-1 truncate text-base font-bold text-foreground">
+      <h3 className="min-w-0 flex-1 truncate text-body font-bold text-foreground">
         {name}
       </h3>
       {isCompletedGoal ? (
         // 완료: 상태를 헤더가 먼저 선언한다. 달성이면 "완료", 미달 종료면 "기간 종료".
         // (D-day·%는 "연체/실패"처럼 읽혀 완료 톤과 어긋나므로 노출하지 않는다.)
-        <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-[11px] font-semibold text-foreground-soft">
+        <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-caption font-semibold text-foreground-soft">
           {progress?.isCompleted ? '완료' : '기간 종료'}
         </span>
       ) : (
         <>
           {isPendingSettlement && (
-            <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-[11px] font-semibold text-foreground-soft">
+            <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-caption font-semibold text-foreground-soft">
               정산 대기{settlementLabel && ` · ${settlementLabel}`}
             </span>
           )}
           {!isPendingSettlement && dDay && <DDayBadge label={dDay} />}
           {percent !== null && (
-            <span className="shrink-0 text-sm font-semibold text-foreground tabular-nums">
+            <span className="shrink-0 text-label font-semibold text-foreground tabular-nums">
               {percent}%
             </span>
           )}
@@ -191,14 +188,14 @@ export function GoalGroupCard({
       >
         <div className="p-6 pb-4">
           {goal ? (
-            <div className="mb-2 flex w-full items-center gap-1">
+            <div className="mb-2 flex w-full items-center">
               <button
                 type="button"
                 ref={dragHandle?.ref}
                 {...dragHandle?.attributes}
                 {...dragHandle?.listeners}
                 onClick={() => onSelectGoal?.(goal.id)}
-                className="flex min-w-0 flex-1 items-center gap-1 text-left select-none [-webkit-touch-callout:none]"
+                className="flex min-w-0 flex-1 items-center gap-2 text-left select-none [-webkit-touch-callout:none]"
                 aria-label={`${name} 목적 상세 보기${
                   dragHandle ? ' (길게 눌러 순서 변경)' : ''
                 }`}
@@ -217,7 +214,7 @@ export function GoalGroupCard({
               )}
             </div>
           ) : (
-            <div className="mb-2 flex w-full items-center gap-1">{HeaderInner}</div>
+            <div className="mb-2 flex w-full items-center gap-2">{HeaderInner}</div>
           )}
 
           {records.length > 0 ? (
@@ -288,7 +285,7 @@ export function GoalGroupCard({
               </div>
             )
           ) : (
-            <p className="py-4 text-center text-sm text-muted-foreground">
+            <p className="py-4 text-center text-label text-muted-foreground">
               아직 적립 항목이 없어요
             </p>
           )}
@@ -301,7 +298,7 @@ export function GoalGroupCard({
                 <button
                   type="button"
                   onClick={() => onArchive(goal.id)}
-                  className="flex shrink-0 items-center gap-1 text-sm font-semibold text-foreground-soft transition-colors hover:text-foreground"
+                  className="flex shrink-0 items-center gap-1 text-label font-semibold text-foreground-soft transition-colors hover:text-foreground"
                 >
                   <Archive className="h-4 w-4" weight="bold" />
                   보관하기
@@ -316,7 +313,6 @@ export function GoalGroupCard({
         <AddRecordDrawer
           goalId={goal.id}
           onAddRecord={onAddRecord}
-          nudge={nudge}
         />
       )}
 

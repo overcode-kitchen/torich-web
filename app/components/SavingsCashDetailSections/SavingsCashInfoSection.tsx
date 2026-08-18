@@ -1,7 +1,6 @@
 'use client'
 
-import { CaretRight } from '@phosphor-icons/react'
-import { InvestmentField } from '@/app/components/Common/InvestmentField'
+import { TappableField } from '@/app/components/Common/TappableField'
 import { formatCurrency } from '@/lib/utils'
 import { formatFullDate } from '@/app/utils/date'
 import { formatInvestmentDays } from '@/app/types/investment'
@@ -18,27 +17,6 @@ interface SavingsCashInfoSectionProps {
   onFieldTap?: (field: string) => void
   /** 탭 스크롤용 ref */
   infoRef?: React.RefObject<HTMLElement | null>
-}
-
-interface TappableFieldProps {
-  label: string
-  value: string
-  onTap?: () => void
-}
-
-function TappableField({ label, value, onTap }: TappableFieldProps) {
-  const field = <InvestmentField label={label} value={value} isEditMode={false} />
-  if (!onTap) return field
-  return (
-    <button
-      type="button"
-      onClick={onTap}
-      className="flex w-full items-center gap-2 text-left rounded-lg -mx-2 px-2 min-h-[44px] hover:bg-muted/30 transition-colors"
-    >
-      <span className="min-w-0 flex-1">{field}</span>
-      <CaretRight className="h-4 w-4 shrink-0 text-foreground-subtle" weight="bold" aria-hidden />
-    </button>
-  )
 }
 
 /**
@@ -60,7 +38,7 @@ export function SavingsCashInfoSection({
 
   return (
     <section ref={infoRef} className="py-6">
-      <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
+      <h3 className="text-heading font-semibold tracking-tight text-foreground mb-4">
         적립 정보
       </h3>
       <div className="space-y-6">
@@ -70,7 +48,7 @@ export function SavingsCashInfoSection({
           onTap={tap('monthlyAmount')}
         />
         <TappableField
-          label="납입일"
+          label="적립일"
           value={formatInvestmentDays(item.investment_days)}
           onTap={tap('investmentDays')}
         />
@@ -92,22 +70,26 @@ export function SavingsCashInfoSection({
 
       {/* 예적금: 만기 예상 수령액 */}
       {isSavings && maturity && (
-        <div className="mt-6 rounded-2xl bg-secondary p-5">
-          <p className="text-sm text-muted-foreground mb-1">만기 예상 수령액</p>
-          <p className="text-2xl font-bold tracking-tight text-foreground tabular-nums">
+        <div className="mt-6 rounded-2xl bg-surface p-5 ring-1 ring-border-subtle">
+          <p className="text-label text-muted-foreground mb-1">만기 예상 수령액</p>
+          <p className="text-title font-bold tracking-tight text-foreground tabular-nums">
             {formatCurrency(maturity.total)}
           </p>
-          <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+          <div className="mt-3 space-y-1 text-label">
             <div className="flex justify-between">
-              <span>넣은 원금</span>
-              <span className="tabular-nums">{formatCurrency(maturity.principal)}</span>
+              <span className="text-muted-foreground">넣은 원금</span>
+              <span className="tabular-nums font-medium text-foreground">
+                {formatCurrency(maturity.principal)}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span>예상 이자</span>
-              <span className="tabular-nums">{formatCurrency(maturity.interest)}</span>
+              <span className="text-muted-foreground">예상 이자</span>
+              <span className="tabular-nums font-medium text-foreground">
+                {formatCurrency(maturity.interest)}
+              </span>
             </div>
           </div>
-          <p className="mt-3 text-xs text-foreground-muted">
+          <p className="mt-3 text-caption text-foreground-muted">
             단리·세전 기준 약식 추정값이에요. 우대금리·세금은 반영되지 않아요.
           </p>
         </div>

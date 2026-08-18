@@ -52,6 +52,7 @@
   --color-card: var(--card);
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
+  --color-progress-track: var(--progress-track);
   --color-surface-strong: var(--surface-strong);
   --color-surface-strong-hover: var(--surface-strong-hover);
   --color-border-subtle: var(--border-subtle);
@@ -98,6 +99,8 @@
   --color-coolgray-1000: var(--palette-coolgray-1000);
   --color-torich-brown: var(--palette-torich-brown);
   --color-torich-brown-light: var(--palette-torich-brown-light);
+  --color-tory-quote: var(--palette-tory-quote);
+  --color-landing-dark: var(--palette-landing-dark);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -106,6 +109,26 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Layer 3: 타입 스케일 — 역할 기반 폰트 크기 토큰 (docs/design-system/02-TOKENS.md 기준).
+     임의 px(text-[11px]·text-[2rem] 등) 대신 이 토큰만 쓴다.
+     caption 12 / label 14 / body 16 / heading 20 / title 24 / display 30, 랜딩 히어로만 display-lg. */
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 0.875rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.25rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-heading: 1.25rem;
+  --text-heading--line-height: 1.75rem;
+  --text-title: 1.5rem;
+  --text-title--line-height: 2rem;
+  --text-display: 1.875rem;
+  --text-display--line-height: 2.25rem;
+  --text-display-lg: 2.25rem;
+  --text-display-lg--line-height: 2.5rem;
 }
 
 :root {
@@ -144,6 +167,13 @@
   /* Torich */
   --palette-torich-brown: hsl(28, 29%, 28%);
   --palette-torich-brown-light: hsl(30, 36%, 84%);
+  /* 토리 키우기 명언 카드의 연보라. 팔레트에 없던 색이라 추가한다(값은 기존 #ece4f7 그대로). */
+  --palette-tory-quote: hsl(265, 54%, 93%);
+
+  /* 랜딩 '고민 공감' 섹션 다크 패널.
+     그라디언트에서 알파를 섞어야 해(hsl(... / 0.92)) 채널만 담은 변수를 함께 둔다. */
+  --palette-landing-dark-hsl: 228 6% 17%;
+  --palette-landing-dark: hsl(var(--palette-landing-dark-hsl));
 
   /* White (배경용) - Layer 2 매핑을 위해 추가 */
   --palette-white: hsl(0, 0%, 100%);
@@ -194,6 +224,9 @@
   /* 역할별 시맨틱 (Primitives 직접 사용 대체용) */
   --surface: var(--palette-coolgray-25);
   --surface-hover: var(--palette-coolgray-50);
+  /* 카드 위 진행바 트랙 — 라이트에선 surface-hover와 같지만, 다크에선 card와
+     같은 색이 되어 트랙이 사라지므로 한 단계 밝은 값을 따로 잡는다. */
+  --progress-track: var(--palette-coolgray-50);
   --surface-strong: var(--palette-coolgray-200);
   --surface-strong-hover: var(--palette-coolgray-300);
   --border-subtle: var(--palette-coolgray-100);
@@ -210,11 +243,15 @@
   --brand-accent-bg: var(--palette-brand-50);
   --brand-accent-text: var(--palette-brand-700);
   --brand-accent-border: var(--palette-brand-200);
+  /* 목표별 페이스 '달성' 그린 패널 배경 — 도토리(브라운)가 쌓이는 강조 시각화 면. 브랜드 그린 그라디언트(brand-600 계열) */
+  --goal-well: linear-gradient(155deg, hsl(140, 88%, 39%) 0%, hsl(140, 96%, 29%) 100%);
   /* 입력칸 배경: 라이트=흰색에 가까운 아주 옅은 회색(경계는 약한 보더가 담당) */
   --field-bg: hsl(210, 9%, 97%);
   /* 차트 색상 */
   --chart-profit: var(--palette-brand-500);
   --chart-principal: var(--palette-brand-100);
+  /* 막대 선택 강조 — 나뭇결 위에 얹는 밝은 워시(투명도는 사용처에서 준다). */
+  --chart-selection-wash: var(--palette-white);
 }
 
 /* ==========================================================================
@@ -278,6 +315,8 @@
   /* 역할별 시맨틱 - surface(950) / card(900) */
   --surface: var(--palette-coolgray-950);
   --surface-hover: var(--palette-coolgray-900);
+  /* 카드(900) 위에서 트랙이 묻히지 않도록 한 단계 밝은 800으로 띄운다. */
+  --progress-track: var(--palette-coolgray-800);
   --surface-strong: var(--palette-coolgray-500);
   --surface-strong-hover: var(--palette-coolgray-400);
   --border-subtle: var(--palette-coolgray-600);
@@ -295,11 +334,42 @@
   --brand-accent-bg: var(--palette-brand-200);
   --brand-accent-text: var(--palette-brand-600);
   --brand-accent-border: var(--palette-brand-300);
+  /* '달성' 그린 패널 — 다크에선 눈부심을 낮춘 딥그린 그라디언트 (흰 텍스트·브라운 도토리 대비 유지) */
+  --goal-well: linear-gradient(155deg, hsl(140, 74%, 34%) 0%, hsl(140, 90%, 22%) 100%);
   /* 입력칸 배경: 다크=중립 다크 서피스 (밝은 민트는 눈부셔서 제외, text-foreground 대비 확보) */
   --field-bg: var(--palette-coolgray-800);
   /* 차트 색상 - 다크모드에서도 밝은 색상 유지 */
   --chart-profit: var(--palette-brand-500);
   --chart-principal: var(--palette-brand-200);
+}
+
+/* 목표별 페이스 — '달성' 그린 패널.
+   그라디언트 위에 좌상단 하이라이트 글로우와 안쪽 헤어라인을 얹어 입체감을 준다.
+   도토리(canvas/정적)는 이 위에 쌓이고, 라벨·달성%는 흰색으로 그 위에 올린다. */
+.goal-well {
+  background:
+    radial-gradient(120% 78% at 16% 4%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 58%),
+    var(--goal-well);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+.dark .goal-well {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+/* 달성 수위 — 도토리가 "어디까지" 찼는지 재는 기준면.
+   도토리는 알갱이라 90%를 넘으면 더 넣을 자리가 없어 100%와 같은 그림이 된다.
+   그 구간을 이 면이 대신 말한다. 윗변만 한 단계 밝혀 수면처럼 읽히게 한다. */
+.goal-well-fill {
+  background: rgba(255, 255, 255, 0.09);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+/* 그린 위 텍스트 — 도토리와 겹쳐도 읽히도록 흰색 + 소프트 섀도 */
+.goal-well-num {
+  color: hsl(0, 0%, 100%);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.34);
+}
+.goal-well-label {
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.32);
 }
 
 @layer base {
@@ -334,8 +404,10 @@
 }
 
 @layer utilities {
+  /* 0.45s는 문구가 튀어 오르듯 바뀌어 읽기 전에 자리를 잡아버렸다.
+     한 줄을 눈으로 따라갈 수 있도록 0.75s로 늘린다(전환 간격은 RotatingInsights가 관리). */
   .animate-insight {
-    animation: insight-slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: insight-slide-up 0.75s cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 

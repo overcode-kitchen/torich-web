@@ -51,7 +51,7 @@ export function NotificationReminderSection({
       <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="text-foreground font-medium">기본 알림 시간</span>
-          <span className="text-xs text-muted-foreground mt-1">
+          <span className="text-caption text-muted-foreground mt-1">
             새 리마인더 생성 시 기본 적용
           </span>
         </div>
@@ -68,7 +68,7 @@ export function NotificationReminderSection({
       <div className="px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-foreground font-medium">기본 사전 알림</span>
-          <span className="text-xs text-muted-foreground mt-1">
+          <span className="text-caption text-muted-foreground mt-1">
             새 리마인더 생성 시 기본 적용
           </span>
         </div>
@@ -76,7 +76,7 @@ export function NotificationReminderSection({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="min-w-[120px] justify-between rounded-2xl h-11 px-3 text-sm font-normal"
+              className="min-w-[120px] justify-between rounded-2xl h-11 px-3 text-label font-normal"
             >
               <span>{preReminderLabel}</span>
               <CaretDown className="w-4 h-4 text-foreground-subtle" />
@@ -105,8 +105,8 @@ export function NotificationReminderSection({
       <div className="px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-foreground font-medium">미완료 재알림</span>
-          <span className="text-xs text-muted-foreground mt-1">
-            투자일이 지나도 완료 안 하면 다시 알려드려요.
+          <span className="text-caption text-muted-foreground mt-1">
+            적립일이 지나도 완료 안 하면 다시 알려드려요.
           </span>
         </div>
         <Switch checked={reReminderOn} onCheckedChange={onToggleReReminder} />
@@ -116,7 +116,7 @@ export function NotificationReminderSection({
       <div className="px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex flex-col">
           <span className="text-foreground font-medium">주말·공휴일은 다음 평일에</span>
-          <span className="text-xs text-muted-foreground mt-1">
+          <span className="text-caption text-muted-foreground mt-1">
             알림 시각이 토·일·공휴일이면 다음 영업일로 미뤄요.
           </span>
         </div>

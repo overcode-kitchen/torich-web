@@ -16,6 +16,7 @@ import { useGoalProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useGoalDelete } from '@/app/hooks/goal/data/useGoalDelete'
 import { useInvestmentGoalLink } from '@/app/hooks/goal/data/useInvestmentGoalLink'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useGoalDetail } from '@/app/hooks/goal/detail/useGoalDetail'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { scrollToDetailSection } from '@/app/utils/scrollToDetailSection'
@@ -32,13 +33,15 @@ import {
 import { resolvePurposeIcon } from '@/app/constants/goal'
 import { formatKoreanDate } from '@/app/utils/date'
 import { formatCurrency } from '@/lib/utils'
-import { createClient } from '@/utils/supabase/client'
 
 export default function GoalDetailClient() {
   const searchParams = useSearchParams()
   const goalId = searchParams.get('id') ?? undefined
   const router = useRouter()
-  const [userId, setUserId] = useState<string | undefined>(undefined)
+  // userId는 AuthProvider가 이미 들고 있다. getUser로 다시 받아오면 인증이 오기 전 구간이
+  // '유저 없음'과 구분되지 않아, 존재하는 목적에 "찾을 수 없습니다"가 스친다 (#177).
+  const { user } = useAuth()
+  const userId = user?.id
   const [showArchiveModal, setShowArchiveModal] = useState<boolean>(false)
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const [activeTab, setActiveTab] = useState<string>('info')
@@ -50,15 +53,7 @@ export default function GoalDetailClient() {
     enableHistoryFallback: true,
   })
 
-  useEffect(() => {
-    const supabase = createClient()
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id)
-    })
-  }, [])
-
-  const { goal, records, unlinkedRecords, isLoading, refetch, setGoal } =
-    useGoalDetail(goalId, userId)
+  const { goal, records, unlinkedRecords, isLoading, setGoal } = useGoalDetail(goalId)
   const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistoryContext()
   const progress = useGoalProgress(
     goal,
@@ -69,7 +64,7 @@ export default function GoalDetailClient() {
   )
   const { updateGoal, archiveGoal, isUpdating } = useGoalUpdate(userId)
   const { deleteGoal, isDeleting } = useGoalDelete(userId)
-  const { linkRecordToGoal, isLinking } = useInvestmentGoalLink(userId)
+  const { linkRecordToGoal, isLinking } = useInvestmentGoalLink()
 
   // 보관은 완료(기간 종료 포함)된 목적만 가능하다. 홈 카드와 동일한 파생 상태 기준.
   const isCompletedGoal =
@@ -127,12 +122,12 @@ export default function GoalDetailClient() {
         monthly_amount_bucket: amountBucket(linked.monthly_amount),
       })
     }
-    await refetch()
+    // 화면 갱신을 위한 재조회는 필요 없다. linkRecordToGoal이 context를 갱신하고
+    // records/unlinkedRecords는 그 context에서 파생되므로 곧바로 다시 그려진다.
   }
 
   async function handleUnlink(recordId: string): Promise<void> {
     await linkRecordToGoal(recordId, null)
-    await refetch()
   }
 
   if (isLoading) {
@@ -149,7 +144,7 @@ export default function GoalDetailClient() {
     return (
       <SubPageScaffold onBack={goBack} surfaceClassName="bg-background" contentClassName="px-6 py-6">
         <div className="flex flex-col items-center gap-4 py-16">
-          <p className="text-sm text-foreground-subtle">
+          <p className="text-label text-foreground-subtle">
             목적을 찾을 수 없습니다.
           </p>
           <Button onClick={() => router.push('/')}>홈으로</Button>
@@ -239,7 +234,6 @@ export default function GoalDetailClient() {
           유지한다. 진행 바(모은/목표 금액)를 별도 카드 대신 히어로에 종속시킨다.
           투자 상세("총 납입액")와 동일 규격. */}
       <DetailHero
-        className="pt-6"
         label="모은 금액"
         amount={formatCurrency(progress.currentValue)}
         progress={
@@ -260,7 +254,7 @@ export default function GoalDetailClient() {
 
       {/* 메모: 이름 블록을 앱바로 올린 뒤, 목적 설명은 히어로 아래 보조 줄로 종속시킨다. */}
       {goal.memo?.trim() && (
-        <p className="-mt-2 mb-2 text-sm text-foreground-muted whitespace-pre-line break-words">
+        <p className="-mt-2 mb-2 text-label text-foreground-muted whitespace-pre-line break-words">
           {goal.memo}
         </p>
       )}
@@ -269,7 +263,7 @@ export default function GoalDetailClient() {
       <DetailTabs
         tabs={[
           { key: 'info', label: '목적 정보' },
-          { key: 'linked', label: `묶인 투자${records.length > 0 ? ` (${records.length})` : ''}` },
+          { key: 'linked', label: `묶인 적립 항목${records.length > 0 ? ` (${records.length})` : ''}` },
         ]}
         activeTab={activeTab}
         onTabClick={handleTabClick}
@@ -277,7 +271,15 @@ export default function GoalDetailClient() {
       />
 
       <div ref={infoRef}>
-        <GoalInfoSection goal={goal} progress={progress} />
+        <GoalInfoSection
+          goal={goal}
+          progress={progress}
+          // 값 하나 고치러 가는 길이므로 수정 화면 맨 위가 아니라 그 칸으로 데려간다.
+          // (적립 항목 상세 → /add?editId=&field= 와 같은 규칙)
+          onFieldTap={(field) =>
+            router.push(`/goal/detail/edit?id=${goal.id}&field=${field}`)
+          }
+        />
       </div>
 
       <div ref={linkedRef}>
@@ -305,7 +307,7 @@ export default function GoalDetailClient() {
         confirmLabel="보관"
         confirmingLabel="보관 중..."
         title="목적을 보관할까요?"
-        description={`"${goal.name}"을(를) 보관함으로 옮겨요. 묶인 투자는 그대로 유지되고, 설정 › 보관한 목표에서 언제든 다시 꺼낼 수 있어요.`}
+        description={`"${goal.name}"을(를) 보관함으로 옮겨요. 묶인 적립 항목은 그대로 유지되고, 설정 › 보관한 목표에서 언제든 다시 꺼낼 수 있어요.`}
       />
 
       <DeleteConfirmModal
@@ -314,7 +316,7 @@ export default function GoalDetailClient() {
         onConfirm={confirmDelete}
         isDeleting={isDeleting}
         title="목적을 삭제할까요?"
-        description={`"${goal.name}"을(를) 영구 삭제해요. 되돌릴 수 없고, 묶였던 투자는 자유 상태로 돌아가요.`}
+        description={`"${goal.name}"을(를) 영구 삭제해요. 되돌릴 수 없고, 묶였던 적립 항목은 자유 상태로 돌아가요.`}
       />
     </SubPageScaffold>
   )

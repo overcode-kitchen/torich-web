@@ -3,6 +3,64 @@ import { PostponedPaymentsMap } from '@/app/hooks/payment/usePostponedPayments'
 import { isPaymentCompleted, isRecordPostponedInMonth } from './payment-completion'
 
 const EMPTY_POSTPONED: PostponedPaymentsMap = new Map()
+const EMPTY_HISTORY: PaymentHistoryMap = new Map()
+
+/** 월별 집계 함수들이 공유하는 투자 기록 최소 형태 */
+type MonthlyCountable = {
+  id: string
+  title: string
+  monthly_amount: number
+  investment_days?: number[] | null
+  period_years: number | null
+  start_date?: string | null
+  created_at: string
+}
+
+export interface MonthCompletion {
+  /** 예정 건수 (미룬 회차 제외) */
+  total: number
+  /** 그중 완료된 건수 (자동 체크 + 소급 납입) */
+  completed: number
+  /** 그 달을 미룬 record 수 — 예정이 전부 미룸이면 total은 0이 된다 */
+  postponedRecords: number
+}
+
+/**
+ * 특정 연/월의 예정·완료 건수.
+ *
+ * 월별 완료율·이행 히트맵·연속 적립 스트릭이 전부 이 함수 하나를 기준으로 세도록 모아 둔다.
+ * (같은 "몇 % 이행"이 화면마다 다른 숫자로 갈리던 것이 통계 탭의 원래 문제였다)
+ *
+ * - 미룬 회차는 record-월 단위로 예정(분모)에서 제외한다 — 완료율·스트릭을 깎지 않게.
+ * - 소급 납입(`is_retroactive`)은 record-월당 1건(`YYYY-MM-01`)이 그 달 전체를 완료로 만든다.
+ */
+export function countMonthCompletion(
+  investments: MonthlyCountable[],
+  completedPayments: PaymentHistoryMap,
+  year: number,
+  month: number,
+  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED,
+  retroactivePayments: PaymentHistoryMap = EMPTY_HISTORY
+): MonthCompletion {
+  const events = getPaymentEventsForMonth(investments, year, month)
+  const postponedIds = new Set<string>()
+  let total = 0
+  let completed = 0
+
+  for (const e of events) {
+    if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) {
+      postponedIds.add(e.investmentId)
+      continue
+    }
+    total++
+    const done =
+      isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day) ||
+      isPaymentCompleted(retroactivePayments, e.investmentId, e.year, e.month, 1)
+    if (done) completed++
+  }
+
+  return { total, completed, postponedRecords: postponedIds.size }
+}
 
 export interface PaymentEvent {
   investmentId: string
@@ -178,47 +236,34 @@ export function getPeriodTotalPaid(
  * @param monthsBack 최근 몇 개월 (1=이번달만, 3=최근 3개월 등)
  */
 export function getMonthlyCompletionRates(
-  investments: Array<{
-    id: string
-    title: string
-    monthly_amount: number
-    investment_days?: number[] | null
-    period_years: number | null
-    start_date?: string | null
-    created_at: string
-  }>,
+  investments: MonthlyCountable[],
   completedPayments: PaymentHistoryMap,
   monthsBack: number,
-  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED
+  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED,
+  retroactivePayments: PaymentHistoryMap = EMPTY_HISTORY,
+  today: Date = new Date()
 ): Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> {
-  const today = new Date()
   const results: Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> = []
 
   for (let i = 0; i < monthsBack; i++) {
     const d = new Date(today.getFullYear(), today.getMonth() - i, 1)
     const year = d.getFullYear()
     const month = d.getMonth() + 1
-    const yearMonth = `${year}-${String(month).padStart(2, '0')}`
-    const monthLabel = `${month}월`
 
-    const events = getPaymentEventsForMonth(investments, year, month)
-    let total = 0
-    let completed = 0
-    for (const e of events) {
-      // 미룬 회차는 예정(분모)에서 제외 — 완료율·스트릭을 깎지 않게
-      if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) continue
-      total++
-      if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
-        completed++
-      }
-    }
-    const rate = total > 0 ? Math.round((completed / total) * 100) : 0
+    const { total, completed } = countMonthCompletion(
+      investments,
+      completedPayments,
+      year,
+      month,
+      postponedPayments,
+      retroactivePayments
+    )
     results.push({
-      yearMonth,
-      monthLabel,
+      yearMonth: `${year}-${String(month).padStart(2, '0')}`,
+      monthLabel: `${month}월`,
       total,
       completed,
-      rate,
+      rate: total > 0 ? Math.round((completed / total) * 100) : 0,
     })
   }
   return results
@@ -228,19 +273,12 @@ export function getMonthlyCompletionRates(
  * 날짜 범위 내 월별 완료율
  */
 export function getMonthlyCompletionRatesForRange(
-  investments: Array<{
-    id: string
-    title: string
-    monthly_amount: number
-    investment_days?: number[] | null
-    period_years: number | null
-    start_date?: string | null
-    created_at: string
-  }>,
+  investments: MonthlyCountable[],
   completedPayments: PaymentHistoryMap,
   fromDate: Date,
   toDate: Date,
-  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED
+  postponedPayments: PostponedPaymentsMap = EMPTY_POSTPONED,
+  retroactivePayments: PaymentHistoryMap = EMPTY_HISTORY
 ): Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> {
   const results: Array<{ yearMonth: string; monthLabel: string; total: number; completed: number; rate: number }> = []
   const from = new Date(fromDate.getFullYear(), fromDate.getMonth(), 1)
@@ -250,22 +288,22 @@ export function getMonthlyCompletionRatesForRange(
   while (current <= to) {
     const year = current.getFullYear()
     const month = current.getMonth() + 1
-    const yearMonth = `${year}-${String(month).padStart(2, '0')}`
-    const monthLabel = `${month}월`
 
-    const events = getPaymentEventsForMonth(investments, year, month)
-    let total = 0
-    let completed = 0
-    for (const e of events) {
-      // 미룬 회차는 예정(분모)에서 제외
-      if (isRecordPostponedInMonth(postponedPayments, e.investmentId, year, month)) continue
-      total++
-      if (isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)) {
-        completed++
-      }
-    }
-    const rate = total > 0 ? Math.round((completed / total) * 100) : 0
-    results.push({ yearMonth, monthLabel, total, completed, rate })
+    const { total, completed } = countMonthCompletion(
+      investments,
+      completedPayments,
+      year,
+      month,
+      postponedPayments,
+      retroactivePayments
+    )
+    results.push({
+      yearMonth: `${year}-${String(month).padStart(2, '0')}`,
+      monthLabel: `${month}월`,
+      total,
+      completed,
+      rate: total > 0 ? Math.round((completed / total) * 100) : 0,
+    })
 
     current.setMonth(current.getMonth() + 1)
   }

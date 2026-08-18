@@ -1,101 +1,54 @@
 'use client'
 
 import React from 'react'
-import { InvestmentField } from '@/app/components/Common/InvestmentField'
+import { TappableField } from '@/app/components/Common/TappableField'
 import { formatContributionLabel, formatContributionValue } from '@/app/utils/investment-display'
 import { useInvestmentDetailContext } from './InvestmentDetailContext'
-import { InvestmentDaysField } from './InvestmentDaysField'
-import PeriodInput from '@/app/components/Common/PeriodInput'
-import { isHabitMode as checkIsHabitMode } from '@/app/types/investment'
+import { formatInvestmentDays, isHabitMode as checkIsHabitMode } from '@/app/types/investment'
 
 interface InfoSectionProps {
   infoRef: React.RefObject<HTMLElement | null>
+  /** 정보 행을 탭하면 호출 (편집 진입). 미지정 시 각 행은 정적 표시. */
+  onFieldTap?: (field: string) => void
 }
 
-export function InfoSection({ infoRef }: InfoSectionProps) {
-  const { item, isEditMode, investmentData, ui } = useInvestmentDetailContext()
-
-  const {
-    editMonthlyAmount,
-    editPeriodYears,
-    editInvestmentDays,
-    editIsHabitMode,
-    setEditIsHabitMode,
-    setEditMonthlyAmount,
-    setEditPeriodYears,
-    setEditInvestmentDays,
-    handleNumericInput,
-  } = investmentData || {}
-
-  const setIsDaysPickerOpen = ui?.setIsDaysPickerOpen
+export function InfoSection({ infoRef, onFieldTap }: InfoSectionProps) {
+  const { item } = useInvestmentDetailContext()
 
   if (!item) return null
 
-  const habit = isEditMode
-    ? !!editIsHabitMode
-    : checkIsHabitMode(item)
+  const habit = checkIsHabitMode(item)
 
-  // 목표 기간 표시/편집 필드
+  // 목표 기간 표시 필드
   const periodValueText = habit ? '없음 (적립 중)' : `${item.period_years}년`
 
-  const handlePeriodChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleaned = e.target.value.replace(/[^0-9]/g, '')
-    setEditPeriodYears?.(cleaned)
-  }
-  const adjustEditPeriod = (delta: number) => {
-    const current = parseInt(editPeriodYears || '0')
-    const next = Math.max(1, current + delta)
-    setEditPeriodYears?.(String(next))
-  }
+  const tap = (field: string): (() => void) | undefined =>
+    onFieldTap ? () => onFieldTap(field) : undefined
 
   return (
     <section ref={infoRef} className="py-6">
-      <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
-        {isEditMode ? '투자 정보 수정' : '투자 정보'}
+      <h3 className="text-heading font-semibold tracking-tight text-foreground mb-4">
+        투자 정보
       </h3>
       <div className="space-y-6">
-        <InvestmentField
+        <TappableField
           label={formatContributionLabel(item)}
           value={formatContributionValue(item)}
-          editValue={editMonthlyAmount}
-          editPlaceholder="100"
-          editUnit="만원"
-          isEditMode={isEditMode}
-          onEdit={(value) => handleNumericInput(value, setEditMonthlyAmount)}
+          onTap={tap('monthlyAmount')}
         />
 
-        {/* 목표 기간: 수정 모드에서는 habit 토글 포함 PeriodInput, 뷰에서는 텍스트 표기 */}
-        {isEditMode ? (
-          <div>
-            <label className="block text-sm font-medium text-foreground-soft mb-2">목표 기간</label>
-            <PeriodInput
-              value={editPeriodYears || ''}
-              onChange={handlePeriodChange}
-              onAdjust={adjustEditPeriod}
-              isHabitMode={!!editIsHabitMode}
-              onToggleHabitMode={(habitOn) => {
-                setEditIsHabitMode?.(habitOn)
-                if (habitOn) {
-                  setEditPeriodYears?.('')
-                }
-              }}
-            />
-          </div>
-        ) : (
-          <InvestmentField
-            label="목표 기간"
-            value={periodValueText}
-            isEditMode={false}
-          />
-        )}
+        <TappableField
+          label="목표 기간"
+          value={periodValueText}
+          onTap={tap('period')}
+        />
 
-        {/* investment_days는 nullable이다. 적립일을 하나도 고르지 않고 저장하면 null이 되는데,
-            InvestmentDaysField가 .length를 바로 읽어 크래시한다. 빈 배열이면 "없음" 상태로 정상 렌더된다. */}
-        <InvestmentDaysField
-          isEditMode={isEditMode}
-          investmentDays={isEditMode ? editInvestmentDays : (item.investment_days ?? [])}
-          onToggleDay={(day) => setEditInvestmentDays((prev: number[]) => prev.filter((d) => d !== day))}
-          onOpenDaysPicker={() => setIsDaysPickerOpen(true)}
+        {/* investment_days는 nullable이다. 적립일을 하나도 고르지 않으면 null이 되므로
+            빈 배열로 넘겨 "없음" 상태로 렌더한다. */}
+        <TappableField
+          label="매월 투자일"
+          value={formatInvestmentDays(item.investment_days ?? [])}
+          onTap={tap('investmentDays')}
         />
       </div>
     </section>

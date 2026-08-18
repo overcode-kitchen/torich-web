@@ -63,7 +63,6 @@ export default function OnboardingView() {
           onWheel={handleWheel}
         >
         <OnboardingStepLayout
-          showLogo={config.showLogo}
           title={config.title}
           subtitle={config.subtitle}
           imageSlot={
@@ -98,7 +97,7 @@ export default function OnboardingView() {
               </Button>
               <Button
                 size="lg"
-                className="flex-1 py-3.5 text-base font-semibold"
+                className="flex-1 py-3.5 text-body font-semibold"
                 onClick={() => {
                   track('onboarding_complete')
                   router.push('/login')
@@ -114,7 +113,7 @@ export default function OnboardingView() {
                   이전
                 </Button>
               )}
-              <Button size="lg" className="flex-1 py-3.5 text-base font-semibold" onClick={goNext}>
+              <Button size="lg" className="flex-1 py-3.5 text-body font-semibold" onClick={goNext}>
                 다음
               </Button>
             </div>

@@ -2,6 +2,7 @@
 
 import { X } from '@phosphor-icons/react'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface InvestmentDaysPickerSheetProps {
   /** 현재 선택된 날짜들 (1~31) */
@@ -20,8 +21,10 @@ export default function InvestmentDaysPickerSheet({
   onClose,
 }: InvestmentDaysPickerSheetProps) {
 
+  useBodyScrollLock()
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div data-overlay className="fixed inset-0 z-50 flex items-end justify-center">
       {/* 오버레이 */}
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"
@@ -37,7 +40,7 @@ export default function InvestmentDaysPickerSheet({
 
         {/* 헤더 */}
         <div className="flex items-center justify-between px-6 pb-4">
-          <h2 className="text-lg font-bold text-foreground">매월 투자일 선택</h2>
+          <h2 className="text-heading font-bold text-foreground">매월 적립일 선택</h2>
           <button
             onClick={onClose}
             className="p-1 text-foreground-subtle hover:text-foreground-muted transition-colors"
@@ -54,14 +57,14 @@ export default function InvestmentDaysPickerSheet({
               {tempDays.map((day) => (
                 <span
                   key={day}
-                  className="inline-flex items-center bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] px-2 py-0.5 rounded-full text-xs font-medium"
+                  className="inline-flex items-center bg-[var(--brand-accent-bg)] text-[var(--brand-accent-text)] px-2 py-0.5 rounded-full text-caption font-medium"
                 >
                   {day}일
                 </span>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-foreground-subtle text-right">
+            <p className="text-label text-foreground-subtle text-right">
               선택된 날짜가 없어요
             </p>
           )}
@@ -77,7 +80,7 @@ export default function InvestmentDaysPickerSheet({
                   key={day}
                   type="button"
                   onClick={() => onToggleDay(day)}
-                  className={`h-9 rounded-full text-sm font-semibold transition-colors ${selected
+                  className={`h-9 rounded-full text-label font-semibold transition-colors ${selected
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-surface-hover text-foreground-soft hover:bg-secondary'
                     }`}
@@ -94,7 +97,7 @@ export default function InvestmentDaysPickerSheet({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 text-sm font-semibold text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors"
+            className="flex-1 py-3 text-label font-semibold text-foreground-soft bg-secondary rounded-xl hover:bg-surface-strong transition-colors"
           >
             취소
           </button>
@@ -102,7 +105,7 @@ export default function InvestmentDaysPickerSheet({
             type="button"
             onClick={onApply}
             disabled={!isDirty}
-            className="flex-1 py-3 text-sm font-semibold text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-default"
+            className="flex-1 py-3 text-label font-semibold text-primary-foreground bg-primary rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-default"
           >
             적용
           </button>

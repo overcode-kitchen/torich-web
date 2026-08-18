@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAddInvestmentForm } from './useAddInvestmentForm'
 import { useSavingsCashSubmit } from './useSavingsCashSubmit'
@@ -12,6 +12,7 @@ import { useAddItemActions } from './useAddItemActions'
 import { useModalState } from '@/app/hooks/ui/useModalState'
 import { useInvestmentDaysPicker } from '@/app/hooks/common/useInvestmentDaysPicker'
 import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
+import { useUnsavedChangesGuard } from '@/app/hooks/navigation/useUnsavedChangesGuard'
 import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
@@ -32,7 +33,6 @@ export function useAddRecordPage() {
   const initialField = searchParams.get('field')
   const isEditMode = !!editId
 
-  const [exitDialogOpen, setExitDialogOpen] = useState<boolean>(false)
   // 신규 추가 모드에서 사용자가 선택한 record_type. 미선택은 null (페이지 진입 직후).
   const [draftRecordType, setDraftRecordType] = useState<RecordType | null>(null)
 
@@ -52,22 +52,64 @@ export function useAddRecordPage() {
   const flow = useAddItemFlow({ editId, initialField })
   const formState = useAddItemFormState({ initData: edit.initData })
 
+  // 묶인 목적 정보 — 신규 추가 흐름에서 목적 마감일을 폼/저장 경로로 관통시키기 위해
+  // 폼 훅 생성 이전에 계산한다. (edit 모드에는 적용하지 않는다.)
+  const { user } = useAuth()
+  const { goals } = useGoals(user?.id)
+  const { updateGoal } = useGoalUpdate(user?.id)
+  const linkedGoal: Goal | null = useMemo(
+    () => (goalId ? goals.find((g) => g.id === goalId) ?? null : null),
+    [goalId, goals],
+  )
+  // 신규 추가 + 목적 마감일이 있을 때만 "목적 마감일에 맞춰 모으기"를 적용한다.
+  const goalDeadline: string | undefined = isEditMode
+    ? undefined
+    : linkedGoal?.target_date ?? undefined
+
+  // 목적에 묶인 항목의 "종료 날짜". 기본값은 목적 마감일이고, 사용자가 바꾸면 그 값을 쓴다.
+  // (빈 문자열이면 종료 없이 계속 적립 = 무기한). 분리(unlink)해도 이 날짜는 항목에 남는다.
+  const [endDateOverride, setEndDateOverride] = useState<string | null>(null)
+  const goalEndDate: string = endDateOverride ?? goalDeadline ?? ''
+  const setGoalEndDate = useCallback((v: string) => setEndDateOverride(v), [])
+
+  // 이 화면을 끝냈을 때 돌아갈 자리. 편집은 들어온 항목 상세, 신규는 홈이다.
+  // (되감을 히스토리가 없는 직접 진입에만 쓰이는 폴백이다.)
+  const { goBack: leaveFlow } = useFlowBack({
+    rootPath: editId ? `/investment?id=${editId}` : '/',
+  })
+  const { goBack: goBackToRoot } = useFlowBack({ rootPath: '/' })
+
+  // 저장이 끝나면 이탈 감시를 먼저 걷어낸 뒤 화면을 옮긴다.
+  // 편집(href=null)은 새 엔트리를 얹지 않고 되감는다. 얹으면 복귀한 항목 상세의 ←가
+  // 방금 나온 수정 화면을 그대로 다시 연다.
+  const finishFlowRef = useRef<((href: string | null) => void) | null>(null)
+  const finishFlow = useCallback((href: string | null): void => {
+    finishFlowRef.current?.(href)
+  }, [])
+
   const investmentForm = useAddInvestmentForm({
+    onFinish: finishFlow,
     goalId,
+    goalHasDeadline: !!goalDeadline,
+    goalEndDate,
     mode: isEditMode ? 'edit' : 'create',
     recordId: isEditMode ? editId ?? undefined : undefined,
     initData: edit.initData,
   })
 
   const savingsCashSubmit = useSavingsCashSubmit({
+    onFinish: finishFlow,
     recordType: effectiveRecordType === 'cash' ? 'cash' : 'savings',
     title: formState.title,
     monthlyAmount: formState.monthlyAmount,
     investmentDays: formState.investmentDays,
     interestRate: formState.interestRate,
     maturityDate: formState.maturityDate,
-    periodYears: formState.periodYears,
+    // 적립형이면 기간을 저장하지 않는다 (입력해 둔 값은 토글을 다시 끄면 복원되도록 남긴다).
+    periodYears: formState.isHabitMode ? '' : formState.periodYears,
+    initialMaturityDate: edit.initData?.maturity_date ?? undefined,
     goalId,
+    goalEndDate,
     mode: isEditMode ? 'edit' : 'create',
     recordId: isEditMode ? editId ?? undefined : undefined,
   })
@@ -82,6 +124,9 @@ export function useAddRecordPage() {
       investmentForm.setSelectedStock(null)
       investmentForm.setIsManualInput(false)
     },
+    // 그룹 A에 이미 입력한 이름/종목명이 있으면, 유형만 바꿔도 조용히 지우지 않고 안내한다.
+    groupAHasContent:
+      formState.title.trim() !== '' || investmentForm.stockName.trim() !== '',
     isEditMode,
   })
 
@@ -102,17 +147,72 @@ export function useAddRecordPage() {
     },
   })
 
-  const { goBack: goBackToRoot } = useFlowBack({ rootPath: '/' })
+  // 이탈 확인: 입력이 실제로 바뀐 경우에만 붙잡는다. (← 버튼·브라우저 뒤로가기 동일 규칙)
+  // 편집 모드는 프리필이 끝난 뒤를 기준으로 삼아야 "안 고쳤는데 확인이 뜨는" 오판이 없다.
+  const dirtySignature = useMemo(
+    () =>
+      JSON.stringify([
+        recordType,
+        formState.title,
+        formState.monthlyAmount,
+        formState.investmentDays,
+        formState.interestRate,
+        formState.maturityDate,
+        formState.periodYears,
+        investmentForm.stockName,
+        investmentForm.monthlyAmount,
+        investmentForm.monthlyShares,
+        investmentForm.unitType,
+        investmentForm.period,
+        investmentForm.isHabitMode,
+        investmentForm.startDate?.getTime() ?? null,
+        investmentForm.investmentDays,
+        endDateOverride,
+      ]),
+    [
+      recordType,
+      formState.title,
+      formState.monthlyAmount,
+      formState.investmentDays,
+      formState.interestRate,
+      formState.maturityDate,
+      formState.periodYears,
+      investmentForm.stockName,
+      investmentForm.monthlyAmount,
+      investmentForm.monthlyShares,
+      investmentForm.unitType,
+      investmentForm.period,
+      investmentForm.isHabitMode,
+      investmentForm.startDate,
+      investmentForm.investmentDays,
+      endDateOverride,
+    ],
+  )
+
+  const guard = useUnsavedChangesGuard({
+    signature: dirtySignature,
+    ready: !isEditMode || !!edit.initData,
+    deferBaseline: isEditMode,
+    onExit: leaveFlow,
+  })
+  const { exitWith } = guard
+
+  // 폼 훅보다 뒤에 만들어지는 guard를 써야 해서, 위에서 넘긴 finishFlow의 실제 구현을
+  // 여기서 채워 넣는다.
+  useEffect(() => {
+    finishFlowRef.current = (href: string | null): void => {
+      exitWith(() => {
+        // 편집: 들어온 자리로 되감는다.
+        // 신규: 되감을 원본이 없으므로 입력 화면 자리를 갈아끼운다.
+        //       push로 얹으면 도착한 화면의 ←가 방금 저장한 입력 화면을 다시 연다.
+        if (href === null) leaveFlow()
+        else router.replace(href)
+      })
+    }
+  }, [exitWith, leaveFlow, router])
 
   // 케이스 A 사전 안내 — 적금 신규/수정 시 묶인 목적의 종료일이 만기보다 빠른지 검사.
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
-  const { user } = useAuth()
-  const { goals } = useGoals(user?.id)
-  const { updateGoal } = useGoalUpdate(user?.id)
-  const linkedGoal: Goal | null = useMemo(
-    () => (goalId ? goals.find((g) => g.id === goalId) ?? null : null),
-    [goalId, goals],
-  )
   const [pendingMismatch, setPendingMismatch] = useState<MaturityMismatch | null>(null)
 
   const guardedOnSubmitSavingsCash = useCallback(async (): Promise<void> => {
@@ -168,6 +268,7 @@ export function useAddRecordPage() {
     flow,
     investmentForm,
     formState,
+    // 화면 이동은 저장에 성공했을 때 submit 훅이 onFinish로 알려온다.
     onSubmitInvestment: investmentForm.handleSubmit,
     onSubmitSavingsCash: guardedOnSubmitSavingsCash,
     isSubmitting,
@@ -176,15 +277,17 @@ export function useAddRecordPage() {
   const isInvestment = effectiveRecordType === 'investment'
 
   const handleBack = useCallback((): void => {
-    if (flow.isAtFirstGroup) {
-      setExitDialogOpen(true)
+    // 단일 필드 편집은 그룹 이동 없이 바로 나간다. 그룹 B/C로 진입했다고 해서
+    // ←가 유형 선택(A)으로 데려가면, 고치러 들어온 화면과 무관한 곳에 떨어진다.
+    if (flow.isSingleFieldMode || flow.isAtFirstGroup) {
+      guard.requestExit()
       return
     }
     flow.goPrevGroup()
-  }, [flow])
+  }, [flow, guard])
 
   const onSkip = goalId && !isEditMode
-    ? () => router.replace('/')
+    ? () => exitWith(() => router.replace('/'))
     : undefined
 
   const daysPicker = isInvestment ? investmentDaysPicker : savingsCashDaysPicker
@@ -195,6 +298,9 @@ export function useAddRecordPage() {
     recordType,
     effectiveRecordType,
     setRecordType,
+    goalDeadline,
+    goalEndDate,
+    setGoalEndDate,
     flow,
     formState,
     investmentForm,
@@ -203,9 +309,14 @@ export function useAddRecordPage() {
     actions,
     isSubmitting,
     handleBack,
-    exitDialogOpen,
-    setExitDialogOpen,
-    goBackToRoot,
+    // 편집 대상 조회 상태. 화면이 이걸 렌더하지 않으면 없는 editId로 들어왔을 때
+    // 유형 선택은 잠기고 recordType은 null이라 빈 화면에 갇힌다.
+    isEditLoading: edit.isLoading,
+    editError: edit.error,
+    goHome: goBackToRoot,
+    exitDialogOpen: guard.isConfirmOpen,
+    closeExitDialog: guard.cancelExit,
+    confirmExit: guard.confirmExit,
     onSkip,
     // 케이스 A 사전 확인 모달용
     pendingMismatch,

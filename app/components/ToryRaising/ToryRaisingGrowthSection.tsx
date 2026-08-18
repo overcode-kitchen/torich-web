@@ -35,11 +35,11 @@ export default function ToryRaisingGrowthSection({
   return (
     <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
-        <div className="text-sm font-semibold text-foreground-soft">토리 성장</div>
-        <div className="text-2xl font-bold tracking-tight text-foreground">
+        <div className="text-label font-semibold text-foreground-soft">토리 성장</div>
+        <div className="text-title font-bold tracking-tight text-foreground">
           {titleEmoji} {titleName}
         </div>
-        <div className="text-base text-muted-foreground">
+        <div className="text-body text-muted-foreground">
           토리 · Lv.{level}
           <span className="text-foreground-subtle"> (외형 스테이지 {appearanceStageIndex}/5)</span>
         </div>
@@ -55,11 +55,11 @@ export default function ToryRaisingGrowthSection({
 
       <div className="rounded-2xl border border-border-subtle bg-surface-hover p-4 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-label text-muted-foreground">
             다음 레벨까지
-            <span className="ml-2 text-base font-semibold text-foreground">{acornsToNext ?? 0}개</span>
+            <span className="ml-2 text-body font-semibold text-foreground">{acornsToNext ?? 0}개</span>
           </div>
-          <div className="text-sm font-semibold text-foreground-soft">
+          <div className="text-label font-semibold text-foreground-soft">
             {nextLevel ? `Lv.${level} → Lv.${nextLevel}` : '최대 레벨'}
           </div>
         </div>
@@ -76,8 +76,8 @@ export default function ToryRaisingGrowthSection({
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <div className="text-sm text-muted-foreground">🌰 보유: {balance}</div>
-          <div className="text-sm text-muted-foreground">🔥 연속 {attendanceStreak}일</div>
+          <div className="text-label text-muted-foreground">🌰 보유: {balance}</div>
+          <div className="text-label text-muted-foreground">🔥 연속 {attendanceStreak}일</div>
         </div>
       </div>
 
@@ -94,20 +94,20 @@ export default function ToryRaisingGrowthSection({
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-semibold text-foreground-soft">최근 획득</div>
-        <Button size="sm" variant="ghost" asChild={false} onClick={onResetDemo} className="text-xs">
+        <div className="text-label font-semibold text-foreground-soft">최근 획득</div>
+        <Button size="sm" variant="ghost" asChild={false} onClick={onResetDemo} className="text-caption">
           데모 초기화
         </Button>
       </div>
 
       <div className="rounded-2xl border border-border-subtle bg-surface p-4">
         {recentEarnings.length === 0 ? (
-          <div className="text-sm text-muted-foreground">아직 기록이 없어요. 버튼을 눌러보세요.</div>
+          <div className="text-label text-muted-foreground">아직 기록이 없어요. 버튼을 눌러보세요.</div>
         ) : (
           <ul className="flex flex-col gap-2">
             {recentEarnings.slice(0, 5).map((e) => (
               <li key={`${e.type}-${e.at}`} className="flex items-center justify-between gap-3">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-label text-muted-foreground">
                   {e.type === 'attendance' && '출석'}
                   {e.type === 'investment' && '투자 완료'}
                   {e.type === 'streak' && '연속/방문 보상'}
@@ -118,7 +118,7 @@ export default function ToryRaisingGrowthSection({
                   {e.type === 'levelup' && '레벨업'}
                   {e.type === 'title_change' && '칭호 변경'}
                 </span>
-                <span className="text-sm font-semibold text-foreground">+{e.amount}</span>
+                <span className="text-label font-semibold text-foreground">+{e.amount}</span>
               </li>
             ))}
           </ul>

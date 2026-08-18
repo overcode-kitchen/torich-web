@@ -33,10 +33,10 @@ export default function AuthErrorView({ onGoBack, onGoToLogin }: AuthErrorViewPr
                 {/* 에러 메시지 카드 */}
                 <div className="bg-card rounded-3xl shadow-md p-8 text-center space-y-6">
                     <div className="space-y-2">
-                        <p className="text-foreground text-lg font-semibold">
+                        <p className="text-foreground text-heading font-semibold">
                             로그인 중 오류가 발생했습니다
                         </p>
-                        <p className="text-muted-foreground text-sm">
+                        <p className="text-muted-foreground text-label">
                             다시 시도해주세요
                         </p>
                     </div>

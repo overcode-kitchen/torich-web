@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { ClockCounterClockwise } from '@phosphor-icons/react'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface RetroactiveOnboardingSheetProps {
   isOpen: boolean
@@ -23,10 +24,13 @@ export function RetroactiveOnboardingSheet({
   onRecordNow,
   onLater,
 }: RetroactiveOnboardingSheetProps) {
+  useBodyScrollLock(isOpen)
+
   if (!isOpen) return null
 
   return (
     <div
+      data-overlay
       className="fixed inset-0 z-50 flex flex-col justify-end bg-black/30 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
@@ -49,10 +53,10 @@ export function RetroactiveOnboardingSheet({
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-semibold tracking-tight text-foreground">
+              <h2 className="text-heading font-semibold tracking-tight text-foreground">
                 앱 이전 기간이 있어요
               </h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-foreground-soft">
+              <p className="mt-1.5 text-label leading-relaxed text-foreground-soft">
                 <span className="font-medium text-foreground">
                   {rangeStart} ~ {rangeEnd}
                 </span>
@@ -60,7 +64,7 @@ export function RetroactiveOnboardingSheet({
                 은
                 <br />앱에서 자동 추적되지 않았던 기간이에요.
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-foreground-soft">
+              <p className="mt-2 text-label leading-relaxed text-foreground-soft">
                 이 기간의 납입 내역을 직접 기록해서
                 <br />더 정확한 꾸준함 기록을 완성해 볼까요?
               </p>

@@ -1,4 +1,5 @@
 import { differenceInMonths, addMonths, addDays, differenceInDays, format, isBefore, isAfter } from 'date-fns'
+import type { Investment } from '@/app/types/investment'
 
 /**
  * 개월 수를 "X년 Y개월" 형태의 문자열로 변환
@@ -26,12 +27,46 @@ export function formatDuration(totalMonths: number): string {
 }
 
 /**
+ * YYYY-MM-DD 문자열이 오늘보다 이전인지 판단한다.
+ * 빈 값·형식 불량은 false (별도 필수 검증이 따로 처리한다).
+ */
+export function isPastDateString(value: string): boolean {
+  if (!value) return false
+  const [y, m, d] = value.split('-').map(Number)
+  if (!y || !m || !d) return false
+  return new Date(y, m - 1, d).getTime() < startOfToday().getTime()
+}
+
+/**
  * 시작일과 목표 기간(년)을 기반으로 종료일 계산
  * 적립형(periodYears null/0)은 종료일이 없으므로 null 반환.
  */
 export function calculateEndDate(startDate: Date, periodYears: number | null | undefined): Date | null {
   if (!periodYears || periodYears <= 0) return null
   return addMonths(startDate, periodYears * 12)
+}
+
+/**
+ * 항목의 종료일(만기)을 구한다.
+ * - maturity_date가 있으면 그 날짜 우선 (예적금 만기일, 목적 마감일에 맞춘 투자/현금)
+ * - 없으면 시작일 + 목표 기간(년)으로 계산 (적립형이면 null)
+ */
+export function getRecordEndDate(
+  record: Pick<Investment, 'maturity_date' | 'period_years' | 'start_date' | 'created_at'>,
+): Date | null {
+  if (record.maturity_date) return new Date(record.maturity_date)
+  const startDate = record.start_date ? new Date(record.start_date) : new Date(record.created_at)
+  return calculateEndDate(startDate, record.period_years)
+}
+
+/**
+ * 시작일부터 목표 마감일까지를 "목표 기간(년)"으로 환산한다.
+ * - period_years를 양수로 유지해 '목적형' 분류를 지키기 위한 대략적 fallback.
+ * - 개월수를 12로 나눠 올림하고, 음수/0이면 1년으로 클램프한다.
+ */
+export function periodYearsUntil(startDate: Date, targetDate: Date): number {
+  const months = differenceInMonths(targetDate, startDate)
+  return Math.max(1, Math.ceil(months / 12))
 }
 
 /**
@@ -159,8 +194,8 @@ export function isCompleted(startDate: Date, periodYears: number | null | undefi
   return isAfter(new Date(), endDate)
 }
 
-/** 오늘 00:00:00 기준 Date */
-function startOfToday(): Date {
+/** 오늘 00:00:00 기준 Date. "오늘은 과거가 아니다"를 보장하는 날짜 비교 기준점. */
+export function startOfToday(): Date {
   const t = new Date()
   return new Date(t.getFullYear(), t.getMonth(), t.getDate())
 }

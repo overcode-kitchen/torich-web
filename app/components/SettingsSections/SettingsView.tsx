@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CircleNotch } from '@phosphor-icons/react'
 import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
 import { SettingsSection } from './SettingsSection'
 import { ThemeSelector } from '@/app/components/ThemeSections/ThemeSelector'
 import { BrandStorySheet } from '@/app/components/BrandStorySheet'
@@ -22,8 +23,11 @@ interface SettingsViewProps {
     handleDeleteAccount: () => Promise<void>
 
     // Notification
-    notificationOn: boolean
+    /** null = 아직 값을 확정하지 못함(로딩·조회 실패) */
+    notificationOn: boolean | null
     toggleNotification: () => void
+    notificationLoadFailed: boolean
+    onRetryNotificationLoad: () => void | Promise<void>
 
     // Theme
     theme: Theme
@@ -51,6 +55,8 @@ export default function SettingsView({
     handleDeleteAccount,
     notificationOn,
     toggleNotification,
+    notificationLoadFailed,
+    onRetryNotificationLoad,
     theme,
     setTheme,
     isBrandStoryOpen,
@@ -97,7 +103,7 @@ export default function SettingsView({
             >
                 <div className="max-w-md md:max-w-lg lg:max-w-2xl mx-auto pl-4 pr-2">
                     <div className="h-12 min-h-[48px] max-h-[48px] flex items-center shrink-0">
-                        <h1 className="text-xl font-bold text-foreground">설정</h1>
+                        <h1 className="text-heading font-bold text-foreground">설정</h1>
                     </div>
                 </div>
             </header>
@@ -113,11 +119,26 @@ export default function SettingsView({
                     <SettingsItem
                         label="전체 알림"
                         rightElement={
-                            <Switch
-                                checked={notificationOn}
-                                onCheckedChange={toggleNotification}
-                                aria-label="전체 알림"
-                            />
+                            // 값을 확정하지 못했으면 스위치를 확정 상태로 보여주지 않는다.
+                            // 실패는 '켜짐/꺼짐' 대신 재시도 자리로 바꿔, 틀린 값을 누르게 두지 않는다.
+                            notificationLoadFailed ? (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="xs"
+                                    onClick={() => void onRetryNotificationLoad()}
+                                    className="text-muted-foreground hover:text-foreground-soft hover:bg-secondary h-auto py-1 px-2"
+                                >
+                                    불러오지 못했어요 · 다시 시도
+                                </Button>
+                            ) : (
+                                <Switch
+                                    checked={notificationOn ?? false}
+                                    disabled={notificationOn === null}
+                                    onCheckedChange={toggleNotification}
+                                    aria-label="전체 알림"
+                                />
+                            )
                         }
                     />
                     <SettingsItem
@@ -148,17 +169,6 @@ export default function SettingsView({
                     />
                 </SettingsSection>
 
-                {/* 회원 탈퇴 */}
-                <SettingsSection title="계정 삭제" className="mt-6">
-                    <SettingsItem
-                        label={isDeletingAccount ? '회원 탈퇴 중...' : '회원 탈퇴'}
-                        onClick={() => setShowDeleteModal(true)}
-                        disabled={isDeletingAccount || isLoggingOut}
-                        destructive
-                        showChevron={false}
-                    />
-                </SettingsSection>
-
                 {/* 브랜드 스토리 */}
                 <SettingsSection title="브랜드 스토리">
                     <SettingsItem
@@ -178,12 +188,12 @@ export default function SettingsView({
                         label="버전"
                         rightElement={
                             <div className="flex items-center gap-3">
-                                <span className="text-muted-foreground text-sm">{currentVersion ?? '1.0.0'}</span>
+                                <span className="text-muted-foreground text-label">{currentVersion ?? '1.0.0'}</span>
                                 {hasUpdate && (
                                     <button
                                         type="button"
                                         onClick={() => { void openAppStore() }}
-                                        className="text-primary text-sm font-medium hover:underline"
+                                        className="text-primary text-label font-medium hover:underline"
                                     >
                                         업데이트
                                     </button>
@@ -208,6 +218,20 @@ export default function SettingsView({
                     <SettingsItem
                         label="개인정보처리방침"
                         href="/settings/privacy"
+                    />
+                </SettingsSection>
+
+                {/* 회원 탈퇴 — 되돌릴 수 없는 액션이라 화면 최하단에 둔다.
+                    끝까지 내려가야 나오는 자리여야 무게가 맞고, 훑어 내려가다 잘못 누를 일도 줄어든다.
+                    숨기는 게 아니라 순서만 바꾼 것이다 — 앱 내 접근 경로는 App Store 심사 요건이라 유지한다.
+                    앞 섹션과 시각적으로 떨어뜨리는 mt-6은 그대로 둔다. */}
+                <SettingsSection title="계정 삭제" className="mt-6">
+                    <SettingsItem
+                        label={isDeletingAccount ? '회원 탈퇴 중...' : '회원 탈퇴'}
+                        onClick={() => setShowDeleteModal(true)}
+                        disabled={isDeletingAccount || isLoggingOut}
+                        destructive
+                        showChevron={false}
                     />
                 </SettingsSection>
             </div>
