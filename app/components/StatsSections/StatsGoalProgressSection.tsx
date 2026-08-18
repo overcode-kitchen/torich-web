@@ -55,7 +55,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
           const progress = progressMap.get(goal.id)
           if (!progress) return null
           const dDay = dDayLabel(progress.dDay)
-          const percent = progress.progressPercent ?? 0
+          const percent = progress.displayPercent ?? 0
           const clamped = Math.max(0, Math.min(percent, 100))
           // 채움 끝에 앉는 토리가 바 양끝에서 잘리지 않도록 위치만 살짝 여며둔다
           const toryLeft = Math.max(4, Math.min(clamped, 96))
@@ -79,7 +79,7 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
 
                 {/* 목표 금액이 없는 목적은 바를 그리지 않는다. 0%로 눕혀두면 모은 돈이
                     있어도 "제자리"로 읽혀, 목표를 안 정한 것과 못 모은 것이 뒤섞인다. */}
-                {progress.progressPercent !== null && (
+                {progress.displayPercent !== null && (
                   /* pt로 바 위에 토리 전용 여백을 확보해 위 텍스트와 겹치지 않게 한다 */
                   <div className="relative w-full pt-6">
                     {/* 채움 끝에 앉아 뚝·딱 스냅하며 뒤뚱거리는 토리 */}
@@ -115,8 +115,8 @@ export default function StatsGoalProgressSection({ records }: StatsGoalProgressS
 
                 <p className="truncate text-label text-muted-foreground">
                   {fmt(progress.currentValue)}원
-                  {progress.progressPercent !== null
-                    ? ` · ${progress.progressPercent}%`
+                  {progress.displayPercent !== null
+                    ? ` · ${progress.displayPercent}%`
                     : ' · 목표 미설정'}
                 </p>
               </button>

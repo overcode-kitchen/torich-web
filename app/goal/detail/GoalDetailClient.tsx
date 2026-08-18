@@ -164,12 +164,12 @@ export default function GoalDetailClient() {
   // 히어로 숫자("모은 금액") 아래 보조 줄. 회색 진행 박스를 없앴으므로
   // 달성/마감지남/남은금액/목표미설정 상태를 모두 이 sub로 모은다(정보 무손실).
   const heroSub =
-    progress.progressPercent === null
+    progress.displayPercent === null
       ? '목표 금액을 정하면 진행률을 볼 수 있어요.'
       : progress.isCompleted
         ? <span className="font-semibold text-success">🎉 목표를 달성했어요</span>
         : isPastDue
-          ? <span>마감일이 지났어요 · 달성률 {progress.progressPercent}%</span>
+          ? <span>마감일이 지났어요 · 달성률 {progress.displayPercent}%</span>
           : `목표까지 ${formatCurrency(remaining)}`
 
   const headerActions = (
@@ -237,9 +237,9 @@ export default function GoalDetailClient() {
         label="모은 금액"
         amount={formatCurrency(progress.currentValue)}
         progress={
-          progress.progressPercent !== null
+          progress.displayPercent !== null
             ? {
-                percent: progress.progressPercent,
+                percent: progress.displayPercent,
                 completed: progress.isCompleted,
                 startLabel: formatKoreanDate(new Date(goal.created_at)),
                 endLabel: goal.target_date
