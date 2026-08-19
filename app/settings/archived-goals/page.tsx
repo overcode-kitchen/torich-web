@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import { useGoalUpdate } from '@/app/hooks/goal/data/useGoalUpdate'
 import { useGoalDelete } from '@/app/hooks/goal/data/useGoalDelete'
@@ -10,16 +9,12 @@ import { track } from '@/app/lib/analytics'
 import ArchivedGoalsView from '@/app/components/SettingsSections/ArchivedGoalsView'
 
 export default function ArchivedGoalsPage() {
-  const [userId, setUserId] = useState<string | undefined>(undefined)
+  // userId는 AuthProvider가 이미 들고 있는 값을 쓴다. getUser로 다시 받아오면 Auth 서버
+  // 왕복이 끝나야 조회가 시작돼 화면이 직렬로 느려진다 (#93).
+  const { user, isLoading: authLoading } = useAuth()
+  const userId = user?.id
 
-  useEffect(() => {
-    const supabase = createClient()
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id)
-    })
-  }, [])
-
-  const { archivedGoals, isLoading, refetch } = useGoals(userId)
+  const { archivedGoals, isLoading: goalsLoading, refetch } = useGoals(userId)
   const { unarchiveGoal, isUpdating } = useGoalUpdate(userId)
   const { deleteGoal, isDeleting } = useGoalDelete(userId)
   const { goBack } = useFlowBack({
@@ -42,7 +37,8 @@ export default function ArchivedGoalsPage() {
   return (
     <ArchivedGoalsView
       goals={archivedGoals}
-      isLoading={isLoading}
+      // authLoading을 포함해야 '아직 사용자를 모르는' 구간이 '보관한 목적 0개'로 보이지 않는다.
+      isLoading={authLoading || goalsLoading}
       isBusy={isUpdating || isDeleting}
       onRestore={handleRestore}
       onDelete={handleDelete}

@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 import { useGoals } from '@/app/hooks/goal/data/useGoals'
 import { useGoalsProgress } from '@/app/hooks/goal/calculations/useGoalProgress'
 import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
@@ -10,7 +11,6 @@ import { fmt, dDayLabel } from '@/app/utils/goal-format'
 import { hasArrivalEstimate } from '@/app/utils/goal-scope'
 import { DDayBadge } from '@/app/components/Common/DDayBadge'
 import type { Investment } from '@/app/types/investment'
-import { createClient } from '@/utils/supabase/client'
 
 export interface StatsGoalProgressSectionProps {
   records: Investment[]
@@ -18,14 +18,10 @@ export interface StatsGoalProgressSectionProps {
 
 export default function StatsGoalProgressSection({ records }: StatsGoalProgressSectionProps) {
   const router = useRouter()
-  const [userId, setUserId] = useState<string | undefined>(undefined)
-
-  useEffect(() => {
-    const supabase = createClient()
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id)
-    })
-  }, [])
+  // userId는 AuthProvider가 이미 들고 있는 값을 쓴다. getUser로 다시 받아오면 Auth 서버
+  // 왕복이 끝나야 목적 조회가 시작돼, 통계 진입 때 이 섹션만 늦게 뜬다 (#93).
+  const { user } = useAuth()
+  const userId = user?.id
 
   const { goals } = useGoals(userId)
   const { completedPayments, retroactivePayments, capturedAmounts } = usePaymentHistoryContext()

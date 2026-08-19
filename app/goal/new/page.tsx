@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
@@ -17,7 +17,7 @@ import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { useUnsavedChangesGuard } from '@/app/hooks/navigation/useUnsavedChangesGuard'
 import { amountBucket, track } from '@/app/lib/analytics'
 import { showErrorToast, toastError, TOAST_MESSAGES } from '@/app/utils/toast'
-import { createClient } from '@/utils/supabase/client'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 
 const STEP_COMPONENTS = {
   A: GoalStepName,
@@ -28,7 +28,10 @@ const STEP_COMPONENTS = {
 function NewGoalContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [userId, setUserId] = useState<string | undefined>(undefined)
+  // userId는 AuthProvider가 이미 들고 있는 값을 쓴다. getUser로 다시 받아오면 Auth 서버
+  // 왕복이 끝나기 전에 저장을 누를 수 있고, 그 사이 createGoal이 userId 없이 불린다 (#93).
+  const { user } = useAuth()
+  const userId = user?.id
   const { values, setField, toCreateInput } = useGoalForm()
   const { presets } = useGoalPresets()
   const { createGoal, isCreating } = useGoalCreate(userId)
@@ -37,13 +40,6 @@ function NewGoalContent() {
     rootPath: '/',
     enableHistoryFallback: true,
   })
-
-  useEffect(() => {
-    const supabase = createClient()
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id)
-    })
-  }, [])
 
   // 빈 화면 예시 칩에서 넘어온 경우 목적 이름·이모지를 미리 채운다.
   useEffect(() => {
