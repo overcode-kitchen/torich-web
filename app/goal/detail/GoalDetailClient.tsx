@@ -34,6 +34,12 @@ import { resolvePurposeIcon } from '@/app/constants/goal'
 import { formatKoreanDate } from '@/app/utils/date'
 import { formatCurrency } from '@/lib/utils'
 
+/**
+ * 이번 세션에 goal_completed를 이미 보낸 목적. 목표 금액을 내렸다 올리면
+ * 달성 판정이 다시 서므로, 분석 이벤트가 중복으로 쌓이는 것을 막는다.
+ */
+const completionTracked = new Set<string>()
+
 export default function GoalDetailClient() {
   const searchParams = useSearchParams()
   const goalId = searchParams.get('id') ?? undefined
@@ -77,18 +83,32 @@ export default function GoalDetailClient() {
         }) === 'completed'
       : false
 
+  // completed_at을 쓰는 곳은 이 화면뿐이다. 켜기만 하고 되돌리지 않으면
+  // 목표 금액을 올려 미달이 돼도 값이 남아 목적이 '기간 종료'로 잠긴다 (#252).
+  // 보관된 목적은 건드리지 않는다 — 보관 목록의 '🎉 달성' 표기 근거라서다.
   useEffect(() => {
-    if (!goal || !progress) return
+    if (!goal || !progress || goal.archived_at) return
+
     if (goal.completed_at === null && progress.isCompleted) {
       const completedAt = new Date().toISOString()
       void updateGoal(goal.id, { completed_at: completedAt }).then((updated) => {
         if (!updated) return
         setGoal(updated)
+        // 되돌림 → 재달성을 반복해도 달성은 한 번만 센다.
+        if (completionTracked.has(goal.id)) return
+        completionTracked.add(goal.id)
         track('goal_completed', {
           target_amount_bucket: amountBucket(goal.target_amount),
           days_to_complete: daysBetween(goal.created_at, completedAt),
           linked_record_count: records.length,
         })
+      })
+      return
+    }
+
+    if (goal.completed_at !== null && !progress.isCompleted) {
+      void updateGoal(goal.id, { completed_at: null }).then((updated) => {
+        if (updated) setGoal(updated)
       })
     }
   }, [goal, progress, updateGoal, setGoal, records.length])
