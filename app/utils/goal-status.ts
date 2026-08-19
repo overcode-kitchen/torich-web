@@ -25,10 +25,15 @@ interface DeriveGoalStatusInput {
  * 목적의 현재 상태를 파생 계산한다.
  *
  * 판정 우선순위:
- * 1. completed_at이 명시되어 있으면 → 'completed' (수동 완료)
- * 2. 종료 트리거(날짜 OR 금액) 미충족 → 'in_progress'
+ * 1. completed_at이 있고 종료 트리거(날짜 OR 금액)도 여전히 참 → 'completed'
+ * 2. 종료 트리거 미충족 → 'in_progress' (completed_at이 남아 있어도 무시한다)
  * 3. 종료 트리거 충족 + 묶인 적금 중 미정산·만기 미도달 존재 → 'pending_settlement'
  * 4. 종료 트리거 충족 + 대기할 적금 없음 → 'completed'
+ *
+ * completed_at은 "금액 목표를 달성했다"는 뜻으로만 기록된다(기록 지점은
+ * GoalDetailClient 한 곳뿐). 그래서 목표 금액을 올려 미달이 되면 그 값은 더
+ * 이상 사실이 아니다. 무조건 신뢰하면 목적이 '기간 종료'로 잠겨 적립 항목을
+ * 묶을 수 없게 된다 (#252).
  */
 export function deriveGoalStatus({
   goal,
@@ -36,11 +41,12 @@ export function deriveGoalStatus({
   accumulatedAmount,
   now,
 }: DeriveGoalStatusInput): GoalStatus {
-  if (goal.completed_at) return 'completed'
-
   const dateTriggered = goal.target_date ? new Date(goal.target_date) <= now : false
   const amountTriggered =
     goal.target_amount > 0 && accumulatedAmount >= goal.target_amount
+
+  // 이미 완료로 기록된 목적은 정산 대기 판정을 다시 거치지 않는다.
+  if (goal.completed_at && (dateTriggered || amountTriggered)) return 'completed'
 
   if (!dateTriggered && !amountTriggered) return 'in_progress'
 
