@@ -1,5 +1,6 @@
 'use client'
 
+import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -10,12 +11,25 @@ interface BrandStorySheetProps {
   onClose: () => void
 }
 
+/**
+ * 오버레이는 body로 포털한다. 호출부가 `space-y-4` 컨테이너 안인데, Tailwind v4의
+ * space-y는 v3와 달리 `:not(:last-child)`에 `margin-block-end`를 얹는다. 이 시트는
+ * 마지막 자식이 아니라 `margin-bottom: 1rem`을 받고, top·bottom이 0이고 height가
+ * auto인 fixed 박스는 그 마진만큼 높이가 깎여 바닥에서 16px 뜬다(#238).
+ *
+ * 그래서 하단 패딩을 아무리 키워도 그 16px은 닫히지 않는다 — 흰 패널 '안쪽'만 넓어질 뿐
+ * 패널 바닥 모서리는 제자리다. 실기기 측정으로 확인했다(margin TB = 0px / 16px).
+ * 저장소의 다른 시트(GoalActionSheet·DateSelectSheet)가 멀쩡한 이유도 포털이라
+ * 형제 마진을 안 받아서다.
+ */
 export function BrandStorySheet({ isOpen, onClose }: BrandStorySheetProps) {
   useBodyScrollLock(isOpen)
 
-  if (!isOpen) return null
+  // 정적 export(prerender) 단계엔 document가 없다. 모든 호출부가 isOpen=false로
+  // 시작하므로 이 가드로 하이드레이션 불일치 없이 서버 렌더만 건너뛴다.
+  if (!isOpen || typeof document === 'undefined') return null
 
-  return (
+  return createPortal(
     <div
       data-overlay
       className="fixed inset-0 z-50 flex flex-col justify-end bg-black/30 backdrop-blur-sm"
@@ -66,10 +80,10 @@ export function BrandStorySheet({ isOpen, onClose }: BrandStorySheetProps) {
             </div>
           </div>
         </ScrollArea>
-        {/* 바닥에 붙는 시트라 하단 모서리는 깎지 않는다 — 둥글게 두면 좌우 아래
-            모서리로 딤이 비친다. 하단 여백은 공용 SafeArea(:53)와 같은 calc(env + 24px)다.
-            max()로 두면 safe area가 기존 여백을 잡아먹어 24px → 34px로 10px밖에 안 늘고,
-            닫기 버튼이 홈 인디케이터에 붙는다. safe area가 0인 웹에서는 24px 그대로다. */}
+        {/* 바닥에 붙는 시트라 하단 모서리는 깎지 않는다 — 둥글게 두면 좌우 아래 모서리로
+            딤이 비친다. 하단 여백은 공용 SafeArea(:53)와 같은 calc(env + 24px)로,
+            max()와 달리 safe area가 기존 24px를 잡아먹지 않아 닫기 버튼이 홈 인디케이터에
+            붙지 않는다. safe area가 0인 웹에서는 24px 그대로다. */}
         <div
           className="shrink-0 px-6 pt-4 bg-card"
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
@@ -84,6 +98,7 @@ export function BrandStorySheet({ isOpen, onClose }: BrandStorySheetProps) {
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
