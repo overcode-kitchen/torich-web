@@ -103,13 +103,15 @@ function addYears(date: Date, years: number): Date {
   return newDate
 }
 
-function isValidDate(year: number, month: number, day: number): boolean {
-  const date = new Date(year, month - 1, day)
-  return (
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
-  )
+/**
+ * 그 달에 없는 날을 말일로 당긴다 (6월 31일 → 30일). month는 1~12.
+ *
+ * 앱의 `app/utils/monthly-installments.ts` clampDayToMonth와 같은 규칙이다.
+ * Deno에서 app/ 코드를 import할 수 없어 같은 규칙을 여기 한 벌 더 둔다 —
+ * 바꿀 때는 양쪽을 함께 바꾼다. (#92 · #239)
+ */
+export function clampDayToMonth(day: number, year: number, month: number): number {
+  return Math.min(day, new Date(year, month, 0).getDate())
 }
 
 /**
@@ -132,10 +134,14 @@ export function generatePaymentDates(
   while (current < end) {
     const year = current.getFullYear()
     const month = current.getMonth() + 1
-    for (const day of investmentDays) {
-      if (isValidDate(year, month, day)) {
-        dates.push(new Date(year, month - 1, day))
-      }
+    // 그 달에 없는 날은 건너뛰지 않고 말일로 당긴다. 건너뛰면 6월(30일)에
+    // 31일 회차 알림이 통째로 안 만들어져, 홈·상세가 30일로 보여주는 회차와
+    // 어긋난다 (#239). 당김으로 겹치는 날(30·31 → 30)은 한 번만 잡는다.
+    const clampedDays = new Set(
+      investmentDays.map((day) => clampDayToMonth(day, year, month))
+    )
+    for (const day of clampedDays) {
+      dates.push(new Date(year, month - 1, day))
     }
     current.setMonth(current.getMonth() + 1)
   }
