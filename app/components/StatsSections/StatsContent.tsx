@@ -36,12 +36,17 @@ export default function StatsContent({
   return (
     <>
       {/* 통계 본문은 px-4 → 같은 값으로 bleed해 구분선을 화면 폭까지 늘린다.
-          DetailTabs 기본값(bg-background·top-0)을 통계 화면 기준(bg-surface·노치 아래)으로 덮는다. */}
+          DetailTabs 기본 배경(bg-background)만 통계 화면 기준(bg-surface)으로 덮는다.
+
+          노치 여백은 top 오프셋이 아니라 탭바 자신의 pt로 갖는다. 오프셋으로 내리면
+          탭바가 붙는 자리 '위쪽' 띠는 아무도 칠하지 않아 스크롤된 본문이 그대로
+          비쳐 보였다 (#257). pt로 흡수하면 그 띠가 탭바의 배경 영역이 되어 가려진다.
+          대신 이 여백을 여기서 갖게 됐으므로 StatsView의 main은 paddingTop을 두지 않는다. */}
       <DetailTabs
         tabs={STATS_TABS}
         activeTab={view}
         onTabClick={(tab) => setView(tab as StatsView)}
-        bleedClassName="-mx-4 px-4 mb-4 bg-surface top-[calc(env(safe-area-inset-top,0px)+12px)]"
+        bleedClassName="-mx-4 px-4 mb-4 bg-surface pt-[calc(env(safe-area-inset-top,0px)+12px)]"
       />
 
       {view === 'goal' && <StatsGoalTab data={data} payment={payment} />}
