@@ -7,9 +7,6 @@ import sha256 from 'js-sha256'
 import { toastError } from '@/app/utils/toast'
 import { track, classifyAuthFailure } from '@/app/lib/analytics'
 
-const TEST_EMAIL = 'test@test.com'
-const TEST_PASSWORD = 'password1234'
-
 /** iOS/네이티브 앱: 인앱 브라우저 OAuth 후 앱 복귀용 딥링크 */
 const NATIVE_AUTH_CALLBACK = 'torich://login-callback'
 
@@ -86,9 +83,6 @@ export function useLoginAuth() {
         // 2. SHA256 해싱 (js-sha256 사용, HTTP 환경에서도 동작)
         const hashedNonce = (sha256 as unknown as (msg: string) => string)(rawNonce)
 
-        console.log('rawNonce:', rawNonce)
-        console.log('hashedNonce:', hashedNonce)
-
         // 3. Apple authorize (해시값 전달)
         const result = await SignInWithApple.authorize({
           clientId: 'com.overcode.torich',
@@ -96,8 +90,6 @@ export function useLoginAuth() {
           scopes: 'email name',
           nonce: hashedNonce,
         })
-
-        console.log('identityToken:', result.response.identityToken)
 
         // 4. Supabase signInWithIdToken (raw nonce 전달)
         const { data, error } = await supabase.auth.signInWithIdToken({
@@ -135,46 +127,9 @@ export function useLoginAuth() {
     }
   }, [])
 
-  const handleTestLogin = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const supabase = createClient()
-
-      // 1. 로그인 시도
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: TEST_EMAIL,
-        password: TEST_PASSWORD,
-      })
-
-      if (!signInError) {
-        await new Promise(resolve => setTimeout(resolve, 500))
-        window.location.href = `${window.location.origin}/`
-        return
-      }
-
-      // 2. 실패 시 회원가입 (자동 로그인됨)
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: TEST_EMAIL,
-        password: TEST_PASSWORD,
-      })
-
-      if (signUpError) throw signUpError
-
-      await new Promise(resolve => setTimeout(resolve, 500))
-      window.location.href = `${window.location.origin}/`
-
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : '알 수 없는 오류'
-      toastError(`테스트 계정 로그인 실패: ${message}`)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
   return {
     isLoading,
     handleGoogleLogin,
     handleAppleLogin,
-    handleTestLogin,
   }
 }

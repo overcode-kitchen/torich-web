@@ -66,7 +66,13 @@ rg -o -g '*.tsx' '<button\b' app components | wc -l                            #
 | `scripts/check-hardcoded-color.mjs` | hex 리터럴(`#292A2E`, `bg-[#ece4f7]`), 리터럴 색 함수(`rgb(41,42,46)`), **불투명** 원시 유틸(`bg-white`·`bg-black`·`text-black`) | 알파가 붙은 원시 유틸(`bg-black/50`), 변수를 넣은 색 함수(`hsl(var(--x) / .92)`) |
 | `scripts/check-hardcoded-fontsize.mjs` | `text-[13px]`·`text-[0.8rem]`, 인라인 `fontSize: 9` | `text-[var(--x)]`·`text-[#fff]`(색 유틸이라 색 검사기 소관), 동결된 기존 부채 |
 | `scripts/check-hardcoded-spacing.mjs` | 4의 배수를 벗어난 간격 브래킷(`p-[13px]`·`gap-[7px]`) | 상대·동적 값(`mb-[6%]`·`calc()`·`env()`·`var()`), 3px 이하 미세 물리 간격 |
+| `scripts/check-font-token-sync.mjs` | `globals.css`의 `--text-*` 와 `lib/utils.ts`의 `FONT_SIZE_TOKENS`·fontsize 가드의 `SCALE` 불일치 | 세 목록이 정확히 같을 때 (예외 없음) |
 | `scripts/lib/design-guard.mjs` | (공용 모듈) 파일 순회 · 주석 마스킹 · 인라인 예외 · 리포트 | — |
+
+> **`check-font-token-sync.mjs`가 따로 있는 이유** — tailwind-merge는 Tailwind v4가 CSS(`@theme`)에
+> 정의한 테마를 읽지 못한다. 그래서 `lib/utils.ts`에서 폰트 토큰을 font-size 그룹으로 **직접 등록**해 준다.
+> 등록이 빠진 토큰은 text-color로 오인돼 `cn()`이 글자색(또는 크기)을 조용히 지운다
+> (실제 사례: 온보딩 CTA의 흰 글자가 검게 죽었다). 토큰을 추가하고 배열을 깜빡하는 실수를 기억이 아니라 검사로 막는다.
 
 **공통 동작**
 - 위반이 있으면 `파일:줄` + 원문 + **"대신 무엇을 쓰라"**를 찍고 **exit 1**

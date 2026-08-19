@@ -15,28 +15,58 @@ import {
 
 export type TiltStatus = 'idle' | 'enabled' | 'denied' | 'unsupported'
 
+/** 중력 방향(캔버스 좌표계, y는 아래가 +). 크기는 1 이하 — 화면이 수평이면 0에 가깝다. */
+export interface GravityVector {
+  x: number
+  y: number
+}
+
 interface TiltContextValue {
   /** DeviceOrientationEvent 존재 여부 — 옵트인 버튼 노출 판단용. */
   supported: boolean
   status: TiltStatus
   enabled: boolean
-  /** 현재 수평 중력(-0.5~0.5). 기울기 off면 0. canvas 루프가 매 프레임 읽는다. */
-  gxRef: MutableRefObject<number>
+  /** 현재 중력 방향. 기울기 off면 (0, 1) = 아래. canvas 루프가 매 프레임 읽는다. */
+  gravityRef: MutableRefObject<GravityVector>
   /** 센서 구독 중인지 — 안정돼도 루프를 멈추지 않게 하는 신호. */
   activeRef: MutableRefObject<boolean>
   /** 사용자 제스처(탭) 안에서 호출 — iOS 권한 요청 후 구독 토글. */
   toggle: () => void
-  /** 기울기가 켜지면 정지해 있던 canvas를 깨운다. 해제 함수를 돌려준다. */
+  /** 기울기가 켜지거나 꺼지면 정지해 있던 canvas를 깨운다. 해제 함수를 돌려준다. */
   onResume: (cb: () => void) => () => void
 }
 
 const TiltContext = createContext<TiltContextValue | null>(null)
 
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
+const DOWN: GravityVector = { x: 0, y: 1 }
 
-/** gamma(진입 기준 상대각, deg) → 수평 중력. */
-function gammaToGx(relDeg: number): number {
-  return clamp(Math.sin((relDeg * Math.PI) / 180) * 0.55, -0.5, 0.5)
+/**
+ * beta(앞뒤)·gamma(좌우)로 중력이 화면 안에서 어느 쪽인지 구한다.
+ *
+ * 지구 좌표의 아래(0,0,-1)를 기기 좌표로 되돌리면 (sinγ·cosβ, -sinβ, -cosγ·cosβ)이고,
+ * 화면은 y가 아래로 커지므로 화면 안 중력은 **(sinγ·cosβ, sinβ)**가 된다.
+ * gamma만 읽으면 앞뒤로 뒤집혔는지 알 수 없어, 거꾸로 들어도 아래로만 쏠린다.
+ *
+ * 길이를 1로 정규화하지 않는 것도 의도다 — 기기를 눕히면 화면 안 중력 성분이 실제로 0에 가까워지고,
+ * 도토리도 그대로 멈춘다(바닥에 내려놓은 그릇처럼).
+ */
+function screenGravity(beta: number, gamma: number, angle: number): GravityVector {
+  const b = (beta * Math.PI) / 180
+  const g = (gamma * Math.PI) / 180
+  const x = Math.sin(g) * Math.cos(b)
+  const y = Math.sin(b)
+  if (!angle) return { x, y }
+  // 화면이 돌아가 있으면(가로 모드) 기기 축과 화면 축이 어긋난다 — 그 각도만큼 되돌린다.
+  // iPhone은 세로 고정이라 항상 0이지만, iPad·웹은 가로가 열려 있다.
+  const a = (angle * Math.PI) / 180
+  const c = Math.cos(a)
+  const s = Math.sin(a)
+  return { x: x * c + y * s, y: -x * s + y * c }
+}
+
+function screenAngle(): number {
+  if (typeof window === 'undefined') return 0
+  return window.screen?.orientation?.angle ?? 0
 }
 
 // DeviceOrientationEvent 지원 여부는 클라이언트에서만 알 수 있다.
@@ -51,35 +81,37 @@ type OrientationCtor = typeof DeviceOrientationEvent & {
 }
 
 export function TiltProvider({ children }: { children: ReactNode }) {
-  const gxRef = useRef(0)
+  const gravityRef = useRef<GravityVector>({ ...DOWN })
   const activeRef = useRef(false)
-  const baseRef = useRef<number | null>(null) // 진입 시점 기준 각(상대각 계산용)
   const pendingRef = useRef(false)
   const resumeCbs = useRef<Set<() => void>>(new Set())
   const [status, setStatus] = useState<TiltStatus>('idle')
   const supported = useSyncExternalStore(noopSubscribe, getSupported, getSupportedServer)
 
   const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
-    if (e.gamma == null) return
-    if (baseRef.current == null) baseRef.current = e.gamma
-    const target = gammaToGx(e.gamma - baseRef.current)
-    gxRef.current = gxRef.current * 0.85 + target * 0.15 // 저역통과(떨림 억제)
+    if (e.beta == null || e.gamma == null) return
+    const target = screenGravity(e.beta, e.gamma, screenAngle())
+    const cur = gravityRef.current
+    // 저역통과(떨림 억제) — 방향 두 성분에 똑같이 걸어야 벡터가 튀지 않는다
+    cur.x = cur.x * 0.85 + target.x * 0.15
+    cur.y = cur.y * 0.85 + target.y * 0.15
   }, [])
 
+  const wake = () => resumeCbs.current.forEach((cb) => cb())
+
   const enable = useCallback(() => {
-    baseRef.current = null
     window.addEventListener('deviceorientation', handleOrientation, true)
     activeRef.current = true
     setStatus('enabled')
-    resumeCbs.current.forEach((cb) => cb())
+    wake()
   }, [handleOrientation])
 
   const disable = useCallback(() => {
     window.removeEventListener('deviceorientation', handleOrientation, true)
     activeRef.current = false
-    gxRef.current = 0
-    baseRef.current = null
+    gravityRef.current = { ...DOWN }
     setStatus('idle')
+    wake() // 중력이 아래로 돌아왔으니, 천장·벽에 붙어 있던 도토리를 다시 떨어뜨려야 한다
   }, [handleOrientation])
 
   const toggle = useCallback(() => {
@@ -127,7 +159,15 @@ export function TiltProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo<TiltContextValue>(
-    () => ({ supported, status, enabled: status === 'enabled', gxRef, activeRef, toggle, onResume }),
+    () => ({
+      supported,
+      status,
+      enabled: status === 'enabled',
+      gravityRef,
+      activeRef,
+      toggle,
+      onResume,
+    }),
     [supported, status, toggle, onResume],
   )
 

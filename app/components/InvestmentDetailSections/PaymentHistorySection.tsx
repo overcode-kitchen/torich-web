@@ -75,7 +75,7 @@ export function PaymentHistorySection(props: PaymentHistorySectionProps) {
 
   return (
     <section ref={historyRef} className="py-8 space-y-6">
-      <h3 className="text-lg font-semibold tracking-tight text-foreground">
+      <h3 className="text-heading font-semibold tracking-tight text-foreground">
         월별 납입 기록
       </h3>
 

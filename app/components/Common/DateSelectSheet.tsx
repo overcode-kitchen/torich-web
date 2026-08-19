@@ -8,6 +8,7 @@ import { Calendar, CalendarDayButton } from '@/components/ui/calendar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import YearMonthWheel from './YearMonthWheel'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 // aspect-square를 제거해 너비만 가변되고 높이는 고정되게 함
 function AdaptiveDayButton(props: React.ComponentProps<typeof CalendarDayButton>) {
@@ -27,7 +28,11 @@ interface DateSelectSheetProps {
   title?: string
   /** 제공 시 "삭제" 버튼을 노출하고 날짜 비우기를 허용한다. */
   onClear?: () => void
-  /** 날짜 미선택 시 푸터에 표시할 문구 */
+  /**
+   * 날짜 미선택 시 푸터에 표시할 문구. onClear가 있는 "선택형"에서만 쓰인다.
+   * 비울 수 없는 필수형에서는 "선택 안 함"이 필수값과 모순되고, 시트가 날짜 선택 즉시 닫혀
+   * 문구가 바뀌는 순간도 없어 죽은 텍스트로 남는다 — 그래서 아예 그리지 않는다.
+   */
   emptyLabel?: string
   /** 연도 휠을 올해보다 과거로 몇 년까지 열지 (시작일 등 과거 선택용). 기본 0(과거 불가). */
   pastYears?: number
@@ -71,24 +76,39 @@ export default function DateSelectSheet({
   const atStart = month.getFullYear() === startYear && month.getMonth() === 0
   const atEnd = month.getFullYear() === endYear && month.getMonth() === 11
 
+  // 푸터 상태 문구. 미선택 문구는 비울 수 있는 시트(onClear)에서만 의미가 있다 —
+  // 필수형에서 "선택 안 함"이 뜨면 고를 수밖에 없는 값에 안 골라도 되는 선택지처럼 읽힌다.
+  const statusLabel = selectedDate
+    ? selectedDate.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'short',
+      })
+    : onClear
+      ? emptyLabel
+      : null
+
+  useBodyScrollLock()
+
   // 조상(SubPageScaffold의 animate-page-in transform 등)이 만드는 stacking context 밖으로
   // 빼기 위해 body로 포털 렌더한다. 이래야 시트가 페이지 고정 하단 바 위로 온전히 덮인다.
   if (typeof document === 'undefined') return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div data-overlay className="fixed inset-0 z-50 flex items-end justify-center">
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"
         onClick={onClose}
       />
 
-      <div className="relative z-50 w-full max-w-md bg-card rounded-t-3xl shadow-xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] flex flex-col">
+      <div className="relative z-50 w-full max-w-md bg-card rounded-t-3xl shadow-xl animate-in slide-in-from-bottom duration-300 max-h-[85dvh] flex flex-col">
         <div className="flex justify-center pt-3 pb-2 shrink-0">
           <div className="w-10 h-1 bg-surface-strong rounded-full" />
         </div>
 
         <div className="flex items-center justify-between px-6 pb-4 shrink-0">
-          <h2 className="text-lg font-bold text-foreground">{title}</h2>
+          <h2 className="text-heading font-bold text-foreground">{title}</h2>
           <button
             onClick={onClose}
             className="p-1 text-foreground-subtle hover:text-foreground-muted transition-colors"
@@ -199,35 +219,31 @@ export default function DateSelectSheet({
           </ScrollArea>
         )}
 
-        <div
-          className="flex items-center justify-between px-6 pt-4 border-t border-border-subtle shrink-0"
-          style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
-        >
-          {onClear ? (
-            <button
-              type="button"
-              onClick={() => {
-                onClear()
-                onClose()
-              }}
-              className="text-label font-medium text-foreground-subtle hover:text-foreground-soft transition-colors"
-            >
-              삭제
-            </button>
-          ) : (
-            <span />
-          )}
-          <p className="text-label text-foreground-soft">
-            {selectedDate
-              ? selectedDate.toLocaleDateString('ko-KR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  weekday: 'short',
-                })
-              : emptyLabel}
-          </p>
-        </div>
+        {(onClear || statusLabel) && (
+          <div
+            className={cn(
+              'flex items-center px-6 pt-4 border-t border-border-subtle shrink-0',
+              // 삭제 버튼이 없으면 남는 건 상태 문구 하나뿐이다. justify-between으로 오른쪽 끝에
+              // 몰아두면 버튼 자리처럼 읽히므로, 왼쪽에 붙여 '현재 값' 표시로 보이게 한다.
+              onClear ? 'justify-between' : 'justify-start',
+            )}
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+          >
+            {onClear && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClear()
+                  onClose()
+                }}
+                className="text-label font-medium text-foreground-subtle hover:text-foreground-soft transition-colors"
+              >
+                삭제
+              </button>
+            )}
+            {statusLabel && <p className="text-label text-foreground-soft">{statusLabel}</p>}
+          </div>
+        )}
       </div>
     </div>,
     document.body,

@@ -14,6 +14,7 @@ import ManualInputModal from '@/app/components/ManualInputModal'
 import MaturityMismatchConfirmModal from '@/app/components/Common/MaturityMismatchConfirmModal'
 import { Button } from '@/components/ui/button'
 import { useAddRecordPage } from '@/app/hooks/investment/add/useAddRecordPage'
+import { FIXED_BOTTOM_BAR_ATTR } from '@/app/hooks/ui/useDropdownMaxHeight'
 
 function AddRecordContent() {
   const page = useAddRecordPage()
@@ -111,7 +112,10 @@ function AddRecordContent() {
         )}
       </SubPageScaffold>
 
+      {/* z-40이라 아래에 깔리는 드롭다운을 덮는다. useDropdownMaxHeight가 이 표식으로 윗변을 찾아
+          드롭다운 높이를 제한한다 — 표식을 지우면 검색 결과 하단이 다시 가려진다. (#207) */}
       <div
+        {...{ [FIXED_BOTTOM_BAR_ATTR]: '' }}
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border-subtle bg-surface/95 backdrop-blur"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}
       >

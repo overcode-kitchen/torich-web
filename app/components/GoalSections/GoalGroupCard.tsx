@@ -97,7 +97,7 @@ export function GoalGroupCard({
 }: GoalGroupCardProps) {
   const name = goal?.name ?? fallbackName ?? '목적 미지정'
   const dDay = dDayLabel(progress?.dDay ?? null)
-  const percent = progress?.progressPercent ?? null
+  const percent = progress?.displayPercent ?? null
   const icon = resolvePurposeIcon(goal?.emoji)
   const isPendingSettlement = status === 'pending_settlement'
   // 완료(기간 종료 포함) 목적: 적립 추가 유도는 접고, 카드 하단에 가벼운 "보관하기" 액션만 남긴다.
@@ -158,13 +158,13 @@ export function GoalGroupCard({
       {isCompletedGoal ? (
         // 완료: 상태를 헤더가 먼저 선언한다. 달성이면 "완료", 미달 종료면 "기간 종료".
         // (D-day·%는 "연체/실패"처럼 읽혀 완료 톤과 어긋나므로 노출하지 않는다.)
-        <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-[11px] font-semibold text-foreground-soft">
+        <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-caption font-semibold text-foreground-soft">
           {progress?.isCompleted ? '완료' : '기간 종료'}
         </span>
       ) : (
         <>
           {isPendingSettlement && (
-            <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-[11px] font-semibold text-foreground-soft">
+            <span className="shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-caption font-semibold text-foreground-soft">
               정산 대기{settlementLabel && ` · ${settlementLabel}`}
             </span>
           )}
@@ -188,14 +188,14 @@ export function GoalGroupCard({
       >
         <div className="p-6 pb-4">
           {goal ? (
-            <div className="mb-2 flex w-full items-center gap-1">
+            <div className="mb-2 flex w-full items-center">
               <button
                 type="button"
                 ref={dragHandle?.ref}
                 {...dragHandle?.attributes}
                 {...dragHandle?.listeners}
                 onClick={() => onSelectGoal?.(goal.id)}
-                className="flex min-w-0 flex-1 items-center gap-1 text-left select-none [-webkit-touch-callout:none]"
+                className="flex min-w-0 flex-1 items-center gap-2 text-left select-none [-webkit-touch-callout:none]"
                 aria-label={`${name} 목적 상세 보기${
                   dragHandle ? ' (길게 눌러 순서 변경)' : ''
                 }`}
@@ -214,7 +214,7 @@ export function GoalGroupCard({
               )}
             </div>
           ) : (
-            <div className="mb-2 flex w-full items-center gap-1">{HeaderInner}</div>
+            <div className="mb-2 flex w-full items-center gap-2">{HeaderInner}</div>
           )}
 
           {records.length > 0 ? (

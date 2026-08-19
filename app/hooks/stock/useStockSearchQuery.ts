@@ -7,6 +7,7 @@ import type { SearchResult, Market, SearchApiResponse } from '../types/useStockS
 export interface UseStockSearchQueryReturn {
   isSearching: boolean
   searchResults: SearchResult[]
+  hasMoreResults: boolean
   searchFetchFailed: boolean
   performSearch: (query: string, market: Market) => Promise<void>
   retrySearch: () => void
@@ -16,12 +17,14 @@ export interface UseStockSearchQueryReturn {
 export function useStockSearchQuery(): UseStockSearchQueryReturn {
   const [isSearching, setIsSearching] = useState<boolean>(false)
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [hasMoreResults, setHasMoreResults] = useState<boolean>(false)
   const [searchFetchFailed, setSearchFetchFailed] = useState<boolean>(false)
   const lastSearchRef = useRef<{ query: string; market: Market } | null>(null)
 
   const performSearch = useCallback(async (query: string, market: Market): Promise<void> => {
     if (!query || query.length < 2) {
       setSearchResults([])
+      setHasMoreResults(false)
       setSearchFetchFailed(false)
       lastSearchRef.current = null
       return
@@ -39,9 +42,11 @@ export function useStockSearchQuery(): UseStockSearchQueryReturn {
 
       const results: SearchResult[] = Array.isArray(data.stocks) ? data.stocks : []
       setSearchResults(results)
+      setHasMoreResults(data.hasMore === true)
       setSearchFetchFailed(false)
     } catch {
       setSearchResults([])
+      setHasMoreResults(false)
       setSearchFetchFailed(true)
     } finally {
       setIsSearching(false)
@@ -56,6 +61,7 @@ export function useStockSearchQuery(): UseStockSearchQueryReturn {
 
   const clearResults = useCallback((): void => {
     setSearchResults([])
+    setHasMoreResults(false)
     setSearchFetchFailed(false)
     lastSearchRef.current = null
   }, [])
@@ -63,6 +69,7 @@ export function useStockSearchQuery(): UseStockSearchQueryReturn {
   return {
     isSearching,
     searchResults,
+    hasMoreResults,
     searchFetchFailed,
     performSearch,
     retrySearch,

@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { isCapacitorNative } from '@/lib/auth/capacitor-native'
 import { track, classifyAuthFailure } from '@/app/lib/analytics'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 
 /** iOS 인앱 브라우저 OAuth 복귀 URL (useLoginAuth의 NATIVE_AUTH_CALLBACK과 동일) */
 const AUTH_CALLBACK_PREFIX = 'torich://login-callback'
@@ -30,14 +31,18 @@ function markUrlAsHandled(url: string): void {
 
 async function handleAuthCallbackUrl(
   url: string,
-  options: { closeBrowser?: boolean } = {}
+  options: { closeBrowser?: boolean; onExchangeStart?: () => void } = {}
 ): Promise<boolean> {
   if (!url.startsWith(AUTH_CALLBACK_PREFIX)) return false
 
   if (shouldSkipHandledUrl(url)) return true
   markUrlAsHandled(url)
 
-  const { closeBrowser = false } = options
+  const { closeBrowser = false, onExchangeStart } = options
+
+  // 콜백이 우리 URL임을 확정한 즉시 로딩 상태로 전환한다. 인앱 브라우저가 닫히면서 아래 깔린
+  // 로그인 화면이 드러나고 세션 교환이 끝날 때까지, 로그인 버튼 대신 로딩이 보이도록 하기 위함.
+  onExchangeStart?.()
   if (closeBrowser) {
     try {
       const { Browser } = await import('@capacitor/browser')
@@ -81,6 +86,7 @@ async function handleAuthCallbackUrl(
 
 export default function AuthDeepLinkHandler() {
   const listenerRef = useRef<{ remove: () => Promise<void> } | null>(null)
+  const { beginAuthExchange } = useAuth()
 
   useEffect(() => {
     if (!isCapacitorNative()) return
@@ -91,7 +97,10 @@ export default function AuthDeepLinkHandler() {
       try {
         const { App } = await import('@capacitor/app')
         const handler = async (data: { url: string }) => {
-          await handleAuthCallbackUrl(data.url, { closeBrowser: true })
+          await handleAuthCallbackUrl(data.url, {
+            closeBrowser: true,
+            onExchangeStart: beginAuthExchange,
+          })
         }
 
         const listener = await App.addListener('appUrlOpen', handler)
@@ -103,7 +112,10 @@ export default function AuthDeepLinkHandler() {
 
         const launchUrl = await App.getLaunchUrl()
         if (launchUrl?.url && !cancelled) {
-          await handleAuthCallbackUrl(launchUrl.url, { closeBrowser: false })
+          await handleAuthCallbackUrl(launchUrl.url, {
+            closeBrowser: false,
+            onExchangeStart: beginAuthExchange,
+          })
         }
       } catch (e) {
         console.warn('AuthDeepLinkHandler Capacitor App not available', e)
@@ -116,7 +128,7 @@ export default function AuthDeepLinkHandler() {
       listenerRef.current?.remove().catch(() => {})
       listenerRef.current = null
     }
-  }, [])
+  }, [beginAuthExchange])
 
   return null
 }

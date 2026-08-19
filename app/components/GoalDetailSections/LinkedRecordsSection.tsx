@@ -8,7 +8,7 @@ export interface LinkedRecordsSectionProps {
   records: Investment[]
   isLinking: boolean
   onUnlink: (recordId: string) => void
-  /** 행 탭 시 해당 투자 상세로 이동 */
+  /** 행 탭 시 해당 적립 항목 상세로 이동 */
   onOpenRecord: (recordId: string) => void
 }
 
@@ -25,12 +25,12 @@ export function LinkedRecordsSection({
 }: LinkedRecordsSectionProps) {
   return (
     <section className="py-6">
-      <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
-        묶인 투자 {records.length > 0 && `(${records.length})`}
+      <h3 className="text-heading font-semibold tracking-tight text-foreground mb-4">
+        묶인 적립 항목 {records.length > 0 && `(${records.length})`}
       </h3>
       {records.length === 0 ? (
         <p className="text-label text-foreground-muted">
-          아직 묶인 투자가 없어요. 아래에서 묶을 투자를 골라보세요.
+          아직 묶인 적립 항목이 없어요. 아래에서 묶을 항목을 골라보세요.
         </p>
       ) : (
         <ul className="flex flex-col">

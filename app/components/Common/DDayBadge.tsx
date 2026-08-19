@@ -8,13 +8,14 @@ export interface DDayBadgeProps {
 
 /**
  * 목적 카드·통계에서 공통으로 쓰는 D-day 배지.
+ * integration의 회색 알약 스타일 그대로 — 크기는 #216이 잡은 text-caption을 따른다.
  * 홈 목적 카드(GoalGroupCard)와 통계 목적 진척 섹션이 동일 규격으로 사용한다.
  */
 export function DDayBadge({ label, className }: DDayBadgeProps) {
   return (
     <span
       className={cn(
-        'shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-[11px] font-semibold text-foreground-soft tabular-nums',
+        'shrink-0 rounded-md bg-surface-hover px-2 py-0.5 text-caption font-semibold text-foreground-soft tabular-nums',
         className,
       )}
     >

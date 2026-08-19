@@ -2,6 +2,7 @@
 
 import type { ToryRaisingModalPayload } from '@/app/hooks/tory-raising/useToryRaisingData'
 import { Button } from '@/components/ui/button'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 export default function ToryRaisingModal({
   payload,
@@ -10,10 +11,12 @@ export default function ToryRaisingModal({
   payload: ToryRaisingModalPayload | null
   onClose: () => void
 }) {
+  useBodyScrollLock(payload !== null)
+
   if (!payload) return null
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+    <div data-overlay className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-foreground-subtle/30"
         onClick={onClose}

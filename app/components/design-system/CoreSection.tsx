@@ -84,7 +84,8 @@ export function CoreSection() {
                         { cls: "text-heading", px: "20", usage: "카드 제목", sample: "목표별 페이스" },
                         { cls: "text-body", px: "16", usage: "본문 기본", sample: "본문 텍스트입니다." },
                         { cls: "text-label", px: "14", usage: "조밀 데이터·보조 라벨", sample: "보조 라벨" },
-                        { cls: "text-caption", px: "12", usage: "캡션·메타·배지", sample: "3일 전 · 메타" },
+                        { cls: "text-caption", px: "12", usage: "캡션·메타", sample: "3일 전 · 메타" },
+                        { cls: "text-micro", px: "11", usage: "배지·초소형 메타", sample: "D-113" },
                     ].map(({ cls, px, usage, sample }) => (
                         <div
                             key={cls}

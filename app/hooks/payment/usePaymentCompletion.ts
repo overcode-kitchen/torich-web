@@ -1,36 +1,43 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
 import { PaymentEvent } from '@/app/utils/stats'
 import { usePaymentHistoryContext } from '@/app/contexts/PaymentHistoryContext'
 import { usePostponedPayments } from './usePostponedPayments'
 import { isPaymentCompleted, isPaymentPostponed } from '@/app/utils/payment-completion'
-import { toastSuccess } from '@/app/utils/toast'
+import { toastSuccess, toastUndo } from '@/app/utils/toast'
+import { paymentToastMessage, paymentAmountLabel } from '@/app/utils/payment-toast-message'
 import { awardToryInvestmentComplete } from '@/app/utils/tory-raising/awardToryInvestmentComplete'
 import { hapticSuccess, hapticLightImpact } from '@/app/utils/haptics'
-
-const TOAST_DURATION_MS = 5000
 
 function eventDateStr(e: PaymentEvent): string {
   return `${e.year}-${String(e.month).padStart(2, '0')}-${String(e.day).padStart(2, '0')}`
 }
 
 export function usePaymentCompletion() {
-  const { completedPayments, togglePayment } = usePaymentHistoryContext()
+  const { completedPayments, retroactivePayments, togglePayment } = usePaymentHistoryContext()
   const { postponedPayments, togglePostpone } = usePostponedPayments()
-  const [pendingUndo, setPendingUndo] = useState<PaymentEvent | null>(null)
-  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // 클린업
-  useEffect(() => {
-    return () => {
-      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
-    }
-  }, [])
+  /**
+   * 소급 기록은 record-월당 1건(YYYY-MM-01)이 그 달 전체를 완료로 만든다.
+   * 저장 키가 자동 추적(YYYY-MM-DD)과 달라, 이 판정을 빠뜨리면 캘린더만 미완료로 보인다.
+   */
+  const isEventRetroactivelyCompleted = useCallback((e: PaymentEvent) => {
+    return isPaymentCompleted(retroactivePayments, e.investmentId, e.year, e.month, 1)
+  }, [retroactivePayments])
 
-  const isEventCompleted = useCallback((e: PaymentEvent) => {
+  /** 자동 추적(YYYY-MM-DD) 기록만 본다 */
+  const isEventAutoCompleted = useCallback((e: PaymentEvent) => {
     return isPaymentCompleted(completedPayments, e.investmentId, e.year, e.month, e.day)
   }, [completedPayments])
+
+  // 구간별로 볼 맵이 다르다 — 소급 구간은 소급 맵, 자동 구간은 자동 맵.
+  // 두 맵을 무조건 OR하면, 소급 구간에 잘못 남은 자동 기록까지 완료로 쳐서
+  // 상세는 "미기록"인데 캘린더만 "완료"로 보인다(오염을 가린다).
+  // 구간 판정에 필요한 created_at은 이 훅에 없으므로 호출부가 조합한다.
+  const isEventCompleted = useCallback((e: PaymentEvent) => {
+    return isEventAutoCompleted(e) || isEventRetroactivelyCompleted(e)
+  }, [isEventAutoCompleted, isEventRetroactivelyCompleted])
 
   const isEventPostponed = useCallback((e: PaymentEvent) => {
     return isPaymentPostponed(postponedPayments, e.investmentId, e.year, e.month, e.day)
@@ -53,39 +60,25 @@ export function usePaymentCompletion() {
     const reward = awardToryInvestmentComplete({ paymentDateYMD: dateStr, amount: 10 })
     if (reward.awarded) toastSuccess(`🌰 +${reward.amount} 도토리`)
 
-    setPendingUndo(e)
-
-    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
-    toastTimeoutRef.current = setTimeout(() => {
-      setPendingUndo(null)
-      toastTimeoutRef.current = null
-    }, TOAST_DURATION_MS)
+    // 되돌릴 회차는 토스트 액션 클로저가 들고 있다 — pending 상태·타이머가 따로 필요 없다.
+    // 문구는 "어떤 항목이 완료됐는지"를 담는다 — 이름 + 금액. (이슈 #196)
+    const amount = paymentAmountLabel({
+      unitType: e.unitType,
+      monthlyShares: e.monthlyShares,
+      monthlyAmount: e.monthlyAmount,
+    })
+    toastUndo(paymentToastMessage(e.title, amount, 'completed'), () => {
+      void (async () => {
+        // Toggle to false (currently true)
+        await togglePayment(e.investmentId, dateStr, true)
+        // 완료의 짝(되돌리기) → 저강도 물리 피드백으로 토글 해제를 손끝으로 확인
+        hapticLightImpact()
+      })()
+    })
   }, [togglePayment, togglePostpone, postponedPayments])
 
-  // pendingUndo를 ref로 미러링하지 않고 그대로 의존한다. ref 미러링은 렌더 중 쓰기라
-  // React Compiler에서 깨지고, 여기서는 얻는 것도 없다 — handleUndo는 onClick으로만 쓰여
-  // identity가 바뀌어도 리렌더를 유발하지 않는다. (useMonthlyPaymentStatus.handleUndo와 동일한 형태)
-  const handleUndo = useCallback(async () => {
-    if (!pendingUndo) return
-
-    const dateStr = eventDateStr(pendingUndo)
-
-    // Toggle to false (currently true)
-    await togglePayment(pendingUndo.investmentId, dateStr, true)
-
-    // 완료의 짝(되돌리기) → 저강도 물리 피드백으로 토글 해제를 손끝으로 확인
-    hapticLightImpact()
-
-    setPendingUndo(null)
-
-    if (toastTimeoutRef.current) {
-      clearTimeout(toastTimeoutRef.current)
-      toastTimeoutRef.current = null
-    }
-  }, [togglePayment, pendingUndo])
-
   // 이미 완료된 항목의 '완료됨' 표기를 다시 눌렀을 때 미완료로 되돌린다.
-  // (홈 토스트의 '되돌리기'와 동일한 토글이되, 토스트 상태와 무관하게 항상 동작)
+  // (토스트의 '되돌리기'와 동일한 토글이되, 토스트가 떠 있는지와 무관하게 항상 동작)
   const handleUncomplete = useCallback(async (e: PaymentEvent) => {
     await togglePayment(e.investmentId, eventDateStr(e), true)
     hapticLightImpact()
@@ -105,12 +98,12 @@ export function usePaymentCompletion() {
 
   return {
     isEventCompleted,
+    isEventAutoCompleted,
+    isEventRetroactivelyCompleted,
     isEventPostponed,
     handleComplete,
     handleUncomplete,
     handlePostpone,
     handleUnpostpone,
-    handleUndo,
-    pendingUndo,
   }
 }

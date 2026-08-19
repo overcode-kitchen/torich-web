@@ -35,7 +35,7 @@ export default function HeroSection({ scrollToSection2 }: HeroSectionProps) {
       {/* 히어로 카피 + 그래픽 영역 */}
       <div className="flex flex-1 flex-col gap-8">
         <div className="space-y-4 pl-4 pr-4">
-          <h1 className="text-[2rem] font-bold tracking-tight lg:leading-[1.1]">
+          <h1 className="text-display font-bold tracking-tight lg:leading-[1.1]">
             매달 투자,
             <br />
             까먹지 않게 관리해줄게

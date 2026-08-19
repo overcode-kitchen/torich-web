@@ -12,3 +12,4 @@
 node scripts/check-hardcoded-color.mjs || exit 1
 node scripts/check-hardcoded-fontsize.mjs || exit 1
 node scripts/check-hardcoded-spacing.mjs || exit 1
+node scripts/check-font-token-sync.mjs || exit 1

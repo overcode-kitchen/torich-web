@@ -38,6 +38,7 @@ export default function GroupA_Investment({
           market={form.market}
           isSearching={form.isSearching}
           searchResults={form.searchResults}
+          hasMoreResults={form.hasMoreResults}
           searchFetchFailed={form.searchFetchFailed}
           onRetrySearch={form.retrySearch}
           showDropdown={form.showDropdown}

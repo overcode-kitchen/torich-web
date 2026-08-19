@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import SubPageScaffold from '@/app/components/SubPageScaffold'
 import PrimaryCTAButton from '@/app/components/PrimaryCTAButton'
@@ -17,7 +17,7 @@ import { useFlowBack } from '@/app/hooks/navigation/useFlowBack'
 import { useUnsavedChangesGuard } from '@/app/hooks/navigation/useUnsavedChangesGuard'
 import { amountBucket, track } from '@/app/lib/analytics'
 import { showErrorToast, toastError, TOAST_MESSAGES } from '@/app/utils/toast'
-import { createClient } from '@/utils/supabase/client'
+import { useAuth } from '@/app/hooks/auth/useAuth'
 
 const STEP_COMPONENTS = {
   A: GoalStepName,
@@ -28,7 +28,10 @@ const STEP_COMPONENTS = {
 function NewGoalContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [userId, setUserId] = useState<string | undefined>(undefined)
+  // userId는 AuthProvider가 이미 들고 있는 값을 쓴다. getUser로 다시 받아오면 Auth 서버
+  // 왕복이 끝나기 전에 저장을 누를 수 있고, 그 사이 createGoal이 userId 없이 불린다 (#93).
+  const { user } = useAuth()
+  const userId = user?.id
   const { values, setField, toCreateInput } = useGoalForm()
   const { presets } = useGoalPresets()
   const { createGoal, isCreating } = useGoalCreate(userId)
@@ -37,13 +40,6 @@ function NewGoalContent() {
     rootPath: '/',
     enableHistoryFallback: true,
   })
-
-  useEffect(() => {
-    const supabase = createClient()
-    void supabase.auth.getUser().then(({ data }) => {
-      setUserId(data.user?.id)
-    })
-  }, [])
 
   // 빈 화면 예시 칩에서 넘어온 경우 목적 이름·이모지를 미리 채운다.
   useEffect(() => {
@@ -78,7 +74,7 @@ function NewGoalContent() {
       ? '건너뛰기'
       : '다음으로'
 
-  const { runWithoutGuard } = guard
+  const { exitWith } = guard
   const handleSubmit = useCallback(async (): Promise<void> => {
     // createGoal은 실패를 throw로, 세션이 없으면 null로 알린다.
     // 둘 다 잡아서 알리지 않으면 화면이 그대로라 저장된 줄 알고 나가게 된다.
@@ -101,21 +97,21 @@ function NewGoalContent() {
       })
       // 방금 만든 목적을 보여준다. 홈으로 튕기면 뭘 만들었는지 확인하러
       // 사용자가 다시 찾아 들어가야 한다(적립 항목 수정도 상세로 돌아간다).
-      router.replace(`/goal/detail?id=${goal.id}`)
+      // 만들기 화면은 되감을 원본이 없으므로 replace로 자리를 갈아끼운다.
+      exitWith(() => router.replace(`/goal/detail?id=${goal.id}`))
     } catch (e) {
       showErrorToast(TOAST_MESSAGES.goalSaveFailed, e)
     }
-  }, [createGoal, router, toCreateInput, values, presets])
+  }, [createGoal, router, toCreateInput, values, presets, exitWith])
 
   const handleAction = useCallback((): void => {
     if (isCreating) return
     if (flow.isAtLastStep) {
-      // 저장은 스스로 화면을 옮기므로 감시 항목을 먼저 걷어내고 실행한다.
-      void runWithoutGuard(handleSubmit)
+      void handleSubmit()
       return
     }
     flow.goNextStep()
-  }, [flow, handleSubmit, isCreating, runWithoutGuard])
+  }, [flow, handleSubmit, isCreating])
 
   const handleBack = useCallback((): void => {
     if (flow.isAtFirstStep) {

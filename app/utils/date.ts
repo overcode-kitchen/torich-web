@@ -1,5 +1,6 @@
 import { differenceInMonths, addMonths, addDays, differenceInDays, format, isBefore, isAfter } from 'date-fns'
 import type { Investment } from '@/app/types/investment'
+import { clampDayToMonth, isInstallmentDay } from './monthly-installments'
 
 /**
  * 개월 수를 "X년 Y개월" 형태의 문자열로 변환
@@ -212,15 +213,24 @@ export function getDaysUntilNextPayment(investment_days?: number[] | null): numb
   const month = today.getMonth()
   const currentDay = today.getDate()
 
-  const sortedDays = [...investment_days].sort((a, b) => a - b)
+  // 이번 달에 없는 날(6월 31일 등)은 말일로 당긴다. new Date(2026, 5, 31)은
+  // 7월 1일로 굴러가 버려서, 홈·통계가 보는 회차 날짜와 D-day가 어긋났다.
+  const sortedDays = Array.from(
+    new Set(investment_days.map((d) => clampDayToMonth(d, year, month + 1)))
+  ).sort((a, b) => a - b)
   for (const day of sortedDays) {
     if (day > currentDay) {
       const nextDate = new Date(year, month, day)
       return differenceInDays(nextDate, today)
     }
   }
-  // 다음 달 첫 결제일
-  const nextMonthFirst = sortedDays[0]
+  // 다음 달 첫 결제일 (다음 달 기준으로 다시 당긴다 — 1월 31일 → 2월 28·29일)
+  const nextMonth = new Date(year, month + 1, 1)
+  const nextMonthFirst = Math.min(
+    ...investment_days.map((d) =>
+      clampDayToMonth(d, nextMonth.getFullYear(), nextMonth.getMonth() + 1)
+    )
+  )
   const nextDate = new Date(year, month + 1, nextMonthFirst)
   return differenceInDays(nextDate, today)
 }
@@ -244,7 +254,7 @@ export function getUpcomingPayments(
     for (let d = 0; d < daysToCheck; d++) {
       const checkDate = addDays(today, d)
       const dayOfMonth = checkDate.getDate()
-      if (days.includes(dayOfMonth)) {
+      if (isInstallmentDay(days, checkDate)) {
         results.push({
           id: item.id,
           paymentDate: checkDate,
@@ -285,7 +295,7 @@ export function getUpcomingPaymentsInRange(
       const checkDate = addDays(from, d)
       if (checkDate > to) break
       const dayOfMonth = checkDate.getDate()
-      if (days.includes(dayOfMonth)) {
+      if (isInstallmentDay(days, checkDate)) {
         results.push({
           id: item.id,
           paymentDate: checkDate,
@@ -309,13 +319,20 @@ export function getNextPaymentDate(investment_days?: number[] | null): Date | nu
   const year = today.getFullYear()
   const month = today.getMonth()
   const currentDay = today.getDate()
-  const sortedDays = [...investment_days].sort((a, b) => a - b)
+  const sortedDays = Array.from(
+    new Set(investment_days.map((d) => clampDayToMonth(d, year, month + 1)))
+  ).sort((a, b) => a - b)
   for (const day of sortedDays) {
     if (day > currentDay) {
       return new Date(year, month, day)
     }
   }
-  const nextMonthFirst = sortedDays[0]
+  const nextMonth = new Date(year, month + 1, 1)
+  const nextMonthFirst = Math.min(
+    ...investment_days.map((d) =>
+      clampDayToMonth(d, nextMonth.getFullYear(), nextMonth.getMonth() + 1)
+    )
+  )
   return new Date(year, month + 1, nextMonthFirst)
 }
 

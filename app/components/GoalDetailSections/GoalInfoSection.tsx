@@ -40,7 +40,7 @@ export function GoalInfoSection({
 
   return (
     <section className="py-6">
-      <h3 className="text-lg font-semibold tracking-tight text-foreground mb-4">
+      <h3 className="text-heading font-semibold tracking-tight text-foreground mb-4">
         목적 정보
       </h3>
       <div className="space-y-6">

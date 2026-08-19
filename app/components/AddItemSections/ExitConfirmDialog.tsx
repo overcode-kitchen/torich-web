@@ -1,5 +1,7 @@
 'use client'
 
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
+
 interface ExitConfirmDialogProps {
   isOpen: boolean
   onClose: () => void
@@ -15,10 +17,12 @@ export default function ExitConfirmDialog({
   onClose,
   onConfirm,
 }: ExitConfirmDialogProps) {
+  useBodyScrollLock(isOpen)
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+    <div data-overlay className="fixed inset-0 z-[60] flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
 
       <div className="relative z-[60] w-full max-w-md mx-4 bg-card rounded-2xl shadow-lg p-6">

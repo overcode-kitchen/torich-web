@@ -49,7 +49,7 @@ export function GoalRow({
               aria-label="삭제"
             >
               <TrashSimple className="w-5 h-5 text-white" weight="bold" />
-              <span className="text-[11px] font-semibold text-white">삭제</span>
+              <span className="text-micro font-semibold text-white">삭제</span>
             </button>
           </div>
         )}
@@ -91,8 +91,8 @@ export function GoalRow({
                 </h3>
                 <p className="truncate text-label text-muted-foreground">
                   현재 {fmt(progress.currentValue)}원
-                  {progress.progressPercent !== null &&
-                    ` · ${progress.progressPercent}%`}
+                  {progress.displayPercent !== null &&
+                    ` · ${progress.displayPercent}%`}
                 </p>
               </div>
             </div>
@@ -120,7 +120,7 @@ export function GoalRow({
         onConfirm={swipe.onDeleteConfirm}
         isDeleting={swipe.isSubmitting}
         title={`'${goal.name}' 정리`}
-        description="목적을 정리하면 묶였던 투자는 자유 상태로 돌아갑니다."
+        description="목적을 정리하면 묶였던 적립 항목은 자유 상태로 돌아갑니다."
       />
     </>
   )

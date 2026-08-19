@@ -50,7 +50,7 @@ export function SettingsItem({
             <div className="flex items-center">
                 {rightElement}
                 {shouldShowChevron && (
-                    <span className="ml-3 text-foreground-subtle text-lg" aria-hidden="true">
+                    <span className="ml-3 text-foreground-subtle text-heading" aria-hidden="true">
                         ›
                     </span>
                 )}

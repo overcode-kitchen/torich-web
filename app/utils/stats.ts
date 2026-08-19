@@ -1,6 +1,7 @@
 import type { PaymentHistoryMap } from '@/app/types/payment'
 import { PostponedPaymentsMap } from '@/app/hooks/payment/usePostponedPayments'
 import { isPaymentCompleted, isRecordPostponedInMonth } from './payment-completion'
+import { installmentDaysInRange } from './monthly-installments'
 
 const EMPTY_POSTPONED: PostponedPaymentsMap = new Map()
 const EMPTY_HISTORY: PaymentHistoryMap = new Map()
@@ -109,12 +110,9 @@ export function getPaymentEventsForMonth(
     const days = inv.investment_days
     if (!days || days.length === 0) continue
 
-    const daysInMonth = new Date(year, month, 0).getDate()
-    for (const day of days) {
-      if (day > daysInMonth) continue
-      const paymentDate = new Date(year, month - 1, day)
-      if (paymentDate < startDate) continue
-      if (endDate && paymentDate > endDate) continue
+    // 6월 31일처럼 그 달에 없는 날은 말일로 당긴다. 예전엔 건너뛰어서
+    // 홈·상세엔 있는 회차가 통계·캘린더에서만 통째로 사라졌다.
+    for (const day of installmentDaysInRange(days, year, month, startDate, endDate)) {
       events.push({
         investmentId: inv.id,
         year,

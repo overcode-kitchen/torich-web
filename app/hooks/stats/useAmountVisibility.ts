@@ -32,7 +32,10 @@ export interface AmountVisibility {
  */
 export function useAmountVisibility(): AmountVisibility {
   const { user } = useAuth()
-  const [hiddenBySetting, setHiddenBySetting] = useState(false)
+  // 설정을 읽기 전에는 가린 쪽으로 기운다 — 잘못 가리는 건 불편이지만, 잘못 보여주는 건 정보 노출이다.
+  const [hiddenBySetting, setHiddenBySetting] = useState(true)
+  // 설정이 확정되기 전에 '보기' 버튼이 나타났다 사라지는 깜빡임을 막는다.
+  const [settingResolved, setSettingResolved] = useState(false)
   const [revealed, setRevealed] = useState(sessionRevealed)
 
   const userId = user?.id
@@ -48,10 +51,19 @@ export function useAmountVisibility(): AmountVisibility {
         .eq('user_id', userId)
         .single()
 
-      // 행 없음(신규 유저)·조회 실패는 컬럼 기본값(true = 보임)으로 둔다. 홈이 같은 조회에서
-      // 이미 실패를 토스트로 알리므로, 통계 진입마다 같은 토스트를 또 띄우지 않는다.
-      if (!alive || error) return
+      if (!alive) return
+
+      // 행 없음(PGRST116 = 가린 적이 없는 신규 유저)만 '보임'으로 확정한다.
+      // 그 외 조회 실패는 가린 상태를 유지한다 — 실패를 노출로 폴백하면 가려둔 사용자의 금액이
+      // 그 세션 내내 드러난다. 홈이 같은 조회에서 이미 실패를 토스트로 알리므로 여기선 알리지 않고,
+      // 대신 '보기'로 사용자가 직접 풀 수 있게 확정 처리만 한다.
+      if (error) {
+        setHiddenBySetting(error.code !== 'PGRST116')
+        setSettingResolved(true)
+        return
+      }
       setHiddenBySetting(data?.show_monthly_amount === false)
+      setSettingResolved(true)
     }
 
     void fetchSetting()
@@ -71,7 +83,7 @@ export function useAmountVisibility(): AmountVisibility {
 
   return {
     amountsVisible: !hiddenBySetting || revealed,
-    canToggle: hiddenBySetting,
+    canToggle: settingResolved && hiddenBySetting,
     toggle,
   }
 }

@@ -4,6 +4,7 @@ import { formatCurrency } from '@/lib/utils'
 import { X } from '@phosphor-icons/react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { MonthlyContributionItemVM } from '@/app/hooks/investment/calculations/useMonthlyContribution'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface MonthlyContributionSheetProps {
   contributionItems: MonthlyContributionItemVM[]
@@ -16,8 +17,10 @@ export default function MonthlyContributionSheet({
   totalAmount,
   onClose,
 }: MonthlyContributionSheetProps) {
+  useBodyScrollLock()
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div data-overlay className="fixed inset-0 z-50 flex items-end justify-center">
       {/* 오버레이 */}
       <div
         className="fixed inset-0 bg-black/50 animate-in fade-in-0 duration-200"
@@ -33,8 +36,8 @@ export default function MonthlyContributionSheet({
 
         {/* 헤더 */}
         <div className="flex items-center justify-between px-6 pb-4">
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            📋 이번 달 투자 내역
+          <h2 className="text-heading font-bold text-foreground flex items-center gap-2">
+            📋 이번 달 적립 내역
           </h2>
           <button
             onClick={onClose}
@@ -48,7 +51,7 @@ export default function MonthlyContributionSheet({
         {/* 총액 안내 */}
         <div className="px-6 pb-4">
           <p className="text-label text-foreground-muted">
-            총 <span className="font-bold text-foreground">{formatCurrency(totalAmount)}</span>을 아래와 같이 투자하고 있어요.
+            총 <span className="font-bold text-foreground">{formatCurrency(totalAmount)}</span>을 아래와 같이 적립하고 있어요.
           </p>
         </div>
 
@@ -92,7 +95,7 @@ export default function MonthlyContributionSheet({
           ) : (
             <div className="py-8 flex flex-col items-center justify-center text-center">
               <p className="text-muted-foreground">
-                아직 등록된 투자가 없어요
+                아직 등록된 적립 항목이 없어요
               </p>
             </div>
           )}

@@ -21,9 +21,11 @@ export default function Home() {
   // 설계 문서: .omc/specs/deep-interview-goal-savings-mismatch.md
   useAutoSettleMaturedRecords()
 
-  const [showMonthlyAmount, setShowMonthlyAmount] = useState<boolean>(true)
+  // 설정을 읽기 전에는 가린 채로 그린다. 가리기를 켜둔 사용자에게 진입할 때마다 금액이 스쳐
+  // 보이면 기능 자체가 무의미해진다 — 잘못 가리는 건 불편이고, 잘못 보여주는 건 정보 노출이다.
+  const [showMonthlyAmount, setShowMonthlyAmount] = useState<boolean>(false)
 
-  // Load from DB (PGRST116 = 행 없음 → 신규 사용자, 기본값 유지 / 토스트 없음)
+  // Load from DB (PGRST116 = 행 없음 → 신규 사용자, 가린 적이 없으므로 '보임'으로 확정 / 토스트 없음)
   useEffect(() => {
     if (!userId) return
 
@@ -35,8 +37,10 @@ export default function Home() {
         .eq('user_id', userId)
         .single()
 
-      if (error && error.code !== 'PGRST116') {
-        toastError(TOAST_MESSAGES.settingsLoadFailed)
+      if (error) {
+        // 조회 실패는 가린 상태를 유지한다(사용자가 '보기'로 직접 풀 수 있다).
+        if (error.code === 'PGRST116') setShowMonthlyAmount(true)
+        else toastError(TOAST_MESSAGES.settingsLoadFailed)
         return
       }
       if (data) {
@@ -62,7 +66,9 @@ export default function Home() {
     }
   }
 
-  // 다른 페이지에서 돌아올 때(삭제/수정 후 복귀 등) 목록 자동 갱신
+  // 앱이 백그라운드에서 돌아올 때 목록을 다시 읽는다. `visibilitychange`는
+  // 포그라운드 전환에서만 발생하고 앱 안 화면 이동(뒤로가기)에서는 발생하지 않으므로,
+  // 다른 화면에서 한 변경은 이 훅이 아니라 InvestmentsContext 갱신으로 반영된다.
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {

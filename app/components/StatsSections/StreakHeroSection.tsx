@@ -31,7 +31,7 @@ export default function StreakHeroSection({ consistency }: { consistency: Lifeti
         <div>
           <p className="text-caption text-muted-foreground">연속 적립</p>
           {streakMonths > 0 ? (
-            <p className="mt-1 text-[32px] font-extrabold leading-none tracking-tight text-foreground tabular-nums">
+            <p className="mt-1 text-display font-extrabold leading-none tracking-tight text-foreground tabular-nums">
               {streakMonths}
               <span className="ml-0.5 text-label font-bold">개월</span>
             </p>

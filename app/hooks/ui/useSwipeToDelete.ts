@@ -3,7 +3,23 @@
 import { useRef, useState, useCallback } from 'react'
 import { toastError, TOAST_MESSAGES } from '@/app/utils/toast'
 
-const SWIPE_THRESHOLD = 40
+/**
+ * 열기·닫기 공통 임계값. 노출 폭 대비 비율이다.
+ *
+ * 고정 px이 아니라 비율인 이유: 액션이 1개(삭제)냐 2개(미루기+삭제)냐에 따라 노출 폭이
+ * 80px·160px로 갈리는데, 고정 px을 쓰면 같은 제스처가 행마다 다른 비율로 판정된다.
+ * 비율로 두면 "끝까지의 이만큼을 끌면 넘어간다"가 어느 행에서나 같다.
+ *
+ * 열기와 닫기가 같은 값인 이유: 두 방향의 감도가 다르면 방금 연 것을 같은 크기로
+ * 되돌렸는데 안 닫히는 비대칭이 생긴다. 이 이슈의 원인이 그 비대칭이었다.
+ *
+ * 값이 작은 이유: 실수로 스친 터치는 onTouchMove의 방향 판정(가로 5px)이 이미 걸러낸다.
+ * 여기까지 온 제스처는 열거나 닫으려는 의도가 선 상태이므로, 임계값이 그 역할을 또 할
+ * 필요가 없다. 여는 것도 파괴적이지 않다 — 삭제는 [삭제] 탭 + 확인 모달을 더 거친다.
+ * 0으로 두지 않는 건 끌다가 마음이 바뀌어 되돌리는 여지를 남기기 위해서다. 속도(플링)를
+ * 보지 않는 지금 구조에서는 "빠르게 튕김"과 "끌다 멈춤"이 이동량으로 구분되지 않는다.
+ */
+const THRESHOLD_RATIO = 0.15
 /** 액션 버튼 1개 폭(px). 노출 폭 = actionCount * 이 값. */
 const ACTION_WIDTH = 80
 
@@ -94,14 +110,25 @@ export function useSwipeToDelete({
     if (!enabled) return
     setIsDragging(false)
 
-    if (translateX < -SWIPE_THRESHOLD) {
-      setTranslateX(-revealWidth)
-      setIsRevealed(true)
-    } else {
-      setTranslateX(0)
-      setIsRevealed(false)
+    // 최종 위치가 아니라 "이번 제스처가 얼마나 움직였는지"로 판정한다.
+    // 위치만 보면 열린 상태(-revealWidth)에서 되돌릴 때도 위치가 여전히 임계값 바깥이라,
+    // 닫으려는 의도가 다시 열림으로 뒤집혔다.
+    // (세로 스크롤로 취소된 제스처는 translateX가 base 그대로라 moved=0 → 직전 상태 유지)
+    const base = isRevealed ? -revealWidth : 0
+    const moved = translateX - base
+    const threshold = revealWidth * THRESHOLD_RATIO
+
+    if (isRevealed) {
+      const shouldClose = moved > threshold
+      setTranslateX(shouldClose ? 0 : -revealWidth)
+      setIsRevealed(!shouldClose)
+      return
     }
-  }, [enabled, translateX, revealWidth])
+
+    const shouldOpen = moved < -threshold
+    setTranslateX(shouldOpen ? -revealWidth : 0)
+    setIsRevealed(shouldOpen)
+  }, [enabled, isRevealed, translateX, revealWidth])
 
   const onDeleteButtonClick = useCallback(() => {
     setIsDeleteModalOpen(true)

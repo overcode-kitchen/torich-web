@@ -1,6 +1,6 @@
 import type { PaymentHistoryMap } from '@/app/types/payment'
 import { isPaymentCompleted } from './payment-completion'
-import { ymd, monthlyInstallmentDays } from './monthly-installments'
+import { ymd, monthlyInstallmentDays, installmentDaysInRange } from './monthly-installments'
 import type { Investment } from '@/app/types/investment'
 
 /**
@@ -40,19 +40,7 @@ export function getPaymentHistory(
     const monthLabel = `${month}월`
 
     const days = investment_days && investment_days.length > 0 ? investment_days : []
-    const daysInMonth = new Date(year, month, 0).getDate()
-
-    // 31일 등 그 달에 없는 날은 말일로 당겨 납입일로 본다 (예: 6월이면 30일).
-    // 그래야 홈 토글이 기록하는 날짜와 완료 판정이 일치한다.
-    const paymentDaysInMonth = Array.from(
-      new Set(days.map((day) => Math.min(day, daysInMonth)))
-    )
-    const paymentDatesInRange = paymentDaysInMonth.filter((day) => {
-      const paymentDate = new Date(year, month - 1, day)
-      if (startDate && paymentDate < startDate) return false
-      if (endDate && paymentDate > endDate) return false
-      return true
-    })
+    const paymentDatesInRange = installmentDaysInRange(days, year, month, startDate, endDate)
 
     let completed: boolean
     if (paymentDatesInRange.length === 0) {
@@ -83,6 +71,32 @@ export interface PaymentHistoryEntry {
  *   생략 시 start_date와 동일하게 간주 (기존 동작).
  * @param retroactivePayments 소급 납입 완료 맵 (record_id -> Set<YYYY-MM-01>). 소급 구간 완료 판단에 사용.
  */
+/**
+ * 이 달이 소급 구간인가 — 자동 추적 시작(보통 created_at) 월보다 이전인가.
+ *
+ * 소급 구간은 자동 추적과 저장 키가 다르다(YYYY-MM-01 + is_retroactive).
+ * 캘린더가 이 구간에 자동 키로 기록해 버리면 상세 소급 표에는 보이지 않고,
+ * 나중에 상세에서 다시 기록하면 같은 달이 두 벌로 남아 납입액이 두 배가 된다.
+ * 그래서 "여기가 소급 구간인가"의 답을 이 함수 하나로 모은다.
+ */
+export function isRetroactiveMonth(
+  year: number,
+  month: number,
+  start_date?: string | null,
+  tracking_start_date?: string | null,
+): boolean {
+  const today = new Date()
+  const startDate = start_date ? new Date(start_date) : today
+  const trackingStart = tracking_start_date ? new Date(tracking_start_date) : startDate
+  const effectiveTrackingStart = trackingStart < startDate ? startDate : trackingStart
+  const trackingStartMonth = new Date(
+    effectiveTrackingStart.getFullYear(),
+    effectiveTrackingStart.getMonth(),
+    1
+  )
+  return new Date(year, month - 1, 1) < trackingStartMonth
+}
+
 export function getPaymentHistoryFromStart(
   investmentId: string,
   completedPayments: PaymentHistoryMap,
@@ -96,26 +110,20 @@ export function getPaymentHistoryFromStart(
 
   const today = new Date()
   const startDate = start_date ? new Date(start_date) : today
+  // 계약 종료일. 기간(period_years)이 없으면 끝이 정해지지 않은 것이므로 null이다.
+  // 여기에 today를 넣으면 "아직 오지 않은 이번 달 회차"가 "계약이 끝나 존재하지 않는 회차"로
+  // 둔갑해, 회차 0개 → completed=true 경로를 타고 미도래 회차가 '완료'로 표시된다.
+  // 표에 보여줄 행의 범위는 아래 endLimit이 따로 담당하므로 표시 범위는 달라지지 않는다.
   const endDate =
     startDate && period_years
       ? new Date(startDate.getFullYear() + period_years, startDate.getMonth(), startDate.getDate())
-      : today
-
-  // 자동 추적 시작일: 미지정이면 start_date와 동일 (기존 동작 유지)
-  // start_date가 tracking_start_date보다 미래이면 tracking_start_date를 start_date로 올림 (엣지 케이스)
-  const trackingStart = tracking_start_date ? new Date(tracking_start_date) : startDate
-  const effectiveTrackingStart = trackingStart < startDate ? startDate : trackingStart
-  const trackingStartMonth = new Date(
-    effectiveTrackingStart.getFullYear(),
-    effectiveTrackingStart.getMonth(),
-    1
-  )
+      : null
 
   const results: PaymentHistoryEntry[] = []
   const days = investment_days && investment_days.length > 0 ? investment_days : []
 
   const current = new Date(startDate.getFullYear(), startDate.getMonth(), 1)
-  const endLimit = today < endDate ? today : endDate
+  const endLimit = endDate && endDate < today ? endDate : today
   const end = new Date(endLimit.getFullYear(), endLimit.getMonth(), 1)
   if (current > end) return []
 
@@ -125,7 +133,7 @@ export function getPaymentHistoryFromStart(
     const yearMonth = `${year}-${String(month).padStart(2, '0')}`
     const monthLabel = `${month}월`
 
-    const isRetroactive = current < trackingStartMonth
+    const isRetroactive = isRetroactiveMonth(year, month, start_date, tracking_start_date)
 
     let completed: boolean
     if (isRetroactive) {
@@ -134,18 +142,11 @@ export function getPaymentHistoryFromStart(
         ? isPaymentCompleted(retroactivePayments, investmentId, year, month, 1)
         : false
     } else {
-      const daysInMonth = new Date(year, month, 0).getDate()
-      // 31일 등 그 달에 없는 날은 말일로 당겨 납입일로 본다 (홈 토글과 동일 기준).
-      const paymentDaysInMonth = Array.from(
-        new Set(days.map((d) => Math.min(d, daysInMonth)))
-      )
-      const paymentDatesInRange = paymentDaysInMonth.filter((day) => {
-        const paymentDate = new Date(year, month - 1, day)
-        if (paymentDate < startDate) return false
-        if (endDate && paymentDate > endDate) return false
-        return true
-      })
+      const paymentDatesInRange = installmentDaysInRange(days, year, month, startDate, endDate)
 
+      // 회차가 하나도 없는 달(가입 첫 달의 납입일이 시작일보다 앞서거나, 만기 달의 납입일이
+      // 종료일을 넘는 경우)은 "밀린 것이 없다"는 뜻이라 완료로 표기한다.
+      // 미도래 회차가 여기로 새지 않도록 막는 것은 위 endDate=null 쪽 책임이다.
       if (paymentDatesInRange.length === 0) {
         completed = true
       } else {

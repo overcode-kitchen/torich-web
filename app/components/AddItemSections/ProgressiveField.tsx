@@ -31,7 +31,7 @@ export default function ProgressiveField({
 
   return (
     <div ref={containerRef} className="py-4">
-      <h2 className="text-lg font-semibold text-foreground tracking-tight mb-4">
+      <h2 className="text-heading font-semibold text-foreground tracking-tight mb-4">
         {label}
       </h2>
       <div>{children}</div>

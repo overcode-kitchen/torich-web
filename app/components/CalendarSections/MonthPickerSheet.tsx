@@ -5,6 +5,7 @@ import { X } from '@phosphor-icons/react'
 import YearMonthWheel from '@/app/components/Common/YearMonthWheel'
 import { useDismissibleSheet } from '@/app/hooks/useDismissibleSheet'
 import { APP_BOTTOM_NAV_TOTAL_HEIGHT } from '@/app/constants/layout-constants'
+import { useBodyScrollLock } from '@/app/hooks/ui/useBodyScrollLock'
 
 interface MonthPickerSheetProps {
   /** 현재 캘린더가 보고 있는 월 (강조 표시용) */
@@ -32,8 +33,11 @@ export default function MonthPickerSheet({
     requestClose()
   }
 
+  useBodyScrollLock()
+
   return (
     <div
+      data-overlay
       className="fixed inset-0 z-50 flex items-end justify-center"
       style={{ paddingBottom: APP_BOTTOM_NAV_TOTAL_HEIGHT }}
     >
@@ -59,7 +63,7 @@ export default function MonthPickerSheet({
 
         {/* 헤더 */}
         <div className="flex items-center justify-between px-6 pb-2 shrink-0">
-          <h2 className="text-lg font-bold text-foreground">연도·월 선택</h2>
+          <h2 className="text-heading font-bold text-foreground">연도·월 선택</h2>
           <button
             onClick={requestClose}
             className="p-1 text-foreground-subtle hover:text-foreground-muted transition-colors"

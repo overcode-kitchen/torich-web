@@ -19,6 +19,7 @@ const UPDATABLE_COLUMNS = [
   'goal_id',
   'record_type', 'interest_rate', 'maturity_date',
   'unit_type', 'monthly_shares',
+  'settled_at',
 ] as const satisfies readonly (keyof Investment)[]
 
 /** 키별로 좁혀진 타입을 유지한 채 복사한다. 제네릭이라 캐스팅이 필요 없다. */
@@ -58,6 +59,21 @@ export function useInvestmentsUpdate(
       const updateData: Partial<Investment> = {}
       for (const key of UPDATABLE_COLUMNS) {
         copyIfPresent(updateData, data, key)
+      }
+
+      // 화이트리스트에 없는 키는 조용히 빠진다. 넘긴 값이 **전부** 빠졌다면
+      // 그건 저장할 게 없는 호출이 아니라 컬럼 등록을 빠뜨린 버그다.
+      // 예전에는 이 경우 빈 UPDATE가 성공으로 끝나고, 직후 재조회가 낙관적
+      // 업데이트를 되돌려 호출부만 성공한 줄 알았다 (settled_at 누락, #160).
+      const requestedKeys = (Object.keys(data) as (keyof Investment)[]).filter(
+        (key) => data[key] !== undefined,
+      )
+      if (requestedKeys.length > 0 && Object.keys(updateData).length === 0) {
+        setRecords(prevRecords)
+        setIsUpdating(false)
+        throw new Error(
+          `updateInvestment: 저장 가능한 컬럼이 없습니다. UPDATABLE_COLUMNS에 누락된 키: ${requestedKeys.join(', ')}`,
+        )
       }
 
       try {
