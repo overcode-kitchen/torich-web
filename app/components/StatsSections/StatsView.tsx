@@ -65,13 +65,14 @@ export default function StatsView({
     const { totalMonthlyPayment } = calculations
 
     return (
-        // 타이틀 없는 화면 — main의 bg-surface가 상태바(safe area)까지 덮어 회색으로 보이게 하고,
-        // 콘텐츠는 env(safe-area-inset-top)만큼 내려 노치를 비운다. isNativeApp 게이트 없이 env를 직접 써
+        // 타이틀 없는 화면 — main의 bg-surface가 상태바(safe area)까지 덮어 회색으로 보이게 한다.
+        // 노치 여백(env(safe-area-inset-top) + 12px)은 여기가 아니라 첫 요소인 sticky 탭바가
+        // pt로 갖는다. main에 두면 탭바가 붙는 자리 위쪽 띠를 아무도 칠하지 않아 스크롤된
+        // 본문이 노치로 비친다 (#257). isNativeApp 게이트 없이 env를 직접 써
         // 웹(viewport-fit=cover) 시뮬레이터에서도 노치가 흰색 카드로 덮이지 않게 한다.
         <main
             className="min-h-screen bg-surface"
             style={{
-                paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)',
                 paddingBottom: APP_TAB_CONTENT_PADDING_BOTTOM,
             }}
         >
