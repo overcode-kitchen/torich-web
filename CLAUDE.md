@@ -136,6 +136,24 @@ NEXT_PUBLIC_API_URL=https://torich.vercel.app pnpm build:app
 grep -ro "localhost:3000" out/ | wc -l   # 반드시 0
 ```
 
+## `NEXT_PUBLIC_GA_ID` — 비면 계측이 조용히 사라진다 (CRITICAL)
+
+`app/layout.tsx`는 `process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics />` 가드다. **값이 비면 측정 태그가 번들에서 통째로 빠지는데, 빌드는 에러도 경고도 없이 성공하고 앱도 정상 동작한다.** 계측이 죽은 사실은 스토어에 올린 뒤에야 드러나고, 되돌리려면 재빌드·재심사뿐이다. 실제로 v1.4.0까지 앱 계측이 이 방식으로 비어 있었다.
+
+`scripts/verify-app-build-env.mjs`가 빌드 전에 막는다.
+
+| 상황 | 동작 |
+|---|---|
+| `NEXT_PUBLIC_GA_ID` 비어 있음 | **빌드 중단** |
+| 개발 속성(`G-C8E4VZ883Y`) | **빌드 중단** — 운영 데이터가 Dev 속성으로 흘러가는 것을 막는다. 시험 목적이면 `ALLOW_DEV_GA_ID=1` |
+| 운영 속성(`G-SC1LBTD65X`) | 값과 출처 파일을 출력하고 통과 |
+
+빌드 후 번들을 직접 확인하는 게 최종 관문이다.
+
+```bash
+grep -ro "G-SC1LBTD65X" out/ | wc -l   # 반드시 1 이상
+```
+
 ## macOS 한글 경로 + CocoaPods UTF-8
 
 작업 경로에 한글이 포함되어 있을 경우 (예: `Team/overcord-kitchen/...`) `pod install` 단계에서 `Encoding::CompatibilityError` 가 발생한다. `~/.zshrc` 에 아래를 영구 등록한다.
@@ -197,7 +215,9 @@ app/foo/[id]/
 - [ ] `git status` 에 `app/api/*`, `app/auth/*` 가 deleted로 떠 있지 않은가
 - [ ] `capacitor.config.ts` 의 `server.url` 이 주석 처리 + `loggingBehavior: 'production'` 인가
 - [ ] `grep -ro "localhost:3000" out/ | wc -l` 이 **0** 인가 (아카이빙 직전 필수)
+- [ ] `grep -ro "G-SC1LBTD65X" out/ | wc -l` 이 **1 이상** 인가 (아카이빙 직전 필수 — **0이면 앱 계측이 통째로 빠진 것**)
 - [ ] `[build:app] NEXT_PUBLIC_API_URL = ...` 출력의 값과 출처가 운영 기준으로 찍혔는가
+- [ ] `[build:app] NEXT_PUBLIC_GA_ID = ...` 출력이 운영 속성(`G-SC1LBTD65X`)으로 찍혔는가
 
 ---
 
