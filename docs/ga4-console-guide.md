@@ -42,10 +42,18 @@ GA 화면에 자주 나오는 영어 단어들. 외울 필요 없고, 막힐 때
 
 토리치는 **두 개의 GA 속성**을 운영함. 개발자/QA의 테스트 행동이 진짜 사용자 데이터에 섞이지 않도록 분리해둔 것.
 
-| 속성 이름 | 측정 ID | 들어가는 환경 | 용도 |
-| --- | --- | --- | --- |
-| **Torich Dev** | `G-C8E4VZ883Y` | `localhost:3000` (`npm run dev`) + Vercel **Preview** deployment URL (PR/branch별 `*-<branch>.vercel.app`) | 로컬 개발·내부 테스트 |
-| **Torich Prod** | `G-SC1LBTD65X` | `https://torich.vercel.app/` (운영 도메인) + iOS 앱스토어 빌드 | 정식 사용자 데이터 |
+| 속성 이름 | **속성 ID** | 측정 ID | 들어가는 환경 | 용도 |
+| --- | --- | --- | --- | --- |
+| **Torich Dev**<br>(콘솔 표기 `Torich Web`) | `518945484` | `G-C8E4VZ883Y` | `localhost:3000` (`npm run dev`) + Vercel **Preview** deployment URL (PR/branch별 `*-<branch>.vercel.app`) | 로컬 개발·내부 테스트 |
+| **Torich Prod** | `536397127` | `G-SC1LBTD65X` | `https://torich.vercel.app/` (운영 도메인) + iOS 앱스토어 빌드 | 정식 사용자 데이터 |
+| ~~overcode-torich~~ | `524835420` | — | — | **미사용** (데이터 0건) |
+
+**속성 ID를 꼭 같이 본다.** 콘솔 URL에는 측정 ID가 아니라 속성 ID(`p536397127`)가 들어간다. 측정 ID만 알고 있으면 지금 보고 있는 화면이 Prod인지 Dev인지 URL로 대조할 방법이 없다. 실제로 §6 북마크 5개가 전부 Dev 속성을 가리킨 채 한동안 방치된 적이 있다.
+
+> [!CAUTION]
+> **데이터 스트림의 "스트림 URL"은 라벨일 뿐 필터가 아니다.**
+> Dev 속성의 스트림 URL이 `torich.vercel.app`(운영 도메인)으로 잘못 적혀 있지만, 거기 뭐라고 적혀 있든 그 측정 ID로 오는 데이터는 전부 받는다. 이 칸만 보고 "운영 데이터가 Dev로 새고 있다"고 판단하면 안 된다. **데이터가 실제 어디서 왔는지는 보고서의 `호스트 이름(hostname)` 차원으로 확인한다.**
+> (2026-08 실측: Prod는 `torich.vercel.app` 100%, Dev는 `localhost`·사설 IP 100% — 분리는 정상)
 
 GA 콘솔 주소: https://analytics.google.com/
 
@@ -121,13 +129,15 @@ GA 콘솔 주소: https://analytics.google.com/
 
 > 이 토글을 켜야 §2의 홈 화면에 "전환수" 카드 숫자가 채워져.
 
-### B. 데이터 보관 기간 늘리기 (선택, 5분)
+### B. 데이터 보관 기간 늘리기 (**필수**, 5분)
 
 **경로**: 관리 → 데이터 설정(Data Settings) → 데이터 보관(Data Retention)
 
-- 기본값: 14개월
-- 권장: **26개월(=2년 2개월)** 로 변경
-- 왜? KPI 3 "6개월 리텐션"을 보려면 그 데이터가 26개월까진 남아있어야 1년+ 코호트 비교가 가능
+- **이벤트 데이터 기본값은 `2개월`이다.** (2026-08 실측: 두 속성 모두 2개월이었다)
+- **`14개월`로 바꾼다.** GA4 무료 속성이 고를 수 있는 값은 **2개월·14개월 두 개뿐**이다. 26개월 이상은 GA360(유료) 전용이라 우리 콘솔에는 선택지가 없다.
+- 왜? 2개월이면 **탐색(Exploration)에서 두 달보다 오래된 데이터를 아예 못 본다.** 리텐션·코호트 비교가 불가능해진다.
+- ⚠️ **소급 적용되지 않는다.** 오늘 바꿔도 이미 지워진 과거는 돌아오지 않는다. 그래서 미루면 미룬 만큼 손해다.
+- "사용자 데이터" 보관은 기본 14개월이라 그대로 두면 된다. 바꿀 것은 **이벤트 데이터**다.
 
 ---
 
@@ -374,13 +384,16 @@ custom            21    ← 직접 입력한 사람
 
 브라우저 즐겨찾기에 박아두면 매일 5초 안에 도달.
 
+> [!IMPORTANT]
+> 아래 링크의 **`p536397127`은 Torich Prod의 속성 ID**다. 이 자리에 `p518945484`(Dev)가 들어가면 개발 트래픽을 운영 숫자로 착각하게 된다. 링크를 복사·수정할 때 이 번호를 반드시 확인한다.
+
 | 이름 | 링크 |
 | --- | --- |
-| 1. 홈 (매일 30초) | https://analytics.google.com/analytics/web/?authuser=2#/p518945484/reports/intelligenthome |
-| 2. DebugView (검증) | https://analytics.google.com/analytics/web/?authuser=2#/a379810235p518945484/admin/debugview/ |
-| 3. 실시간(Realtime) | https://analytics.google.com/analytics/web/?authuser=2#/p518945484/reports/realtime |
-| 4. 이벤트 보고서 | https://analytics.google.com/analytics/web/?authuser=2#/p518945484/reports/explorer?r=engagement-events |
-| 5. 탐색 (보고서 만들기) | https://analytics.google.com/analytics/web/?authuser=2#/p518945484/explore |
+| 1. 홈 (매일 30초) | https://analytics.google.com/analytics/web/?authuser=2#/p536397127/reports/intelligenthome |
+| 2. DebugView (검증) | https://analytics.google.com/analytics/web/?authuser=2#/a379810235p536397127/admin/debugview/ |
+| 3. 실시간(Realtime) | https://analytics.google.com/analytics/web/?authuser=2#/p536397127/reports/realtime |
+| 4. 이벤트 보고서 | https://analytics.google.com/analytics/web/?authuser=2#/p536397127/reports/explorer?r=engagement-events |
+| 5. 탐색 (보고서 만들기) | https://analytics.google.com/analytics/web/?authuser=2#/p536397127/explore |
 
 ---
 
