@@ -6,7 +6,7 @@ status: 판정 완료 — 2026-08-24
 
 # 토리치 기능 전수 목록
 
-> **용도**: [방향성 전환 실행 계획](direction-shift-plan.md) **Phase 0** 산출물.
+> **용도**: [방향성 전환 실행 계획](02-schedule.md) **Phase 0** 산출물.
 > - **8/21 (Phase 1)** — 컨셉 A/B 중 하나를 골랐을 때 **무엇을 버려야 하는지**의 근거
 > - **8/25 (Phase 2)** — 기능 하나씩 **"이게 왜 필요한가"** 를 묻는 판정표
 >
@@ -198,4 +198,4 @@ status: 판정 완료 — 2026-08-24
 - [ ] `records` 24컬럼을 어떻게 좁힐 것인가 (컬럼 삭제는 금지 — **화면에서 안 쓰는 것**으로 처리)
 - [ ] 투자만 갖는 `start_date`를 3유형 공통으로 올릴 것인가 (유형이 사라지므로 **모든 항목이 시작 시점을 갖는다**)
 
-> 판정 결과 정본은 [phase2-checklist.md](phase2-checklist.md) §1, 근거는 [v2-renewal-brief.md](v2-renewal-brief.md) §9.
+> 판정 결과 정본은 [03-decisions.md](03-decisions.md) §1, 근거는 [01-brief.md](01-brief.md) §9.
