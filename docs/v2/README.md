@@ -28,7 +28,8 @@ tags:
 | 왜 그렇게 정했나 | [04-idea-log.md](04-idea-log.md) |
 | 지금 앱에 뭐가 들어있나 | [05-feature-inventory.md](05-feature-inventory.md) |
 | 이 요소를 화면에 넣어도 되나 | [06-constraints.md](06-constraints.md) |
-| 화면이 어떻게 생겼나 | [IA 캔버스](https://claude.ai/code/artifact/7fb4247b-c6e4-4ed0-910d-ecf3eb686172) |
+| 화면이 어떻게 생겼나 | [IA 캔버스](https://claude.ai/code/artifact/7fb4247b-c6e4-4ed0-910d-ecf3eb686172) (와이어프레임 12장) |
+| **눌러보고 싶다** | **[메인 플로우 프로토타입](https://claude.ai/code/artifact/9dc25652-2c47-4d80-9a7c-70a4f492f04c)** — 온보딩 → 담기 → 홈 |
 
 ---
 

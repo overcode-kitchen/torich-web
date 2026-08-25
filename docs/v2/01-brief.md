@@ -530,3 +530,4 @@ ETF를 빼면서 시세는 화면 어디에도 남지 않는다 — 앱이 다�
 | [04-idea-log.md](04-idea-log.md) | 논의에서 나온 것. 왜 그렇게 정했는지 |
 | [05-feature-inventory.md](05-feature-inventory.md) | 현재 기능 전수 목록 (Phase 0 산출물) |
 | [IA 캔버스](https://claude.ai/code/artifact/7fb4247b-c6e4-4ed0-910d-ecf3eb686172) | **화면 12개 보드.** 와이어프레임과 플로우 |
+| [메인 플로우 프로토타입](https://claude.ai/code/artifact/9dc25652-2c47-4d80-9a7c-70a4f492f04c) | **눌러보는 화면.** 온보딩 A/B → 담기 → 홈. 화면마다 요소 예산을 세어 보여준다 |
