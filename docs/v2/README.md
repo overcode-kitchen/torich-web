@@ -27,19 +27,21 @@ tags:
 | 스키마를 어떻게 바꾸기로 했나 | [03-decisions.md §6](03-decisions.md) |
 | 왜 그렇게 정했나 | [04-idea-log.md](04-idea-log.md) |
 | 지금 앱에 뭐가 들어있나 | [05-feature-inventory.md](05-feature-inventory.md) |
+| 이 요소를 화면에 넣어도 되나 | [06-constraints.md](06-constraints.md) |
 | 화면이 어떻게 생겼나 | [IA 캔버스](https://claude.ai/code/artifact/7fb4247b-c6e4-4ed0-910d-ecf3eb686172) |
 
 ---
 
-## 문서 5개
+## 문서 6개
 
 | # | 문서 | 무엇 | 언제 보나 |
 | --- | --- | --- | --- |
 | **01** | [brief](01-brief.md) | **방향성 요약.** 컨셉 · 화면 구조 · 핵심 플로우 · 무엇을 버리는가 | **처음 보는 사람은 여기부터** |
-| **02** | [schedule](02-schedule.md) | **일정 정본.** Phase 0~4 · 날짜별 할 일 · 역할 분담 · 리스크 · **자를 순서** | "언제까지 뭘 하지?" |
+| **02** | [schedule](02-schedule.md) | **일정 정본.** 날짜별 할 일 · Phase별 할 일 · 역할 · **자를 순서** | "언제까지 뭘 하지?" |
 | **03** | [decisions](03-decisions.md) | 결정 체크리스트. `[x]`는 확정, `[ ]`는 미결. **§6에 스키마 변경 4건** | "이거 정해졌나?" |
 | **04** | [idea-log](04-idea-log.md) | 논의에서 나온 것들. **왜 그렇게 정했는지** | "이건 왜 이렇게 하기로 했지?" |
 | **05** | [feature-inventory](05-feature-inventory.md) | 현재 기능 전수 목록 (Phase 0 산출물) | "지금 이 기능 어디 있지?" |
+| **06** | [constraints](06-constraints.md) | **화면 요소 예산 · No-go 18건.** 새 화면에 뭘 못 넣는가 | "이거 홈에 넣어도 되나?" |
 
 > [!tip] 셋만 기억하면 된다
 > **일정은 02** · **결정은 03** · **왜는 04.**
