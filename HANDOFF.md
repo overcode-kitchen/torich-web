@@ -2,40 +2,50 @@
 
 > 이 파일은 재진입 노트다. 세션 시작 시 훅이 자동으로 읽어준다.
 > 돌아오면 `/catchup` 으로 이 파일 + git 상태를 브리핑받고 시작하라.
-> _마지막 갱신: 2026-07-28 · 브랜치: style/104-goal-pace-ui_
+> _마지막 갱신: 2026-09-06 13:02 · 브랜치: feat/271-v2-main-flow_
 
 ## 🎯 지금 목표 (한 줄)
-이슈 #104 — '목표별 페이스' 섹션 UI 리디자인. **A안(목적당 카드 1장 + 모은 금액) 구현 완료**, 남은 건 실기기 눈검증 → `build:app` → PR(base `integration`).
+**v2 메인 플로우를 폰에서 눌러보고 판단한다.** `/v2` 4화면 구현 완료 · [PR #272](https://github.com/overcode-kitchen/torich-web/pull/272) 오픈 · **남은 건 실기기 눈검증**.
 
 ## ✅ 마지막으로 한 것 (이번 세션)
-- **A안 채택·구현**(#104). Claude 시안 3안(A 금액으로 채우기 / B 패널 낮추기 / C 전폭 배너) 중 A안 승인받아 진행. 시안 아트팩트: https://claude.ai/code/artifact/306ed04f-7cf3-490b-b710-939af7833c0b
-- 한 카드 안 `ul`+구분선 → **목적 하나당 흰 카드 하나**(`rounded-2xl bg-card p-5`, 카드 간 `gap-3`).
-- **목적명·D-day를 카드 머리로 승격** → 우측 상단 빈 자리 제거. 그 자리에 **모은 금액 / 목표 금액** 추가하고 우측을 `justify-between`으로 위아래로 벌려 채움.
-- 그린 패널 **132 → 118px**, 컬럼 `132px_1fr` → `118px_1fr`.
-- `shortWon()` 신설(`app/utils/goal-format.ts`) — `120만원` / `3,000만원` / `1억 2,000만원`. 만원 미만은 원 단위 그대로.
-- **다크모드 버그 수정**: 진행바 트랙 `bg-surface-hover`가 다크에서 카드(`bg-card`)와 같은 coolgray-900이라 안 보였다. `--progress-track` 시맨틱 신설(라이트 coolgray-50 / 다크 coolgray-800) 후 '목표별 페이스'와 '목적 진척' 두 곳 교체. globals.css를 고쳤으므로 `CoreSection.tsx` 컬러 목록에도 토큰 추가.
-- 커밋 4개(`1174dcb` `ab0cab8` `77caf6d` `bd6ea7a`) + 이 노트.
+- **미결 질문 3건을 닫았다**(#246). Q1 계획 채움 → `이번 달 현황` 안 한 줄로 흡수 / Q2 화면 내 금액 가리기 → **삭제** / Q3 브랜드 스토리 → 홈에서 빼고 **설정 진입만**. `docs/v2/06-constraints.md` 가 "확정 — 미결 없음"이 됐다.
+- **일정 문서를 471줄 → 143줄로 줄였다**(`docs/v2/02-schedule.md`). 날짜별 표를 앞으로 올리고, 진단·원칙·GA 콘솔 설명·리스크 표를 덜어냈다(전부 01·04·ga4-console-guide에 이미 있다).
+- **모션 권한 스파이크를 블로커에서 뺐다.** 연출 안의 입력 방식 하나 고르는 문제라 기획을 막지 않는다 → Phase 3으로 옮김.
+- **클릭 프로토타입**(아티팩트)을 만들고 거기서 나온 발견 3건을 `06-constraints.md §5-1`에 남겼다.
+- **`/v2` 4화면을 실제 앱에 구현했다**(#271) — 온보딩 A/B 분기 · 담기 · 홈 · 설정. 진짜 토큰·`<Button>`·`<Card>` 사용. 기존 화면은 하나도 안 건드렸다.
 
 ## 📍 지금 상태
-- 빌드/실행: `tsc --noEmit` ✅, `eslint`(변경 파일) ✅, 웹 dev 눈검증 ✅. **`build:app` 정적 export는 아직 안 돌림** — 라우팅/env 무변경(순수 스타일)이라 스킵. PR 열기 전에 돌릴 것.
-- 워크트리: `tickle-moa-w-B`에서 작업 중. 웹 확인은 이 워크트리의 dev 서버 `http://localhost:3002/stats` (3000=tickle-moa, 3001=워크트리 A가 점유).
-- 담당자: #104 @me 지정됨. PR은 아직 안 열음.
+- 빌드/실행: `tsc --noEmit` ✅ · `eslint`(신규 파일) ✅ · `pnpm lint:design` ✅ 차단 위반 0 · `build:app` ✅ — `out/`에 `v2.html`·`v2/{onboarding,add,settings}.html` 생성 확인. `server-routes.backup/` 잔여 없음, `app/api`·`app/auth` 복구됨.
+- 미커밋 변경: **없음**(전부 커밋·푸시됨). 워킹 트리에 `토리치-소개-블로그-글감.md`(8/18 작성) 하나가 untracked로 남아 있는데 **이번 작업과 무관** — 커밋할지 미정.
+- 브랜치 2개가 살아 있고 **둘 다 PR이 열려 있다**: `docs/246-roadmap-2026h2` → [PR #265](https://github.com/overcode-kitchen/torich-web/pull/265) · `feat/271-v2-main-flow` → [PR #272](https://github.com/overcode-kitchen/torich-web/pull/272).
 
 ## ⏭️ 다음 할 일 (우선순위 순)
-1. **실기기 눈검증**: Xcode 빌드 → 통계 탭 '목표별 페이스'. ① 118px 패널에 도토리 쏟겨 쌓이는지 ② 달성% 흰 글자 가독성 ③ 카드 분리 후 스크롤 길이 ④ 다크모드 그린 명도·기한 바 트랙.
-2. **캘리브레이션(필요 시)**: 도토리 크기 `SPRITE_SCALE=2.7`(`app/utils/acorn-physics.ts`) — 패널이 줄었지만 웹에서는 그대로 두기로 결정, 기기에서 재판단. 그린 명도는 `app/globals.css` `--goal-well`.
-3. **PR 오픈**(base `integration`) → CI verify. 열기 전 `pnpm run build:app`로 localhost 누출 0·라우팅 확인.
-4. **머지**: 담당자 판단, CI 통과 후 Squash.
+1. **실기기 눈검증** — `pnpm dev:app` 실행 → 폰 사파리 `http://<맥IP>:3000/v2`. 볼 것: ① 1억 카운터 카운트업이 실제로 읽히는가 ② 그린 패널 위 흰 글자 가독성(라이트·다크) ③ 항목 "내리기" 후 회색 무표정이 벌주는 느낌인가 ④ safe area 이중 적용 없는가 ⑤ 담기 폼에서 아래가 열리는 게 자연스러운가
+2. **PR #272 CI 확인 후 머지 판단** (base `integration`, Squash). 머지되면 로컬 브랜치 정리.
+3. **[PR #265](https://github.com/overcode-kitchen/torich-web/pull/265) 처리** — 기획 문서 브랜치(`docs/246-roadmap-2026h2`)의 PR. 이번 세션 커밋 4개가 여기 들어가 있다.
+4. **문서 정합성 2건** (아직 안 함) — ① 브리프 §9의 "통계 23섹션" → 실측 **9섹션**으로 수정 ② 전역 시작 잔액·목표 금액이 목적 단위라 스키마 작업 필요, Phase 2.5 범위에 넣을지 확정
+5. 무니 숙제: 앱스토어 **키워드 안** · **개인정보 처리방침 개정 범위** (심사 전 필수)
 
 ## 🧭 결정과 이유 (이번 세션)
-- **목적당 카드 1장** — 왜: 사용자 요청. 좌 그린패널/우 정보 2단에서 우측 상단에 큰 빈 자리가 생기던 문제를, 목적명·D-day를 카드 머리로 올려 구조적으로 없앴다.
-- **우측에 모은 금액 추가(A안)** — 왜: 남는 세로 공간을 여백으로 두지 않고 정보로 채운다. '목적 진척' 섹션이 원 단위 전체를 이미 보여주므로, 여기선 `shortWon` 만원 축약을 써서 두 섹션이 같은 말로 읽히지 않게 했다.
-- **섹션 제목·기울이기 토글을 카드 밖으로** — 왜: 한 번 반려됐다가 근거를 확인하고 유지하기로 한 지점이다. 앱의 규칙은 "제목은 흰 카드 안"이 아니라 **"한 섹션 = 한 카드면 안에, 섹션이 카드 여러 장으로 쪼개지면 밖에(`px-1`)"** 쪽이고, 그 선례가 `app/components/FAQSections/FAQList.tsx:16`(카드 밖 제목 + `bg-card` 카드 n장)이다. 설정 화면이 제목을 안에 두는 것도 한 섹션 = 한 카드이기 때문. 제목 자체를 없애는 안은 버렸다 — 바로 옆 '목적 진척'이 같은 목적들을 다르게 보여줘서 이름이 없으면 왜 두 번 나오는지 안 읽히고, 기울이기 토글도 갈 곳이 없다.
-- **`--progress-track` 신설** — 왜: 다크에서 `surface-hover`와 `card`가 같은 coolgray-900이라 트랙이 사라진다. 두 값을 한 토큰으로 겸하는 게 원인이라 역할을 분리했다.
+> 오래 갈 결정은 전부 `docs/v2/03-decisions.md`(정본)에 `[x]`로 남겼다. 아래는 스냅샷이다.
+
+- **화면 내 금액 가리기 삭제** — 왜: 1억 카운터가 홈의 1번 요소가 되면 가리기 버튼은 *1번 요소를 지우는 버튼*이 된다. 공유 시 비노출(§8)이 어깨너머 걱정을 대신 받는다. **DB 컬럼 `user_settings.show_monthly_amount`는 남긴다** — 구버전 앱을 깨는 Breaking Change다. 토글 UI만 제거, 실행은 Phase 2.5.
+- **계획 채움을 홈 `이번 달 현황` 안 한 줄로** — 왜: 담기 폼에만 두면 홈에서 이번 달에 뭘 더 해야 하는지 모르고, 따로 블록을 세우면 예산이 5가 된다. **형태를 같이 못박았다** — 금액 문장 한 줄, %·게이지·바 금지, 다 채운 달과 계획 건너뛴 사람에겐 안 뜬다.
+- **`이번 달 현황`과 `적립 항목 목록`을 합쳤다** — 왜: 브리프 §3은 둘로 나눴는데 실제로 그려보니 같은 목록이라, 나누면 같은 항목이 두 번 나와 N-08에 걸린다. 홈 블록은 3이 됐고 남는 한 칸은 **비워둔다**.
+- **localStorage를 `useSyncExternalStore`로 붙였다** — 왜: `useEffect` + `setState`는 `react-hooks/set-state-in-effect` 린트에 걸리고 하이드레이션이 어긋난다. 외부 저장소로 붙이면 서버 렌더와 첫 클라이언트 렌더가 같고 `/v2`와 `/v2/add`가 같은 값을 본다.
+- **v2를 별도 앱이 아니라 같은 저장소 `/v2` 경로로** — 왜: 진짜 토큰·컴포넌트로 봐야 판단이 서고, 9/7 구현 W1이 정확히 이 범위라 버리는 코드가 아니다. 되면 `/v2` → `/` 승격, 아니면 폴더 삭제.
 
 ## 🚧 막힌 것 / 열린 질문
-- 그린 명도·도토리 크기·패널 높이(118px)는 **웹 기준 잠정값**. 실기기에서 조정 가능성.
-- `app/components/ToryRaising/ToryRaisingGrowthSection.tsx:67`에도 `bg-surface-hover` 트랙이 있다. 거긴 `border-border-subtle`가 있어 다크에서도 윤곽이 보여 손대지 않았다. 정리하려면 별도 이슈.
+- **담기 화면 숫자 상한이 1이라** 브리프 §6의 `1억까지 +0.4%`와 계획 채움 중 하나만 된다. 지금은 계획 채움을 남겼다 — 퍼센트를 살리려면 **상한을 2로 올려야 한다**(06 §5-1 3번).
+- **`100만원 중 60만원 채움 · 40만원 남음` 한 줄에 금액이 셋**인데, 이걸 1로 셀지 3으로 셀지 §2에 세는 규칙이 없다. 지금은 "한 문장 = 한 숫자"로 셌다.
+- **IA 캔버스에 새 화면을 이어 그리는 건 아직 안 했다.** 아트보드 12장이 2.4MB 파일 하나에 통째로 들어 있어, 보드를 추가하려면 12장을 다시 심어 같은 링크로 덮어써야 한다. 12장 백업은 scratchpad에 떠뒀지만 **세션이 끝나면 사라진다** — 다시 하려면 캔버스를 다시 받아야 한다.
 
 ## ▶️ 바로 이어가려면
-`git checkout style/104-goal-pace-ui`. 웹이면 `pnpm dev`(이 워크트리는 3002) 후 통계 탭. 앱이면 Xcode 빌드 → 눈검증(위 1번). 값 조정 위치: 레이아웃(패널 높이·컬럼·금액 표기) `app/components/StatsSections/GoalPaceSection.tsx`, 그린 `app/globals.css`의 `--goal-well`, 도토리 크기 `app/utils/acorn-physics.ts`의 `SPRITE_SCALE`. 시안은 위 아트팩트 링크 참고.
+```bash
+git checkout feat/271-v2-main-flow
+pnpm dev:app          # 맥 LAN IP 자동 감지, 3000 포트
+```
+폰 사파리에서 `http://<맥IP>:3000/v2` → 온보딩부터 눌러본다. 값이 꼬이면 `/v2/settings` → "처음부터 다시".
+고칠 위치: 카운터 `app/components/V2Sections/V2Counter.tsx` · 이번 달 목록 `V2MonthlyBlock.tsx` · 담기 폼 `V2AddView.tsx` · 상태 `app/hooks/v2/useV2Sandbox.ts`.
+
+**참고 링크** — [PR #272](https://github.com/overcode-kitchen/torich-web/pull/272) · [PR #265](https://github.com/overcode-kitchen/torich-web/pull/265) · [이슈 #271](https://github.com/overcode-kitchen/torich-web/issues/271) · [클릭 프로토타입](https://claude.ai/code/artifact/9dc25652-2c47-4d80-9a7c-70a4f492f04c) · [IA 캔버스](https://claude.ai/code/artifact/7fb4247b-c6e4-4ed0-910d-ecf3eb686172) · 문서 지도 [docs/v2/README.md](docs/v2/README.md)

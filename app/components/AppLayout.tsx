@@ -19,6 +19,8 @@ const HIDE_NAV_PATHS = [
   '/settings/notifications',
   '/settings/privacy',
   '/settings/terms',
+  // v2 프로토타입은 자체 탭바(홈·설정 2개)를 갖는다 — 기존 4탭을 겹쳐 그리지 않는다.
+  '/v2',
 ]
 
 /**
@@ -40,6 +42,7 @@ const OWN_SCAFFOLD_PATHS = [
   '/settings/notifications',
   '/settings/privacy',
   '/settings/terms',
+  '/v2',
 ]
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
