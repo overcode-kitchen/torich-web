@@ -17,12 +17,12 @@
 ## 📍 지금 상태
 - 빌드/실행: `tsc --noEmit` ✅ · `eslint`(신규 파일) ✅ · `pnpm lint:design` ✅ 차단 위반 0 · `build:app` ✅ — `out/`에 `v2.html`·`v2/{onboarding,add,settings}.html` 생성 확인. `server-routes.backup/` 잔여 없음, `app/api`·`app/auth` 복구됨.
 - 미커밋 변경: **없음**(전부 커밋·푸시됨). 워킹 트리에 `토리치-소개-블로그-글감.md`(8/18 작성) 하나가 untracked로 남아 있는데 **이번 작업과 무관** — 커밋할지 미정.
-- 브랜치 2개가 살아 있다: `docs/246-roadmap-2026h2`(기획 문서, 푸시 완료) · `feat/271-v2-main-flow`(구현, PR #272).
+- 브랜치 2개가 살아 있고 **둘 다 PR이 열려 있다**: `docs/246-roadmap-2026h2` → [PR #265](https://github.com/overcode-kitchen/torich-web/pull/265) · `feat/271-v2-main-flow` → [PR #272](https://github.com/overcode-kitchen/torich-web/pull/272).
 
 ## ⏭️ 다음 할 일 (우선순위 순)
 1. **실기기 눈검증** — `pnpm dev:app` 실행 → 폰 사파리 `http://<맥IP>:3000/v2`. 볼 것: ① 1억 카운터 카운트업이 실제로 읽히는가 ② 그린 패널 위 흰 글자 가독성(라이트·다크) ③ 항목 "내리기" 후 회색 무표정이 벌주는 느낌인가 ④ safe area 이중 적용 없는가 ⑤ 담기 폼에서 아래가 열리는 게 자연스러운가
 2. **PR #272 CI 확인 후 머지 판단** (base `integration`, Squash). 머지되면 로컬 브랜치 정리.
-3. **`docs/246-roadmap-2026h2`도 PR** — 아직 PR을 안 열었다. 기획 문서 4커밋이 브랜치에만 있다.
+3. **[PR #265](https://github.com/overcode-kitchen/torich-web/pull/265) 처리** — 기획 문서 브랜치(`docs/246-roadmap-2026h2`)의 PR. 이번 세션 커밋 4개가 여기 들어가 있다.
 4. **문서 정합성 2건** (아직 안 함) — ① 브리프 §9의 "통계 23섹션" → 실측 **9섹션**으로 수정 ② 전역 시작 잔액·목표 금액이 목적 단위라 스키마 작업 필요, Phase 2.5 범위에 넣을지 확정
 5. 무니 숙제: 앱스토어 **키워드 안** · **개인정보 처리방침 개정 범위** (심사 전 필수)
 
@@ -48,4 +48,4 @@ pnpm dev:app          # 맥 LAN IP 자동 감지, 3000 포트
 폰 사파리에서 `http://<맥IP>:3000/v2` → 온보딩부터 눌러본다. 값이 꼬이면 `/v2/settings` → "처음부터 다시".
 고칠 위치: 카운터 `app/components/V2Sections/V2Counter.tsx` · 이번 달 목록 `V2MonthlyBlock.tsx` · 담기 폼 `V2AddView.tsx` · 상태 `app/hooks/v2/useV2Sandbox.ts`.
 
-**참고 링크** — [PR #272](https://github.com/overcode-kitchen/torich-web/pull/272) · [이슈 #271](https://github.com/overcode-kitchen/torich-web/issues/271) · [클릭 프로토타입](https://claude.ai/code/artifact/9dc25652-2c47-4d80-9a7c-70a4f492f04c) · [IA 캔버스](https://claude.ai/code/artifact/7fb4247b-c6e4-4ed0-910d-ecf3eb686172) · 문서 지도 [docs/v2/README.md](docs/v2/README.md)
+**참고 링크** — [PR #272](https://github.com/overcode-kitchen/torich-web/pull/272) · [PR #265](https://github.com/overcode-kitchen/torich-web/pull/265) · [이슈 #271](https://github.com/overcode-kitchen/torich-web/issues/271) · [클릭 프로토타입](https://claude.ai/code/artifact/9dc25652-2c47-4d80-9a7c-70a4f492f04c) · [IA 캔버스](https://claude.ai/code/artifact/7fb4247b-c6e4-4ed0-910d-ecf3eb686172) · 문서 지도 [docs/v2/README.md](docs/v2/README.md)
